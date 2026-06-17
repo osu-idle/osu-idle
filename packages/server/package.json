@@ -1,6 +1,6 @@
 {
   "name": "@osu-idle/server",
-  "version": "0.9.1.0",
+  "version": "0.10.0.0",
   "private": true,
   "type": "module",
   "exports": {
