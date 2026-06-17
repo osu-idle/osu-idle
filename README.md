@@ -15,7 +15,7 @@
 
 # osu!idle
 
-
+An osu!mania idle game where you train your own character on actual maps.
 
 ## Translations
 
