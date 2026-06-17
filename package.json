@@ -36,7 +36,7 @@
     "i18n:extract": "npm -w @osu-idle/shared run extract -- --clean && npm -w @osu-idle/server run extract && npm -w @osu-idle/client run extract && npm -w @osu-idle/web run extract",
     "i18n:compile": "npm -w @osu-idle/shared run compile",
     "i18n:upload": "npm run i18n:extract && crowdin upload sources",
-    "i18n:upload:translations": "crowdin upload translations",
+    "i18n:upload:translations": "crowdin upload translations --import-eq-suggestions --auto-approve-imported",
     "i18n:download": "crowdin download",
     "test": "npm -w @osu-idle/tests run test",
     "test:watch": "npm -w @osu-idle/tests run test:watch",

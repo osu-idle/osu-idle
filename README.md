@@ -6,16 +6,25 @@
 [![osu!idle discord](https://discordapp.com/api/guilds/1511463564135759954/widget.png?style=shield)](https://discord.gg/ppy)
 [![Crowdin](https://badges.crowdin.net/osu-idle/localized.svg)](https://crowdin.com/project/osu-idle)
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="packages/web/public/idle-white.png" />
+    <img src="packages/web/public/idle-black.png" alt="osu!idle" width="400" />
+  </picture>
+</p>
+
 # osu!idle
+
+
 
 ## Translations
 
 ```sh
-# extract source strings and push en.po to Crowdin
+# upload new english strings
 npm run i18n:upload
-# pull completed translations back into the tree
+# pull updated translations
 npm run i18n:download
 
-# seed Crowdin repo
+# seed Crowdin repo (don't use)
 npm run i18n:upload:translations
 ```
