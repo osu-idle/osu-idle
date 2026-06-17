@@ -1,0 +1,93 @@
+/* osu!stable-style dropdown: black panel, white text, one accent tint for the
+   selected border and hover/selected background. Tint is overridable per
+   instance via the `accent` prop (sets --dropdown-accent). */
+.dropdown {
+	--dropdown-border: transparent;
+	--dropdown-accent: var(--osu-pink-darkest);
+	position: relative;
+	pointer-events: auto;
+	min-width: 220px;
+	font-weight: 100;
+	font-size: 20px;
+	user-select: none;
+}
+
+.dropdown__current,
+.dropdown__option {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	color: #fff;
+	background: #000000d0;
+	border: 1px solid transparent;
+	text-align: left;
+	font: inherit;
+	cursor: pointer;
+}
+.dropdown__option {
+	padding: 0px 7px;
+	padding-left: 25px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	opacity: 0;
+
+	transition: all 150ms ease;
+}
+.dropdown.is-open .dropdown__option {
+	padding-top: 5px;
+	padding-bottom: 5px;
+	opacity: 1;
+}
+
+.dropdown__current {
+	justify-content: space-between;
+	padding: 5px 7px;
+	gap: 0.5rem;
+	border-radius: 6px;
+	border-color: var(--dropdown-border);
+}
+
+.dropdown__label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.dropdown__caret {
+	flex-shrink: 0;
+	width: 0;
+	height: 0;
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-top: 5px solid currentColor;
+	transition: transform 0.15s ease;
+}
+.dropdown.is-open .dropdown__caret {
+	transform: rotate(180deg);
+}
+
+.dropdown__options {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	right: 0;
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	background: #00000025;
+	border-radius: 6px;
+	overflow: hidden;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+	font-size: 18px;
+	pointer-events: none;
+	opacity: 0;
+}
+.dropdown.is-open .dropdown__options {
+	opacity: 1;
+	pointer-events: auto;
+}
+.dropdown__current:hover,
+.dropdown__option:hover,
+.dropdown__option.is-selected {
+	background: var(--dropdown-accent);
+}

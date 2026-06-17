@@ -1,0 +1,21 @@
+/* osu!-style settings button: a full-width accented bar. Accent overridable per
+   instance via the `accent` prop (sets --accent). */
+.opt-button {
+	--accent: var(--osu-pink);
+	width: 100%;
+	margin: 3px 0;
+	padding: 10px 14px;
+	border-radius: 6px;
+	background: var(--accent);
+	color: #fff;
+	font-size: 16px;
+	font-weight: 600;
+	text-align: center;
+	transition: filter 120ms ease, transform 80ms ease;
+}
+.opt-button:hover {
+	filter: brightness(1.12);
+}
+.opt-button:active {
+	transform: scale(0.98);
+}

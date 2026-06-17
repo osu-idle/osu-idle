@@ -1,0 +1,110 @@
+.tutorial {
+	position: fixed;
+	inset: 0;
+	z-index: 15000;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	padding-bottom: 11vh;
+	pointer-events: none;
+	animation: tutorial-in 0.45s ease-out both;
+}
+
+@keyframes tutorial-in {
+	0% { opacity: 0; transform: translateY(14px); }
+	100% { opacity: 1; transform: translateY(0); }
+}
+
+.tutorial__card {
+	pointer-events: auto;
+	width: 100%;
+	max-width: 440px;
+	margin: 0 20px;
+	padding: 22px 26px 18px;
+	background: rgba(34, 27, 31, 0.92);
+	backdrop-filter: blur(8px);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 16px;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+	color: #f3eef1;
+}
+
+.tutorial__title {
+	margin: 0 0 6px;
+	font-size: 20px;
+}
+
+.tutorial__body {
+	margin: 0 0 16px;
+	color: #b3a6ad;
+	font-size: 14px;
+	line-height: 1.55;
+	min-height: 3.1em;
+}
+.tutorial__body b {
+	color: #f3eef1;
+}
+.tutorial__body a {
+	color: #ff66aa;
+}
+
+.tutorial__dots {
+	display: flex;
+	justify-content: center;
+	gap: 7px;
+	margin-bottom: 16px;
+}
+.tutorial__dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.18);
+	transition: background 0.15s ease, transform 0.15s ease;
+}
+.tutorial__dot--active {
+	background: #ff66aa;
+	transform: scale(1.25);
+}
+
+.tutorial__actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.tutorial__skip {
+	margin-right: auto;
+	padding: 8px 4px;
+	border: none;
+	background: none;
+	color: #b3a6ad;
+	font-size: 13px;
+	cursor: pointer;
+}
+.tutorial__skip:hover {
+	color: #f3eef1;
+	text-decoration: underline;
+}
+
+.tutorial__btn {
+	padding: 9px 16px;
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.05);
+	color: #f3eef1;
+	font-weight: 600;
+	font-size: 13px;
+	cursor: pointer;
+	transition: background 0.12s ease;
+}
+.tutorial__btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+}
+.tutorial__btn--primary {
+	background: #ff66aa;
+	border-color: #ff66aa;
+	color: #1a1013;
+}
+.tutorial__btn--primary:hover {
+	background: #e0558f;
+}

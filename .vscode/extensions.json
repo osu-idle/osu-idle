@@ -1,0 +1,12 @@
+{
+	// This repo uses Vitest, not Jest. The Vitest extension gives the Test
+	// Explorer / inline run-and-debug UI for `@osu-idle/tests`; the Jest
+	// extension is disabled in settings.json (`jest.enable: false`).
+	"recommendations": [
+		"vitest.explorer",
+		"dbaeumer.vscode-eslint"
+	],
+	"unwantedRecommendations": [
+		"orta.vscode-jest"
+	]
+}

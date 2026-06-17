@@ -1,0 +1,32 @@
+.message__overlay {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.message__contents {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	text-align: center;
+	opacity: 1;
+	width: 100%;
+	height: 45px;
+	font-size: 30px;
+	font-weight: 100;
+	background: #00000054;
+	transition: all .2s ease;
+	padding: 5px 0 0 15px;
+}
+
+.message__contents.animate {
+	height: 50px;
+	font-size: 32px;
+}
+
+.message__contents.closing {
+	opacity: 0;
+}

@@ -1,0 +1,46 @@
+{
+  "name": "@osu-idle/client",
+  "private": true,
+  "version": "0.9.0.16",
+  "type": "module",
+  "description": "A replica of the osu! startup experience built with React + TypeScript",
+  "scripts": {
+    "process": "node scripts/index-beatmaps.mjs --force",
+    "predev": "node scripts/index-beatmaps.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/index-beatmaps.mjs",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "extract": "lingui extract",
+    "compile": "lingui compile"
+  },
+  "dependencies": {
+    "@lingui/react": "^5.9.5",
+    "@osu-idle/shared": "*",
+    "adm-zip": "^0.5.17",
+    "fflate": "^0.8.3",
+    "hono": "^4.6.14",
+    "osu-classes": "^3.1.0",
+    "osu-mania-stable": "^5.0.1",
+    "osu-parsers": "^4.1.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rosu-pp-js": "^4.0.1",
+    "rosu-pp-js-web": "https://github.com/MaxOhn/rosu-pp-js/releases/download/v4.0.1/rosu_pp_js_web.tar.gz",
+    "sql.js": "^1.14.1",
+    "typescript-eslint": "^8.60.0"
+  },
+  "devDependencies": {
+    "@lingui/babel-plugin-lingui-macro": "^5.9.5",
+    "@lingui/cli": "^5.9.5",
+    "@lingui/vite-plugin": "^5.9.5",
+    "@osu-idle/server": "*",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/sql.js": "^1.4.11",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3"
+  }
+}

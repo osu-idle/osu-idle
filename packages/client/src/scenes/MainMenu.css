@@ -1,0 +1,247 @@
+.menu {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	background: radial-gradient(circle at 50% 40%, #1b1620 0%, #0a080c 80%);
+}
+
+.menu__vignette {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: radial-gradient(circle at 50% 45%, transparent 45%, rgba(0, 0, 0, 0.65) 100%);
+	z-index: 1;
+}
+
+.menu__top {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.3rem 1.8rem;
+	z-index: 10;
+}
+
+.menu__brand {
+	position: absolute;
+	bottom: 3px;
+	left: 3px;
+	display: flex;
+	align-items: baseline;
+	gap: 0.15rem;
+}
+.menu__brand-name {
+	font-weight: 900;
+	font-size: 1.5rem;
+	color: var(--osu-pink);
+	text-shadow: 0 2px 16px rgba(255, 102, 171, 0.5);
+}
+.menu__brand-tag {
+	font-weight: 300;
+	font-size: 1.5rem;
+	color: var(--text);
+	opacity: 0.85;
+}
+.menu__brand-version {
+	font-weight: 300;
+	font-size: 0.75rem;
+	color: var(--text);
+	opacity: 0.85;
+}
+
+.menu__version {
+	font-size: 0.82rem;
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	color: var(--text-dim);
+}
+
+.menu__center {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	z-index: 5;
+	will-change: transform;
+}
+
+.menu__bottom-left {
+	position: absolute;
+	left: 1.8rem;
+	bottom: 1.6rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	z-index: 10;
+}
+.menu__stat {
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	color: var(--osu-pink-light);
+}
+.menu__stat--dim {
+	font-weight: 400;
+	color: var(--text-dim);
+}
+
+/* ---- "drop" entrance from the intro ----
+	 A white flash covers the hard cut from the intro and clears to reveal the
+	 menu, while the logo pops in just behind it. */
+.menu__flash {
+	position: absolute;
+	inset: 0;
+	z-index: 30;
+	background: #fff;
+	pointer-events: none;
+	animation: menu-flash 0.6s ease-out forwards;
+}
+@keyframes menu-flash {
+	0% { opacity: 0.92; }
+	100% { opacity: 0; }
+}
+
+.menu__logo-enter {
+	position: relative;
+	display: grid;
+	place-items: center;
+	will-change: transform, opacity;
+}
+/* keep the logo above its waveform halo */
+.menu__logo-enter .main-logo {
+	position: relative;
+	z-index: 1;
+}
+.menu__logo-menu {
+	transition: transform 0.6s ease;
+}
+.menu--flash .menu__logo-enter {
+	animation: logo-enter 0.6s cubic-bezier(0.2, 1.2, 0.35, 1) 0.08s both;
+}
+@keyframes logo-enter {
+	0% { opacity: 0; transform: scale(0.7); }
+	100% { opacity: 1; transform: scale(1); }
+}
+
+.menu__logo-options {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transition: transform 0.6s ease;
+	height: 100%;
+	width: 100%;
+}
+
+.menu__option_group {
+	position: absolute;
+	top: 50%;
+	right: 0;
+	transform: translateY(-50%);
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 15px;
+
+	opacity: 0;
+	transition: all 0.3s ease;
+	pointer-events: none;
+}
+
+.menu__option_group.visible {
+	opacity: 1;
+	pointer-events: all;
+}
+
+.menu__option {
+	position: relative;
+	width: 100%;
+	height: 22%;
+	opacity: 1;
+
+	font-size: 50px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	transform: translateX(0px);
+	transition: all 0.6s ease, transform 0.6s ease;
+}
+.menu__option.disabled {
+	pointer-events: none;
+	filter: brightness(0.5);
+}
+@media (max-width: 600px) {
+	.menu__option {
+		font-size: 7.5vw;
+	}
+}
+
+.menu__option.out {
+	transform: translateX(-10px);
+}
+
+.menu_option_contents {
+	position: absolute;
+	z-index: 10;
+	left: 32%;
+}
+
+.menu__option_bg_safe .menu__option_bg {
+	position: absolute;
+	background-repeat: no-repeat;
+	background-position: top right;
+	background-size: cover;
+	z-index: 2;
+	width: 100%;
+	height: 100%;
+	
+	transition: opacity 0.2s linear;
+}
+.menu__option_bg_safe {
+	position: absolute;
+	z-index: 1;
+	background: linear-gradient(90deg, #8766ee 80%, transparent 90%);
+	width: 100%;
+	height: 100%;
+	transition: opacity 0.2s linear;
+}
+.menu__option_bg.on .menu__option_bg_safe {
+	background: linear-gradient(90deg, #f863a5 80%, transparent 90%);
+}
+
+.menu__option .menu__option_bg_safe.on,
+.menu__option .menu__option_bg_safe.on .menu__option_bg {
+	opacity: 0;
+}
+.menu__option:hover {
+	--bounce-to: 30px;
+	transform: translateX(30px);
+	animation: ease-out-bounce-x 0.3s;
+}
+.menu__option:hover.out {
+	--bounce-to: 20px;
+	transform: translateX(20px);
+}
+.menu__option:hover .menu__option_bg_safe.on,
+.menu__option:hover .menu__option_bg_safe.on .menu__option_bg {
+	opacity: 1;
+}
+
+.menu__option.visible {
+	opacity: 1;
+}
+
+.menu__option.flip .menu__option_bg {
+	transform: scaleY(-1);
+}
+
+
+@media (max-width: 850px) {
+	.menu__top {
+		display: none;
+	}
+}

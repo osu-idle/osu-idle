@@ -1,0 +1,1 @@
+ALTER TABLE `beatmapset` ADD `ranked_at` timestamp DEFAULT (now());

@@ -1,0 +1,47 @@
+
+
+.skill {
+	display: grid;
+	grid-template-columns: 110px 1fr auto;
+	align-items: center;
+	gap: 12px;
+}
+
+.skill__name {
+	text-transform: capitalize;
+	color: hsl(var(--hsl-c2));
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+.skill__track {
+	position: relative;
+	height: 9px;
+	border-radius: 999px;
+	background-color: hsl(var(--hsl-b6));
+	overflow: hidden;
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35);
+}
+
+.skill__fill {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, hsl(var(--hsl-l4)), hsl(var(--hsl-h1)));
+	transition: width .35s ease;
+}
+
+.skill__level {
+	font-size: 13px;
+	font-variant-numeric: tabular-nums;
+	min-width: 52px;
+	text-align: right;
+	color: hsl(var(--hsl-c1));
+}
+
+.skill__cap {
+	font-size: 11px;
+	color: hsl(var(--hsl-f1));
+}

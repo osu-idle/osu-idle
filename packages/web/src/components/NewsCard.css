@@ -1,0 +1,121 @@
+/* Responsive grid of news cards, shared by the landing, dashboard and news list. */
+.news-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 20px;
+}
+
+.news-card {
+	display: block;
+	color: var(--text);
+	border-radius: 16px;
+	overflow: hidden;
+	background: hsl(var(--hsl-b4));
+	border: 1px solid hsla(var(--hsl-c1), .07);
+	cursor: pointer;
+	transition: transform .15s, border-color .15s, background-color .15s;
+}
+
+.news-card:hover {
+	transform: translateY(-4px);
+	border-color: hsla(var(--hsl-p), .4);
+	background: hsl(var(--hsl-b3));
+}
+
+.news-card__cover {
+	position: relative;
+	height: 130px;
+	background-size: cover;
+	background-position: center;
+}
+
+.news-card__tag {
+	position: absolute;
+	left: 14px;
+	bottom: 12px;
+	padding: 4px 12px;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, .45);
+	backdrop-filter: blur(4px);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: .6px;
+	text-transform: uppercase;
+}
+
+.news-card__body {
+	padding: 18px 18px 22px;
+}
+
+.news-card__date {
+	font-size: 12px;
+	color: var(--muted);
+}
+
+.news-card__title {
+	margin: 8px 0 8px;
+	font-size: 18px;
+	font-weight: 700;
+	line-height: 1.25;
+	color: #fff;
+}
+
+.news-card__blurb {
+	margin: 0;
+	color: var(--muted);
+	font-size: 14px;
+	line-height: 1.55;
+	/* Keep cards even regardless of summary length. */
+	display: -webkit-box;
+	line-clamp: 3;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+@media (max-width: 760px) {
+	.news-grid { grid-template-columns: 1fr; }
+}
+
+.news-card.home-news {
+	border-radius: 0;
+	text-decoration: none;
+	cursor: default;
+	color: #fff;
+}
+
+.news-card.home-news .news-card__body {
+	display: flex;
+	align-items: stretch;
+	padding: 0;
+}
+.news-card.home-news .news-card__date {
+	align-items: flex-end;
+    border-right: 1px solid hsl(var(--hsl-l1));
+    color: hsl(var(--hsl-l1));
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    justify-content: center;
+    margin: 10px;
+    padding-right: 10px;
+    text-align: right;
+    width: 70px;
+}
+.news-card.home-news .news-card__title {
+	color: #fff;
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 5px 0 10px;
+}
+.news-card.home-news .news-card__title:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+.news-card.home-news .news-card__blurb {
+	color: #fff;
+	
+    font-size: 12px;
+	margin: 0 0 10px;
+}

@@ -1,0 +1,153 @@
+.web {
+	position: fixed;
+	z-index: 10000;
+	inset: 0;
+	width: 100vw;
+	height: 100vh;
+	opacity: 0;
+	/* When closed, drop fully out of hit-testing. On iOS a hidden <iframe>
+	   ignores `pointer-events: none` and keeps swallowing touches over whatever
+	   is behind it (e.g. the carousel), so we also flip `visibility` - delayed
+	   until after the fade so the close transition still plays. visibility:hidden
+	   keeps the iframe loaded, preserving its state. */
+	visibility: hidden;
+	transition: opacity 0.18s ease, visibility 0s linear 0.18s;
+	pointer-events: none;
+}
+
+.web.is-open {
+	background: rgba(10, 8, 9, 0.55);
+	opacity: 1;
+	visibility: visible;
+	transition: opacity 0.18s ease, visibility 0s;
+	pointer-events: all;
+	backdrop-filter: blur(8px);
+}
+
+/* closed -> open: the panel scales + fades into place (the loader rides along) */
+.web-inner {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	border-radius: 10px;
+	background: #141012;
+
+	width: 90vw;
+	height: 90vh;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%) scale(0.97);
+
+	box-shadow: -4px 4px 24px rgba(0, 0, 0, 0.5);
+
+	opacity: 0;
+	transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.web.is-open .web-inner {
+	opacity: 1;
+	transform: translate(-50%, -50%) scale(1);
+}
+
+.web__chrome {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 12px;
+	background: #1c1719;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.web__btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 32px;
+	height: 32px;
+	padding: 0 8px;
+	border: none;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.06);
+	color: #f3eef1;
+	font-size: 18px;
+	line-height: 1;
+	cursor: pointer;
+	transition: background 0.12s ease;
+}
+.web__btn:hover { background: rgba(255, 255, 255, 0.14); }
+.web__btn:active { background: rgba(255, 255, 255, 0.2); }
+
+.web__spacer {
+	flex: 1;
+}
+
+.web__close {
+	color: #ff8aa6;
+	font-size: 15px;
+}
+.web__close:hover { background: rgba(255, 90, 114, 0.18); }
+
+.web__viewport {
+	position: relative;
+	flex: 1;
+	min-height: 0;
+	background: #141012;
+}
+
+.web__frame {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	border: none;
+	background: transparent;
+
+	/* loading -> loaded: the page fades in over the loader */
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.web-inner.is-loaded .web__frame {
+	opacity: 1;
+}
+
+/* open -> loading: an animated shimmer + spinner fills the viewport */
+.web__loader {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	background: linear-gradient(110deg, #15100e 0%, #221813 45%, #15100e 90%);
+	background-size: 220% 100%;
+	animation: web-shimmer 4.4s ease-in-out infinite;
+
+	opacity: 1;
+	transition: opacity 0.3s ease;
+}
+
+.web-inner.is-loaded .web__loader {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.web__loader-spinner {
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	border: 3px solid rgba(255, 138, 166, 0.18);
+	border-top-color: #ff8aa6;
+	animation: web-spin 0.8s linear infinite;
+}
+
+@keyframes web-shimmer {
+	0% { background-position: 220% 0; }
+	100% { background-position: -220% 0; }
+}
+
+@keyframes web-spin {
+	to { transform: rotate(360deg); }
+}

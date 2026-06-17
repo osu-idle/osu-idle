@@ -1,0 +1,469 @@
+
+
+
+/* ===== left column ===== */
+
+.result__title {
+	font-size: 2rem;
+	font-weight: 800;
+	color: #fff;
+	line-height: 1.2;
+}
+.result__version {
+	color: var(--osu-pink-light);
+	font-weight: 700;
+}
+.result__creator,
+.result__played {
+	font-size: 0.85rem;
+	color: var(--text-dim);
+	font-weight: 500;
+}
+
+.result__failed {
+	margin-top: 0.4rem;
+	font-size: 1.5rem;
+	font-weight: 800;
+	letter-spacing: 0.15em;
+	color: #ff5a72;
+	text-shadow: 0 0 12px rgba(255, 90, 114, 0.6);
+}
+
+/* judgement value grid (300 320 / 200 100 / 50 MISS) */
+.result__judges {
+	display: flex;
+	flex-wrap: wrap;
+}
+.result__judge {
+	width: 50%;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem 2rem;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.result__judge-label {
+	font-size: 1.2rem;
+	font-weight: 900;
+	letter-spacing: 0.02em;
+	text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+.result__judge-count {
+	font-size: 3rem;
+	font-weight: 700;
+	color: #fff;
+	font-variant-numeric: tabular-nums;
+}
+
+/* combo + accuracy */
+.result__totals {
+	display: flex;
+	width: 100%;;
+	margin-top: 0.6rem;
+	justify-content: space-around;
+}
+.result__total {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+.result__total-label {
+	font-size: 1rem;
+	font-weight: 700;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--text-dim);
+}
+.result__total-value {
+	font-size: 3rem;
+	font-weight: 800;
+	color: #fff;
+	font-variant-numeric: tabular-nums;
+}
+.result__pfc {
+	font-style: normal;
+	font-size: 0.9rem;
+	font-weight: 800;
+	color: #ffd24a;
+}
+
+/* ===== center column: XP, vertically centred ===== */
+.result__center {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 0;
+}
+.result__skills {
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+}
+.result__skills-empty {
+	color: var(--text-dim);
+	font-size: 0.85rem;
+	text-align: center;
+	padding: 0.4rem 0;
+}
+
+/* ===== right column: the grade, filling the space ===== */
+.result__grade {
+	width: auto;
+	max-width: 100%;
+	max-height: 58vh;
+	object-fit: contain;
+	filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.6));
+	animation: grade-in 0.6s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+@keyframes grade-in {
+	from { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+	to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+/* ---- skill progression rows ---- */
+.skillxp__row {
+	display: grid;
+	grid-template-columns: 5.5rem 2.6rem 1fr 3.4rem;
+	align-items: center;
+	gap: 0.6rem;
+	min-width: 450px;
+	animation: skillxp-enter 0.34s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+	filter: drop-shadow(0rem 0rem .2rem black);
+}
+@keyframes skillxp-enter {
+	from { opacity: 0; transform: translateX(-14px); }
+	to { opacity: 1; transform: translateX(0); }
+}
+.skillxp__name {
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-transform: capitalize;
+	color: #fff;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.skillxp__level {
+	display: inline-block;
+	font-size: 0.95rem;
+	font-weight: 800;
+	text-align: right;
+	color: #fff;
+	animation: skillxp-pop 0.28s ease both;
+}
+.skillxp__level i {
+	font-style: normal;
+	font-size: 0.6rem;
+	font-weight: 700;
+	color: var(--text-dim);
+	margin-right: 0.2rem;
+}
+@keyframes skillxp-pop {
+	0% { transform: scale(1); }
+	45% { transform: scale(1.35); color: #ffd24a; }
+	100% { transform: scale(1); }
+}
+.skillxp__track {
+	height: 10px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.09);
+	overflow: hidden;
+}
+.skillxp__fill {
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, var(--osu-pink-dark), var(--osu-pink));
+	box-shadow: 0 0 10px rgba(255, 102, 171, 0.45);
+}
+.skillxp__row.is-leveled .skillxp__fill {
+	background: linear-gradient(90deg, var(--osu-pink), #ffd24a);
+	box-shadow: 0 0 12px rgba(255, 210, 74, 0.5);
+}
+.skillxp__gain {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.3rem;
+	font-size: 0.8rem;
+	font-weight: 800;
+	color: var(--osu-pink-light);
+	white-space: nowrap;
+}
+.skillxp__levelup {
+	font-style: normal;
+	font-size: 0.62rem;
+	font-weight: 800;
+	color: #ffd24a;
+	text-shadow: 0 0 8px rgba(255, 210, 74, 0.6);
+}
+
+
+/* /// */
+
+.resultscreen {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 20;
+	overflow-y: auto;
+	/* iOS: own the vertical drag, keep momentum, don't chain to the page. */
+	touch-action: pan-y;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+	background: radial-gradient(120% 90% at 70% 0%, rgba(20, 8, 18, 0.55), rgba(5, 4, 10, 0.85));
+	backdrop-filter: blur(4px);
+	width: 100vw;
+	height: 100vh;
+	animation: results-in 0.4s ease both;
+	display: flex;
+	flex-direction: column;
+}
+
+@keyframes results-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.result__meta {
+	padding: 1rem;
+	background: rgba(0, 0, 0, 0.7);
+}
+
+.result {
+	position: relative;
+	display: flex;
+	padding: 2rem 2rem 0;
+	align-items: flex-start;
+}
+
+.result__left {
+	display: flex;
+	flex-direction: column;
+	gap: 3.5rem;
+	width: 65vw;
+	z-index: 10;
+}
+.result__right {
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-end;
+	width: 35vw;
+}
+
+.result__topleft {
+	display: flex;
+}
+
+.result__panel {
+	width: 70%;
+}
+
+.result__score {
+	font-size: 4rem;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: .75rem;
+	text-align: right;
+	color: #fff;
+	font-variant-numeric: tabular-nums;
+	text-shadow: 0 4px 30px rgba(255, 102, 171, 0.4);
+	margin-right: 10%;
+}
+
+.result__progression {
+	width: 30%;
+	display: flex;
+	align-items: center;
+}
+
+/* GRAPHS */
+
+
+
+/* the two graphs, side by side, pinned to the bottom of the column */
+.result__graphs {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 0.8rem;
+	width: 65vw;
+	min-width: 1100px;
+}
+.result__graph {
+	flex: 1 1 0;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	background: rgba(0, 0, 0, 0.4);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 10px;
+	padding: 0.55rem 0.6rem 0.65rem;
+}
+.result__graph figcaption {
+	font-size: 0.66rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-dim);
+	margin-bottom: 0.45rem;
+}
+.result__graph .play__graph {
+	display: block;
+	width: 100%;
+	border-radius: 6px;
+}
+.result__graph-empty {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 240px;
+	border-radius: 6px;
+	background: rgba(255, 255, 255, 0.02);
+	border: 1px dashed rgba(255, 255, 255, 0.08);
+	color: var(--text-dim);
+	font-size: 0.78rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+/* ---- playlist autopilot countdown ---- */
+.result__autopilot {
+	position: absolute;
+	bottom: 1.2rem;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 500;
+	padding: 0.55rem 1.3rem;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.65);
+	border: 1px solid rgba(255, 102, 171, 0.45);
+	color: rgba(255, 255, 255, 0.9);
+	font-size: 0.95rem;
+	font-weight: 600;
+	white-space: nowrap;
+	pointer-events: none;
+}
+.result__autopilot span {
+	color: var(--osu-pink-light);
+}
+
+/* ---- exit ---- */
+.result__exit {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	font-size: 2rem;
+	padding: 1rem 3rem;
+	font-weight: 700;
+	color: #fff;
+	transition: transform 0.12s ease, filter 0.15s ease;
+	z-index: 500;
+}
+.result__exit:hover {
+	transform: translateY(-1px);
+	filter: brightness(1.08);
+}
+
+/* MOBILE */
+
+@media (max-width: 1100px) {
+	.result {
+		padding-top: 0;
+	}
+	.result__meta {
+		text-align: center;
+	}
+
+	.result__topleft {
+		flex-direction: column;
+		gap: 3rem;
+	}
+
+	.result__panel {
+		width: 100%;
+	}
+
+	.result__progression {
+		width: 90vw;
+	}
+
+	.result__right {
+		position: absolute;
+		right: 0;
+		top: 1rem;
+	}
+
+	.result__left {
+		gap: 1.5rem;
+	}
+
+	.result__graphs {
+		flex-direction: column-reverse;
+		height: 600px;
+		min-width: 90vw;
+		padding-bottom: 2rem;
+	}
+
+	.result__graph {
+		height: 250px;
+	}
+
+	.result__exit {
+		position: relative;
+		background-color: #0000002a;
+		margin: 1rem;
+	}
+}
+
+@media (max-width: 850px) {
+	.result__left {
+		width: 100vw;
+	}
+
+	.result__right {
+		opacity: .2;
+		inset: 0;
+		width: 100vw;
+		justify-content: center;
+	}
+}
+
+@media (max-width: 650px) {
+	.result__judge {
+		flex-direction: column;
+		align-items: center;
+    	justify-content: center;
+	}
+}
+
+@media (max-width: 432px) {
+	.result {
+		padding: 0.5rem 0.5rem 0;
+	}
+
+	.result__score {
+		font-size: 3.5rem;
+	}
+
+	.result__judge-count {
+		font-size: 2.5rem;
+	}
+	
+	.result__total-value {
+		font-size: 2rem;
+	}
+
+	.result__skills {
+		width: 100%;
+	}
+
+	.skillxp__row {
+		min-width: 0;
+		width: 100%;
+	}
+
+	.result__graphs {
+		width: 100%;
+	}
+}

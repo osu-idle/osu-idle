@@ -1,0 +1,167 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1780508091500,
+      "tag": "0000_cynical_solo",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1780508432715,
+      "tag": "0001_dark_luminals",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1780520961696,
+      "tag": "0002_mean_mad_thinker",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1780521646839,
+      "tag": "0003_sharp_pet_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1780521744316,
+      "tag": "0004_nasty_tag",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1780579288149,
+      "tag": "0005_aberrant_silver_sable",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1780580745436,
+      "tag": "0006_ambitious_deathstrike",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1780583218377,
+      "tag": "0007_wealthy_otto_octavius",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1780600771281,
+      "tag": "0008_nebulous_unus",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1780601273498,
+      "tag": "0009_fantastic_carnage",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1780609174566,
+      "tag": "0010_warm_captain_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1780657773086,
+      "tag": "0011_jittery_retro_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1780788225509,
+      "tag": "0012_melodic_captain_universe",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1780911924753,
+      "tag": "0013_icy_hemingway",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1780924430754,
+      "tag": "0014_warm_freak",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "5",
+      "when": 1780924900877,
+      "tag": "0015_overjoyed_clea",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1780945797705,
+      "tag": "0016_overconfident_human_torch",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1780959045967,
+      "tag": "0017_pale_masked_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1781001156829,
+      "tag": "0018_overrated_vargas",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1781078211048,
+      "tag": "0019_rapid_amazoness",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1781124060291,
+      "tag": "0020_tiresome_stepford_cuckoos",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1781441271166,
+      "tag": "0021_many_fat_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1781448859754,
+      "tag": "0022_organic_carnage",
+      "breakpoints": true
+    }
+  ]
+}

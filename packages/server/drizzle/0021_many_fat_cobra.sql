@@ -1,0 +1,1 @@
+ALTER TABLE `beatmaps_played` ADD `memory` int DEFAULT 0 NOT NULL;

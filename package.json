@@ -1,0 +1,50 @@
+{
+  "name": "osu-idle",
+  "private": true,
+  "version": "0.9.0.16",
+  "type": "module",
+  "description": "osu! idle - a replica of the osu! startup experience (React client + Hono backend)",
+  "workspaces": [
+    "packages/shared",
+    "packages/server",
+    "packages/client",
+    "packages/web",
+    "packages/tests"
+  ],
+  "scripts": {
+    "dev": "concurrently -n shared,server,types,web,client -c gray,green,cyan,magenta,blue npm:dev:shared npm:dev:server npm:dev:types npm:dev:web npm:dev:client",
+    "dev:shared": "npm -w @osu-idle/shared run dev",
+    "dev:server": "npm -w @osu-idle/server run dev",
+    "dev:types": "npm -w @osu-idle/server run build:types -- --watch",
+    "dev:web": "npm -w @osu-idle/web run dev",
+    "dev:client": "npm -w @osu-idle/client run dev",
+    "build": "npm run i18n:extract && npm run i18n:compile && npm -w @osu-idle/shared run build && npm -w @osu-idle/server run build:types && npm -w @osu-idle/client run build && npm -w @osu-idle/web run build",
+    "deploy:prod": "sudo echo 'starting' && node scripts/version-bump.mjs && npm run build && sudo systemctl restart osu-idle",
+    "version:bump": "node scripts/version-bump.mjs",
+    "deploy:server:prod": "sudo echo 'starting' && npm -w @osu-idle/shared run build && npm -w @osu-idle/server run build:types && sudo systemctl restart osu-idle",
+    "build:shared": "npm -w @osu-idle/shared run build",
+    "build:web": "npm -w @osu-idle/shared run build && npm -w @osu-idle/web run build",
+    "build:types": "npm -w @osu-idle/server run build:types",
+    "newmap": "sudo echo 'starting' && npm -w @osu-idle/shared run build && npm -w @osu-idle/server run build:types && npm -w @osu-idle/client run build && npm -w @osu-idle/server run process:prod && sudo systemctl restart osu-idle",
+    "generate": "npm -w @osu-idle/server run generate",
+    "migrate": "npm -w @osu-idle/server run migrate",
+    "migrate:prod": "npm -w @osu-idle/server run migrate:prod",
+    "process": "npm -w @osu-idle/server run process",
+    "process:prod": "npm -w @osu-idle/server run process:prod",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "i18n:extract": "npm -w @osu-idle/shared run extract -- --clean && npm -w @osu-idle/server run extract && npm -w @osu-idle/client run extract && npm -w @osu-idle/web run extract",
+    "i18n:compile": "npm -w @osu-idle/shared run compile",
+    "test": "npm -w @osu-idle/tests run test",
+    "test:watch": "npm -w @osu-idle/tests run test:watch",
+    "testplay": "npm -w @osu-idle/tests run testplay",
+    "benchmark": "npm -w @osu-idle/tests run benchmark"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "concurrently": "^9.1.2",
+    "drizzle-orm": "^0.38.3",
+    "eslint": "^10.4.1",
+    "typescript-eslint": "^8.60.0"
+  }
+}

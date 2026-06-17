@@ -1,0 +1,20 @@
+
+
+.grade__container {
+    position: relative;
+	width: 40px;
+	min-height: 30px;
+	height: 20px;
+}
+
+.grade__img {
+    background-position: 50%;
+    background-repeat: no-repeat;
+    background-size: contain;
+
+	height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}

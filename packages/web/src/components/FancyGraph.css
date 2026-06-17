@@ -1,0 +1,16 @@
+.fancy-graph {
+	display: block;
+	overflow: visible;
+}
+
+.fancy-graph__line {
+	fill: none;
+	stroke: hsl(var(--hsl-h1));
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.fancy-graph__circle {
+	fill: hsl(var(--hsl-h1));
+}

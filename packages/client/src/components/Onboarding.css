@@ -1,0 +1,158 @@
+.onboard {
+	position: fixed;
+	inset: 0;
+	z-index: 20000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(8, 6, 7, 0.7);
+	backdrop-filter: blur(4px);
+}
+
+.onboard__card {
+	width: 100%;
+	max-width: 420px;
+	margin: 20px;
+	padding: 28px;
+	background: #221b1f;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 16px;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+	color: #f3eef1;
+}
+
+.onboard__title {
+	margin: 0 0 6px;
+	font-size: 24px;
+}
+
+.onboard__sub {
+	margin: 0 0 22px;
+	color: #b3a6ad;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.onboard__avatar-field {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin-bottom: 20px;
+}
+.onboard__avatar {
+	position: relative;
+	width: 84px;
+	height: 84px;
+	flex: none;
+	padding: 0;
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	border-radius: 22px;
+	overflow: hidden;
+	background: rgba(0, 0, 0, 0.3);
+	cursor: pointer;
+}
+.onboard__avatar:disabled {
+	cursor: default;
+}
+.onboard__avatar-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+.onboard__avatar-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: 600;
+	color: #f3eef1;
+	background: rgba(0, 0, 0, 0.5);
+	opacity: 0;
+	transition: opacity 0.12s ease;
+}
+.onboard__avatar:hover:not(:disabled) .onboard__avatar-overlay,
+.onboard__avatar:disabled .onboard__avatar-overlay {
+	opacity: 1;
+}
+.onboard__avatar-hint {
+	font-size: 13px;
+	line-height: 1.5;
+	color: #b3a6ad;
+}
+
+.onboard__field {
+	display: block;
+	margin-bottom: 16px;
+}
+.onboard__label {
+	display: block;
+	margin-bottom: 6px;
+	font-size: 12px;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: #b3a6ad;
+}
+.onboard__input {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	border-radius: 9px;
+	background: rgba(0, 0, 0, 0.3);
+	color: #f3eef1;
+	font-size: 15px;
+}
+.onboard__input:focus {
+	outline: none;
+	border-color: #ff66aa;
+}
+
+.onboard__summary {
+	margin: 0 0 20px;
+	font-size: 13px;
+	color: #b3a6ad;
+}
+
+.onboard__error {
+	margin: 0 0 16px;
+	padding: 8px 12px;
+	border-radius: 8px;
+	background: rgba(255, 90, 114, 0.14);
+	color: #ff8aa6;
+	font-size: 13px;
+}
+
+.onboard__actions {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.onboard__btn {
+	padding: 11px 16px;
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.05);
+	color: #f3eef1;
+	font-weight: 600;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background 0.12s ease, opacity 0.12s ease;
+}
+.onboard__btn:hover:not(:disabled) {
+	background: rgba(255, 255, 255, 0.1);
+}
+.onboard__btn--primary {
+	background: #ff66aa;
+	border-color: #ff66aa;
+	color: #1a1013;
+}
+.onboard__btn--primary:hover:not(:disabled) {
+	background: #e0558f;
+}
+.onboard__btn:disabled {
+	opacity: 0.5;
+	cursor: default;
+}

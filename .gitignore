@@ -1,0 +1,51 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+CHANGELOG.md
+CLAUDE.md
+
+packages/shared/src/locales/*.ts
+
+# Env - secrets (.env) stay local; Vite mode files (.env.development /
+# .env.production) are committed public config.
+.env
+.env.*.local
+!.env.example
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# misc
+osu!design
+packages/client/osu!design
+packages/client/public/beatmaps
+packages/client/public/metadata
+packages/client/public/previews
+
+# tmp
+*.tsbuildinfo
+
+# Uploaded media (news cover images)
+/packages/server/uploads/
+
+# In memory stats backup
+/packages/server/src/stats.json
+/packages/server/src/stats.dev.json
+
+# Pending play state, snapshotted across restarts (per-env)
+/packages/server/play-state.json
+/packages/server/play-state.dev.json
+
+# ingest-beatmaps manifest of already-ingested `.osz` files (per-env)
+/packages/server/src/db/ingested-beatmaps.json
+/packages/server/src/db/ingested-beatmaps.dev.json

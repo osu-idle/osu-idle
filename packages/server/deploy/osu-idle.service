@@ -1,0 +1,30 @@
+[Unit]
+Description=osu! idle API server (Hono)
+After=network.target mariadb.service redis-server.service
+Wants=mariadb.service redis-server.service
+
+[Service]
+Type=simple
+User=adri
+WorkingDirectory=/main/osu/idle/packages/server
+
+Environment=NODE_ENV=production
+Environment="PATH=/home/adri/.nvm/versions/node/v22.13.0/bin:/usr/local/bin:/usr/bin:/bin"
+# Cluster mode (-i max) forks one worker per CPU sharing the listen port; all
+# play state lives in Redis so the workers stay consistent. pm2 cluster needs the
+# Node interpreter (not the `tsx` binary), so we run node with tsx as an ESM
+# loader via --node-args instead of --interpreter tsx.
+ExecStart=/home/adri/.nvm/versions/node/v22.13.0/bin/pm2-runtime start /main/osu/idle/packages/server/src/index.ts --name osu-idle -i max --interpreter node --node-args="--import tsx"
+# Resilience
+Restart=on-failure
+RestartSec=3
+# Give the app a moment to close the DB pool on stop
+TimeoutStopSec=15
+
+# Logs go to journald (view with: journalctl -u osu-idle -f)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=osu-idle
+
+[Install]
+WantedBy=multi-user.target

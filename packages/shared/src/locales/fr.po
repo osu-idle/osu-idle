@@ -1,0 +1,494 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-06-11 10:10+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: fr\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/display/ago.ts:39
+msgid "{d} days ago"
+msgstr "il y a {d} jours"
+
+#: src/display/ago.ts:21
+msgid "{d}d"
+msgstr "{d}j"
+
+#: src/display/ago.ts:37
+msgid "{h} hours ago"
+msgstr "il y a {h} heures"
+
+#: src/display/ago.ts:19
+msgid "{h}h"
+msgstr "{h}h"
+
+#: src/display/ago.ts:35
+msgid "{m} minutes ago"
+msgstr "il y a {m} minutes"
+
+#: src/display/ago.ts:17
+msgid "{m}mn"
+msgstr "{m}mn"
+
+#: src/display/ago.ts:41
+msgid "{mo} months ago"
+msgstr "il y a {mo} mois"
+
+#: src/display/ago.ts:33
+msgid "{s} seconds ago"
+msgstr "il y a {s} secondes"
+
+#: src/display/ago.ts:15
+msgid "{s}s"
+msgstr "{s}s"
+
+#: src/display/ago.ts:42
+msgid "{y} years ago"
+msgstr "il y a {y} ans"
+
+#: src/skills.ts:85
+msgid "←↓↑→"
+msgstr "←↓↑→"
+
+#: src/skills.ts:55
+msgid "1 hour pre-session warmup"
+msgstr "Échauffement d'1h avant la session"
+
+#: src/skills.ts:57
+msgid "2 hours gym session"
+msgstr "2h de salle"
+
+#: src/skills.ts:56
+msgid "30 minutes muscle strength warmup"
+msgstr "30 minutes d'échauffement musculaire"
+
+#: src/skills.ts:63
+msgid "60hz GMMK firmware"
+msgstr "Firmware GMMK 60 Hz"
+
+#: src/display/skills.ts:9
+msgid "Accuracy"
+msgstr "Précision"
+
+#: src/skills.ts:129
+msgid "AirPods"
+msgstr "AirPods"
+
+#: src/skills.ts:118
+msgid "Amazon basics Puresoft office chair"
+msgstr "Chaise de bureau Amazon Basics Puresoft"
+
+#: src/skills.ts:121
+msgid "AndaSeat Kaiser 3"
+msgstr "AndaSeat Kaiser 3"
+
+#: src/skills.ts:89
+msgid "Arrow skin LNs"
+msgstr "LN avec skin flèches"
+
+#: src/skills.ts:142
+msgid "Arrow skin notes"
+msgstr "Notes avec skin flèches"
+
+#: src/skills.ts:79
+msgid "AS:\""
+msgstr "QSM%"
+
+#: src/skills.ts:83
+msgid "AS45"
+msgstr "QS45"
+
+#: src/skills.ts:84
+msgid "AS56"
+msgstr "QS56"
+
+#: src/skills.ts:78
+msgid "ASL:"
+msgstr "QSLM"
+
+#: src/skills.ts:148
+msgid "Audio focused accuracy"
+msgstr "Précision basée sur l'audio"
+
+#: src/skills.ts:91
+msgid "Bar skin LNs"
+msgstr "LN skin barres"
+
+#: src/skills.ts:144
+msgid "Bar skin notes"
+msgstr "Notes skin barres"
+
+#: src/skills.ts:115
+msgid "Basic plastic chair"
+msgstr "Chaise en plastique"
+
+#: src/skills.ts:97
+msgid "Blank LN body with bar LN tail"
+msgstr "LN vide avec tail skin barre"
+
+#: src/skills.ts:137
+msgid "Bose QuietComfort Ultra"
+msgstr "Bose QuietComfort Ultra"
+
+#: src/skills.ts:98
+msgid "BottomCentered Anchored LN tails"
+msgstr "LN tail ancrées en bas"
+
+#: src/skills.ts:155
+msgid "Bruteforce learning"
+msgstr "Rejouer la map en boucle"
+
+#: src/skills.ts:150
+msgid "Cap"
+msgstr "Casquette"
+
+#: src/skills.ts:119
+msgid "CENTERHALV Ikea mesh office chair"
+msgstr "Chaise de bureau Ikea CENTERHALV"
+
+#: src/skills.ts:90
+msgid "Circle skin LNs"
+msgstr "LN skin cercles"
+
+#: src/skills.ts:143
+msgid "Circle skin notes"
+msgstr "Notes skin cercles"
+
+#: src/display/skills.ts:17
+msgid "Concentration"
+msgstr "Concentration"
+
+#: src/display/skills.ts:13
+msgid "Consistency"
+msgstr "Régularité"
+
+#: src/skills.ts:75
+msgid "Controller"
+msgstr "Manette"
+
+#: src/skills.ts:27
+msgid "Cooler Master MS110"
+msgstr "Cooler Master MS110"
+
+#: src/display/skills.ts:12
+msgid "Coordination"
+msgstr "Coordination"
+
+#: src/skills.ts:28
+msgid "Corsair K60"
+msgstr "Corsair K60"
+
+#: src/skills.ts:95
+msgid "Cut percy LNs"
+msgstr "LN percy coupées"
+
+#: src/skills.ts:96
+msgid "Cut percy with LN end indicator"
+msgstr "Percy coupées avec indicateur de fin de LN"
+
+#: src/skills.ts:88
+msgid "Default skin LNs"
+msgstr "LN skin par défaut"
+
+#: src/skills.ts:140
+msgid "Default skin notes"
+msgstr "Notes skin par défaut"
+
+#: src/skills.ts:23
+msgid "Dell XPS chiclet keyboard"
+msgstr "Clavier chiclet Dell XPS"
+
+#: src/skills.ts:76
+msgid "DFJK"
+msgstr "DFJK"
+
+#: src/skills.ts:141
+msgid "Diamond skin notes"
+msgstr "Notes avec skin diamants"
+
+#: src/skills.ts:124
+msgid "DOF Reality H6R"
+msgstr "DOF Reality H6R"
+
+#: src/skills.ts:163
+msgid "Dualscreen"
+msgstr "Double écran"
+
+#: src/skills.ts:29
+msgid "Ducky One 2 Mini"
+msgstr "Ducky One 2 Mini"
+
+#: src/skills.ts:122
+msgid "DXRacer Drifting"
+msgstr "DXRacer Drifting"
+
+#: src/skills.ts:149
+msgid "Dynamic sight focus"
+msgstr "Focalisation dynamique du regard"
+
+#: src/skills.ts:69
+msgid "Embedded keyboard firmware"
+msgstr "Firmware de clavier embarqué"
+
+#: src/skills.ts:93
+msgid "Fade-out tail LNs"
+msgstr "LN tail en fondu"
+
+#: src/skills.ts:30
+msgid "Glorious GMMK Pro"
+msgstr "Glorious GMMK Pro"
+
+#: src/skills.ts:58
+msgid "Gym, stretch session + meditation"
+msgstr "Musculation, étirements + méditation"
+
+#: src/skills.ts:120
+msgid "Hbada E3 Pro"
+msgstr "Hbada E3 Pro"
+
+#: src/skills.ts:32
+msgid "IRON165"
+msgstr "IRON165"
+
+#: src/display/skills.ts:14
+msgid "Jack Speed"
+msgstr "Jackspeed"
+
+#: src/skills.ts:65
+msgid "Latest stock Windows drivers"
+msgstr "Derniers pilotes Windows"
+
+#: src/skills.ts:24
+msgid "Lenovo IdeaPad ultrabook chiclet keyboard"
+msgstr "Clavier chiclet ultrabook Lenovo IdeaPad"
+
+#: src/skills.ts:94
+msgid "Light percy LNs"
+msgstr "LN percy légères"
+
+#: src/skills.ts:131
+msgid "Logitech H390"
+msgstr "Logitech H390"
+
+#: src/skills.ts:26
+msgid "Logitech K120"
+msgstr "Logitech K120"
+
+#: src/skills.ts:68
+msgid "Low latency Corsair iCUE"
+msgstr "Corsair iCUE à faible latence"
+
+#: src/skills.ts:156
+msgid "Map editor studying"
+msgstr "Étudier la map dans l'éditeur"
+
+#: src/skills.ts:161
+msgid "Memorizing the whole map"
+msgstr "Mémorisation de la map entière"
+
+#: src/display/skills.ts:16
+msgid "Memory"
+msgstr "Mémoire"
+
+#: src/skills.ts:162
+msgid "Mental SV palace"
+msgstr "Palais mental des SV"
+
+#: src/skills.ts:116
+msgid "Metal folding chair"
+msgstr "Chaise pliante en métal"
+
+#: src/skills.ts:59
+msgid "Mid-play stretching + meditation"
+msgstr "Étirements + méditation en cours de jeu"
+
+#: src/skills.ts:72
+msgid "Modded actuation prediction firmware"
+msgstr "Firmware moddé à prédiction d'actionnement"
+
+#: src/skills.ts:71
+msgid "Modded rapid trigger firmware"
+msgstr "Firmware moddé rapid trigger"
+
+#: src/skills.ts:146
+msgid "Music anticipation"
+msgstr "Anticipation de la musique"
+
+#: src/skills.ts:92
+msgid "No tail LNs"
+msgstr "LN sans tail"
+
+#: src/skills.ts:49
+msgid "No warmup"
+msgstr "Aucun échauffement"
+
+#: src/skills.ts:33
+msgid "Norbaforce Mark IV"
+msgstr "Norbaforce Mark IV"
+
+#: src/skills.ts:147
+msgid "Note snap coloring"
+msgstr "Couleur des notes selon le snap"
+
+#: src/skills.ts:67
+msgid "Optimized MasterPlus+"
+msgstr "MasterPlus+ optimisé"
+
+#: src/skills.ts:64
+msgid "Outdated stock Windows drivers"
+msgstr "Pilotes Windows obsolètes"
+
+#: src/skills.ts:154
+msgid "Passive learning"
+msgstr "Apprentissage passif"
+
+#: src/skills.ts:145
+msgid "Per-map scroll speed setting"
+msgstr "Réglage de la scroll speed par map"
+
+#: src/skills.ts:158
+msgid "Post-it notes"
+msgstr "Post-its"
+
+#: src/skills.ts:159
+msgid "Post-it pattern drawings"
+msgstr "Dessins de patterns sur Post-its"
+
+#: src/skills.ts:82
+msgid "QW{}"
+msgstr "AZ^$"
+
+#: src/skills.ts:80
+msgid "QWOP"
+msgstr "AZOP"
+
+#: src/skills.ts:81
+msgid "QWP{"
+msgstr "AZP^"
+
+#: src/skills.ts:132
+msgid "Razer BlackShark V3"
+msgstr "Razer BlackShark V3"
+
+#: src/skills.ts:160
+msgid "Re-mapping to get mapper's advantage"
+msgstr "Re-mapper pour avoir le mapper's advantage"
+
+#: src/display/skills.ts:15
+msgid "Reading"
+msgstr "Lecture"
+
+#: src/display/skills.ts:18
+msgid "Release"
+msgstr "Release"
+
+#: src/skills.ts:77
+msgid "SDKL"
+msgstr "SDKL"
+
+#: src/skills.ts:123
+msgid "Secretlab TITAN Evo"
+msgstr "Secretlab TITAN Evo"
+
+#: src/skills.ts:136
+msgid "Sennheiser Momentum 4"
+msgstr "Sennheiser Momentum 4"
+
+#: src/skills.ts:127
+msgid "Sizzling speakers"
+msgstr "Haut-parleurs grésillants"
+
+#: src/skills.ts:135
+msgid "Sony WH-1000XM4"
+msgstr "Sony WH-1000XM4"
+
+#: src/display/skills.ts:10
+msgid "Speed"
+msgstr "Vitesse"
+
+#: src/display/skills.ts:19
+msgid "Speed Jam"
+msgstr "Speed jam"
+
+#: src/skills.ts:157
+msgid "Split map sections training"
+msgstr "Entraînement par sections de map"
+
+#: src/display/skills.ts:11
+msgid "Stamina"
+msgstr "Endurance"
+
+#: src/skills.ts:31
+msgid "Steelseries Apex Pro"
+msgstr "Steelseries Apex Pro"
+
+#: src/skills.ts:134
+msgid "Steelseries Arctis Nova 5"
+msgstr "Steelseries Arctis Nova 5"
+
+#: src/skills.ts:70
+msgid "Steelseries GG embedded profile"
+msgstr "Profil embarqué Steelseries GG"
+
+#: src/skills.ts:66
+msgid "Stock Logitech G Hub"
+msgstr "Logitech G Hub d'origine"
+
+#: src/skills.ts:114
+msgid "Stool"
+msgstr "Tabouret"
+
+#: src/skills.ts:62
+msgid "Synaptics drivers"
+msgstr "Pilotes Synaptics"
+
+#: src/skills.ts:50
+msgid "Thinks about warmup"
+msgstr "S'échauffer mentalement"
+
+#: src/skills.ts:25
+msgid "Unbranded membrane keyboard"
+msgstr "Clavier à membrane premier prix"
+
+#: src/skills.ts:128
+msgid "Used earbuds"
+msgstr "Écouteurs d'occasion"
+
+#: src/skills.ts:153
+msgid "Vibe playing"
+msgstr "Jeu à l'instinct"
+
+#: src/skills.ts:133
+msgid "Voyager Focus 2"
+msgstr "Voyager Focus 2"
+
+#: src/skills.ts:51
+msgid "Warmup on easy maps"
+msgstr "Échauffement sur des maps faciles"
+
+#: src/skills.ts:53
+msgid "Warmup on hard maps"
+msgstr "Échauffement sur des maps difficiles"
+
+#: src/skills.ts:52
+msgid "Warmup on normal maps"
+msgstr "Échauffement sur des maps normales"
+
+#: src/skills.ts:54
+msgid "Warmup on stamina packs"
+msgstr "Échauffement sur des packs d'endurance"
+
+#: src/skills.ts:117
+msgid "Wooden chair"
+msgstr "Chaise en bois"
+
+#: src/skills.ts:130
+msgid "Yealink Phone Headset"
+msgstr "Casque de télécommunication Yealink"

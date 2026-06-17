@@ -1,0 +1,1 @@
+ALTER TABLE `beatmap` ADD `set_id` int NOT NULL;

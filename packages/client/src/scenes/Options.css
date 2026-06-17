@@ -1,0 +1,198 @@
+/* osu!-style options panel: a narrow sidebar of category tabs plus a scrolling
+   panel of grouped settings, sliding in from the left over a faint backdrop. */
+.options__container {
+	position: absolute;
+	inset: 0;
+	z-index: 10000;
+	display: flex;
+	align-items: stretch;
+
+	background: #00000055;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+}
+
+.options__container.open {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+/* ---- left sidebar: category tabs ---- */
+.options__quick_access {
+	flex: 0 0 90px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding-top: 64px;
+	background: #080808;
+	overflow-y: auto;
+
+	transform: translateX(-100%);
+	transition: transform 0.25s ease;
+}
+.options__container.open .options__quick_access {
+	transform: translateX(0);
+}
+
+.options__tab {
+	padding: 12px 4px;
+	color: rgba(255, 255, 255, 0.671);
+	font-size: 10px;
+	font-weight: 100;
+	letter-spacing: 0.04em;
+	text-align: center;
+	line-height: 3;
+	border-right: 6px solid transparent;
+	transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+.options__tab:hover {
+	color: white;
+	color: var(--text);
+}
+.options__tab.is-active {
+	color: white;
+	border-right-color: var(--osu-pink-light);
+}
+.options__tab.is-empty {
+	opacity: 0.3;
+	cursor: default;
+}
+
+/* ---- main panel ---- */
+.options__panel {
+	flex: 0 0 min(72vw, 480px);
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	font-weight: 100;
+	background: #000000d5;
+
+	transform: translateX(-100%);
+	transition: transform 0.25s ease;
+}
+.options__container.open .options__panel {
+	transform: translateX(0);
+}
+
+.options__heading {
+	margin-top: 40px;
+	padding: 22px 24px 0px;
+	color: white;
+	font-size: 30px;
+	text-align: center;
+	letter-spacing: 0.02em;
+}
+
+.options__subheading {
+	padding: 0px 24px 6px;
+	color: var(--osu-pink);
+	font-size: 20px;
+	text-align: center;
+	letter-spacing: 0.02em;
+}
+
+/* ---- search ---- */
+.options__search {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 6px 18px 12px;
+	padding: 18px 12px;
+	border-radius: 8px;
+	background: #00000066;
+	border: 1px solid #ffffff14;
+}
+.options__search_icon {
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	color: var(--text-dim);
+}
+.options__search_input {
+	width: 100%;
+	color: var(--text);
+	background: none;
+	border: none;
+	outline: none;
+	font: inherit;
+	font-size: 16px;
+}
+.options__search_input::placeholder {
+	color: var(--text-dim);
+}
+
+/* ---- scrolling content ---- */
+.options__scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	/* generous bottom padding so the last (short) category can still scroll to
+	   the top, keeping the sidebar highlight honest */
+	padding: 4px 14px 60vh;
+	/* hidden scrollbar - still scrollable */
+	scrollbar-width: none;
+}
+.options__scroll::-webkit-scrollbar {
+	display: none;
+}
+
+.options__category {
+	display: flex;
+	flex-direction: column;
+}
+
+.options__category_title {
+	margin: 18px 6px 6px;
+	color: rgb(138, 241, 255);
+	font-size: 40px;
+	letter-spacing: 0.03em;
+	padding-bottom: 6px;
+	text-align: right;
+}
+
+.options__group {
+	margin: 20px 0;
+	border-left: 3px solid rgb(58, 58, 58);
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+.options__group_title {
+	margin: 8px 10px 4px;
+	color: white;
+	font-size: 20px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.options__empty {
+	padding: 40px 16px;
+	color: var(--text-dim);
+	text-align: center;
+}
+
+/* ---- shared row layout for label + control (dropdown, sign-in) ---- */
+.opt-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 7px 10px;
+}
+.opt-row__label {
+	color: var(--text);
+	font-size: 16px;
+}
+
+.opt-signin {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 7px 10px;
+}
+.opt-signin__who {
+	color: var(--text);
+	font-size: 16px;
+}

@@ -1,0 +1,111 @@
+.vol {
+	position: fixed;
+	right: 32px;
+	bottom: 32px;
+	z-index: 900;
+	pointer-events: none; /* never steal clicks while hidden */
+	opacity: 0;
+	transform: translateY(14px);
+	transition: opacity 0.22s ease, transform 0.22s ease;
+	overflow: visible;
+	filter: drop-shadow(0rem 0rem 1rem black);
+}
+
+.vol.is-visible {
+	opacity: 1;
+	transform: none;
+}
+
+/* only interactable (hover-to-select) while shown */
+.vol.is-visible .vol__meter {
+	pointer-events: auto;
+}
+
+.vol__row {
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	padding: 18px 22px;
+	border-radius: 18px;
+	filter: drop-shadow(0rem 0rem 1rem black);
+}
+
+.vol__meter {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	transition: transform 0.16s ease;
+}
+
+.vol__pos2 {
+	right: 80px;
+	bottom: 150px;
+}
+
+
+.vol__pos3 {
+	right: 160px;
+	bottom: 50px;
+}
+
+.vol__meter.is-active {
+	transform: scale(1.06);
+}
+
+.vol__ring {
+	display: block;
+	transition: filter 0.16s ease;
+	filter: drop-shadow(0 0 8px rgba(34, 183, 228, 0.363));
+	overflow: visible;
+}
+
+.vol__track {
+	stroke: rgba(54, 72, 78, 1);
+}
+
+.vol__fill {
+	stroke: white;
+	transition: stroke 0.16s ease;
+	filter: drop-shadow(0 0 8px rgb(34, 183, 228));
+}
+
+.vol__meter.is-active .vol__fill {
+	stroke: white;
+}
+
+.vol__center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	pointer-events: none;
+	font-family: 'Exo 2', sans-serif;
+	color: #fff;
+}
+
+.vol__pct {
+	font-size: 20px;
+	line-height: 1;
+}
+
+.vol__meter.is-large .vol__pct {
+	font-size: 26px;
+}
+
+.vol__label {
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: white;
+}
+
+.vol__meter.is-active .vol__label {
+	color: #ffffff;
+}

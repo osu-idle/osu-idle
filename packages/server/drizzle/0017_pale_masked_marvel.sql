@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `custom_avatar_url` varchar(512);

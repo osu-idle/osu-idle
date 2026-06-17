@@ -1,0 +1,1 @@
+ALTER TABLE `score` DROP COLUMN `set_id`;

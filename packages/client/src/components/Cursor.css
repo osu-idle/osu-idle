@@ -1,0 +1,79 @@
+/* hide the system cursor everywhere while the custom one is active */
+html.custom-cursor,
+html.custom-cursor * {
+	cursor: none !important;
+}
+
+/* while the in-game browser is open, hide the osu! cursor entirely - the chrome
+   uses the system cursor and the iframe content uses its own */
+html.web-open .cursor,
+html.web-open .cursor-trail {
+	display: none;
+}
+
+.cursor {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 100000;
+	pointer-events: none;
+	opacity: 0;
+	will-change: transform;
+}
+
+.cursor__inner {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: grid;
+	place-items: center;
+	transform: translate(-50%, -50%);
+}
+
+.cursor__outer-wrap,
+.cursor__middle {
+	grid-area: 1 / 1;
+	user-select: none;
+	-webkit-user-drag: none;
+}
+
+/* the main part: continuously rotating, and the only part that grows on click */
+.cursor__outer-wrap {
+	display: grid;
+	place-items: center;
+	transform: scale(1.1);
+	transition: transform 0.09s ease-out;
+}
+.cursor.is-down .cursor__outer-wrap {
+	transform: scale(1.4);
+}
+.cursor__outer {
+	width: 52px;
+	height: 52px;
+	animation: cursor-spin 9s linear infinite;
+}
+@keyframes cursor-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* the middle stays fixed - no rotation, no click scaling */
+.cursor__middle {
+	width: 36px;
+	height: 36px;
+	transform: scale(0.7);
+}
+
+.cursor-trail {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 99999;
+	width: 26px;
+	height: 26px;
+	pointer-events: none;
+	will-change: transform;
+	user-select: none;
+	-webkit-user-drag: none;
+}

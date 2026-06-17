@@ -1,0 +1,154 @@
+.list__beatmap-container {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.list__beatmap {
+	flex: none;
+    margin: 5px;
+	height: 90px;
+	width: calc(50% - 10px);
+	font-weight: 600;
+
+	position: relative;
+}
+
+.list__beatmap_background {
+	position: absolute;
+	left: 0;
+	top: 0;
+	border-radius: 10px 0 0 10px;
+	width: 100px;
+	height: 90px;
+	background-color: #000;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: cover;
+	z-index: -1;
+}
+
+.list__beatmap_right {
+	position: absolute;
+	right: 0;
+	top: 0;
+	border-radius: 0 10px 10px 0;
+	width: 100px;
+	height: 100%;
+	background-color: hsl(var(--hsl-b3));
+	z-index: -1;
+}
+
+.list__beatmap_safe,
+.list__beatmap_foreground,
+.list__beatmap_contents {
+	height: 100%;
+	width: 100%;
+	border-radius: 10px;
+}
+
+.list__beatmap_safe {
+	margin-left: auto;
+	margin-right: 10px;
+	width: calc(100% - 90px);
+	background-color: hsl(var(--hsl-b2));
+}
+
+.list__beatmap_foreground {
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: cover;
+}
+
+.list__beatmap_contents {
+	padding: 5px 10px;
+	background: linear-gradient(90deg, hsl(var(--hsl-b2)) 20%, color-mix(in srgb, hsl(var(--hsl-b2)), transparent 20%));
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.list__beatmap_title {
+	font-size: 18px;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 1;
+	line-clamp: 1;
+}
+
+.list__beatmap_artist {
+	font-size: 14px;
+}
+
+.list__beatmap_creator {
+	font-size: 12px;
+}
+
+.list__beatmap_bottom {
+	margin-top: auto;
+	display: flex;
+	align-items: flex-end;
+}
+
+.list__beatmap_capsule {
+	height: fit-content;
+    border-radius: 10000px;
+    font-size: 12px;
+    padding: 6px 15px;
+    text-transform: uppercase;
+    transition: all .12s ease-in-out;
+
+    background-color: hsl(var(--hsl-lime-1));
+    color: hsl(var(--hsl-b3));
+    font-weight: 800;
+    line-height: 14px;
+    padding: 0 5px;
+}
+
+.list__beatmap_ago {
+	margin-left: 5px;
+    font-size: 12px;
+}
+
+.list__beatmap_sort {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 10px 20px;
+	background-color: hsl(var(--hsl-b4));
+}
+
+.list__beatmap_sort > * {
+	background: none;
+    border: none;
+    border-radius: 4px;
+    margin: 5px;
+    outline: none;
+    padding: 5px 10px;
+	font-size: 12px;
+}
+
+.list__beatmap_sort span {
+	padding: 0;
+}
+
+.list__beatmap_sort a {
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.list__beatmap_sort a.current {
+	color: hsl(var(--hsl-c1));
+    font-weight: 600;
+}
+
+.list__beatmap_sort a.current,
+.list__beatmap_sort a:hover {
+	background-color: hsl(var(--hsl-b3));
+}
+
+.list__beatmap_plays {
+	color: hsl(var(--hsl-c2));
+    font-size: 10px;
+    margin-right: 4px;
+}

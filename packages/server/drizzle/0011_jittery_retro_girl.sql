@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `country` varchar(2) DEFAULT 'FR' NOT NULL;

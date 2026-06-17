@@ -1,0 +1,50 @@
+/* osu!-style settings slider: label + live value above a pink-filled track.
+   The fill width is driven by the inline --fill custom property. */
+.opt-slider {
+	display: block;
+	width: 100%;
+	padding: 7px 10px;
+}
+.opt-slider__head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 7px;
+	color: var(--text);
+	font-size: 16px;
+	font-weight: 300;
+}
+.opt-slider__value {
+	color: var(--osu-pink-light);
+	font-size: 14px;
+	font-variant-numeric: tabular-nums;
+}
+.opt-slider__input {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 3px;
+	border-radius: 999px;
+	background: linear-gradient(to right,
+		var(--osu-pink-dark) var(--fill, 0%),
+		color-mix(in srgb, var(--osu-pink-dark) 25%, transparent) var(--fill, 0%));
+	cursor: pointer;
+	outline: none;
+}
+.opt-slider__input::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: var(--osu-pink-dark);
+	border: 2px solid var(--osu-pink);
+	box-shadow: 0 1px 4px #0008;
+}
+.opt-slider__input::-moz-range-thumb {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: var(--osu-pink-dark);
+	border: 2px solid var(--osu-pink);
+}

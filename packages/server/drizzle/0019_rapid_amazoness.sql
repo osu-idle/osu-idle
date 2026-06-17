@@ -1,0 +1,1 @@
+CREATE INDEX `character_playedat_idx` ON `score` (`character_id`,`played_at`);

@@ -1,0 +1,1 @@
+ALTER TABLE `beatmap` ADD `chart` longtext NOT NULL;

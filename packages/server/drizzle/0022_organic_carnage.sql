@@ -1,0 +1,1 @@
+ALTER TABLE `beatmap` ADD `plays` int DEFAULT 0 NOT NULL;

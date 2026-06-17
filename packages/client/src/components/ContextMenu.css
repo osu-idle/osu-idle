@@ -1,0 +1,88 @@
+.ctxmenu {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+  animation: ctxmenu-in 0.16s ease both;
+  padding: 20px;
+  pointer-events: none;
+}
+@keyframes ctxmenu-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ctxmenu__header {
+  text-align: left;
+  font-size: 40px;
+  font-weight: 100;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.ctxmenu__title,
+.ctxmenu__sub {
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 1;
+	line-clamp: 1;
+}
+
+.ctxmenu__options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+}
+.ctxmenu__option {
+  width: max(60vw, 500px);
+  padding: 10px 0;
+  border: none;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 2px 5px 10px 0px rgba(0, 0, 0, 0.3);
+  background: var(--accent);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  pointer-events: auto;
+}
+.ctxmenu__option:hover {
+	filter: brightness(1.1);
+}
+
+@media (max-width: 900px) {
+	.ctxmenu__title,
+	.ctxmenu__sub {
+		font-size: 30px;
+	}
+}
+
+@media (max-width: 600px) {
+	.ctxmenu__title,
+	.ctxmenu__sub {
+		font-size: 20px;
+	}
+}
+
+@media (max-width: 550px) {
+	.ctxmenu__option {
+  		width: 90vw;
+		font-size: 30px;
+	}
+}
+
+@media (max-width: 450px) {
+	.ctxmenu__option {
+		font-size: 20px;
+	}
+}

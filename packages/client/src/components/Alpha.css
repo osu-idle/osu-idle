@@ -1,0 +1,55 @@
+.alpha__warning {
+	position: absolute;
+	z-index: 9999;
+	height: 3.5rem;
+	width: 100vw;
+	background: linear-gradient(180deg, rgba(255, 0, 0, 0.753), transparent);
+	pointer-events: none;
+	animation: fadeIn 400ms ease-out forwards;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.alpha__text {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	padding: 10px 10px 20px;
+}
+
+.alpha__border {
+	width: 100%;
+	height: 4px;
+
+	background: repeating-linear-gradient(
+		-30deg,
+		#ffde24 0 12px,
+		#000000 12px 24px
+	);
+}
+
+.alpha__warning a {
+	pointer-events: auto;
+	color: red;
+}
+
+
+@media (max-width: 850px) {
+	.alpha__warning {
+		filter: drop-shadow(0rem 0rem .1rem black);
+	}
+	.alpha__warning a {
+		filter: drop-shadow(0rem 0rem .1rem black);
+	}
+}

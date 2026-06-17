@@ -1,0 +1,79 @@
+/* The wrapper also carries the caller's avatar class (e.g. character__avatar),
+   which supplies its size, radius, and position; we only add interactivity. */
+.editable-avatar {
+	position: relative;
+	cursor: pointer;
+}
+
+.editable-avatar__btn {
+	position: absolute;
+	inset: 0;
+	padding: 0;
+	border: none;
+	background: none;
+	border-radius: inherit;
+	overflow: hidden;
+	cursor: pointer;
+}
+.editable-avatar__btn:disabled {
+	cursor: default;
+}
+
+.editable-avatar__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	border-radius: inherit;
+}
+
+.editable-avatar__overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	font-weight: 600;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.5);
+	border-radius: inherit;
+	opacity: 0;
+	transition: opacity 0.12s ease;
+}
+.editable-avatar__btn:hover .editable-avatar__overlay,
+.editable-avatar__btn:disabled .editable-avatar__overlay {
+	opacity: 1;
+}
+
+/* Secondary actions sit below the avatar and surface on hover so they don't
+   disturb the surrounding layout. */
+.editable-avatar__reset,
+.editable-avatar__error {
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	margin-bottom: 6px;
+	white-space: nowrap;
+	font-size: 11px;
+}
+.editable-avatar__reset {
+	padding: 0;
+	border: none;
+	background: none;
+	color: hsl(var(--hsl-l1, 330 80% 65%));
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.12s ease;
+}
+.editable-avatar:hover .editable-avatar__reset {
+	opacity: 0.85;
+}
+.editable-avatar__reset:hover {
+	opacity: 1;
+	text-decoration: underline;
+}
+.editable-avatar__error {
+	color: #ff8aa6;
+}

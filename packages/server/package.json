@@ -1,0 +1,60 @@
+{
+  "name": "@osu-idle/server",
+  "version": "0.9.0.16",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/app.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "start:prod": "NODE_ENV=production tsx src/index.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json",
+    "build:types": "tsc -p tsconfig.build.json",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "migrate:prod": "NODE_ENV=production drizzle-kit migrate",
+    "push": "drizzle-kit push",
+    "push:prod": "NODE_ENV=production drizzle-kit push",
+    "studio": "drizzle-kit studio",
+    "studio:prod": "NODE_ENV=production drizzle-kit studio",
+    "seed": "tsx src/db/seed.ts",
+    "seed:prod": "NODE_ENV=production tsx src/db/seed.ts",
+    "script": "tsx src/db/set_map_plays.ts",
+    "script:prod": "NODE_ENV=production tsx src/db/set_map_plays.ts",
+    "process": "tsx src/db/ingest-beatmaps.ts",
+    "process:prod": "NODE_ENV=production tsx src/db/ingest-beatmaps.ts",
+    "extract": "lingui extract"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@hono/zod-validator": "^0.4.3",
+    "@lingui/core": "^5.9.5",
+    "@osu-idle/shared": "*",
+    "adm-zip": "^0.5.16",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.3",
+    "drizzle-zod": "^0.6.1",
+    "hono": "^4.6.14",
+    "ioredis": "^5.11.1",
+    "mysql2": "^3.12.0",
+    "osu-classes": "^3.1.0",
+    "osu-mania-stable": "^5.0.1",
+    "osu-parsers": "^4.1.7",
+    "rosu-pp-js": "^4.0.1",
+    "tsx": "^4.19.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@lingui/babel-plugin-lingui-macro": "^5.9.5",
+    "@lingui/cli": "^5.9.5",
+    "@types/adm-zip": "^0.5.7",
+    "@types/node": "^22.10.2",
+    "drizzle-kit": "^0.30.1",
+    "typescript": "^5.6.3"
+  }
+}

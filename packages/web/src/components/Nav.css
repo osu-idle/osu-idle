@@ -1,0 +1,41 @@
+.nav__container {
+	background-color: hsl(var(--hsl-d4));
+}
+
+.nav__list {
+	position: relative;
+	display: flex;
+	gap: 20px;
+	height: 100%;
+	align-items: stretch;
+}
+
+.nav__list::before {
+	background-color: hsl(var(--hsl-h1));
+    bottom: 0;
+    content: "";
+    height: 1px;
+    position: absolute;
+    width: 100%;
+}
+
+.nav__item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+}
+
+.nav__item:hover::before,
+.nav__item.current::before {
+	background-color: hsl(var(--hsl-h1));
+	border-radius: 10000px;
+	bottom: -2px;
+	content: "";
+	display: block;
+	height: 5px;
+	position: absolute;
+	transition: inherit;
+	width: 100%;
+	z-index: 1;
+}
