@@ -370,36 +370,15 @@ export default class CharacterBot extends Bot {
 	private resolveOffset(entries: [NoteStrain, number, number][], i: 1 | 2): { offset: number, strain: NoteStrain, xpStrain: NoteStrain | null } {
 		const acc = entries.find(r => r[0].skill === 'accuracy')!;
 
-		let offset = 0;
-		let pureness = 1;
-		let worst = acc;
-		let maxUnpure = acc[0];
-		let lateFloor = 0;
-		let floorStrain: NoteStrain | undefined;
-		for (const r of entries) {
-			const strain = r[0];
-			// a coordination error fumbled this hold: it is released at the erroring
-			// press's moment, overriding whatever tail offset the skills computed
-			if (i === 2 && strain.forcedRelease?.at !== undefined) {
-				return { offset: strain.forcedRelease.at - strain.note.getEndTime(), strain, xpStrain: strain };
-			}
-			pureness -= strain.unpure ?? 0;
-			if ((strain.unpure ?? 0) > (maxUnpure.unpure ?? 0)) {
-				maxUnpure = strain;
-			}
-			if ((strain.lateFloor ?? 0) > lateFloor) {
-				lateFloor = strain.lateFloor!;
-				floorStrain = strain;
-			}
-			if (strain.miss) return { offset: r[i], strain, xpStrain: r[0] };
-			if (Math.abs(r[i]) > Math.abs(worst[i])) {
-				worst = r;
-			}
-		}
+		// one pass over the per-skill entries; a forced outcome (fumbled hold / miss)
+		// short-circuits to its final result, otherwise we fold the accumulators below
+		const scan = this.scanEntries(entries, i, acc);
+		if (scan.done) return scan.result;
+		const { pureness, maxUnpure, lateFloor, floorStrain } = scan;
 
-		let xpStrain: NoteStrain | null = worst[0];
-		worst = i === 1 && Math.random() > 0.5 ? acc: worst;
-		offset = worst[i];
+		let xpStrain: NoteStrain | null = scan.worst[0];
+		const worst = i === 1 && Math.random() > 0.5 ? acc : scan.worst;
+		let offset = worst[i];
 
 		if (i === 1 && pureness < 1 && worst === acc) {
 			acc[0].strain += 2 * (1 - Math.max(0, pureness));
@@ -423,6 +402,45 @@ export default class CharacterBot extends Bot {
 		}
 
 		return { offset, strain: worst[0], xpStrain };
+	}
+
+	/**
+	 * Single pass over the per-skill entries for {@link resolveOffset}. Returns a
+	 * finished result the moment a skill forces the outcome - a fumbled-hold release
+	 * (only on the release slot, `i === 2`) or a strain-miss that drops the note -
+	 * otherwise the folded accumulators: the worst-vs-accuracy offset pick, the
+	 * remaining purity budget, the most-impure skill, and the latest physical floor.
+	 */
+	private scanEntries(
+		entries: [NoteStrain, number, number][], i: 1 | 2, acc: [NoteStrain, number, number],
+	): { done: true, result: { offset: number, strain: NoteStrain, xpStrain: NoteStrain | null } }
+		| { done: false, worst: [NoteStrain, number, number], pureness: number, maxUnpure: NoteStrain, lateFloor: number, floorStrain?: NoteStrain } {
+		let pureness = 1;
+		let worst = acc;
+		let maxUnpure = acc[0];
+		let lateFloor = 0;
+		let floorStrain: NoteStrain | undefined;
+		for (const r of entries) {
+			const strain = r[0];
+			// a coordination error fumbled this hold: it is released at the erroring
+			// press's moment, overriding whatever tail offset the skills computed
+			if (i === 2 && strain.forcedRelease?.at !== undefined) {
+				return { done: true, result: { offset: strain.forcedRelease.at - strain.note.getEndTime(), strain, xpStrain: strain } };
+			}
+			pureness -= strain.unpure ?? 0;
+			if ((strain.unpure ?? 0) > (maxUnpure.unpure ?? 0)) {
+				maxUnpure = strain;
+			}
+			if ((strain.lateFloor ?? 0) > lateFloor) {
+				lateFloor = strain.lateFloor!;
+				floorStrain = strain;
+			}
+			if (strain.miss) return { done: true, result: { offset: r[i], strain, xpStrain: r[0] } };
+			if (Math.abs(r[i]) > Math.abs(worst[i])) {
+				worst = r;
+			}
+		}
+		return { done: false, worst, pureness, maxUnpure, lateFloor, floorStrain };
 	}
 
 	/**

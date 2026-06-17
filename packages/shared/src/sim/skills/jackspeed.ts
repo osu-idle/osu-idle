@@ -95,48 +95,7 @@ export default class JackSpeed extends Skill {
 			currentStrain.lateFloor = action.entry.lateFloor;
 			currentStrain.type = action.entry.type;
 		} else {
-			const previous = action?.entry;
-			currentStrain.unpure = (previous?.unpure ?? 0) / 2;
-
-			const gap = action ? note.time - action.anchor.time : Infinity;
-			const speed = 1000 / gap;
-
-			// late debt carried over: the hand can't re-press within maxInterval,
-			// and lateness it already had pushes that further - slack in the gap
-			// drains it back down
-			let debt = Math.max(0, (previous?.lateFloor ?? 0) + maxInterval - gap);
-
-			if (speed <= this.comfort) {
-				// fresh: nothing to do, unpure decays
-			} else if (speed <= this.nps) {
-				// hittable cleanly, but accuracy gets dirtied
-				const t = (speed - this.comfort) / (this.nps - this.comfort);
-				currentStrain.unpure += lerp(0, 0.01, t);
-			} else if (speed <= this.max) {
-				// drifting: each press lands a bit late unless the player recovers
-				const t = (speed - this.nps) / (this.max - this.nps);
-				currentStrain.strain = lerp(0.1, 0.4, t);
-				if (Math.random() >= RECOVERY_CHANCE) {
-					currentStrain.unpure += lerp(0.01, 0.05, t);
-					debt += t * DRIFT_FACTOR * maxInterval;
-				}
-			} else {
-				// over the physical cap: the press is late by the full deficit
-				// (already in `debt`) and it compounds press over press
-				currentStrain.unpure += 0.075;
-				currentStrain.strain = Math.min(1, debt / maxInterval);
-				
-				if (Math.random() <= MAX_RECOVERY_CHANCE) {
-					debt = 0;
-				}
-			}
-
-			if (debt > 0) {
-				currentStrain.lateFloor = debt;
-				currentStrain.bias = debt;
-				currentStrain.type = 'both';
-			}
-
+			this.jack(currentStrain, action, note, maxInterval);
 			fingers[finger] = { entry: currentStrain, anchor: note };
 		}
 
@@ -144,5 +103,51 @@ export default class JackSpeed extends Skill {
 		mapStrain.jackspeed.push(currentStrain);
 
 		return currentStrain;
+	}
+
+	/** Strain this press as a jack on its finger: dirty accuracy in the comfort..nps
+	 *  band, drift late in nps..max, and carry compounding late debt past max. */
+	private jack(currentStrain: SkillStrain, action: HandAction | undefined, note: RuntimeNote, maxInterval: number) {
+		const previous = action?.entry;
+		currentStrain.unpure = (previous?.unpure ?? 0) / 2;
+
+		const gap = action ? note.time - action.anchor.time : Infinity;
+		const speed = 1000 / gap;
+
+		// late debt carried over: the hand can't re-press within maxInterval,
+		// and lateness it already had pushes that further - slack in the gap
+		// drains it back down
+		let debt = Math.max(0, (previous?.lateFloor ?? 0) + maxInterval - gap);
+
+		if (speed <= this.comfort) {
+			// fresh: nothing to do, unpure decays
+		} else if (speed <= this.nps) {
+			// hittable cleanly, but accuracy gets dirtied
+			const t = (speed - this.comfort) / (this.nps - this.comfort);
+			currentStrain.unpure += lerp(0, 0.01, t);
+		} else if (speed <= this.max) {
+			// drifting: each press lands a bit late unless the player recovers
+			const t = (speed - this.nps) / (this.max - this.nps);
+			currentStrain.strain = lerp(0.1, 0.4, t);
+			if (Math.random() >= RECOVERY_CHANCE) {
+				currentStrain.unpure += lerp(0.01, 0.05, t);
+				debt += t * DRIFT_FACTOR * maxInterval;
+			}
+		} else {
+			// over the physical cap: the press is late by the full deficit
+			// (already in `debt`) and it compounds press over press
+			currentStrain.unpure += 0.075;
+			currentStrain.strain = Math.min(1, debt / maxInterval);
+
+			if (Math.random() <= MAX_RECOVERY_CHANCE) {
+				debt = 0;
+			}
+		}
+
+		if (debt > 0) {
+			currentStrain.lateFloor = debt;
+			currentStrain.bias = debt;
+			currentStrain.type = 'both';
+		}
 	}
 }

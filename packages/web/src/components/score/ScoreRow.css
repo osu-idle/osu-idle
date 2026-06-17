@@ -15,11 +15,10 @@
 	padding: 10px 20px;
 	align-items: center;
 	background-color: hsl(var(--hsl-b2));
-    border-radius: 10px;
+	border-radius: 10px 0 0 10px;
     display: flex;
     min-width: 0;
 
-	border-radius: 10px 0 0 10px;
 	flex: 1;
 	padding-bottom: 5px;
 	padding-right: 0;

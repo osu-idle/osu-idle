@@ -134,6 +134,21 @@ export type StartPlayResult =
  *  - 'refused'  - declined the play (the anti-cheat lock for a near-simultaneous
  *                 second start); the client surfaces this to the player.
  */
+/** Build the character's skills, loaded with their level/XP (and play count for
+ *  Memory) so the simulation runs at the character's current state. */
+async function loadCharacterSkills(character: CharacterRow, beatmapId: number) {
+	const skills = makeOrderedSkills();
+	for (const skill of skills) {
+		skill.level.set(character[`${skill.name}Level`]);
+		skill.xp.set(character[`${skill.name}Xp`]);
+
+		if (skill instanceof Memory) {
+			skill.timesPlayed.set(await getPlays(character.id, beatmapId));
+		}
+	}
+	return skills;
+}
+
 export async function startPlay(
 	character: CharacterRow,
 	beatmapId: number,
@@ -155,15 +170,7 @@ export async function startPlay(
 		return { status: 'unranked' };
 	}
 
-	const skills = makeOrderedSkills();
-	for (const skill of skills) {
-		skill.level.set(character[`${skill.name}Level`]);
-		skill.xp.set(character[`${skill.name}Xp`]);
-
-		if (skill instanceof Memory) {
-			skill.timesPlayed.set(await getPlays(character.id, beatmapId));
-		}
-	}
+	const skills = await loadCharacterSkills(character, beatmapId);
 
 	const beatmap = decoder.decodeFromString(chart);
 	const bot = new CharacterBot(skills, beatmap.difficulty.overallDifficulty);

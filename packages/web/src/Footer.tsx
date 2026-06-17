@@ -10,6 +10,7 @@ export default function Footer() {
 			<a><Trans>Terms</Trans></a>
 			<a><Trans>Privacy</Trans></a>
 			<a><Trans>Server Status</Trans></a>
+			<a href="https://github.com/osu-idle/osu-idle"><Trans>Source code</Trans></a>
 			<a><Trans>Contact</Trans></a>
 		</div>
 		<div className='footer__credits'>v{VERSION} | adri powered {`2026${(new Date().getFullYear() !== 2026) ? `-${new Date().getFullYear()}` : ''}`}</div>

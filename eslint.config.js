@@ -9,6 +9,7 @@ export default tseslint.config(
 			'packages/client/public/**',
 			'packages/client/osu!design/**',
 			'packages/server/drizzle/**',
+			'packages/shared/src/locales/*.ts',
 		],
 	},
 	...tseslint.configs.recommended,
@@ -27,6 +28,7 @@ export default tseslint.config(
 			'@stylistic/indent': ['error', 'tab'],
 			'@stylistic/semi': 'error',
 			'no-tabs': 'off',
+			'complexity': ['error', { 'max': 14 }]
 		},
 	},
 );

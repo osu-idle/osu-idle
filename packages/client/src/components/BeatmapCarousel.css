@@ -12,7 +12,7 @@
   /* The carousel virtualises and drives its own scroll position; the browser's
      scroll anchoring would fight it by nudging scrollTop as cards mount/unmount. */
   overflow-anchor: none;
-  padding: 25vh 0 25vh 0;
+  padding: 25vh 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 102, 171, 0.5) transparent;
 }

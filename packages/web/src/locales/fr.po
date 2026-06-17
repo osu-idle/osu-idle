@@ -22,7 +22,7 @@ msgstr "par {0}"
 msgid "Connect your osu! account to appear in the leaderboards."
 msgstr "Connectez votre compte osu! pour apparaître dans les classements."
 
-#: src/Footer.tsx:13
+#: src/Footer.tsx:14
 msgid "Contact"
 msgstr "Contact"
 
@@ -63,6 +63,10 @@ msgstr "Se connecter avec osu!"
 #: src/pages/beatmaps/RankedMaps.tsx:53
 msgid "Sort by"
 msgstr "Trier par"
+
+#: src/Footer.tsx:13
+msgid "Source code"
+msgstr ""
 
 #: src/Footer.tsx:10
 msgid "Terms"

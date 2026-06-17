@@ -1,7 +1,7 @@
 {
   "name": "osu-idle",
   "private": true,
-  "version": "0.9.0.16",
+  "version": "0.9.1.0",
   "type": "module",
   "description": "osu! idle - a replica of the osu! startup experience (React client + Hono backend)",
   "workspaces": [
@@ -19,7 +19,10 @@
     "dev:web": "npm -w @osu-idle/web run dev",
     "dev:client": "npm -w @osu-idle/client run dev",
     "build": "npm run i18n:extract && npm run i18n:compile && npm -w @osu-idle/shared run build && npm -w @osu-idle/server run build:types && npm -w @osu-idle/client run build && npm -w @osu-idle/web run build",
-    "deploy:prod": "sudo echo 'starting' && node scripts/version-bump.mjs && npm run build && sudo systemctl restart osu-idle",
+	"build:nodeploy": "npm run i18n:extract && npm run i18n:compile && npm -w @osu-idle/shared run build",
+    "check:deploy": "npm -w @osu-idle/server run typecheck && npm -w @osu-idle/client run typecheck && npm -w @osu-idle/web run typecheck",
+    "build:deploy": "npm -w @osu-idle/server run build:types && npm -w @osu-idle/client run build && npm -w @osu-idle/web run build",
+    "deploy:prod": "sudo echo 'starting' && npm run build:nodeploy && npm run check:deploy && node scripts/version-bump.mjs && npm run build:deploy && sudo systemctl restart osu-idle",
     "version:bump": "node scripts/version-bump.mjs",
     "deploy:server:prod": "sudo echo 'starting' && npm -w @osu-idle/shared run build && npm -w @osu-idle/server run build:types && sudo systemctl restart osu-idle",
     "build:shared": "npm -w @osu-idle/shared run build",

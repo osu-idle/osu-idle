@@ -24,7 +24,7 @@ html, body, #root {
 	position: relative;
 	max-width: 1100px;
 	margin: 0 auto;
-	padding: 0 24px 0;
+	padding: 0 24px;
 	color: var(--text);
 	overflow: hidden;
 }

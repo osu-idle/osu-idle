@@ -10,8 +10,8 @@ header {
 	display: flex;
 	justify-content: space-between;
 
+    width: 100%;
 	max-width: 1000px;
-	width: calc(100% - 40px);
 	margin: 0 auto;
 
     font-size: 14px;
@@ -19,7 +19,6 @@ header {
     height: 90px;
     transform: translateZ(0);
     transition: height 300ms;
-    width: 100%;
 }
 
 .topbar__group {
@@ -95,11 +94,10 @@ header {
 .topbar__menu-backdrop {
     position: absolute;
     width: 100%;
-    height: 100%;
+	height: 160px;
     left: 0;
     top: 0;
 
-	height: 160px;
 	background: hsl(var(--hsl-d5));
 
 	z-index: 0;

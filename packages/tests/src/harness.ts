@@ -171,6 +171,13 @@ const DEFAULT_TOLERANCE: Required<Tolerance> = {
 	failTime: 5_000,
 };
 
+/** The representative skill level for a scenario: its level for a single-skill
+ *  run, else the (mean of the) skill spec. */
+function scenarioLevel(scenario: ScenarioInput): number {
+	if ('skill' in scenario) return scenario.level;
+	return typeof scenario.skills === 'number' ? scenario.skills : avg(...Object.values(scenario.skills));
+}
+
 const gradeRank = (g: Grade) => Grades.indexOf(g); // 0 = X (best) … 7 = F
 const num = (n: number) => Math.round(n).toLocaleString('en-US');
 const pr = (n: number) => `${n.toFixed(2)}`;
@@ -190,6 +197,75 @@ function band(actual: number, expected: number, tol: number, fmt: (n: number) =>
 	return { ok: Math.abs(actual - expected) <= tol, tolStr: `±${fmt(tol)}` };
 }
 
+/** Sink for one report row: renders it and, when the metric failed, records why. */
+type Report = (metric: string, expected: string, actual: string, delta: string, verdict: Verdict, problem: string) => void;
+
+/** Standard numeric metric: a symmetric (or one-sided) tolerance band on the
+ *  mean, shown next to its stdev. No-op when the scenario doesn't expect it. */
+function reportMetric(report: Report, metric: string, expected: number | undefined, mean: number, stdev: number, tol: number, fmt: (n: number) => string, bound?: Bound): void {
+	if (expected === undefined) return;
+	const d = mean - expected;
+	report(metric, fmt(expected), `${fmt(mean)} ±${fmt(stdev)}`, signed(d, fmt),
+		band(mean, expected, tol, fmt, bound),
+		`${metric} off by ${signed(d, fmt)}`);
+}
+
+/** Ratio is multiplicative: the symmetric band is a fold factor, not ±. */
+function reportRatio(report: Report, a: Aggregate, exp: Expectation, tol: Required<Tolerance>, bounds: Bounds): void {
+	if (exp.ratio === undefined) return;
+	const factor = a.meanRatio / Math.max(0.1, exp.ratio);
+	const verdict = bounds.ratio
+		? band(a.meanRatio, exp.ratio, tol.ratio, pr, bounds.ratio)
+		: { ok: factor <= tol.ratio && factor >= 1 / tol.ratio, tolStr: `±${pr(tol.ratio)}` };
+	report('ratio', pr(exp.ratio), `${pr(a.meanRatio)} ±${pr(a.ratioStdev)}`, pr(factor), verdict,
+		`ratio off by a factor of ${scaled(factor, pr)}`);
+}
+
+/** Grade is checked one of two ways: as a hit-rate (reached this grade or better
+ *  in ≥X% of runs) when the scenario sets a gradeRate tolerance, else as the
+ *  modal grade's distance in tiers from the expected one. */
+function reportGrade(report: Report, a: Aggregate, exp: Expectation, tol: Required<Tolerance>, tolerance: Tolerance | undefined, gradeDist: string): void {
+	if (exp.grade === undefined) return;
+	if (tolerance?.gradeRate !== undefined) {
+		// How often the play reaches the expected grade or better (lower rank = better).
+		const rate = sum([...a.gradeCounts.entries()]
+			.filter(([g]) => gradeRank(g) <= gradeRank(exp.grade!))
+			.map(([, n]) => n)) / a.runs;
+		report('grade', `≥${exp.grade}`, `${a.modalGrade}  (${gradeDist})`, `${pct(rate)} reached`,
+			{ ok: rate >= tol.gradeRate, tolStr: `≥${pct(tol.gradeRate)}` },
+			`reached ${exp.grade}+ in ${pct(rate)} of runs (need ≥${pct(tol.gradeRate)})`);
+	} else {
+		const d = Math.abs(gradeRank(a.modalGrade) - gradeRank(exp.grade));
+		report('grade', exp.grade, `${a.modalGrade}  (${gradeDist})`, `${d} tier${d === 1 ? '' : 's'}`,
+			{ ok: d <= tol.gradeTiers, tolStr: `≤${tol.gradeTiers}` },
+			`modal grade ${a.modalGrade}, expected ${exp.grade} (${d} tiers off)`);
+	}
+}
+
+/** Whether the play fails as often as expected (a pure pass/fail expectation). */
+function reportFail(report: Report, a: Aggregate, exp: Expectation, tol: Required<Tolerance>): void {
+	if (exp.fail === undefined) return;
+	const d = a.failRate - (exp.fail ? 1 : 0);
+	report('fail', exp.fail ? 'fails' : 'passes', `${pct(a.failRate)} failed`, signed(d, pct),
+		{ ok: Math.abs(d) <= tol.failRate, tolStr: `±${pct(tol.failRate)}` },
+		`fail rate ${pct(a.failRate)}, expected ${exp.fail ? 'fail' : 'pass'}`);
+}
+
+/** When the play is expected to fail mid-map, how close the mean fail time lands. */
+function reportFailTime(report: Report, a: Aggregate, exp: Expectation, tol: Required<Tolerance>): void {
+	if (exp.failTime === undefined) return;
+	if (a.meanFailTime === null) {
+		report('failTime', secs(exp.failTime), 'never failed', '-',
+			{ ok: false, tolStr: `±${secs(tol.failTime)}` },
+			`expected failure near ${secs(exp.failTime)} but no run failed`);
+		return;
+	}
+	const d = a.meanFailTime - exp.failTime;
+	report('failTime', secs(exp.failTime), `${secs(a.meanFailTime)} (${pct(a.failRate)} of runs)`, signed(d, secs),
+		{ ok: Math.abs(d) <= tol.failTime, tolStr: `±${secs(tol.failTime)}` },
+		`fail time off by ${signed(d, secs)}`);
+}
+
 /**
  * Run a scenario, print its deviation report, and assert every checked metric is
  * within tolerance. Call inside a vitest `it(...)`.
@@ -205,7 +281,7 @@ export function runScenario(scenario: Scenario): void {
 		.map(([g, n]) => `${g} ${Math.round((n / a.runs) * 100)}%`)
 		.join(' · ');
 
-	const level = 'skill' in scenario ? scenario.level : (typeof scenario.skills === 'number' ? scenario.skills : avg(...Object.values(scenario.skills)));
+	const level = scenarioLevel(scenario);
 
 	const lines: string[] = [
 		`\n━━  ${scenario.goal} | ${scenario.profile} (lvl${level}) | ${a.map}`,
@@ -214,66 +290,17 @@ export function runScenario(scenario: Scenario): void {
 	const problems: string[] = [];
 
 	/** Append one report row; record a problem when the metric failed. */
-	const report = (metric: string, expected: string, actual: string, delta: string, { ok, tolStr }: Verdict, problem: string) => {
+	const report: Report = (metric, expected, actual, delta, { ok, tolStr }, problem) => {
 		lines.push(`   ${ok ? '✓' : '✗'} ${pad(metric, 8)}${pad(expected, 14)}${pad(actual, 22)}${pad(delta, 14)}${tolStr}`);
 		if (!ok) problems.push(`${problem} (tol ${tolStr})`);
 	};
 
-	if (exp.score !== undefined) {
-		const d = a.meanScore - exp.score;
-		report('score', num(exp.score), `${num(a.meanScore)} ±${num(a.scoreStdev)}`, signed(d, num),
-			band(a.meanScore, exp.score, tol.score, num, bounds.score),
-			`score off by ${signed(d, num)}`);
-	}
-	if (exp.accuracy !== undefined) {
-		const d = a.meanAccuracy - exp.accuracy;
-		report('accuracy', pct(exp.accuracy), `${pct(a.meanAccuracy)} ±${pct(a.accuracyStdev)}`, signed(d, pct),
-			band(a.meanAccuracy, exp.accuracy, tol.accuracy, pct, bounds.accuracy),
-			`accuracy off by ${signed(d, pct)}`);
-	}
-	if (exp.ratio !== undefined) {
-		// ratio is multiplicative: the symmetric band is a fold factor, not ±.
-		const factor = a.meanRatio / Math.max(0.1, exp.ratio);
-		const verdict = bounds.ratio
-			? band(a.meanRatio, exp.ratio, tol.ratio, pr, bounds.ratio)
-			: { ok: factor <= tol.ratio && factor >= 1 / tol.ratio, tolStr: `±${pr(tol.ratio)}` };
-		report('ratio', pr(exp.ratio), `${pr(a.meanRatio)} ±${pr(a.ratioStdev)}`, pr(factor), verdict,
-			`ratio off by a factor of ${scaled(factor, pr)}`);
-	}
-	if (exp.grade !== undefined) {
-		if (scenario.tolerance?.gradeRate !== undefined) {
-			// How often the play reaches the expected grade or better (lower rank = better).
-			const rate = sum([...a.gradeCounts.entries()]
-				.filter(([g]) => gradeRank(g) <= gradeRank(exp.grade!))
-				.map(([, n]) => n)) / a.runs;
-			report('grade', `≥${exp.grade}`, `${a.modalGrade}  (${gradeDist})`, `${pct(rate)} reached`,
-				{ ok: rate >= tol.gradeRate, tolStr: `≥${pct(tol.gradeRate)}` },
-				`reached ${exp.grade}+ in ${pct(rate)} of runs (need ≥${pct(tol.gradeRate)})`);
-		} else {
-			const d = Math.abs(gradeRank(a.modalGrade) - gradeRank(exp.grade));
-			report('grade', exp.grade, `${a.modalGrade}  (${gradeDist})`, `${d} tier${d === 1 ? '' : 's'}`,
-				{ ok: d <= tol.gradeTiers, tolStr: `≤${tol.gradeTiers}` },
-				`modal grade ${a.modalGrade}, expected ${exp.grade} (${d} tiers off)`);
-		}
-	}
-	if (exp.fail !== undefined) {
-		const d = a.failRate - (exp.fail ? 1 : 0);
-		report('fail', exp.fail ? 'fails' : 'passes', `${pct(a.failRate)} failed`, signed(d, pct),
-			{ ok: Math.abs(d) <= tol.failRate, tolStr: `±${pct(tol.failRate)}` },
-			`fail rate ${pct(a.failRate)}, expected ${exp.fail ? 'fail' : 'pass'}`);
-	}
-	if (exp.failTime !== undefined) {
-		if (a.meanFailTime === null) {
-			report('failTime', secs(exp.failTime), 'never failed', '-',
-				{ ok: false, tolStr: `±${secs(tol.failTime)}` },
-				`expected failure near ${secs(exp.failTime)} but no run failed`);
-		} else {
-			const d = a.meanFailTime - exp.failTime;
-			report('failTime', secs(exp.failTime), `${secs(a.meanFailTime)} (${pct(a.failRate)} of runs)`, signed(d, secs),
-				{ ok: Math.abs(d) <= tol.failTime, tolStr: `±${secs(tol.failTime)}` },
-				`fail time off by ${signed(d, secs)}`);
-		}
-	}
+	reportMetric(report, 'score', exp.score, a.meanScore, a.scoreStdev, tol.score, num, bounds.score);
+	reportMetric(report, 'accuracy', exp.accuracy, a.meanAccuracy, a.accuracyStdev, tol.accuracy, pct, bounds.accuracy);
+	reportRatio(report, a, exp, tol, bounds);
+	reportGrade(report, a, exp, tol, scenario.tolerance, gradeDist);
+	reportFail(report, a, exp, tol);
+	reportFailTime(report, a, exp, tol);
 
 	// Always surface the report - pass or fail - so deviations are visible.
 	console.log(lines.join('\n'));

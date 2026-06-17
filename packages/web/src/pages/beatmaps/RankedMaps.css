@@ -94,7 +94,7 @@
 	height: fit-content;
     border-radius: 10000px;
     font-size: 12px;
-    padding: 6px 15px;
+    padding: 0 5px;
     text-transform: uppercase;
     transition: all .12s ease-in-out;
 
@@ -102,7 +102,6 @@
     color: hsl(var(--hsl-b3));
     font-weight: 800;
     line-height: 14px;
-    padding: 0 5px;
 }
 
 .list__beatmap_ago {

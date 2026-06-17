@@ -131,7 +131,8 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 
 	// build the game once; a freshly-built game starts a fresh clock so the two
 	// always stay in lock-step (HMR preserves both refs → seamless resume)
-	if (gameRef.current === null && botRef.current === null && character) {
+	const ensureGame = () => {
+		if (gameRef.current !== null || botRef.current !== null || !character) return;
 		void preloadDefaultHitsounds();
 		// seed the memory skill with this character's prior plays of the map before
 		// any CharacterBot analyzes it (the side strain bot reads the same skills).
@@ -160,7 +161,8 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		}
 		clockRef.current = null;
 		hitsoundPtr.current = 0;
-	}
+	};
+	ensureGame();
 	const game = gameRef.current;
 
 	// Gameplay owns the decoded buffer; when the play ends (finish, fail, or quit)
@@ -449,17 +451,9 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		let finished = false;
 		let firstFrame = true;
 
-		const draw = () => {
-			const now = songTime();
-			nowRef.current = now;
-			// pick up a live scroll-speed change (visual only - lineY set on resize)
-			pxPerUnit = lineY / scrollMsRef.current;
-			game.update(Math.max(0, now));
-			queueHitsounds();
-
-			const x0 = fieldX();
-
-			// background
+		// background fill, then the dimmed cover image. Dim is read live each
+		// frame so the slider updates without needing a replay.
+		const drawBackground = () => {
 			ctx.clearRect(0, 0, w, h);
 			ctx.fillStyle = '#05040a';
 			ctx.fillRect(0, 0, w, h);
@@ -467,16 +461,16 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				const scale = Math.max(w / bg.width, h / bg.height);
 				const bw = bg.width * scale;
 				const bh = bg.height * scale;
-				// read live each frame so the dim slider updates without a replay
 				ctx.globalAlpha = Math.max(0, 1 - SETTINGS.backgroundDim.get());
 				ctx.drawImage(bg, (w - bw) / 2, (h - bh) / 2, bw, bh);
 				ctx.globalAlpha = 1;
 			}
+		};
 
-			// playfield backdrop
+		// playfield backdrop + column separators
+		const drawPlayfield = (x0: number) => {
 			ctx.fillStyle = 'rgba(0,0,0,0.55)';
 			ctx.fillRect(x0, 0, fieldWidth, h);
-			// column separators
 			ctx.strokeStyle = 'rgba(255,255,255,0.06)';
 			ctx.lineWidth = 1;
 			for (let c = 0; c <= keys; c++) {
@@ -485,8 +479,9 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				ctx.lineTo(x0 + c * COLUMN_WIDTH + 0.5, h);
 				ctx.stroke();
 			}
+		};
 
-			// barlines
+		const drawBarlines = (x0: number, now: number) => {
 			ctx.strokeStyle = 'rgba(255,255,255,0.16)';
 			for (const bl of game.barlines) {
 				const y = noteY(bl.time, now);
@@ -496,79 +491,87 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				ctx.lineTo(x0 + fieldWidth, y);
 				ctx.stroke();
 			}
+		};
 
-			// notes
+		type RenderNote = ManiaGame['notes'][number];
+
+		const drawHoldNote = (note: RenderNote, cx: number, color: string, now: number) => {
+			if (note.tailJudged) {
+				const broke = note.tailMissedAt;
+				if (broke !== undefined) {
+					// a dropped hold (tail miss - fumble or released way too soon): the
+					// body remaining past the break point stays on screen, dimmed, and
+					// scrolls off instead of vanishing instantly
+					if (broke >= note.endTime) return;
+					const yFrom = noteY(broke, now);
+					const yTail = noteY(note.endTime, now);
+					const top = Math.min(yFrom, yTail);
+					const bottom = Math.max(yFrom, yTail);
+					if (bottom < -2 || top > h + 2) return;
+					ctx.globalAlpha = 0.3;
+					ctx.fillStyle = hexA(color, 0.5);
+					ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
+					ctx.fillStyle = color;
+					ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+					ctx.globalAlpha = 1;
+					return;
+				}
+				// released cleanly but a touch early: keep drawing as if still held
+				// (head pinned to the line) until the tail reaches the line - the
+				// hold finishes its travel normally, no pop, no dimming
+				if (now >= note.endTime) return;
+				const yTail = noteY(note.endTime, now);
+				ctx.fillStyle = hexA(color, 0.85);
+				ctx.fillRect(cx + 6, Math.min(lineY, yTail), COLUMN_WIDTH - 12, Math.abs(lineY - yTail));
+				ctx.fillStyle = color;
+				ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+				ctx.fillRect(cx + 4, lineY - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+				return;
+			}
+			const yHead = note.holding ? lineY : noteY(note.time, now);
+			const yTail = noteY(note.endTime, now);
+			const top = Math.min(yHead, yTail);
+			const bottom = Math.max(yHead, yTail);
+			if (bottom < -2 || top > h + 2) return;
+			// body
+			ctx.fillStyle = note.holding ? hexA(color, 0.85) : hexA(color, 0.5);
+			ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
+			// tail cap
+			ctx.fillStyle = color;
+			ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+			// head cap - pinned to the receptor while held (the base stays visible),
+			// otherwise tracking the head itself: approaching before the hit, and
+			// scrolling on past the receptors once it's been missed (an unpressed note)
+			ctx.fillRect(cx + 4, yHead - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+		};
+
+		const drawTapNote = (note: RenderNote, cx: number, color: string, now: number) => {
+			if (note.headJudged) return;
+			const y = noteY(note.time, now);
+			if (y < -NOTE_HEIGHT || y > h + NOTE_HEIGHT) return;
+			ctx.fillStyle = color;
+			roundRect(ctx, cx + 4, y - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT, 4);
+			ctx.fill();
+
+			if (debug) {
+				ctx.font = '700 10px "Exo 2", sans-serif';
+				ctx.textAlign = 'center';
+				ctx.fillStyle = 'black';
+				ctx.fillText(`1/${note.snap}`, cx + 4 + (COLUMN_WIDTH - 8) / 2, y);
+				ctx.fillText(Reading.countTransitions(new Map(), game.visibleNotesAt(note.time)).toString(), cx + 4 + (COLUMN_WIDTH - 8) / 2, y + 9);
+			}
+		};
+
+		const drawNotes = (x0: number, now: number) => {
 			for (const note of game.notes) {
 				const cx = x0 + note.column * COLUMN_WIDTH;
 				const color = colColor(note.column, keys);
-
-				if (note.hold) {
-					if (note.tailJudged) {
-						const broke = note.tailMissedAt;
-						if (broke !== undefined) {
-							// a dropped hold (tail miss - fumble or released way too soon): the
-							// body remaining past the break point stays on screen, dimmed, and
-							// scrolls off instead of vanishing instantly
-							if (broke >= note.endTime) continue;
-							const yFrom = noteY(broke, now);
-							const yTail = noteY(note.endTime, now);
-							const top = Math.min(yFrom, yTail);
-							const bottom = Math.max(yFrom, yTail);
-							if (bottom < -2 || top > h + 2) continue;
-							ctx.globalAlpha = 0.3;
-							ctx.fillStyle = hexA(color, 0.5);
-							ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
-							ctx.fillStyle = color;
-							ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-							ctx.globalAlpha = 1;
-							continue;
-						}
-						// released cleanly but a touch early: keep drawing as if still held
-						// (head pinned to the line) until the tail reaches the line - the
-						// hold finishes its travel normally, no pop, no dimming
-						if (now >= note.endTime) continue;
-						const yTail = noteY(note.endTime, now);
-						ctx.fillStyle = hexA(color, 0.85);
-						ctx.fillRect(cx + 6, Math.min(lineY, yTail), COLUMN_WIDTH - 12, Math.abs(lineY - yTail));
-						ctx.fillStyle = color;
-						ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-						ctx.fillRect(cx + 4, lineY - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-						continue;
-					}
-					const yHead = note.holding ? lineY : noteY(note.time, now);
-					const yTail = noteY(note.endTime, now);
-					const top = Math.min(yHead, yTail);
-					const bottom = Math.max(yHead, yTail);
-					if (bottom < -2 || top > h + 2) continue;
-					// body
-					ctx.fillStyle = note.holding ? hexA(color, 0.85) : hexA(color, 0.5);
-					ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
-					// tail cap
-					ctx.fillStyle = color;
-					ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-					// head cap - pinned to the receptor while held (the base stays visible),
-					// otherwise tracking the head itself: approaching before the hit, and
-					// scrolling on past the receptors once it's been missed (an unpressed note)
-					ctx.fillRect(cx + 4, yHead - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-				} else {
-					if (note.headJudged) continue;
-					const y = noteY(note.time, now);
-					if (y < -NOTE_HEIGHT || y > h + NOTE_HEIGHT) continue;
-					ctx.fillStyle = color;
-					roundRect(ctx, cx + 4, y - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT, 4);
-					ctx.fill();
-
-					if (debug) {
-						ctx.font = '700 10px "Exo 2", sans-serif';
-						ctx.textAlign = 'center';
-						ctx.fillStyle = 'black';
-						ctx.fillText(`1/${note.snap}`, cx + 4 + (COLUMN_WIDTH - 8) / 2, y);
-						ctx.fillText(Reading.countTransitions(new Map(), game.visibleNotesAt(note.time)).toString(), cx + 4 + (COLUMN_WIDTH - 8) / 2, y + 9);
-					}
-				}
+				if (note.hold) drawHoldNote(note, cx, color, now);
+				else drawTapNote(note, cx, color, now);
 			}
+		};
 
-			// receptors
+		const drawReceptors = (x0: number, now: number) => {
 			for (let c = 0; c < keys; c++) {
 				const cx = x0 + c * COLUMN_WIDTH;
 				const glow = Math.max(0, 1 - (now - game.columnFlash[c]) / 140);
@@ -587,8 +590,48 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			// ctx.moveTo(x0, lineY);
 			// ctx.lineTo(x0 + fieldWidth, lineY);
 			// ctx.stroke();
+		};
 
-			// ---- HUD ----
+		// strain meters (left side): one stress gauge per skill, 0-100%. Narrow
+		// screens drop the bars and show just the %, tinted the gauge's colour.
+		const drawStrainMeters = (now: number) => {
+			if (strainBotRef.current) {
+				const compact = w < 700;
+				const strains = strainBotRef.current.strainsAt(now);
+				const bx = 16;
+				const bw = 150;
+				const step = compact ? 30 : 26;
+				const by0 = Math.max(150, h * 0.24);
+				ctx.font = '600 11px "Exo 2", sans-serif';
+				STRAIN_HUD_SKILLS.forEach((skill, i) => {
+					// ease toward the live value so per-note jumps read as motion
+					const v = strainDisplay.current[skill] += (strains[skill] - strainDisplay.current[skill]) * 0.2;
+					const by = by0 + i * step;
+					// calm green → stressed red
+					const color = `hsl(${120 - v * 120}, 85%, 55%)`;
+					ctx.textAlign = 'left';
+					ctx.fillStyle = 'rgba(255,255,255,0.75)';
+					ctx.fillText(skillLabels[skill], bx, by);
+					if (compact) {
+						ctx.fillStyle = color;
+						ctx.fillText(`${Math.round(v * 100)}%`, bx, by + 13);
+						return;
+					}
+					ctx.textAlign = 'right';
+					ctx.fillText(`${Math.round(v * 100)}%`, bx + bw, by);
+					ctx.fillStyle = 'rgba(255,255,255,0.12)';
+					roundRect(ctx, bx, by + 5, bw, 8, 4);
+					ctx.fill();
+					if (v > 0.005) {
+						ctx.fillStyle = color;
+						roundRect(ctx, bx, by + 5, Math.max(8, bw * v), 8, 4);
+						ctx.fill();
+					}
+				});
+			}
+		};
+
+		const drawHud = (x0: number, now: number) => {
 			const cxField = x0 + fieldWidth / 2;
 
 			// judgement popup
@@ -624,42 +667,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				ctx.fillText(`x${Math.round(game.scroll.getSpeedAt(now) * 100) / 100}`, 15, h * 0.1);
 			}
 
-			// strain meters (left side): one stress gauge per skill, 0-100%. Narrow
-			// screens drop the bars and show just the %, tinted the gauge's colour.
-			if (strainBotRef.current) {
-				const compact = w < 700;
-				const strains = strainBotRef.current.strainsAt(now);
-				const bx = 16;
-				const bw = 150;
-				const step = compact ? 30 : 26;
-				const by0 = Math.max(150, h * 0.24);
-				ctx.font = '600 11px "Exo 2", sans-serif';
-				STRAIN_HUD_SKILLS.forEach((skill, i) => {
-					// ease toward the live value so per-note jumps read as motion
-					const v = strainDisplay.current[skill] += (strains[skill] - strainDisplay.current[skill]) * 0.2;
-					const by = by0 + i * step;
-					// calm green → stressed red
-					const color = `hsl(${120 - v * 120}, 85%, 55%)`;
-					ctx.textAlign = 'left';
-					ctx.fillStyle = 'rgba(255,255,255,0.75)';
-					ctx.fillText(skillLabels[skill], bx, by);
-					if (compact) {
-						ctx.fillStyle = color;
-						ctx.fillText(`${Math.round(v * 100)}%`, bx, by + 13);
-						return;
-					}
-					ctx.textAlign = 'right';
-					ctx.fillText(`${Math.round(v * 100)}%`, bx + bw, by);
-					ctx.fillStyle = 'rgba(255,255,255,0.12)';
-					roundRect(ctx, bx, by + 5, bw, 8, 4);
-					ctx.fill();
-					if (v > 0.005) {
-						ctx.fillStyle = color;
-						roundRect(ctx, bx, by + 5, Math.max(8, bw * v), 8, 4);
-						ctx.fill();
-					}
-				});
-			}
+			drawStrainMeters(now);
 
 			if (now < (game.songStartMs - 2000) && game.songStartMs > 5000) {
 				ctx.fillStyle = '#fff';
@@ -719,6 +727,24 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				y: lineY + 78,
 				halfWidth: Math.min(170, fieldWidth / 2),
 			});
+		};
+
+		const draw = () => {
+			const now = songTime();
+			nowRef.current = now;
+			// pick up a live scroll-speed change (visual only - lineY set on resize)
+			pxPerUnit = lineY / scrollMsRef.current;
+			game.update(Math.max(0, now));
+			queueHitsounds();
+
+			const x0 = fieldX();
+
+			drawBackground();
+			drawPlayfield(x0);
+			drawBarlines(x0, now);
+			drawNotes(x0, now);
+			drawReceptors(x0, now);
+			drawHud(x0, now);
 
 			// end of map
 			if (!finished && (game.finished || now > game.songEndMs)) {

@@ -48,6 +48,31 @@ export interface StrainAnalysis {
 	songEndMs: number
 }
 
+/** Record one skill's strain for one note into its series: the consistency
+ *  pressure overlay, and the press (or release, for held notes) hit record. */
+function recordStrain(
+	series: Map<string, StrainSeries>,
+	skill: { name: string },
+	note: RuntimeNote,
+	strain: [NoteStrain, number, number],
+	windows: HitWindows,
+): void {
+	if (skill.name === 'consistency' && strain[0].pressure !== undefined) {
+		const s = series.get(skill.name)!;
+		(s.overlay ??= []).push({ time: note.time, value: strain[0].pressure });
+	}
+
+	if (skill.name !== 'release') {
+		const j = judge(Math.abs(strain[1]), windows);
+		// match the combined graph: a miss has no meaningful offset
+		series.get(skill.name)?.hits.push({ time: note.time, offset: j === JUDGEMENT.MISS ? null : strain[1], judgement: j });
+	}
+	if (skill.name === 'release' && note.hold) {
+		const j = judge(Math.abs(strain[2]), windows);
+		series.get(skill.name)?.hits.push({ time: note.endTime, offset: j === JUDGEMENT.MISS ? null : strain[2], judgement: j });
+	}
+}
+
 export function analyzeBeatmap(
 	character: Character,
 	beatmap: Beatmap,
@@ -69,22 +94,7 @@ export function analyzeBeatmap(
 	for (const [, [note, strains]] of noteStrains) {
 		for (const skill of Object.values(skills)) {
 			const strain = strains.find(s => s[0].skill === skill.name);
-			if (!strain) continue;
-
-			if (skill.name === 'consistency' && strain[0].pressure !== undefined) {
-				const s = series.get(skill.name)!;
-				(s.overlay ??= []).push({ time: note.time, value: strain[0].pressure });
-			}
-
-			if (skill.name !== 'release') {
-				const j = judge(Math.abs(strain[1]), windows);
-				// match the combined graph: a miss has no meaningful offset
-				series.get(skill.name)?.hits.push({ time: note.time, offset: j === JUDGEMENT.MISS ? null : strain[1], judgement: j });
-			}
-			if (skill.name === 'release' && note.hold) {
-				const j = judge(Math.abs(strain[2]), windows);
-				series.get(skill.name)?.hits.push({ time: note.endTime, offset: j === JUDGEMENT.MISS ? null : strain[2], judgement: j });
-			}
+			if (strain) recordStrain(series, skill, note, strain, windows);
 		}
 	}
 

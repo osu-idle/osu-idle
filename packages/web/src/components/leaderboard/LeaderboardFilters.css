@@ -25,14 +25,13 @@
 .lb_select_current {
     background: none;
     border: none;
-    margin: 0;
     outline: none;
-    padding: 0;
     text-decoration: none;
+    margin: 0;
+    padding: 5px 10px;
     color: hsl(var(--hsl-c1));
     display: flex;
     justify-content: space-between;
-    padding: 5px 10px;
     white-space: nowrap;
 	
 	background-color: hsla(var(--hsl-b6), .5);

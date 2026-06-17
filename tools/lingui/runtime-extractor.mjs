@@ -26,6 +26,35 @@ function unwrap(node) {
 	return node;
 }
 
+/** `__('text'[, 'context'])` -> one message. */
+function extractTranslate(args, emit) {
+	const message = unwrap(args[0]);
+	const context = unwrap(args[1]);
+	if (message?.type !== 'StringLiteral') return;
+	const ctx = context?.type === 'StringLiteral' ? context.value : undefined;
+	emit(message.value, ctx, message.loc);
+}
+
+/** `defineMessages({ key: 'text' | ['a', 'b'], ... })` -> one message per
+ *  string literal value (array entries harvested element by element). */
+function extractDefineMessages(args, emit) {
+	const obj = unwrap(args[0]);
+	if (obj?.type !== 'ObjectExpression') return;
+	for (const prop of obj.properties) {
+		if (prop.type !== 'ObjectProperty') continue;
+		const value = prop.value;
+		if (value.type === 'StringLiteral') {
+			emit(value.value, undefined, value.loc);
+		} else if (value.type === 'ArrayExpression') {
+			// Array-valued entries (per-level upgrade lists) - harvest each
+			// string literal; non-string elements (numbers) aren't text.
+			for (const el of value.elements) {
+				if (el?.type === 'StringLiteral') emit(el.value, undefined, el.loc);
+			}
+		}
+	}
+}
+
 /** @type {import('@lingui/conf').ExtractorType} */
 const extractor = {
 	match(filename) {
@@ -58,29 +87,8 @@ const extractor = {
 				if (callee.type !== 'Identifier') return;
 				const args = path.node.arguments;
 
-				if (translateNames.has(callee.name)) {
-					const message = unwrap(args[0]);
-					const context = unwrap(args[1]);
-					if (message?.type !== 'StringLiteral') return;
-					const ctx = context?.type === 'StringLiteral' ? context.value : undefined;
-					emit(message.value, ctx, message.loc);
-				} else if (defineNames.has(callee.name)) {
-					const obj = unwrap(args[0]);
-					if (obj?.type !== 'ObjectExpression') return;
-					for (const prop of obj.properties) {
-						if (prop.type !== 'ObjectProperty') continue;
-						const value = prop.value;
-						if (value.type === 'StringLiteral') {
-							emit(value.value, undefined, value.loc);
-						} else if (value.type === 'ArrayExpression') {
-							// Array-valued entries (per-level upgrade lists) - harvest each
-							// string literal; non-string elements (numbers) aren't text.
-							for (const el of value.elements) {
-								if (el?.type === 'StringLiteral') emit(el.value, undefined, el.loc);
-							}
-						}
-					}
-				}
+				if (translateNames.has(callee.name)) extractTranslate(args, emit);
+				else if (defineNames.has(callee.name)) extractDefineMessages(args, emit);
 			},
 		});
 

@@ -1,21 +1,4 @@
 #!/usr/bin/env node
-// Standalone version bump helper, run first by `deploy:prod`.
-//
-// It detects the current version (the "version" field of the root
-// package.json is the source of truth), asks for a bump type, then rewrites
-// the version in every workspace package.json and regenerates
-// packages/shared/src/version.ts so VERSION is available at runtime everywhere.
-// On an actual bump it commits the whole working tree (every pending change,
-// not just the version files) and pushes to the current branch's remote: a
-// build bump makes a "bump to version <x>" commit only,
-// while major/minor/patch make a "release version <x>" commit plus an annotated
-// v<x> tag pushed alongside it.
-//
-// Usage:
-//   node scripts/version-bump.mjs            interactive prompt (enter = build)
-//   node scripts/version-bump.mjs <type>     non-interactive (major|minor|patch|build|skip)
-// In a non-TTY context with no argument it skips (keeps the current version),
-// so an automated deploy never blocks on input.
 
 import { readFile, writeFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises';
@@ -42,6 +25,10 @@ const PACKAGE_JSONS = [
 
 // Generated runtime carrier consumed via `@osu-idle/shared/version`.
 const VERSION_TS = 'packages/shared/src/version.ts';
+
+const PUBLIC_REMOTE = 'public';
+const PUBLIC_BRANCH = 'main';
+const PUBLIC_REF = `${PUBLIC_REMOTE}/${PUBLIC_BRANCH}`;
 
 const BUMPS = {
 	major: ([major]) => [major + 1, 0, 0, 0],
@@ -90,54 +77,142 @@ async function currentRemote() {
 	return undefined;
 }
 
-// Commit all pending work (the bumped version files plus any other working-tree
-// changes) and push it. A `build` bump is just a
-// "bump to version <x>" commit; major/minor/patch make a "release version <x>"
-// commit plus an annotated v<x> tag pushed alongside it. Each git step is
-// best-effort: a failure (no git, existing tag, no push access) warns but never
-// aborts the deploy that called us.
-async function commitVersion(version, choice) {
+// A best-effort git step: run it, report failure, but never throw - so a
+// missing remote or no push access warns instead of aborting the deploy.
+async function gitTry(label, ...args) {
+	try {
+		await git(...args);
+		return true;
+	} catch (err) {
+		stdout.write(`${label} failed: ${(err.stderr || err.message).trim()}\n`);
+		return false;
+	}
+}
+
+async function hasRemote(remote) {
+	try {
+		const remotes = (await git('remote')).stdout.split('\n').map(s => s.trim());
+		return remotes.includes(remote);
+	} catch {
+		return false;
+	}
+}
+
+// True when `ref` is already contained in develop's history (nothing of it to
+// merge back). `--is-ancestor` exits 0 when it is, 1 when it is not.
+async function isAncestor(ref) {
+	try {
+		await git('merge-base', '--is-ancestor', ref, 'HEAD');
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+async function ensurePublicMergeable() {
+	await git('fetch', PUBLIC_REMOTE, PUBLIC_BRANCH);
+	if (await isAncestor(PUBLIC_REF)) return false;
+
+	// `merge-tree` does a real three-way merge in memory and exits non-zero on
+	// conflict, all without touching the index or working tree.
+	try {
+		await git('merge-tree', '--write-tree', 'HEAD', PUBLIC_REF);
+	} catch (err) {
+		throw new Error(
+			`${PUBLIC_REF} has contributor commits that conflict with develop.\n`
+            + 'Merge and resolve them by hand before releasing (nothing was changed).\n'
+            + (err.stdout || err.stderr || '').trim(),
+		);
+	}
+	return true;
+}
+
+// Commit the entire working tree (bumped version files plus any other pending
+// change) onto develop. The version files guarantee the commit is never empty.
+async function commitDevelop(message) {
+	await git('add', '--all');
+	await git('commit', '-m', message);
+}
+
+async function publishPublic(version) {
+	const tag = `v${version}`;
+	let commit;
+	try {
+		const tree = (await git('rev-parse', 'HEAD^{tree}')).stdout.trim();
+		const parent = (await git('rev-parse', PUBLIC_REF)).stdout.trim();
+		commit = (await git('commit-tree', tree, '-p', parent, '-m', `release version ${version}`)).stdout.trim();
+	} catch (err) {
+		stdout.write(`Could not build public release commit: ${(err.stderr || err.message).trim()}\n`);
+		return;
+	}
+
+	if (!await gitTry('Push to public/main', 'push', PUBLIC_REMOTE, `${commit}:refs/heads/${PUBLIC_BRANCH}`)) return;
+	await gitTry(`Push ${tag} to public`, 'push', PUBLIC_REMOTE, `${commit}:refs/tags/${tag}`);
+	stdout.write(`Published ${tag} to ${PUBLIC_REF} (${commit.slice(0, 9)}).\n`);
+
+	// Record the public commit as an ancestor of develop without changing
+	// develop's tree, so the next `git merge public` here sees only contributor
+	// commits. This merge lives on origin only; public never receives it.
+	await gitTry('Record public release on develop', 'merge', '-s', 'ours', '--no-edit',
+		'-m', `record public release ${tag}`, commit);
+}
+
+async function inGitRepo() {
 	try {
 		await git('rev-parse', '--is-inside-work-tree');
+		return true;
 	} catch {
-		stdout.write('Not a git repository - skipping commit.\n');
-		return;
+		return false;
 	}
+}
 
-	const tagged = choice !== 'build';
-	const tag = `v${version}`;
-	const message = tagged ? `release version ${version}` : `bump to version ${version}`;
+// Commit the bump on develop, fold in contributor commits when a clean public
+// merge is pending, and tag a release. Returns false only if the commit itself
+// failed. The merge happens before the tag so v<x> covers the full released
+// tree (contributor content plus this bump).
+async function commitDevelopBump(version, release, mergePublic) {
 	try {
-		// Stage and commit the entire working tree, not just the version files:
-		// a deploy rolls every pending change into the release commit. The bumped
-		// version files guarantee the commit is never empty.
-		await git('add', '--all');
-		await git('commit', '-m', message);
-		if (tagged) await git('tag', '-a', tag, '-m', message);
-		stdout.write(tagged ? `Committed and tagged ${tag}.\n` : `Committed "${message}".\n`);
+		await commitDevelop(release ? `release version ${version}` : `bump to version ${version}`);
 	} catch (err) {
-		stdout.write(`Could not commit${tagged ? `/tag ${tag}` : ''}: ${(err.stderr || err.message).trim()}\n`);
-		return;
+		stdout.write(`Could not commit: ${(err.stderr || err.message).trim()}\n`);
+		return false;
 	}
+	if (mergePublic) {
+		await gitTry('Merge public contributions', 'merge', '--no-edit',
+			'-m', `merge ${PUBLIC_REF} contributions`, PUBLIC_REF);
+	}
+	if (release) {
+		await gitTry(`Tag v${version}`, 'tag', '-a', `v${version}`, '-m', `release version ${version}`);
+		stdout.write(`Committed and tagged v${version}.\n`);
+	} else {
+		stdout.write(`Committed "bump to version ${version}".\n`);
+	}
+	return true;
+}
 
+// Push develop (and the release tag when given) to its origin remote.
+async function pushDevelop(tag) {
 	const remote = await currentRemote();
 	if (!remote) {
 		stdout.write('No git remote - committed locally but not pushed.\n');
 		return;
 	}
-	// Push the branch (so the remote advances) plus the tag when there is one,
-	// rather than leaving the remote branch behind a dangling tagged commit.
 	const branch = (await git('branch', '--show-current')).stdout.trim();
-	const refs = [...(branch ? [branch] : []), ...(tagged ? [tag] : [])];
-	if (refs.length === 0) {
-		stdout.write('Detached HEAD with no tag - nothing to push.\n');
-		return;
-	}
-	try {
-		await git('push', remote, ...refs);
-		stdout.write(`Pushed ${refs.join(' + ')} to ${remote}.\n`);
-	} catch (err) {
-		stdout.write(`Could not push ${refs.join(' + ')} to ${remote}: ${(err.stderr || err.message).trim()}\n`);
+	const refs = [...(branch ? [branch] : []), ...(tag ? [tag] : [])];
+	if (refs.length) await gitTry(`Push ${refs.join(' + ')} to ${remote}`, 'push', remote, ...refs);
+}
+
+// Execute the final sequence of git commands after versions have been updated
+// safely. Each git step past the pre-flight is best-effort: it warns but never
+// aborts the deploy that called us.
+async function commitVersion(version, release, toPublic, mergePublic) {
+	if (!await commitDevelopBump(version, release, mergePublic)) return;
+	await pushDevelop(release ? `v${version}` : null);
+
+	if (toPublic) {
+		await publishPublic(version);
+		// publishPublic's `-s ours` record advanced develop; push it to origin.
+		await pushDevelop(null);
 	}
 }
 
@@ -150,11 +225,11 @@ async function promptBump(current) {
 		while (true) {
 			stdout.write(
 				`\nCurrent version: ${current}\n`
-				+ `  [1] major  → ${previews.major}\n`
-				+ `  [2] minor  → ${previews.minor}\n`
-				+ `  [3] patch  → ${previews.patch}\n`
-				+ `  [4] build  → ${previews.build}\n`
-				+ `  [s] skip   → keep ${current}\n`,
+                + `  [1] major  → ${previews.major}\n`
+                + `  [2] minor  → ${previews.minor}\n`
+                + `  [3] patch  → ${previews.patch}\n`
+                + `  [4] build  → ${previews.build}\n`
+                + `  [s] skip   → keep ${current}\n`,
 			);
 			// Enter (empty answer) defaults to a build bump.
 			const answer = (await rl.question('Bump type [1/2/3/4/s] (enter = build): ')).trim().toLowerCase();
@@ -181,7 +256,7 @@ async function main() {
 	let choice;
 	if (arg) {
 		if (!(arg in BUMPS) && arg !== 'skip') {
-			throw new Error(`Unknown bump type "${arg}" (expected major|minor|patch|skip)`);
+			throw new Error(`Unknown bump type "${arg}" (expected major|minor|patch|build|skip)`);
 		}
 		choice = arg;
 	} else if (stdin.isTTY) {
@@ -198,10 +273,31 @@ async function main() {
 		return;
 	}
 
+	// Git Checks & Pre-flight
+	const isGit = await inGitRepo();
+	const release = choice !== 'build';
+	let toPublic = false;
+	let mergePublic = false;
+
+	if (isGit && release) {
+		toPublic = await hasRemote(PUBLIC_REMOTE);
+		if (toPublic) {
+			// Pre-flight before any mutation: a release refuses to start while public
+			// holds conflicting contributor commits. Throws if conflict detected.
+			mergePublic = await ensurePublicMergeable();
+		}
+	}
+
+	// Now safe to mutate the working tree
 	const next = BUMPS[choice](parse(current)).join('.');
 	await writeVersion(next);
 	stdout.write(`Bumped ${current} → ${next}.\n`);
-	await commitVersion(next, choice);
+
+	if (isGit) {
+		await commitVersion(next, release, toPublic, mergePublic);
+	} else {
+		stdout.write('Not a git repository - skipped commit.\n');
+	}
 }
 
 main().catch(err => {

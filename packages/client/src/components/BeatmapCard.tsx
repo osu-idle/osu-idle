@@ -17,6 +17,13 @@ import { SETTINGS } from '../db/settings';
 /** max gap between two clicks on the same card to count as a double-click */
 const DOUBLE_CLICK_MS = 300;
 
+/** Build the card's state classes (active / sibling / download status). */
+function cardClassName(active: boolean, sibling: boolean, downloaded: boolean): string {
+	return `bm-card ${active ? 'is-active' : ''} ${
+		sibling ? 'is-sibling' : ''
+	} ${downloaded ? 'is-downloaded' : 'is-remote'}`;
+}
+
 type Props = {
 	beatmap: LightBeatmap,
 	set: LightBeatmapSet,
@@ -82,9 +89,7 @@ export default function BeatmapCard({
 	const color = difficultyColor(stars);
 	return (
 		<div
-			className={`bm-card ${active ? 'is-active' : ''} ${
-				sibling ? 'is-sibling' : ''
-			} ${downloaded ? 'is-downloaded' : 'is-remote'}`}
+			className={cardClassName(active, sibling, downloaded)}
 			data-id={beatmap.metadata.id}
 			onClick={handleClick}
 			style={bg ? { backgroundImage: showThumbnails ? `url("${bg}")` : '' } : undefined}

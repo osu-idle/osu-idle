@@ -18,12 +18,12 @@ msgid "(mobile) Tap duration to right click"
 msgstr "(mobile) Durée du maintien pour faire un clic droit"
 
 #. placeholder {0}: items.length
-#: src/scenes/SongSelect.tsx:589
+#: src/scenes/SongSelect.tsx:509
 msgid "{0, plural, one {# result} other {# results}}"
 msgstr "{0, plural, one {# résultat} other {# résultats}}"
 
 #. placeholder {0}: filteredItems.length
-#: src/scenes/SongSelect.tsx:588
+#: src/scenes/SongSelect.tsx:508
 msgid "{0} of {total} results"
 msgstr "{0} sur {total} résultats"
 
@@ -48,7 +48,7 @@ msgstr "{nbMaps} maps"
 msgid "{totalCount, plural, one {that's all # difficulty} other {that's all # difficulties}}"
 msgstr "{totalCount, plural, one {c'est la seule # difficulté} other {c'était l'ensemble des # difficultés}}"
 
-#: src/scenes/SongSelect.tsx:649
+#: src/components/songselect/CardContextMenu.tsx:25
 msgid "1. Manage Playlists"
 msgstr "Gérer les playlists"
 
@@ -56,19 +56,19 @@ msgstr "Gérer les playlists"
 msgid "10+ min"
 msgstr "10+ min"
 
-#: src/scenes/SongSelect.tsx:650
+#: src/components/songselect/CardContextMenu.tsx:26
 msgid "2. Click again to delete"
 msgstr "2. Cliquez à nouveau pour supprimer"
 
-#: src/scenes/SongSelect.tsx:650
+#: src/components/songselect/CardContextMenu.tsx:26
 msgid "2. Delete..."
 msgstr "2. Supprimer..."
 
-#: src/scenes/SongSelect.tsx:651
+#: src/components/songselect/CardContextMenu.tsx:27
 msgid "3. Clear local scores"
 msgstr "3. Supprimer les scores en local"
 
-#: src/scenes/SongSelect.tsx:652
+#: src/components/songselect/CardContextMenu.tsx:28
 msgid "4. Cancel"
 msgstr "4. Annuler"
 
@@ -76,7 +76,7 @@ msgstr "4. Annuler"
 msgid "5-10 min"
 msgstr "5-10 min"
 
-#: src/scenes/Gameplay.tsx:902
+#: src/scenes/Gameplay.tsx:928
 msgid "A game is already in progress. Play locally instead? It won't be submitted."
 msgstr "Une partie est déjà en cours. Jouer en local à la place ? Le score ne sera pas envoyé."
 
@@ -84,11 +84,11 @@ msgstr "Une partie est déjà en cours. Jouer en local à la place ? Le score ne
 #~ msgid "A new version is available ! Refresh the page to update."
 #~ msgstr "Une nouvelle version est disponible ! Actualisez la page pour mettre à jour le jeu."
 
-#: src/scenes/Result.tsx:156
+#: src/scenes/Result.tsx:134
 msgid "Accuracy"
 msgstr "Précision"
 
-#: src/scenes/SongSelect.tsx:613
+#: src/components/songselect/UserCard.tsx:42
 msgid "Accuracy: {accText}"
 msgstr "Précision : {accText}"
 
@@ -108,7 +108,7 @@ msgstr "Délai du pilote automatique"
 msgid "Autopilot mode"
 msgstr "Mode du pilote automatique"
 
-#: src/scenes/Result.tsx:122
+#: src/scenes/Result.tsx:100
 msgid "Autopilot: nothing playable"
 msgstr "Pilote automatique: rien de jouable"
 
@@ -124,15 +124,15 @@ msgstr "pilote|auto|automatique|delai|délai|retry|relancer"
 msgid "autopilot|mode|playlist|loop|next|song"
 msgstr "pilote|auto|automatique|mode|playlist|boucle|suivant|musique"
 
+#: src/components/songselect/TopBar.tsx:79
 #: src/components/Tutorial.tsx:130
-#: src/scenes/Gameplay.tsx:866
+#: src/scenes/Gameplay.tsx:892
 #: src/scenes/MainMenu.tsx:157
-#: src/scenes/SongSelect.tsx:524
 msgid "Back"
 msgstr "Retour"
 
-#: src/scenes/Result.tsx:116
-#: src/scenes/SongSelect.tsx:596
+#: src/scenes/Result.tsx:94
+#: src/scenes/SongSelect.tsx:516
 msgid "BACK"
 msgstr "RETOUR"
 
@@ -145,11 +145,11 @@ msgid "background|dim|opacity"
 msgstr "fond|écran|ecran|sombre|opacité|opacit"
 
 #. placeholder {0}: track.creator
-#: src/scenes/Result.tsx:112
+#: src/components/result/ResultMeta.tsx:19
 msgid "Beatmap by {0}"
 msgstr "Beatmap par {0}"
 
-#: src/scenes/SongSelect.tsx:434
+#: src/scenes/SongSelect.tsx:417
 msgid "Beatmap deleted"
 msgstr "Map supprimée"
 
@@ -161,39 +161,39 @@ msgstr "Des maps sont disponibles par défaut dans <0>l'écran de sélection</0>
 msgid "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to download it, then <2>single-tap</2> to start playing."
 msgstr "Des maps sont disponibles par défaut dans <0>l'écran de sélection</0>:<1> double-tappez</1> sur une map pour la télécharger, puis <2>tapez</2> dessus pour démarrer."
 
-#: src/scenes/SongSelect.tsx:58
+#: src/components/songselect/TopBar.tsx:17
 msgid "By Artist"
 msgstr "Par artiste"
 
-#: src/scenes/SongSelect.tsx:59
+#: src/components/songselect/TopBar.tsx:18
 msgid "By BPM"
 msgstr "Par BPM"
 
-#: src/scenes/SongSelect.tsx:60
+#: src/components/songselect/TopBar.tsx:19
 msgid "By Creator"
 msgstr "Par créateur"
 
-#: src/scenes/SongSelect.tsx:61
+#: src/components/songselect/TopBar.tsx:20
 msgid "By Difficulty"
 msgstr "Par difficulté"
 
-#: src/scenes/SongSelect.tsx:62
+#: src/components/songselect/TopBar.tsx:21
 msgid "By Length"
 msgstr "Par durée"
 
-#: src/scenes/SongSelect.tsx:63
+#: src/components/songselect/TopBar.tsx:22
 msgid "By Playlist"
 msgstr "Par playlist"
 
-#: src/scenes/SongSelect.tsx:64
+#: src/components/songselect/TopBar.tsx:23
 msgid "By Rank Achieved"
 msgstr "Par note obtenue"
 
-#: src/scenes/SongSelect.tsx:65
+#: src/components/songselect/TopBar.tsx:24
 msgid "By Title"
 msgstr "Par titre"
 
-#: src/scenes/Gameplay.tsx:905
+#: src/scenes/Gameplay.tsx:931
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -205,7 +205,7 @@ msgstr "Changez la façon dont osu!idle se comporte"
 #~ msgid "Clear local scores"
 #~ msgstr "Effacer les scores locaux"
 
-#: src/scenes/SongSelect.tsx:651
+#: src/scenes/SongSelect.tsx:539
 msgid "Clearing local scores is not available yet"
 msgstr "La suppression des scores locaux n'est pas encore disponible"
 
@@ -213,7 +213,7 @@ msgstr "La suppression des scores locaux n'est pas encore disponible"
 msgid "Click again to confirm"
 msgstr "Cliquez encore pour confirmer"
 
-#: src/scenes/SongSelect.tsx:619
+#: src/components/songselect/UserCard.tsx:48
 msgid "Click here to login!"
 msgstr "Cliquez ici pour vous connecter !"
 
@@ -225,7 +225,7 @@ msgstr "cliquez pour jouer..."
 msgid "Close"
 msgstr "Fermer"
 
-#: src/scenes/Result.tsx:150
+#: src/scenes/Result.tsx:128
 msgid "Combo"
 msgstr "Combo"
 
@@ -233,15 +233,15 @@ msgstr "Combo"
 msgid "CONTROLS"
 msgstr "CONTRÔLES"
 
-#: src/scenes/SongSelect.tsx:550
+#: src/scenes/SongSelect.tsx:470
 msgid "Couldn't load beatmaps: {error}"
 msgstr "Impossible de charger les beatmaps : {error}"
 
-#: src/scenes/Gameplay.tsx:866
+#: src/scenes/Gameplay.tsx:892
 msgid "Couldn't start play"
 msgstr "Impossible de démarrer la partie"
 
-#: src/scenes/Gameplay.tsx:806
+#: src/scenes/Gameplay.tsx:832
 msgid "Current Fatigue"
 msgstr "Fatigue actuelle"
 
@@ -265,11 +265,11 @@ msgstr "supprimer|beatmap|beatmaps"
 #~ msgid "Deleting beatmaps is not available yet"
 #~ msgstr "La suppression des beatmaps n'est pas encore disponible"
 
-#: src/components/BeatmapCard.tsx:96
+#: src/components/BeatmapCard.tsx:101
 msgid "Double click to download"
 msgstr "Double-cliquez pour télécharger"
 
-#: src/scenes/SongSelect.tsx:453
+#: src/scenes/SongSelect.tsx:436
 msgid "Download the beatmap first"
 msgstr "Téléchargez d'abord la beatmap"
 
@@ -289,7 +289,7 @@ msgstr "Effet"
 msgid "Exit"
 msgstr "Quitter"
 
-#: src/scenes/Result.tsx:176
+#: src/scenes/Result.tsx:146
 msgid "FAILED"
 msgstr "ÉCHEC"
 
@@ -331,11 +331,11 @@ msgstr "Compris!"
 msgid "GRAPHICS"
 msgstr "GRAPHISMES"
 
-#: src/scenes/SongSelect.tsx:535
+#: src/components/songselect/TopBar.tsx:90
 msgid "Group"
 msgstr "Grouper"
 
-#: src/scenes/Result.tsx:179
+#: src/scenes/Result.tsx:149
 msgid "Hit deviance · {ur} UR"
 msgstr "Déviation · {ur} UR"
 
@@ -356,7 +356,7 @@ msgid "Layout"
 msgstr "Disposition"
 
 #. placeholder {0}: version.metadata.objects
-#: src/scenes/SongSelect.tsx:513
+#: src/components/songselect/TopBar.tsx:68
 msgid "Length: {totalLength} BPM: {bpmText} Objects: {0}"
 msgstr "Durée : {totalLength} BPM : {bpmText} Objets : {0}"
 
@@ -372,7 +372,7 @@ msgstr "chargement de la bibliothèque…"
 msgid "Loop"
 msgstr "En boucle"
 
-#: src/scenes/SongSelect.tsx:616
+#: src/components/songselect/UserCard.tsx:45
 msgid "Lv{level}"
 msgstr "Lv{level}"
 
@@ -389,11 +389,11 @@ msgstr "MAINTENANCE"
 #~ msgstr "Gérer les playlists"
 
 #. placeholder {0}: version.set.metadata.creator
-#: src/scenes/SongSelect.tsx:507
+#: src/components/songselect/TopBar.tsx:62
 msgid "Mapped by {0}"
 msgstr "Mappé par {0}"
 
-#: src/components/BeatmapCard.tsx:105
+#: src/components/BeatmapCard.tsx:110
 msgid "mapped by {creator}"
 msgstr "créé par {creator}"
 
@@ -421,15 +421,15 @@ msgstr "Suivant"
 msgid "Next song"
 msgstr "Chanson suivante"
 
-#: src/scenes/Result.tsx:121
+#: src/scenes/Result.tsx:99
 msgid "Next up in {countdown}s:"
 msgstr "Prochaine dans {countdown}s :"
 
-#: src/scenes/Gameplay.tsx:801
+#: src/scenes/Gameplay.tsx:827
 msgid "Next up:"
 msgstr "Suivant:"
 
-#: src/scenes/SongSelect.tsx:57
+#: src/components/songselect/TopBar.tsx:16
 msgid "No Grouping"
 msgstr "Aucun groupe"
 
@@ -445,15 +445,15 @@ msgstr "Aucun résultat."
 msgid "No playlists yet. Type a name above and press Enter."
 msgstr "Aucune playlist. Saisissez un nom plus haut et appuyez sur Entrée."
 
-#: src/scenes/Result.tsx:182
+#: src/scenes/Result.tsx:152
 msgid "No replay data"
 msgstr "Aucune donnée de replay"
 
-#: src/scenes/Result.tsx:169
+#: src/components/result/SkillProgression.tsx:13
 msgid "No skill gains"
 msgstr "Aucun gain de compétence"
 
-#: src/scenes/SongSelect.tsx:600
+#: src/components/songselect/UserCard.tsx:29
 msgid "Open osu! web"
 msgstr "Ouvrir osu! web"
 
@@ -494,11 +494,11 @@ msgstr "parallax"
 msgid "Parallax"
 msgstr "Effet parallax"
 
-#: src/scenes/Result.tsx:144
+#: src/scenes/Result.tsx:122
 msgid "Performance"
 msgstr "Performance"
 
-#: src/scenes/SongSelect.tsx:612
+#: src/components/songselect/UserCard.tsx:41
 msgid "Performance: {pp}pp"
 msgstr "Performance : {pp}pp"
 
@@ -514,15 +514,15 @@ msgstr "Jouer"
 msgid "Play online"
 msgstr "Jouer en ligne"
 
-#: src/scenes/Gameplay.tsx:904
+#: src/scenes/Gameplay.tsx:930
 msgid "Play unranked"
 msgstr "Jouer hors classement"
 
-#: src/scenes/Gameplay.tsx:901
+#: src/scenes/Gameplay.tsx:927
 msgid "Play unranked ?"
 msgstr "Jouer hors classement ?"
 
-#: src/scenes/Result.tsx:113
+#: src/components/result/ResultMeta.tsx:20
 msgid "Played by {playerName} on {playedAt}"
 msgstr "Joué par {playerName} le {playedAt}"
 
@@ -535,7 +535,7 @@ msgstr "Playlist"
 msgid "Playlists"
 msgstr "Playlists"
 
-#: src/scenes/Gameplay.tsx:792
+#: src/scenes/Gameplay.tsx:818
 msgid "quit"
 msgstr "quitter"
 
@@ -544,7 +544,7 @@ msgstr "quitter"
 msgid "Really delete \"{0}\"?"
 msgstr "Vraiment supprimer \"{0}\"?"
 
-#: src/scenes/SongSelect.tsx:66
+#: src/components/songselect/TopBar.tsx:25
 msgid "Recently Played"
 msgstr "Joué récemment"
 
@@ -561,13 +561,13 @@ msgstr "Renommer"
 msgid "Renderer"
 msgstr "Vidéo"
 
-#: src/scenes/Result.tsx:109
+#: src/components/result/ResultMeta.tsx:16
 msgid "Result"
 msgstr "Résultat"
 
 #. placeholder {0}: version.metadata.rice
 #. placeholder {1}: version.metadata.ln
-#: src/scenes/SongSelect.tsx:516
+#: src/components/songselect/TopBar.tsx:71
 msgid "Rice: {0} LN: {1}"
 msgstr "Rice : {0} LN : {1}"
 
@@ -575,7 +575,7 @@ msgstr "Rice : {0} LN : {1}"
 msgid "right|click|hold|time"
 msgstr "droit|clique|appui|duree|durée"
 
-#: src/scenes/SongSelect.tsx:567
+#: src/scenes/SongSelect.tsx:487
 msgid "Search:"
 msgstr "Recherche :"
 
@@ -591,7 +591,7 @@ msgstr "Choisir une langue"
 msgid "Show FPS counter"
 msgstr "Montrer le compteur d'IPS"
 
-#: src/scenes/SongSelect.tsx:524
+#: src/components/songselect/TopBar.tsx:79
 msgid "Show scores"
 msgstr "Afficher les scores"
 
@@ -630,16 +630,16 @@ msgstr "Solo"
 msgid "Song select"
 msgstr "Sélection de musique"
 
-#: src/scenes/SongSelect.tsx:539
+#: src/components/songselect/TopBar.tsx:94
 msgid "Sort"
 msgstr "Trier"
 
 #. placeholder {0}: version.metadata.difficulty
-#: src/scenes/SongSelect.tsx:519
+#: src/components/songselect/TopBar.tsx:74
 msgid "Star Rating: {0}★"
 msgstr "Difficulté : {0}★"
 
-#: src/scenes/SongSelect.tsx:634
+#: src/scenes/SongSelect.tsx:524
 msgid "Strain debug"
 msgstr "Strain debug"
 
@@ -647,11 +647,11 @@ msgstr "Strain debug"
 msgid "tap to play..."
 msgstr "touchez pour jouer..."
 
-#: src/scenes/Gameplay.tsx:877
+#: src/scenes/Gameplay.tsx:903
 msgid "This difficulty failed to load."
 msgstr "Le chargement de cette difficulté a échoué."
 
-#: src/scenes/Gameplay.tsx:881
+#: src/scenes/Gameplay.tsx:907
 msgid "This difficulty has no notes to play."
 msgstr "Cette difficulté n'a aucune note à jouer."
 
@@ -672,7 +672,7 @@ msgid "Today"
 msgstr "Aujourd'hui"
 
 #: src/scenes/Options.tsx:278
-#: src/scenes/SongSelect.tsx:581
+#: src/scenes/SongSelect.tsx:501
 msgid "Type to search!"
 msgstr "Tapez pour rechercher !"
 
@@ -702,7 +702,7 @@ msgstr "Site web"
 msgid "Welcome to osu!idle"
 msgstr "Bienvenue sur osu!idle"
 
-#: src/scenes/SongSelect.tsx:646
+#: src/components/songselect/CardContextMenu.tsx:22
 msgid "What do you want to do with this beatmap?"
 msgstr "Que voulez-vous faire avec cette map ?"
 

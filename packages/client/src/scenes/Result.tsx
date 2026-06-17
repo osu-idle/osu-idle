@@ -2,12 +2,10 @@ import DevianceGraph from '../gameplay/DevianceGraph';
 import { Score } from '../db/schema/score';
 import { ManiaGame } from '@osu-idle/shared/sim/maniaGame';
 import Background from './Background';
-import { music } from '../audio/MusicPlayer';
 import './Result.css';
 import Controls from '../input/Controls';
 import SceneManager, { SCENE } from './SceneManager';
 import type { SkillProgress } from '@osu-idle/shared/sim/bots/character';
-import SkillXPBar from '../components/SkillXPBar';
 import Character from '../db/schema/character';
 import useSmoothNumber from '../animations/useSmoothNumber';
 import Skin from '../osu/skin/Skin';
@@ -24,9 +22,9 @@ import Autopilot from '../gameplay/autopilot';
 import { launchPlay } from './launchPlay';
 import num from '@osu-idle/shared/display/num';
 import { SETTINGS } from '../db/settings';
-
-/** how long the score / judgement counts take to tick up to their final value */
-const COUNT_UP_MS = 3000;
+import CountUp, { COUNT_UP_MS } from '../components/result/CountUp';
+import ResultMeta from '../components/result/ResultMeta';
+import SkillProgression from '../components/result/SkillProgression';
 
 const JUDGE_ORDER: Judgement[] = [
 	JUDGEMENT.PERFECT, JUDGEMENT.MARVELOUS,
@@ -43,12 +41,6 @@ type Props = {
 	/** the play failed (HP hit 0): the score was not saved and awards no XP */
 	failed?: boolean,
 };
-
-/** A whole number that ticks up from 0 to `value` on mount. */
-function CountUp({ value }: { value: number }) {
-	const shown = useSmoothNumber(value, { duration: COUNT_UP_MS, from: 0 });
-	return <>{Math.round(shown)}</>;
-}
 
 export default function Result({ score, game, progression, failed }: Props) {
 	const gains = progression?.filter((p) => p.gained > 0).sort((a, b) => b.gained - a.gained) ?? [];
@@ -85,13 +77,6 @@ export default function Result({ score, game, progression, failed }: Props) {
 
 	const player = useAsync(async () => score.characterId > 1 ? await getCharacter(score.characterId) : Character.get({ id: score.characterId }), [score.characterId]);
 
-	const track = music.beatmap.use((b) => b && ({
-		title: b.set.metadata.title,
-		artist: b.set.metadata.artist,
-		creator: b.set.metadata.creator,
-		version: b.metadata.version,
-	}));
-
 	const displayScore = Math.round(score.score);
 	const shownScore = useSmoothNumber(displayScore, { duration: COUNT_UP_MS, from: 0 });
 
@@ -104,14 +89,7 @@ export default function Result({ score, game, progression, failed }: Props) {
 	return (<>
 		<Background />
 		<div className="resultscreen">
-			<div className="result__meta">
-				<div className="result__title">
-					{track ? `${track.artist} - ${track.title} ` : <Trans>Result</Trans>}
-					{track && <span className="result__version">[{track.version}]</span>}
-				</div>
-				{track && <div className="result__creator"><Trans>Beatmap by {track.creator}</Trans></div>}
-				<div className="result__played"><Trans>Played by {playerName} on {playedAt}</Trans></div>
-			</div>
+			<ResultMeta playerName={playerName} playedAt={playedAt} />
 			<button className="result__exit" onClick={onBack}>
 				<Trans>BACK</Trans>
 			</button>
@@ -159,15 +137,7 @@ export default function Result({ score, game, progression, failed }: Props) {
 							</div>
 						</div>
 						<div className="result__progression">
-							{!failed && progression && (gains.length > 0 ? (
-								<div className="result__skills">
-									{gains.map((p, i) => (
-										<SkillXPBar key={p.skill} progress={p} delay={500 + i * 900} />
-									))}
-								</div>
-							) : (
-								<div className="result__skills-empty"><Trans>No skill gains</Trans></div>
-							))}
+							<SkillProgression failed={failed} progression={progression} gains={gains} />
 						</div>
 					</div>
 					<div className="result__graphs">

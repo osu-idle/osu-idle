@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Trans, Plural, useLingui } from '@lingui/react/macro';
 import Triangles from '../components/Triangles';
 import BeatmapCarousel, {
@@ -6,9 +6,10 @@ import BeatmapCarousel, {
 	type CarouselRow,
 	type DownloadState,
 } from '../components/BeatmapCarousel';
-import { groupsOf, EMPTY_HISTORY, EMPTY_PLAYLISTS, type Group } from '../osu/beatmap/grouping';
-import Leaderboard from '../components/leaderboard/Leaderboard';
-import Dropdown from '../components/dropdown/Dropdown';
+import { groupsOf, EMPTY_HISTORY, EMPTY_PLAYLISTS, type Group, type PlaylistsByBeatmap } from '../osu/beatmap/grouping';
+import TopBar from '../components/songselect/TopBar';
+import UserCard from '../components/songselect/UserCard';
+import CardContextMenu from '../components/songselect/CardContextMenu';
 import StrainDebug from './StrainDebug';
 import { matchesSearch } from '../osu/beatmap/beatmapSearch';
 import Entities from '../entity/entities';
@@ -22,23 +23,16 @@ import './SongSelect.css';
 import BeatmapStore, { beatmapsVersion } from '../osu/beatmap/beatmap_store';
 import Controls from '../input/Controls';
 import SceneManager, { SCENE } from './SceneManager';
-import { debugMode, isWebOpen, webUrl } from '../globals';
+import { debugMode } from '../globals';
 import { useParallax } from '@osu-idle/shared/hooks/useParallax';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import { getCharacter, getCharacterStats } from '../online/services/characters';
-import num, { bpm } from '@osu-idle/shared/display/num';
-import accuracy from '@osu-idle/shared/display/accuracy';
-import hitAccuracy from '@osu-idle/shared/osu/hitAccuracy';
-import { xpForLevel } from '@osu-idle/shared/sim/skills/xp';
-import { length } from '@osu-idle/shared/display/length';
 import { Grades } from '@osu-idle/shared/judgement';
 import { Score } from '../db/schema/score';
-import { GroupOption, GroupOptions, SETTINGS, SortOption, SortOptions } from '../db/settings';
+import { SETTINGS, type GroupOption, type SortOption } from '../db/settings';
 import Character from '../db/schema/character';
-import { recentTimeAgo } from '@osu-idle/shared/display/ago';
 import { getPlaylistIndex, playlistsVersion } from '../db/schema/playlist';
-import ContextMenu from '../components/ContextMenu';
 import PlaylistOverlay from '../components/PlaylistOverlay';
 import Autopilot, { AUTOPILOT_MODE } from '../gameplay/autopilot';
 import { launchPlay } from './launchPlay';
@@ -47,28 +41,6 @@ import { launchPlay } from './launchPlay';
  *  sessionStorage so a full dev-server reload (a skill edit forces one) reopens
  *  it instead of dropping back to the intro. See SceneManager's boot. */
 export const STRAIN_DEBUG_KEY = 'strain-debug-diff';
-
-/** Player-facing label for a sort/group option. The option *value* stays the
- *  raw key - comparators, the persisted setting, and grouping all branch on it -
- *  so only this display text is translated. GroupOption is the superset, so one
- *  mapping covers both dropdowns. */
-function optionLabel(option: GroupOption | SortOption): ReactNode {
-	switch (option) {
-		case 'No Grouping': return <Trans>No Grouping</Trans>;
-		case 'By Artist': return <Trans>By Artist</Trans>;
-		case 'By BPM': return <Trans>By BPM</Trans>;
-		case 'By Creator': return <Trans>By Creator</Trans>;
-		case 'By Difficulty': return <Trans>By Difficulty</Trans>;
-		case 'By Length': return <Trans>By Length</Trans>;
-		case 'By Playlist': return <Trans>By Playlist</Trans>;
-		case 'By Rank Achieved': return <Trans>By Rank Achieved</Trans>;
-		case 'By Title': return <Trans>By Title</Trans>;
-		case 'Recently Played': return <Trans>Recently Played</Trans>;
-	}
-}
-
-export const GROUP_OPTIONS = GroupOptions.map((v) => ({ value: v, label: optionLabel(v) }));
-export const SORT_OPTIONS = SortOptions.map((v) => ({ value: v, label: optionLabel(v) }));
 
 const getHistory = async (character: Character) => {
 	const scores = await Score.query('SELECT * FROM score WHERE characterId = ?', [character.id]);
@@ -97,6 +69,67 @@ const SORT_COMPARATORS: Record<SortOption, (a: CarouselItem, b: CarouselItem, h:
 	"Recently Played": (a, b, h) => (h.lastPlayed.get(b.beatmap.metadata.id) ?? 0) - (h.lastPlayed.get(a.beatmap.metadata.id) ?? 0)
 };
 
+/** Reconcile the download-status map against what's actually stored: mark stored
+ *  sets 'done', and drop a stale 'done' for any set no longer present (e.g. just
+ *  deleted) so its card restyles back to remote. In-flight 'downloading' entries
+ *  are left untouched. */
+function reconcileDownloads(prev: Record<number, DownloadState>, stored: Set<number>): Record<number, DownloadState> {
+	const next = { ...prev };
+	for (const id of stored) {
+		if (next[id]?.status !== 'done') next[id] = { status: 'done', progress: 1 };
+	}
+	for (const key of Object.keys(next)) {
+		const id = Number(key);
+		if (next[id].status === 'done' && !stored.has(id)) delete next[id];
+	}
+	return next;
+}
+
+type CarouselRows = { rows: CarouselRow[]; orderedItems: CarouselItem[]; expanded: { group: Group; items: CarouselItem[] } | undefined };
+
+/** Fold the sorted, filtered list into grouped carousel rows. `orderedItems` is
+ *  every card in display order (ignoring collapse) so arrow-key navigation can
+ *  step into a collapsed group, which then auto-opens as it becomes active. An
+ *  item can land in several buckets (playlists); only one group is ever open
+ *  (accordion), so duplicate cards never render together. `expanded` is the open
+ *  group's bucket - the playlist autopilot launches from it. */
+function buildCarouselRows(
+	filteredItems: CarouselItem[], group: GroupOption, history: History | undefined,
+	expandedKey: string | null, playlistsByBeatmap: PlaylistsByBeatmap,
+): CarouselRows {
+	if (group === 'No Grouping') {
+		return {
+			rows: filteredItems.map((item): CarouselRow => ({ type: 'card', item })),
+			orderedItems: filteredItems,
+			expanded: undefined,
+		};
+	}
+	const hist = history ?? EMPTY_HISTORY;
+	const now = Date.now();
+	const buckets = new Map<string, { group: Group; items: CarouselItem[] }>();
+	for (const item of filteredItems) {
+		for (const g of groupsOf(item, group, hist, now, playlistsByBeatmap)) {
+			let bucket = buckets.get(g.key);
+			if (!bucket) buckets.set(g.key, bucket = { group: g, items: [] });
+			bucket.items.push(item);
+		}
+	}
+	const ordered = [...buckets.values()].sort(
+		(a, b) => a.group.order - b.group.order || a.group.label.localeCompare(b.group.label),
+	);
+	const rows: CarouselRow[] = [];
+	const orderedItems: CarouselItem[] = [];
+	for (const { group: g, items: its } of ordered) {
+		const open = expandedKey === g.key;
+		rows.push({ type: 'header', key: g.key, label: g.label, count: its.length, collapsed: !open });
+		for (const item of its) {
+			orderedItems.push(item);
+			if (open) rows.push({ type: 'card', item });
+		}
+	}
+	return { rows, orderedItems, expanded: expandedKey ? buckets.get(expandedKey) : undefined };
+}
+
 /**
  * The game interface: an osu!-style song-select screen. The carousel on the
  * right lists every playable difficulty sorted by star rating; the leaderboard
@@ -114,9 +147,6 @@ export default function SongSelect() {
 	// the right-click contextual menu's target, and the playlist manager's target
 	const [menuItem, setMenuItem] = useState<CarouselItem | null>(null);
 	const [playlistItem, setPlaylistItem] = useState<CarouselItem | null>(null);
-	// delete needs a second click to confirm (osu!-style); reset whenever the menu closes
-	const [deleteArmed, setDeleteArmed] = useState(false);
-	useEffect(() => { if (!menuItem) setDeleteArmed(false); }, [menuItem]);
 
 	// landing back on song select is how every playlist-autopilot run ends
 	// (quitting gameplay, backing out of the result, a failed launch) - stop any
@@ -139,7 +169,6 @@ export default function SongSelect() {
 	const [character] = useSynced(Entities.character);
 	const online_character = useAsync(async () => character.id > 1 ? getCharacter(character.id) : undefined, [character]);
 	const online_stats = useAsync(async () => character.id > 1 ? getCharacterStats(character.id) : undefined, [character]);
-	const nextGlobal = online_character ? xpForLevel(online_character.overallLevel) : undefined;
 	const [user] = useSynced(Auth.user);
 	const [debug] = useSynced(debugMode);
 	const { t } = useLingui(); // for strings outside JSX text (attrs, toasts, menu)
@@ -172,21 +201,9 @@ export default function SongSelect() {
 			const all = Array.from(sets.values()).sort((a, b) => a.beatmap.metadata.difficulty - b.beatmap.metadata.difficulty);
 			setItems(all);
 			// reconcile downloaded status (drives card styling) against what's actually
-			// stored: mark stored sets 'done', and drop a stale 'done' for any set no
-			// longer present (e.g. just deleted) so its card restyles back to remote.
-			// In-flight 'downloading' entries are left untouched.
+			// stored (see reconcileDownloads)
 			const stored = new Set(all.filter(i => i.beatmap.metadata.runtime).map(i => i.set.metadata.id));
-			setDownloads((d) => {
-				const next = { ...d };
-				for (const id of stored) {
-					if (next[id]?.status !== 'done') next[id] = { status: 'done', progress: 1 };
-				}
-				for (const key of Object.keys(next)) {
-					const id = Number(key);
-					if (next[id].status === 'done' && !stored.has(id)) delete next[id];
-				}
-				return next;
-			});
+			setDownloads((d) => reconcileDownloads(d, stored));
 			return all;
 		} catch (e) {
 			setError(String(e));
@@ -280,45 +297,11 @@ export default function SongSelect() {
 		setExpandedKey((prev) => (prev && keys.includes(prev) ? prev : keys[0]));
 	}, [activeGroupKeys]);
 
-	// fold the sorted, filtered list into grouped carousel rows. `orderedItems`
-	// is every card in display order (ignoring collapse) so arrow-key navigation
-	// can step into a collapsed group, which then auto-opens as it becomes active.
-	// An item can land in several buckets (playlists); only one group is ever
-	// open (accordion), so duplicate cards never render together. `expanded` is
-	// the open group's bucket - the playlist autopilot launches from it.
-	const { rows, orderedItems, expanded } = useMemo(() => {
-		if (group === 'No Grouping') {
-			return {
-				rows: filteredItems.map((item): CarouselRow => ({ type: 'card', item })),
-				orderedItems: filteredItems,
-				expanded: undefined,
-			};
-		}
-		const hist = history ?? EMPTY_HISTORY;
-		const now = Date.now();
-		const buckets = new Map<string, { group: Group; items: CarouselItem[] }>();
-		for (const item of filteredItems) {
-			for (const g of groupsOf(item, group, hist, now, playlistsByBeatmap)) {
-				let bucket = buckets.get(g.key);
-				if (!bucket) buckets.set(g.key, bucket = { group: g, items: [] });
-				bucket.items.push(item);
-			}
-		}
-		const ordered = [...buckets.values()].sort(
-			(a, b) => a.group.order - b.group.order || a.group.label.localeCompare(b.group.label),
-		);
-		const rows: CarouselRow[] = [];
-		const orderedItems: CarouselItem[] = [];
-		for (const { group: g, items: its } of ordered) {
-			const open = expandedKey === g.key;
-			rows.push({ type: 'header', key: g.key, label: g.label, count: its.length, collapsed: !open });
-			for (const item of its) {
-				orderedItems.push(item);
-				if (open) rows.push({ type: 'card', item });
-			}
-		}
-		return { rows, orderedItems, expanded: expandedKey ? buckets.get(expandedKey) : undefined };
-	}, [filteredItems, group, history, expandedKey, playlistsByBeatmap]);
+	// grouped carousel rows folded from the sorted, filtered list (see buildCarouselRows)
+	const { rows, orderedItems, expanded } = useMemo(
+		() => buildCarouselRows(filteredItems, group, history, expandedKey, playlistsByBeatmap),
+		[filteredItems, group, history, expandedKey, playlistsByBeatmap],
+	);
 
 	/**
 	 * Select a difficulty: record the global selection (the carousel reacts by
@@ -466,15 +449,7 @@ export default function SongSelect() {
 		if (item?.beatmap.metadata.runtime) setDebugBeatmap(item.beatmap);
 	}, [items, debugBeatmap]);
 
-	// pre-formatted metadata + stats, so the <Trans> placeholders read by name
-	// (e.g. {totalLength}) in the catalog instead of positional {0}.
-	const totalLength = length((version?.metadata.total_length ?? 0) / 1000);
-	const bpmText = bpm(version?.metadata.bpm ?? 0);
-	const pp = num(online_character?.pp);
-	const accText = online_stats && accuracy(hitAccuracy(online_stats));
-	const fatigue = online_character ? accuracy(online_character.fatiguePercent) : '';
-	const level = num(online_character?.overallLevel);
-	const total = items.length; // referenced by name in the plural below
+	const total = items.length; // named in the results <Trans> below
 
 	return (
 		<div className={`game ${scoreView ? 'score-view' : ''}`}>
@@ -487,62 +462,7 @@ export default function SongSelect() {
 			</div>
 			<div className="game__scrim" />
 
-			<header className="game__topbar">
-				<svg className="game__topshape" viewBox="0 0 1000 185" preserveAspectRatio="none" aria-hidden>
-					<path className="game__topshape-fill" d="M0 0 H1000 V100 H430 C300 100 288 185 270 185 H0 Z" />
-					<path className="game__topshape-edge" d="M0 185 H270 C288 185 300 100 430 100 H1000" />
-				</svg>
-				{version && (<>
-					<div className="game__topinfo">
-						<div className="game__top_md-container">
-							<div className="game__top_md">
-								<div className="game__top_md_icon">
-									<div style={{ backgroundImage: `url('${version.metadata.runtime ? '/ranked.png' : '/unknown.png' }')`}}></div>
-								</div>
-								<div className="game__top_md_text">
-									<div className="game__top_md_title">
-										{version.set.metadata.artist} - {version.set.metadata.title} [{version.metadata.version}]
-									</div>
-									<div className="game__top_md_creator">
-										<Trans>Mapped by {version.set.metadata.creator}</Trans>
-									</div>
-								</div>
-							</div>
-							<div className="game__top_version">
-								<div className="game__top_music">
-									<Trans>Length: {totalLength} BPM: {bpmText} Objects: {version.metadata.objects}</Trans>
-								</div>
-								<div className="game__top_hos">
-									<Trans>Rice: {version.metadata.rice} LN: {version.metadata.ln}</Trans>
-								</div>
-								<div className="game__top_diff">
-									<Trans>Star Rating: {version.metadata.difficulty}★</Trans>
-								</div>
-							</div>
-						</div>
-						<div className="game__top_lb-container">
-							<button className='mobile__scores' onClick={() => setScoreView(!scoreView)}>{scoreView ? <Trans>Back</Trans> : <Trans>Show scores</Trans>}</button>
-
-							<Leaderboard />
-						</div>
-					</div>
-					<div className="game__topfilter">
-						<div className="game__topfilter_scroll">
-							{scrollSpeed} (fixed)
-						</div>
-						<div className="game__topfilter_sort">
-							<div className='game__group'>
-								<span><Trans>Group</Trans></span>
-								<Dropdown value={SETTINGS.groupby} options={GROUP_OPTIONS} accent='#92c3e6' />
-							</div>
-							<div className='game__sort'>
-								<span><Trans>Sort</Trans></span>
-								<Dropdown value={SETTINGS.sortby} options={SORT_OPTIONS} accent='#aed28b' />
-							</div>
-						</div>
-					</div>
-				</>)}
-			</header>
+			<TopBar version={version} scrollSpeed={scrollSpeed} scoreView={scoreView} setScoreView={setScoreView} />
 
 			<main className="game__body">
 
@@ -595,37 +515,7 @@ export default function SongSelect() {
 				<button className="game__exit" onClick={onBack}>
 					<Trans>BACK</Trans>
 				</button>
-				<div
-					className="game__user"
-					title={t`Open osu! web`}
-					onClick={async () => {
-						await webUrl.set(character.isGuest() ? 'login' : `c/${character.id}`);
-						await isWebOpen.set(true);
-					}}
-				>
-					<div className="game__avatar">
-						<img className="game__avatar-img" src={user?.avatarUrl ?? '/web/guest.png'} alt="" />
-					</div>
-					<div className="game__user-meta">
-						<span className="game__user-name">{character.name}</span>
-						{online_character && (<>
-							<span className="game__user-pp"><Trans>Performance: {pp}pp</Trans></span>
-							<span className="game__user-acc"><Trans>Accuracy: {accText}</Trans>
-								{online_character.sessionTime > 600000 && <span className='game__user-fatigue'>{recentTimeAgo(online_character.sessionTime)} ({fatigue})</span>}
-							</span>
-							<span className="game__user-level"><Trans>Lv{level}</Trans></span>
-						</>)}
-						{!online_character && (
-							<span className="game__user-pp"><Trans>Click here to login!</Trans></span>
-						)}
-						<div className="game__user-level-bar">
-							<div
-								className="game__user-level-bar-fill"
-								style={{ width: `${Math.min(1, (online_character?.overallXp ?? 0) / (nextGlobal || 1)) * 100}%` }}
-							/>
-						</div>
-					</div>
-				</div>
+				<UserCard character={character} user={user} online_character={online_character} online_stats={online_stats} />
 			</div>
 
 			{toast && <div className="game__toast">{toast}</div>}
@@ -641,16 +531,12 @@ export default function SongSelect() {
 			)}
 
 			{menuItem && (
-				<ContextMenu
-					title={`${menuItem.set.metadata.artist} - ${menuItem.set.metadata.title}`}
-					sub={t`What do you want to do with this beatmap?`}
+				<CardContextMenu
+					item={menuItem}
 					onClose={() => setMenuItem(null)}
-					options={[
-						{ label: t`1. Manage Playlists`, color: '#85b81e', onClick: () => { setPlaylistItem(menuItem); setMenuItem(null); } },
-						{ label: deleteArmed ? t`2. Click again to delete` : t`2. Delete...`, color: '#e93100', onClick: () => { if (deleteArmed) deleteSet(menuItem); else setDeleteArmed(true); } },
-						{ label: t`3. Clear local scores`, color: '#ce7dd6', onClick: () => { setMenuItem(null); flashToast(t`Clearing local scores is not available yet`); } },
-						{ label: t`4. Cancel`, color: '#6b6b6b', onClick: () => setMenuItem(null) },
-					]}
+					onManagePlaylists={() => { setPlaylistItem(menuItem); setMenuItem(null); }}
+					onDelete={() => deleteSet(menuItem)}
+					onClearScores={() => { setMenuItem(null); flashToast(t`Clearing local scores is not available yet`); }}
 				/>
 			)}
 

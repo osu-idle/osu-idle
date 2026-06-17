@@ -117,17 +117,23 @@ export default class Coordination extends Skill {
 		// held LN is fumble-released right as the new key goes down, or the new
 		// note isn't pressed at all
 		if (currentStrain.strain >= 1 && Math.random() < Coordination.ERROR_CHANCE) {
-			const victim = held[Math.floor(Math.random() * held.length)];
-			if (victim && Math.random() < Coordination.FUMBLE_SHARE) {
-				victim.strain.forcedRelease!.at = note.time;
-			} else {
-				currentStrain.miss = true;
-			}
+			this.breakDown(currentStrain, held, note);
 		}
 
 		if (note.hold) this.active.push({ note, strain: currentStrain });
 
 		return currentStrain;
+	}
+
+	/** A coordination error on this press: either fumble-release a held LN, or
+	 *  miss the new note entirely. */
+	private breakDown(currentStrain: SkillStrain, held: ActiveHold[], note: RuntimeNote): void {
+		const victim = held[Math.floor(Math.random() * held.length)];
+		if (victim && Math.random() < Coordination.FUMBLE_SHARE) {
+			victim.strain.forcedRelease!.at = note.time;
+		} else {
+			currentStrain.miss = true;
+		}
 	}
 
 }
