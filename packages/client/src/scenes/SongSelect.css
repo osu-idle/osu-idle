@@ -569,7 +569,7 @@
 	transition: all 0.16s ease;
 	margin: 15px 5px 0;
 	z-index: 1000;
-	padding: 10px 10px;
+	padding: 10px;
 	width: calc(100% - 10px);
 	justify-content: center;
 	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);

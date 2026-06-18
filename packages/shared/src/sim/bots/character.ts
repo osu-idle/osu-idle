@@ -137,8 +137,8 @@ export function computeReleaseStrainOffset(s: SkillStrain): number {
 
 export const generalBasedScoreFactor = (skillLevel: number, score: ScoreLike) => {
 	const normalized = transpose(score.accuracy, [
-		transpose(skillLevel, [0, 30], [0.7, 0.95]),
-		transpose(skillLevel, [30, 100], [0.9, 1.05])
+		transpose(skillLevel, [0, 100], [0.7, 0.95]),
+		transpose(skillLevel, [0, 100], [0.9, 1.05])
 	], [0, 2]);
 	return Math.min(1, Math.max(0, normalized));
 };

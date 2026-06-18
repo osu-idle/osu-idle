@@ -35,6 +35,7 @@ import Character from '../db/schema/character';
 import { getPlaylistIndex, playlistsVersion } from '../db/schema/playlist';
 import PlaylistOverlay from '../components/PlaylistOverlay';
 import Autopilot, { AUTOPILOT_MODE } from '../gameplay/autopilot';
+import Spectate from '../online/spectate';
 import { launchPlay } from './launchPlay';
 
 /** Dev-only: the diff id the strain debug overlay is open on, stashed in
@@ -152,6 +153,10 @@ export default function SongSelect() {
 	// (quitting gameplay, backing out of the result, a failed launch) - stop any
 	// session here so a stale one can never chain plays later.
 	useEffect(() => { Autopilot.stop(); }, []);
+
+	useEffect(() => {
+		Spectate.tick();
+	}, []);
 
 	const onBack = () => {
 		if (playlistItem) { setPlaylistItem(null); return; }

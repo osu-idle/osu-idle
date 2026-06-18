@@ -13,482 +13,482 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/display/ago.ts:39
+#: src/display/ago.ts
 msgid "{d} days ago"
 msgstr "{d} days ago"
 
-#: src/display/ago.ts:21
+#: src/display/ago.ts
 msgid "{d}d"
 msgstr "{d}d"
 
-#: src/display/ago.ts:37
+#: src/display/ago.ts
 msgid "{h} hours ago"
 msgstr "{h} hours ago"
 
-#: src/display/ago.ts:19
+#: src/display/ago.ts
 msgid "{h}h"
 msgstr "{h}h"
 
-#: src/display/ago.ts:35
+#: src/display/ago.ts
 msgid "{m} minutes ago"
 msgstr "{m} minutes ago"
 
-#: src/display/ago.ts:17
+#: src/display/ago.ts
 msgid "{m}mn"
 msgstr "{m}mn"
 
-#: src/display/ago.ts:41
+#: src/display/ago.ts
 msgid "{mo} months ago"
 msgstr "{mo} months ago"
 
-#: src/display/ago.ts:33
+#: src/display/ago.ts
 msgid "{s} seconds ago"
 msgstr "{s} seconds ago"
 
-#: src/display/ago.ts:15
+#: src/display/ago.ts
 msgid "{s}s"
 msgstr "{s}s"
 
-#: src/display/ago.ts:42
+#: src/display/ago.ts
 msgid "{y} years ago"
 msgstr "{y} years ago"
 
-#: src/skills.ts:85
+#: src/skills.ts
 msgid "←↓↑→"
 msgstr "←↓↑→"
 
-#: src/skills.ts:55
+#: src/skills.ts
 msgid "1 hour pre-session warmup"
 msgstr "1 hour pre-session warmup"
 
-#: src/skills.ts:57
+#: src/skills.ts
 msgid "2 hours gym session"
 msgstr "2 hours gym session"
 
-#: src/skills.ts:56
+#: src/skills.ts
 msgid "30 minutes muscle strength warmup"
 msgstr "30 minutes muscle strength warmup"
 
-#: src/skills.ts:63
+#: src/skills.ts
 msgid "60hz GMMK firmware"
 msgstr "60hz GMMK firmware"
 
-#: src/display/skills.ts:9
+#: src/display/skills.ts
 msgid "Accuracy"
 msgstr "Accuracy"
 
-#: src/skills.ts:129
+#: src/skills.ts
 msgid "AirPods"
 msgstr "AirPods"
 
-#: src/skills.ts:118
+#: src/skills.ts
 msgid "Amazon basics Puresoft office chair"
 msgstr "Amazon basics Puresoft office chair"
 
-#: src/skills.ts:121
+#: src/skills.ts
 msgid "AndaSeat Kaiser 3"
 msgstr "AndaSeat Kaiser 3"
 
-#: src/skills.ts:89
+#: src/skills.ts
 msgid "Arrow skin LNs"
 msgstr "Arrow skin LNs"
 
-#: src/skills.ts:142
+#: src/skills.ts
 msgid "Arrow skin notes"
 msgstr "Arrow skin notes"
 
-#: src/skills.ts:79
+#: src/skills.ts
 msgid "AS:\""
 msgstr "AS:\""
 
-#: src/skills.ts:83
+#: src/skills.ts
 msgid "AS45"
 msgstr "AS45"
 
-#: src/skills.ts:84
+#: src/skills.ts
 msgid "AS56"
 msgstr "AS56"
 
-#: src/skills.ts:78
+#: src/skills.ts
 msgid "ASL:"
 msgstr "ASL:"
 
-#: src/skills.ts:148
+#: src/skills.ts
 msgid "Audio focused accuracy"
 msgstr "Audio focused accuracy"
 
-#: src/skills.ts:91
+#: src/skills.ts
 msgid "Bar skin LNs"
 msgstr "Bar skin LNs"
 
-#: src/skills.ts:144
+#: src/skills.ts
 msgid "Bar skin notes"
 msgstr "Bar skin notes"
 
-#: src/skills.ts:115
+#: src/skills.ts
 msgid "Basic plastic chair"
 msgstr "Basic plastic chair"
 
-#: src/skills.ts:97
+#: src/skills.ts
 msgid "Blank LN body with bar LN tail"
 msgstr "Blank LN body with bar LN tail"
 
-#: src/skills.ts:137
+#: src/skills.ts
 msgid "Bose QuietComfort Ultra"
 msgstr "Bose QuietComfort Ultra"
 
-#: src/skills.ts:98
+#: src/skills.ts
 msgid "BottomCentered Anchored LN tails"
 msgstr "BottomCentered Anchored LN tails"
 
-#: src/skills.ts:155
+#: src/skills.ts
 msgid "Bruteforce learning"
 msgstr "Bruteforce learning"
 
-#: src/skills.ts:150
+#: src/skills.ts
 msgid "Cap"
 msgstr "Cap"
 
-#: src/skills.ts:119
+#: src/skills.ts
 msgid "CENTERHALV Ikea mesh office chair"
 msgstr "CENTERHALV Ikea mesh office chair"
 
-#: src/skills.ts:90
+#: src/skills.ts
 msgid "Circle skin LNs"
 msgstr "Circle skin LNs"
 
-#: src/skills.ts:143
+#: src/skills.ts
 msgid "Circle skin notes"
 msgstr "Circle skin notes"
 
-#: src/display/skills.ts:17
+#: src/display/skills.ts
 msgid "Concentration"
 msgstr "Concentration"
 
-#: src/display/skills.ts:13
+#: src/display/skills.ts
 msgid "Consistency"
 msgstr "Consistency"
 
-#: src/skills.ts:75
+#: src/skills.ts
 msgid "Controller"
 msgstr "Controller"
 
-#: src/skills.ts:27
+#: src/skills.ts
 msgid "Cooler Master MS110"
 msgstr "Cooler Master MS110"
 
-#: src/display/skills.ts:12
+#: src/display/skills.ts
 msgid "Coordination"
 msgstr "Coordination"
 
-#: src/skills.ts:28
+#: src/skills.ts
 msgid "Corsair K60"
 msgstr "Corsair K60"
 
-#: src/skills.ts:95
+#: src/skills.ts
 msgid "Cut percy LNs"
 msgstr "Cut percy LNs"
 
-#: src/skills.ts:96
+#: src/skills.ts
 msgid "Cut percy with LN end indicator"
 msgstr "Cut percy with LN end indicator"
 
-#: src/skills.ts:88
+#: src/skills.ts
 msgid "Default skin LNs"
 msgstr "Default skin LNs"
 
-#: src/skills.ts:140
+#: src/skills.ts
 msgid "Default skin notes"
 msgstr "Default skin notes"
 
-#: src/skills.ts:23
+#: src/skills.ts
 msgid "Dell XPS chiclet keyboard"
 msgstr "Dell XPS chiclet keyboard"
 
-#: src/skills.ts:76
+#: src/skills.ts
 msgid "DFJK"
 msgstr "DFJK"
 
-#: src/skills.ts:141
+#: src/skills.ts
 msgid "Diamond skin notes"
 msgstr "Diamond skin notes"
 
-#: src/skills.ts:124
+#: src/skills.ts
 msgid "DOF Reality H6R"
 msgstr "DOF Reality H6R"
 
-#: src/skills.ts:163
+#: src/skills.ts
 msgid "Dualscreen"
 msgstr "Dualscreen"
 
-#: src/skills.ts:29
+#: src/skills.ts
 msgid "Ducky One 2 Mini"
 msgstr "Ducky One 2 Mini"
 
-#: src/skills.ts:122
+#: src/skills.ts
 msgid "DXRacer Drifting"
 msgstr "DXRacer Drifting"
 
-#: src/skills.ts:149
+#: src/skills.ts
 msgid "Dynamic sight focus"
 msgstr "Dynamic sight focus"
 
-#: src/skills.ts:69
+#: src/skills.ts
 msgid "Embedded keyboard firmware"
 msgstr "Embedded keyboard firmware"
 
-#: src/skills.ts:93
+#: src/skills.ts
 msgid "Fade-out tail LNs"
 msgstr "Fade-out tail LNs"
 
-#: src/skills.ts:30
+#: src/skills.ts
 msgid "Glorious GMMK Pro"
 msgstr "Glorious GMMK Pro"
 
-#: src/skills.ts:58
+#: src/skills.ts
 msgid "Gym, stretch session + meditation"
 msgstr "Gym, stretch session + meditation"
 
-#: src/skills.ts:120
+#: src/skills.ts
 msgid "Hbada E3 Pro"
 msgstr "Hbada E3 Pro"
 
-#: src/skills.ts:32
+#: src/skills.ts
 msgid "IRON165"
 msgstr "IRON165"
 
-#: src/display/skills.ts:14
+#: src/display/skills.ts
 msgid "Jack Speed"
 msgstr "Jack Speed"
 
-#: src/skills.ts:65
+#: src/skills.ts
 msgid "Latest stock Windows drivers"
 msgstr "Latest stock Windows drivers"
 
-#: src/skills.ts:24
+#: src/skills.ts
 msgid "Lenovo IdeaPad ultrabook chiclet keyboard"
 msgstr "Lenovo IdeaPad ultrabook chiclet keyboard"
 
-#: src/skills.ts:94
+#: src/skills.ts
 msgid "Light percy LNs"
 msgstr "Light percy LNs"
 
-#: src/skills.ts:131
+#: src/skills.ts
 msgid "Logitech H390"
 msgstr "Logitech H390"
 
-#: src/skills.ts:26
+#: src/skills.ts
 msgid "Logitech K120"
 msgstr "Logitech K120"
 
-#: src/skills.ts:68
+#: src/skills.ts
 msgid "Low latency Corsair iCUE"
 msgstr "Low latency Corsair iCUE"
 
-#: src/skills.ts:156
+#: src/skills.ts
 msgid "Map editor studying"
 msgstr "Map editor studying"
 
-#: src/skills.ts:161
+#: src/skills.ts
 msgid "Memorizing the whole map"
 msgstr "Memorizing the whole map"
 
-#: src/display/skills.ts:16
+#: src/display/skills.ts
 msgid "Memory"
 msgstr "Memory"
 
-#: src/skills.ts:162
+#: src/skills.ts
 msgid "Mental SV palace"
 msgstr "Mental SV palace"
 
-#: src/skills.ts:116
+#: src/skills.ts
 msgid "Metal folding chair"
 msgstr "Metal folding chair"
 
-#: src/skills.ts:59
+#: src/skills.ts
 msgid "Mid-play stretching + meditation"
 msgstr "Mid-play stretching + meditation"
 
-#: src/skills.ts:72
+#: src/skills.ts
 msgid "Modded actuation prediction firmware"
 msgstr "Modded actuation prediction firmware"
 
-#: src/skills.ts:71
+#: src/skills.ts
 msgid "Modded rapid trigger firmware"
 msgstr "Modded rapid trigger firmware"
 
-#: src/skills.ts:146
+#: src/skills.ts
 msgid "Music anticipation"
 msgstr "Music anticipation"
 
-#: src/skills.ts:92
+#: src/skills.ts
 msgid "No tail LNs"
 msgstr "No tail LNs"
 
-#: src/skills.ts:49
+#: src/skills.ts
 msgid "No warmup"
 msgstr "No warmup"
 
-#: src/skills.ts:33
+#: src/skills.ts
 msgid "Norbaforce Mark IV"
 msgstr "Norbaforce Mark IV"
 
-#: src/skills.ts:147
+#: src/skills.ts
 msgid "Note snap coloring"
 msgstr "Note snap coloring"
 
-#: src/skills.ts:67
+#: src/skills.ts
 msgid "Optimized MasterPlus+"
 msgstr "Optimized MasterPlus+"
 
-#: src/skills.ts:64
+#: src/skills.ts
 msgid "Outdated stock Windows drivers"
 msgstr "Outdated stock Windows drivers"
 
-#: src/skills.ts:154
+#: src/skills.ts
 msgid "Passive learning"
 msgstr "Passive learning"
 
-#: src/skills.ts:145
+#: src/skills.ts
 msgid "Per-map scroll speed setting"
 msgstr "Per-map scroll speed setting"
 
-#: src/skills.ts:158
+#: src/skills.ts
 msgid "Post-it notes"
 msgstr "Post-it notes"
 
-#: src/skills.ts:159
+#: src/skills.ts
 msgid "Post-it pattern drawings"
 msgstr "Post-it pattern drawings"
 
-#: src/skills.ts:82
+#: src/skills.ts
 msgid "QW{}"
 msgstr "QW{}"
 
-#: src/skills.ts:80
+#: src/skills.ts
 msgid "QWOP"
 msgstr "QWOP"
 
-#: src/skills.ts:81
+#: src/skills.ts
 msgid "QWP{"
 msgstr "QWP{"
 
-#: src/skills.ts:132
+#: src/skills.ts
 msgid "Razer BlackShark V3"
 msgstr "Razer BlackShark V3"
 
-#: src/skills.ts:160
+#: src/skills.ts
 msgid "Re-mapping to get mapper's advantage"
 msgstr "Re-mapping to get mapper's advantage"
 
-#: src/display/skills.ts:15
+#: src/display/skills.ts
 msgid "Reading"
 msgstr "Reading"
 
-#: src/display/skills.ts:18
+#: src/display/skills.ts
 msgid "Release"
 msgstr "Release"
 
-#: src/skills.ts:77
+#: src/skills.ts
 msgid "SDKL"
 msgstr "SDKL"
 
-#: src/skills.ts:123
+#: src/skills.ts
 msgid "Secretlab TITAN Evo"
 msgstr "Secretlab TITAN Evo"
 
-#: src/skills.ts:136
+#: src/skills.ts
 msgid "Sennheiser Momentum 4"
 msgstr "Sennheiser Momentum 4"
 
-#: src/skills.ts:127
+#: src/skills.ts
 msgid "Sizzling speakers"
 msgstr "Sizzling speakers"
 
-#: src/skills.ts:135
+#: src/skills.ts
 msgid "Sony WH-1000XM4"
 msgstr "Sony WH-1000XM4"
 
-#: src/display/skills.ts:10
+#: src/display/skills.ts
 msgid "Speed"
 msgstr "Speed"
 
-#: src/display/skills.ts:19
+#: src/display/skills.ts
 msgid "Speed Jam"
 msgstr "Speed Jam"
 
-#: src/skills.ts:157
+#: src/skills.ts
 msgid "Split map sections training"
 msgstr "Split map sections training"
 
-#: src/display/skills.ts:11
+#: src/display/skills.ts
 msgid "Stamina"
 msgstr "Stamina"
 
-#: src/skills.ts:31
+#: src/skills.ts
 msgid "Steelseries Apex Pro"
 msgstr "Steelseries Apex Pro"
 
-#: src/skills.ts:134
+#: src/skills.ts
 msgid "Steelseries Arctis Nova 5"
 msgstr "Steelseries Arctis Nova 5"
 
-#: src/skills.ts:70
+#: src/skills.ts
 msgid "Steelseries GG embedded profile"
 msgstr "Steelseries GG embedded profile"
 
-#: src/skills.ts:66
+#: src/skills.ts
 msgid "Stock Logitech G Hub"
 msgstr "Stock Logitech G Hub"
 
-#: src/skills.ts:114
+#: src/skills.ts
 msgid "Stool"
 msgstr "Stool"
 
-#: src/skills.ts:62
+#: src/skills.ts
 msgid "Synaptics drivers"
 msgstr "Synaptics drivers"
 
-#: src/skills.ts:50
+#: src/skills.ts
 msgid "Thinks about warmup"
 msgstr "Thinks about warmup"
 
-#: src/skills.ts:25
+#: src/skills.ts
 msgid "Unbranded membrane keyboard"
 msgstr "Unbranded membrane keyboard"
 
-#: src/skills.ts:128
+#: src/skills.ts
 msgid "Used earbuds"
 msgstr "Used earbuds"
 
-#: src/skills.ts:153
+#: src/skills.ts
 msgid "Vibe playing"
 msgstr "Vibe playing"
 
-#: src/skills.ts:133
+#: src/skills.ts
 msgid "Voyager Focus 2"
 msgstr "Voyager Focus 2"
 
-#: src/skills.ts:51
+#: src/skills.ts
 msgid "Warmup on easy maps"
 msgstr "Warmup on easy maps"
 
-#: src/skills.ts:53
+#: src/skills.ts
 msgid "Warmup on hard maps"
 msgstr "Warmup on hard maps"
 
-#: src/skills.ts:52
+#: src/skills.ts
 msgid "Warmup on normal maps"
 msgstr "Warmup on normal maps"
 
-#: src/skills.ts:54
+#: src/skills.ts
 msgid "Warmup on stamina packs"
 msgstr "Warmup on stamina packs"
 
-#: src/skills.ts:117
+#: src/skills.ts
 msgid "Wooden chair"
 msgstr "Wooden chair"
 
-#: src/skills.ts:130
+#: src/skills.ts
 msgid "Yealink Phone Headset"
 msgstr "Yealink Phone Headset"

@@ -1,14 +1,13 @@
 import './Gameplay.css';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { ManiaGame } from '@osu-idle/shared/sim/maniaGame';
-import { JUDGEMENT_COLORS } from '../gameplay/judgement';
+import { LEAD_IN_MS, ManiaGame } from '@osu-idle/shared/sim/maniaGame';
 import CharacterBot from '@osu-idle/shared/sim/bots/character';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 import type { Bot } from '@osu-idle/shared/sim/bot';
 import { DEBUG_BOT_LEVEL } from '../gameplay/strainDebug';
 import ReplayBot from '../gameplay/replayBot';
-import { completePlaySession, startPlaySession, type PlayContext } from '../online/play';
+import { abortPlaySession, fetchPlayResult, playSessionHeartbeat, skipPlaySession, startPlaySession, type PlayContext } from '../online/play';
 import Account from '../online/account';
 import Entities from '../entity/entities';
 import { drawHitErrorBar } from '../gameplay/hitError';
@@ -39,6 +38,7 @@ import { type Grade } from '@osu-idle/shared/judgement';
 import Skin from '../osu/skin/Skin';
 import { SETTINGS } from '../db/settings';
 import { scrollSpeedToMs } from '@osu-idle/shared/osu/scroll_speed';
+import sleep from '@osu-idle/shared/helpers/sleep';
 
 type InnerProps = {
 	beatmapInfo: LightBeatmap,
@@ -53,8 +53,7 @@ type InnerProps = {
 const COLUMN_WIDTH = 74;
 const NOTE_HEIGHT = 24;
 const RECEPTOR_HEIGHT = 30;
-const JUDGE_LINE_FROM_BOTTOM = 150;
-const LEAD_IN_MS = 2000;
+const JUDGE_LINE_FROM_BOTTOM = 100;
 /** approach time at base speed (ms a note is visible) - lower = faster scroll */
 /** how far ahead hitsounds are queued onto the audio clock. Must exceed the
  *  background timer-throttle floor (~1s) so a blurred tab still queues the next
@@ -69,11 +68,6 @@ const HITSOUND_TICK_MS = 250;
 // its own - it only reduces SpeedJam's)
 const STRAIN_HUD_HIDDEN = new Set<SkillName>([SKILL.accuracy, SKILL.memory, SKILL.consistency]);
 const STRAIN_HUD_SKILLS = Skills.filter(s => !STRAIN_HUD_HIDDEN.has(s));
-
-// outer columns light, inner columns blue (classic osu! 4K)
-const COLUMN_COLORS = ['#e8e8f0', '#63b3ff', '#63b3ff', '#e8e8f0'];
-const colColor = (c: number, keys: number) =>
-	keys === 4 ? COLUMN_COLORS[c] : c % 2 === 0 ? '#e8e8f0' : '#63b3ff';
 
 function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: InnerProps) {
 	music.mode.set(PLAYER_MODE.SINGLE);
@@ -179,7 +173,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 	};
 
 	const onQuit = () => {
-		if (play.mode === 'ranked') completePlaySession(play.token, true);
+		if (play.mode === 'ranked') void abortPlaySession(play.token);
 		onExit();
 	};
 
@@ -194,6 +188,8 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 	const skipToStart = () => {
 		if (!game) return;
 		game.update(game.songStartMs);
+		// a ranked play's timeline is server-authoritative; persist the skip too
+		if (play.mode === 'ranked') void skipPlaySession(play.token);
 		const clock = clockRef.current;
 		if (!clock) return;
 		if (clock.noAudio) {
@@ -273,18 +269,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		const c = game.score.counts;
 		const failed = game.score.failed;
 
-		// Persist server XP gains onto the live (account) character for display continuity.
-		type ServerGains = Extract<Awaited<ReturnType<typeof completePlaySession>>, { gains: unknown }>['gains'];
-		const applyServerGains = (gains: ServerGains) => {
-			const ch = Entities.character.get();
-			for (const g of gains ?? []) {
-				ch.skills.find(s => s.name === g.skill)?.level.set(g.toLevel);
-				ch.skills.find(s => s.name === g.skill)?.xp.set(g.toXp);
-			}
-			void ch.persistSkills();
-		};
-
-		void calculatePP(game.score, beatmap).then(pp => {
+		void calculatePP(game.score, beatmap).then(async pp => {
 			// a local Score built from this client's (replayed or simulated) play -
 			// used as-is for guest/unranked, and as the fail-screen display for ranked
 			const local = new Score({
@@ -308,24 +293,43 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			}
 
 			if (play.mode === 'ranked') {
-				completePlaySession(play.token)
-					.then(res => {
-						if (res.failed || !('score' in res) || !res.score) {
+				const handleRanked = async (tries = 0) => {
+					try {
+						const result = await fetchPlayResult(play.token, true);
+						
+						if (result.failed || !('score' in result) || !result.score) {
 							SceneManager.set(SCENE.RESULT, local, game, undefined, true);
 							return;
 						}
-						applyServerGains(res.gains);
+
+						const ch = Entities.character.get();
+						for (const g of result.gains ?? []) {
+							ch.skills.find(s => s.name === g.skill)?.level.set(g.toLevel);
+							ch.skills.find(s => s.name === g.skill)?.xp.set(g.toXp);
+						}
+						void ch.persistSkills();
+			
 						// mirror the authoritative server score into the local DB so it
 						// shows up in local history / leaderboards (keyed by its onlineId)
-						const score = Score.fromDTO(res.score);
+						const score = Score.fromDTO(result.score);
 						void score.add()
-							.then(saved => SceneManager.set(SCENE.RESULT, saved, game, res.gains, false))
+							.then(saved => SceneManager.set(SCENE.RESULT, saved, game, result.gains, false))
 							.catch(e => {
 								console.warn('[score] local mirror failed', e);
-								SceneManager.set(SCENE.RESULT, score, game, res.gains, false);
+								SceneManager.set(SCENE.RESULT, score, game, result.gains, false);
 							});
-					})
-					.catch((e) => { Log.errorPopup(`Could not submit score: ${e}`); onExit(); });
+						return;
+					} catch (e) {
+						if (tries >= 10) {
+							Log.errorPopup(`Score submission error: ${e}`);
+							return;
+						}
+						await sleep(Math.pow(2, tries) * 1000);
+						await handleRanked(tries++);
+					}
+				};
+
+				await handleRanked();
 				return;
 			}
 
@@ -347,6 +351,21 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				.catch((e) => { console.warn('[score] save failed', e); onExit(); });
 		});
 	}, [done]);
+
+	// Watch for an aborted play
+	useEffect(() => {
+		if (play.mode !== 'ranked') return;
+
+		const watch = setInterval(async () => {
+			if (savedRef.current) return;
+			const state = await playSessionHeartbeat(play.token);
+			if (state && 'aborted' in state) {
+				clearInterval(watch);
+				onExit();
+			}
+		}, 2500);
+		return () => clearInterval(watch);
+	}, []);
 
 	useEffect(() => {
 		if (!game) return;
@@ -397,10 +416,32 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			// audio context so the music stays sample-locked to the hitsounds.
 			music.beatmap.set(beatmapInfo);
 			music.stop();
+			const c0 = clockRef.current;
 			// decode the track now, during the silent lead-in, so it can start the
 			// instant the clock crosses 0. `false` = keysound map (no backing track),
 			// so the clock stays on the perf timer for the whole play.
-			void music.prepareGameplay(beatmapInfo).then((hasAudio) => { clockRef.current!.noAudio = !hasAudio; });
+			void music.prepareGameplay(beatmapInfo).then((hasAudio) => {
+				c0.noAudio = !hasAudio;
+				// Anchor a ranked play's clock to the server's start time so every tab
+				// (the originator and any spectators) shows the exact same position:
+				// songPos = (now - startedAt) - lead-in. Computed HERE, not earlier -
+				// the decode above can take a while, and a stale anchor is what desyncs.
+				if (play.mode === 'ranked') {
+					const t = (Date.now() - play.startedAt) - LEAD_IN_MS;
+					c0.paused = false;
+					if (t >= 0) {
+						// already into the song - seek to the live position and start audio there
+						const seekTo = Math.min(t, game.songEndMs + 1);
+						game.seek(seekTo); // judges the notes already played (the replay is deterministic)
+						resumeAt(c0, seekTo);
+					} else {
+						// still within the lead-in: anchor the countdown to wall-clock; audio
+						// starts on its own when the clock crosses 0 (see songTime)
+						c0.leadStart = performance.now() - LEAD_IN_MS - t;
+					}
+					void transition.reveal();
+				}
+			});
 		}
 		const clock = clockRef.current;
 		const songTime = (): number => {
@@ -512,7 +553,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 					ctx.fillStyle = hexA(color, 0.5);
 					ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
 					ctx.fillStyle = color;
-					ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+					ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
 					ctx.globalAlpha = 1;
 					return;
 				}
@@ -524,8 +565,8 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				ctx.fillStyle = hexA(color, 0.85);
 				ctx.fillRect(cx + 6, Math.min(lineY, yTail), COLUMN_WIDTH - 12, Math.abs(lineY - yTail));
 				ctx.fillStyle = color;
-				ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-				ctx.fillRect(cx + 4, lineY - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+				ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+				ctx.fillRect(cx + 4, lineY - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
 				return;
 			}
 			const yHead = note.holding ? lineY : noteY(note.time, now);
@@ -538,11 +579,11 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
 			// tail cap
 			ctx.fillStyle = color;
-			ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+			ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
 			// head cap - pinned to the receptor while held (the base stays visible),
 			// otherwise tracking the head itself: approaching before the hit, and
 			// scrolling on past the receptors once it's been missed (an unpressed note)
-			ctx.fillRect(cx + 4, yHead - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT);
+			ctx.fillRect(cx + 4, yHead - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
 		};
 
 		const drawTapNote = (note: RenderNote, cx: number, color: string, now: number) => {
@@ -550,7 +591,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			const y = noteY(note.time, now);
 			if (y < -NOTE_HEIGHT || y > h + NOTE_HEIGHT) return;
 			ctx.fillStyle = color;
-			roundRect(ctx, cx + 4, y - NOTE_HEIGHT / 2, COLUMN_WIDTH - 8, NOTE_HEIGHT, 4);
+			roundRect(ctx, cx + 4, y - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT, 4);
 			ctx.fill();
 
 			if (debug) {
@@ -565,7 +606,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		const drawNotes = (x0: number, now: number) => {
 			for (const note of game.notes) {
 				const cx = x0 + note.column * COLUMN_WIDTH;
-				const color = colColor(note.column, keys);
+				const color = Skin.hitObjectColor(note.column);
 				if (note.hold) drawHoldNote(note, cx, color, now);
 				else drawTapNote(note, cx, color, now);
 			}
@@ -577,10 +618,10 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				const glow = Math.max(0, 1 - (now - game.columnFlash[c]) / 140);
 				ctx.strokeStyle = 'rgba(255,255,255,0.4)';
 				ctx.lineWidth = 2;
-				ctx.strokeRect(cx + 4, lineY - RECEPTOR_HEIGHT / 2, COLUMN_WIDTH - 8, RECEPTOR_HEIGHT);
+				ctx.strokeRect(cx + 4, lineY - RECEPTOR_HEIGHT, COLUMN_WIDTH - 8, RECEPTOR_HEIGHT);
 				if (glow > 0) {
-					ctx.fillStyle = hexA(colColor(c, keys), 0.35 * glow);
-					ctx.fillRect(cx + 4, lineY - RECEPTOR_HEIGHT / 2, COLUMN_WIDTH - 8, RECEPTOR_HEIGHT);
+					ctx.fillStyle = hexA(Skin.hitObjectColor(c), 0.35 * glow);
+					ctx.fillRect(cx + 4, lineY - RECEPTOR_HEIGHT, COLUMN_WIDTH - 8, RECEPTOR_HEIGHT);
 				}
 			}
 			// judgement line
@@ -640,7 +681,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				const age = now - flash.time;
 				if (age >= 0 && age < 400) {
 					ctx.globalAlpha = 1 - age / 400;
-					ctx.fillStyle = JUDGEMENT_COLORS[flash.judgement];
+					ctx.fillStyle = Skin.judgeColor(flash.judgement);
 					ctx.font = '700 26px "Exo 2", sans-serif';
 					ctx.textAlign = 'center';
 					ctx.fillText(flash.judgement, cxField, lineY - 90);
@@ -747,7 +788,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			drawHud(x0, now);
 
 			// end of map
-			if (!finished && (game.finished || now > game.songEndMs)) {
+			if (!finished && (game.finished || (now > game.songEndMs && (play.mode !== 'ranked' || (now > play.endsAt))))) {
 				finished = true;
 				// a fail stops gameplay before the map ends; silence the hitsounds
 				// already queued ahead on the audio clock so they don't play on past it
@@ -760,10 +801,12 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			// the playfield is now painted (frozen at the lead-in start). On a genuine
 			// first launch - not an HMR resume, where the clock is already running -
 			// fade the cover out, then release the clock so gameplay begins on a fully
-			// revealed playfield rather than behind the cover.
+			// revealed playfield rather than behind the cover. A ranked play reveals
+			// itself once its clock is anchored to startedAt (see prepareGameplay), so
+			// skip it here.
 			if (firstFrame) {
 				firstFrame = false;
-				if (clock.paused) {
+				if (clock.paused && play.mode !== 'ranked') {
 					void transition.reveal().then(() => {
 						const c = clockRef.current;
 						if (!c) return;
@@ -802,6 +845,9 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		return () => {
 			cancelAnimationFrame(raf);
 			clearInterval(hitsoundTimer);
+			// drop hitsounds queued ahead on the audio clock so they don't keep
+			// firing after we leave (quit mid-play leaves up to LOOKAHEAD queued)
+			stopScheduledHitsounds();
 			window.removeEventListener('resize', resize);
 			window.removeEventListener('keydown', onKey);
 			canvas.removeEventListener('pointerdown', onPointerDown);

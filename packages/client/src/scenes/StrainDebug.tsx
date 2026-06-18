@@ -6,9 +6,9 @@ import StrainGraph from '../gameplay/StrainGraph';
 import './StrainDebug.css';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import { Judgements } from '@osu-idle/shared/judgement';
-import { JUDGEMENT_COLORS } from '../gameplay/judgement';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
+import Skin from '../osu/skin/Skin';
 
 interface Props {
 	beatmapInfo: LightBeatmap
@@ -77,7 +77,7 @@ export default function StrainDebug({ beatmapInfo, onClose, onPlay }: Props) {
 							{s.xp !== undefined && <span className="strain__xp">+{s.xp.toLocaleString()} XP</span>}
 							<span className="strain__judges">
 								{Judgements.map((j) => (
-									<i key={j} style={{ color: JUDGEMENT_COLORS[j] }}>
+									<i key={j} style={{ color: Skin.judgeColor(j) }}>
 										{s.score.counts[j]}
 									</i>
 								))}

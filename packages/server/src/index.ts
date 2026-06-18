@@ -4,12 +4,19 @@ import Logfile from '@osu-idle/shared/helpers/logfile';
 import { app } from './app';
 import { port } from './env';
 import { redis } from './redis';
+import { sweepDuePlays } from './play';
 
 Logfile.setWriter(lines => appendFile('runtime.log', lines.join('\n') + '\n'));
 
 const server = serve({ fetch: app.fetch, port }, info => {
 	console.log(`🎵 osu! idle API listening on http://localhost:${info.port}`);
 });
+
+// Finalise plays whose end time has passed even if no client ever returns to
+// finish them - the server is authoritative. Safe on every worker: the atomic
+// claim in finalizePlay guarantees a single submit.
+const sweep = setInterval(() => void sweepDuePlays(), 3_000);
+sweep.unref();
 
 /**
  * Drain on a clean shutdown (systemd stop / restart, Ctrl-C, tsx-watch reload,

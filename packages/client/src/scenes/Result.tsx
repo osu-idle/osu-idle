@@ -11,7 +11,6 @@ import useSmoothNumber from '../animations/useSmoothNumber';
 import Skin from '../osu/skin/Skin';
 import { Trans } from '@lingui/react/macro';
 import { Judgement, JUDGEMENT } from '@osu-idle/shared/judgement';
-import { GRADE_COLORS, JUDGEMENT_COLORS } from '../gameplay/judgement';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import { ScoreDTO } from '@osu-idle/shared/score';
 import { useEffect, useState } from 'react';
@@ -104,15 +103,15 @@ export default function Result({ score, game, progression, failed }: Props) {
 				<div className="result__left">
 					<div className="result__topleft">
 						<div className="result__panel">
-							<div className="result__score" style={{ textShadow: `0 0px 6px ${GRADE_COLORS[score.grade]}`}}>{Math.round(shownScore).toString().padStart(7, '0')}</div>
+							<div className="result__score">{Math.round(shownScore).toString().padStart(7, '0')}</div>
 
 							<div className="result__judges">
 								{JUDGE_ORDER.map((j) => (
 									<div key={j} className="result__judge">
-										<span className="result__judge-label" style={{ color: JUDGEMENT_COLORS[j], textShadow: `0 0px 4px ${JUDGEMENT_COLORS[j]}` }}>
+										<span className="result__judge-label" style={{ color: Skin.judgeColor(j), textShadow: `0 0px 4px ${Skin.judgeColor(j)}` }}>
 											{j}
 										</span>
-										<span className="result__judge-count" style={{ textShadow: `0 0px 4px ${JUDGEMENT_COLORS[j]}` }}><CountUp value={score instanceof Score ? score[j] : score.judgements[j]} /></span>
+										<span className="result__judge-count" style={{ textShadow: `0 0px 4px ${Skin.judgeColor(j)}` }}><CountUp value={score instanceof Score ? score[j] : score.judgements[j]} /></span>
 									</div>
 								))}
 							</div>

@@ -1,5 +1,5 @@
 import { Bot, type BotContext, type InputEvent } from '@osu-idle/shared/sim/bot';
-import type { ReplayOffsetDTO } from '@osu-idle/shared/play';
+import { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
 
 /**
  * Replays a server-computed play: instead of generating timing error from the
@@ -9,10 +9,10 @@ import type { ReplayOffsetDTO } from '@osu-idle/shared/play';
  * intentional miss (Infinity → ignored input), matching the base bot.
  */
 export default class ReplayBot extends Bot {
-	private head = new Map<string, number | null>();
-	private tail = new Map<string, number | null>();
+	private head = new Map<string, number | undefined>();
+	private tail = new Map<string, number | undefined>();
 
-	constructor(offsets: ReplayOffsetDTO[]) {
+	constructor(offsets: ReplayOffset[]) {
 		super();
 		for (const o of offsets) (o.tail ? this.tail : this.head).set(o.id, o.offset);
 	}

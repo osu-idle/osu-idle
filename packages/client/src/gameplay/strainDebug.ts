@@ -2,15 +2,15 @@ import type Character from '../db/schema/character';
 import { ManiaGame, type HitRecord } from '@osu-idle/shared/sim/maniaGame';
 import CharacterBot, { type NoteStrain } from '@osu-idle/shared/sim/bots/character';
 import type RuntimeNote from '@osu-idle/shared/sim/runtimeNote';
-import { judge, maniaWindows, ScoreState, type HitWindows } from './judgement';
 import { JUDGEMENT } from '@osu-idle/shared/judgement';
 import { Beatmap } from 'osu-classes';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
+import { HitWindows, judge, maniaWindows, ScoreState } from '@osu-idle/shared/sim/scoring';
 
 
 /** Skill level the debug bot runs at - shared by the strain analysis and the
  *  debug play launched from the strain view, so they match. */
-export const DEBUG_BOT_LEVEL = 14;
+export const DEBUG_BOT_LEVEL = 110;
 
 export interface StrainSeries {
 	name: string

@@ -1,22 +1,28 @@
-import { JUDGEMENT, Judgement } from '@osu-idle/shared/judgement';
+import { JUDGEMENT, Judgements } from '@osu-idle/shared/judgement';
 import type { HitRecord } from '@osu-idle/shared/sim/maniaGame';
-import { HitWindows, JUDGEMENT_COLORS } from './judgement';
+import Skin from '../osu/skin/Skin';
+import { HitWindows } from '@osu-idle/shared/sim/scoring';
 
 export { unstableRate } from '@osu-idle/shared/sim/maniaGame';
 
-// judgement windows from widest to narrowest, so wider zones are drawn first
-const ZONES: Judgement[] = [
-	JUDGEMENT.BAD,
-	JUDGEMENT.GOOD,
-	JUDGEMENT.GREAT,
-	JUDGEMENT.PERFECT,
-	JUDGEMENT.MARVELOUS,
-];
-
-/** apply alpha to a #rrggbb colour */
-function colorA(hex: string, a: number): string {
-	const n = parseInt(hex.slice(1), 16);
-	return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+/** parse a #rrggbb or rgba(...) colour into [r, g, b, a] */
+function parseColor(c: string): [number, number, number, number] {
+	if (c[0] === '#') {
+		const n = parseInt(c.slice(1), 16);
+		return [(n >> 16) & 255, (n >> 8) & 255, n & 255, 1];
+	}
+	const [r, g, b, a] = c.slice(c.indexOf('(') + 1, c.indexOf(')')).split(',').map(Number);
+	return [r, g, b, a];
+}
+/** apply alpha to a colour */
+function colorA(c: string, a: number): string {
+	const [r, g, b] = parseColor(c);
+	return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+/** dim a colour, keeping its alpha */
+function colorDim(c: string, dim: number): string {
+	const [r, g, b, a] = parseColor(c);
+	return `rgba(${Math.floor(r * dim)}, ${Math.floor(g * dim)}, ${Math.floor(b * dim)}, ${a})`;
 }
 
 function meanOffset(hits: HitRecord[]): number | null {
@@ -47,13 +53,18 @@ interface BarOpts {
 export function drawHitErrorBar(ctx: CanvasRenderingContext2D, opts: BarOpts): void {
 	const { windows, hits, now, cx, y, halfWidth } = opts;
 	const miss = windows[JUDGEMENT.MISS];
-	const scale = halfWidth / miss;
+	const scale = (halfWidth * 1.3) / miss;
 	const barH = 8;
 
-	for (const j of ZONES) {
+	// concentric zones: each judgement fills only the ring between the next-tighter
+	// window and its own, mirrored left/right, so the translucent fills don't stack.
+	let prevWin = 0;
+	for (const j of Judgements) {
 		const win = windows[j] * scale;
-		ctx.fillStyle = colorA(JUDGEMENT_COLORS[j], 0.55);
-		ctx.fillRect(cx - win, y - barH / 2, win * 2, barH);
+		ctx.fillStyle = colorA(colorDim(Skin.judgeColor(j), 1.35), 0.2);
+		ctx.fillRect(cx + prevWin, y - barH / 2, win - prevWin, barH);
+		ctx.fillRect(cx - win, y - barH / 2, win - prevWin, barH);
+		prevWin = win;
 	}
 	// centre (perfect) line
 	ctx.fillStyle = 'rgba(255,255,255,0.9)';
@@ -62,16 +73,21 @@ export function drawHitErrorBar(ctx: CanvasRenderingContext2D, opts: BarOpts): v
 	// recent hit ticks, fading out. Misses never tick the bar - it reads the
 	// timing quality of successful hits only.
 	const FADE = 2500;
+	// 'lighten' so ticks stacked at the same offset take the brighter pixel
+	// instead of summing - a cluster near centre stays as bright as its newest
+	// tick rather than blowing out to a saturated column.
+	ctx.globalCompositeOperation = 'lighten';
 	for (const h of hits) {
 		if (h.offset == null || h.judgement === JUDGEMENT.MISS) continue;
 		const age = now - h.time;
 		if (age < 0 || age > FADE) continue;
 		const off = Math.max(-miss, Math.min(miss, h.offset));
 		ctx.globalAlpha = 1 - age / FADE;
-		ctx.fillStyle = JUDGEMENT_COLORS[h.judgement];
+		ctx.fillStyle = Skin.judgeColor(h.judgement);
 		ctx.fillRect(cx + off * scale - 1, y - barH - 2, 2, barH * 2 + 4);
 	}
 	ctx.globalAlpha = 1;
+	ctx.globalCompositeOperation = 'source-over';
 
 	// mean / bias arrow
 	const mean = meanOffset(hits);
@@ -117,11 +133,16 @@ export function drawDevianceGraph(ctx: CanvasRenderingContext2D, opts: GraphOpts
 
 	ctx.clearRect(0, 0, width, height);
 
-	// judgement-window bands
-	for (const j of ZONES) {
+	// judgement-window bands: concentric rings around the centre, each spanning
+	// from the next-tighter window out to its own, mirrored early (top) and late
+	// (bottom) so the zones tile the graph without overlapping.
+	let prevWin = 0;
+	for (const j of Judgements) {
 		const win = windows[j];
-		ctx.fillStyle = colorA(JUDGEMENT_COLORS[j], 0.1);
-		ctx.fillRect(padX, yFor(win), gw, yFor(-win) - yFor(win));
+		ctx.fillStyle = colorDim(colorA(Skin.judgeColor(j), 0.15), 1.35);
+		ctx.fillRect(padX, yFor(win), gw, yFor(prevWin) - yFor(win));
+		ctx.fillRect(padX, yFor(-prevWin), gw, yFor(-win) - yFor(-prevWin));
+		prevWin = win;
 	}
 
 	// centre (0) line
@@ -138,12 +159,12 @@ export function drawDevianceGraph(ctx: CanvasRenderingContext2D, opts: GraphOpts
 	for (const h of hits) {
 		const x = xFor(h.time);
 		if (h.offset == null || h.judgement === JUDGEMENT.MISS) {
-			ctx.fillStyle = JUDGEMENT_COLORS[JUDGEMENT.MISS];
+			ctx.fillStyle = Skin.judgeColor(JUDGEMENT.MISS);
 			ctx.fillRect(x - 1, padY, 2, 5);
 			ctx.fillRect(x - 1, height - padY - 5, 2, 5);
 		} else {
 			const off = Math.max(-miss, Math.min(miss, h.offset));
-			ctx.fillStyle = JUDGEMENT_COLORS[h.judgement];
+			ctx.fillStyle = Skin.judgeColor(h.judgement);
 			ctx.fillRect(x - 1.2, yFor(off) - 1.2, 2.4, 2.4);
 		}
 	}
@@ -177,7 +198,7 @@ export function drawDevianceGraph(ctx: CanvasRenderingContext2D, opts: GraphOpts
 	// fail marker: vertical red bar at the moment HP hit 0
 	if (failMs != null) {
 		const fx = xFor(failMs);
-		ctx.fillStyle = JUDGEMENT_COLORS[JUDGEMENT.MISS];
+		ctx.fillStyle = Skin.judgeColor(JUDGEMENT.MISS);
 		ctx.fillRect(fx - 1, padY, 2, gh);
 	}
 }

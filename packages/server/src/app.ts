@@ -17,6 +17,7 @@ import { charactersRoutes } from './routes/characters';
 import { statsRoutes } from './routes/stats';
 import { rankingRoutes } from './routes/ranking';
 import { beatmapsRoutes } from './routes/beatmap';
+import { playRoutes } from './routes/play';
 
 // In dev also accept the web app's own Vite origin (port 5174) - it's normally
 // reached through the game's /web proxy (CLIENT_URL), but opening it directly is
@@ -33,6 +34,7 @@ const v1 = new Hono()
 	.route('/scores', scoresRoutes)
 	.route('/auth', authRoutes)
 	.route('/me', meRoutes)
+	.route('/play', playRoutes)
 	.route('/news', newsRoutes);
 
 // Built as one chained expression so the route schema is captured in the type
@@ -50,7 +52,8 @@ const app = new Hono()
 	}))
 	.route('/v1', v1);
 
-app.notFound(c => c.json({ error: __('Not found') }, 404));
+// pass the request-scoped i18n: only it has an active locale on the server
+app.notFound(c => c.json({ error: __('Not found', undefined, undefined, c.get('i18n')) }, 404));
 
 app.onError((err, c) => {
 	if (err instanceof HTTPException) {

@@ -7,6 +7,14 @@ import beatSnap from './beat_snap.js';
 import { JUDGEMENT, type Judgement } from '../judgement.js';
 import { type HitWindows, holdTiers, judge, judgeHold, maniaWindows, ScoreState } from './scoring.js';
 
+export const LEAD_IN_MS = 2000;
+
+export type ReplayOffset = {
+	id: string,
+	tail?: true,
+	offset?: number,
+};
+
 export type ManiaGameOptions = {
 	/** approach span in scroll units (mirror the renderer's SCROLL_MS) - sets
 	 *  how far ahead counts as "on screen" for the bot's visibility queries */
@@ -261,11 +269,11 @@ export class ManiaGame {
 	 * Judgement is pure given `(offset, windows)`, so replaying these yields an
 	 * identical score.
 	 */
-	replayOffsets(): { id: string; tail: boolean; offset: number | null }[] {
+	replayOffsets(): ReplayOffset[] {
 		return this.events.map(e => ({
 			id: e.note.getId(),
-			tail: e.tail,
-			offset: e.ignore ? null : e.time - (e.tail ? e.note.endTime : e.note.time),
+			...(e.tail ? { tail: true } : {}),
+			...(!e.ignore ? { offset: e.time - (e.tail ? e.note.endTime : e.note.time) } : {}),
 		}));
 	}
 

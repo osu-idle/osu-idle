@@ -5,6 +5,7 @@ import './Popups.css';
 
 // how long a popup lingers before it starts sliding away
 const HOLD_MS = 4000;
+const ERROR_HOLD_MD = 30000;
 // must match the exit transition in Popups.css
 const EXIT_MS = 280;
 
@@ -25,7 +26,7 @@ export default function Popups() {
 	useEffect(() => {
 		return Log.listeners.popup.on((popup) => {
 			setPopups((cur) => [...cur, { ...popup, leaving: false }]);
-			if (!popup.sticky) setTimeout(() => dismiss(popup.id), HOLD_MS);
+			if (!popup.sticky) setTimeout(() => dismiss(popup.id), popup.type === 'bad' ? ERROR_HOLD_MD : HOLD_MS);
 		});
 	}, [dismiss]);
 

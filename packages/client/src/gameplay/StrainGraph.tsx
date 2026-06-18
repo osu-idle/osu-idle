@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { HitRecord } from '@osu-idle/shared/sim/maniaGame';
-import type { HitWindows } from './judgement';
 import { drawDevianceGraph } from './hitError';
+import { HitWindows } from '@osu-idle/shared/sim/scoring';
 
 interface Props {
 	hits: HitRecord[]

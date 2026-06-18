@@ -14,60 +14,60 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: mapset.artist
-#: src/pages/beatmaps/RankedMaps.tsx:74
+#: src/pages/beatmaps/RankedMaps.tsx
 msgid "by {0}"
 msgstr "par {0}"
 
-#: src/pages/Login.tsx:9
+#: src/pages/Login.tsx
 msgid "Connect your osu! account to appear in the leaderboards."
 msgstr "Connectez votre compte osu! pour apparaître dans les classements."
 
-#: src/Footer.tsx:14
+#: src/Footer.tsx
 msgid "Contact"
 msgstr "Contact"
 
 #. placeholder {0}: mapset.creator
-#: src/pages/beatmaps/RankedMaps.tsx:75
+#: src/pages/beatmaps/RankedMaps.tsx
 msgid "mapped by {0}"
 msgstr "mappé par {0}"
 
-#: src/pages/beatmaps/RankedMaps.tsx:41
+#: src/pages/beatmaps/RankedMaps.tsx
 msgid "Plays"
 msgstr "Parties"
 
-#: src/Footer.tsx:11
+#: src/Footer.tsx
 msgid "Privacy"
 msgstr "Vie privée"
 
-#: src/pages/beatmaps/RankedMaps.tsx:36
-#: src/pages/beatmaps/RankedMaps.tsx:78
+#: src/pages/beatmaps/RankedMaps.tsx
+#: src/pages/beatmaps/RankedMaps.tsx
 msgid "Ranked"
 msgstr "Classé"
 
-#: src/Footer.tsx:9
+#: src/Footer.tsx
 msgid "Rules"
 msgstr "Règles"
 
-#: src/Footer.tsx:12
+#: src/Footer.tsx
 msgid "Server Status"
 msgstr "Statut du serveur"
 
-#: src/pages/Login.tsx:8
+#: src/pages/Login.tsx
 msgid "Sign in"
 msgstr "Se connecter"
 
-#: src/pages/Login.tsx:12
+#: src/pages/Login.tsx
 msgid "Sign in with osu!"
 msgstr "Se connecter avec osu!"
 
-#: src/pages/beatmaps/RankedMaps.tsx:53
+#: src/pages/beatmaps/RankedMaps.tsx
 msgid "Sort by"
 msgstr "Trier par"
 
-#: src/Footer.tsx:13
+#: src/Footer.tsx
 msgid "Source code"
 msgstr ""
 
-#: src/Footer.tsx:10
+#: src/Footer.tsx
 msgid "Terms"
 msgstr "Conditions"

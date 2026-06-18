@@ -6,6 +6,7 @@ import lerp from '../../math/lerp.js';
 import Skill from './skill.js';
 import { SKILL } from '../../skills.js';
 import { manipChance } from './speed.js';
+import transpose from '../../math/transpose.js';
 
 /** One hand's last press: the strain entry carrying the running late debt and
  *  the group anchor (chord/manip notes merge into a single press). */
@@ -13,8 +14,10 @@ type HandAction = { entry: SkillStrain, anchor: RuntimeNote };
 
 /** In the nps..max band the hand drifts late; chance per press that the player
  *  snaps back on time instead of drifting further. */
-const RECOVERY_CHANCE = 0.15;
-const MAX_RECOVERY_CHANCE = 0.15;
+const RECOVERY_CHANCE_MIN = 0.01;
+const RECOVERY_CHANCE_MAX = 0.15;
+const MAX_RECOVERY_CHANCE_MIN = 0.01;
+const MAX_RECOVERY_CHANCE_MAX = 0.15;
 
 /** Per-press drift at the top of the nps..max band, as a fraction of the
  *  hand's minimum press interval. */
@@ -41,6 +44,9 @@ export default class JackSpeed extends Skill {
 	private nps!: number;
 	private max!: number;
 
+	private recovery_min!: number;
+	private recovery_max!: number;
+
 	/** Per-play (keyed on the bot's map strain) last press of each finger. */
 	private fingers = new WeakMap<Strain, Partial<Record<number, HandAction>>>();
 
@@ -48,10 +54,13 @@ export default class JackSpeed extends Skill {
 		super(SKILL.jackspeed, def);
 
 		this.level.sync(level => {
-			const { comfort, nps, max } = JackSpeed.computeForLevel(level);
+			const { base, comfort, nps, max } = JackSpeed.computeForLevel(level);
 			this.comfort = comfort;
 			this.nps = nps;
 			this.max = max;
+
+			this.recovery_min = transpose(base, [0, 1], [RECOVERY_CHANCE_MIN, RECOVERY_CHANCE_MAX]);
+			this.recovery_max = transpose(base, [0, 1], [MAX_RECOVERY_CHANCE_MIN, MAX_RECOVERY_CHANCE_MAX]);
 		});
 	}
 
@@ -63,6 +72,7 @@ export default class JackSpeed extends Skill {
 		const nps = comfort + 1 + 2 * base;
 		
 		return {
+			base,
 			comfort,
 			nps,
 			max: nps + 1 + 2 * base,
@@ -129,7 +139,7 @@ export default class JackSpeed extends Skill {
 			// drifting: each press lands a bit late unless the player recovers
 			const t = (speed - this.nps) / (this.max - this.nps);
 			currentStrain.strain = lerp(0.1, 0.4, t);
-			if (Math.random() >= RECOVERY_CHANCE) {
+			if (Math.random() >= this.recovery_min) {
 				currentStrain.unpure += lerp(0.01, 0.05, t);
 				debt += t * DRIFT_FACTOR * maxInterval;
 			}
@@ -139,7 +149,7 @@ export default class JackSpeed extends Skill {
 			currentStrain.unpure += 0.075;
 			currentStrain.strain = Math.min(1, debt / maxInterval);
 
-			if (Math.random() <= MAX_RECOVERY_CHANCE) {
+			if (Math.random() <= this.recovery_max) {
 				debt = 0;
 			}
 		}

@@ -13,6 +13,6 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/app.ts:53
+#: src/app.ts
 msgid "Not found"
 msgstr "Introuvable"
