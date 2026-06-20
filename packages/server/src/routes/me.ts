@@ -5,9 +5,12 @@ import { onboardingBody } from '@osu-idle/shared/onboarding';
 import { db, farmPool, statsPool } from '../db/client';
 import { characters, characterToDTO } from '../db/schema/character';
 import { requireAuth } from '../auth/middleware';
-import { users, toUserDTO } from '../db/schema/user';
+import { users } from '../db/schema/user';
 import { saveUploadedImage } from '../uploads';
 import type { RowDataPacket } from 'mysql2/promise';
+import { env } from '../env';
+import { publish } from '../discord/publish';
+import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 
 /** The signed-in account's own character (created during first-login onboarding). */
 export const meRoutes = new Hono()
@@ -19,13 +22,16 @@ export const meRoutes = new Hono()
 			.innerJoin(users, eq(users.currentCharacter, characters.id))
 			.where(eq(users.id, c.get('userId')))
 			.limit(1);
-		return c.json(row ? characterToDTO(row.character) : null);
+		return c.json(row ? characterToDTO(row.character, row.user.avatarUrl) : null);
 	})
 
 	// Onboarding: create the account's character once, always fresh.
 	.post('/character', requireAuth, async c => {
 		const userId = c.get('userId');
 		const body = onboardingBody.parse(await c.req.json());
+
+		const [user] = await db.select().from(users).where(eq(users.id, userId));
+		if (!user) throw new HTTPException(404, { message: 'User not found' });
 
 		const [existing] = await db
 			.select({ id: characters.id })
@@ -42,9 +48,7 @@ export const meRoutes = new Hono()
 		if (existingName) throw new HTTPException(409, { message: 'Name already taken' });
 
 		const [results1] = await statsPool.promise().query<RowDataPacket[]>('SELECT * FROM osu_user WHERE osu_id != ? AND username = ?', [userId, body.name]);
-		console.log(userId, body.name, results1);
 		const [results2] = await farmPool.promise().query<RowDataPacket[]>('SELECT * FROM user WHERE osu_id != ? AND username = ?', [userId, body.name]);
-		console.log(userId, body.name, results2);
 
 		if ((results1 && results1.length) || (results2 && results2.length)) {
 			throw new HTTPException(403, { message: 'Name is reserved' });
@@ -60,25 +64,41 @@ export const meRoutes = new Hono()
 			.where(eq(users.id, userId));
 
 		const [row] = await db.select().from(characters).where(eq(characters.id, characterId)).limit(1);
-		return c.json(characterToDTO(row!), 201);
+
+		void publish(env.USER_FEED_WEBHOOK, {
+			embeds: [{
+				title: `Welcome ${row.name} to osu!idle !`,
+				url: `https://osu.idle.rhythmgamers.net/web/c/${row.id}`,
+				thumbnail: {
+					url: row.avatarUrl ?? user.avatarUrl ?? GUEST_AVATAR_URL,
+					placeholder: GUEST_AVATAR_URL,
+				},
+			}]
+		});
+
+		return c.json(characterToDTO(row!, user.avatarUrl), 201);
 	})
 
-	// Upload a custom profile picture, overriding the osu! avatar. Returns the
-	// updated user so the client can refresh its session view immediately.
+	// Upload a custom profile picture for the account's current character,
+	// overriding its osu! avatar. Returns the updated character.
 	.post('/avatar', requireAuth, async c => {
 		const body = await c.req.parseBody();
 		const url = await saveUploadedImage(body['file']);
-		const userId = c.get('userId');
-		await db.update(users).set({ customAvatarUrl: url }).where(eq(users.id, userId));
-		const [row] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-		return c.json(toUserDTO(row!));
+		return c.json(await setCurrentCharacterAvatar(c.get('userId'), url));
 	})
 
 	// Remove the custom profile picture, reverting to the osu! avatar.
 	.delete('/avatar', requireAuth, async c => {
-		const userId = c.get('userId');
-		await db.update(users).set({ customAvatarUrl: null }).where(eq(users.id, userId));
-		const [row] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-		return c.json(toUserDTO(row!));
+		return c.json(await setCurrentCharacterAvatar(c.get('userId'), null));
 	})
 ;
+
+/** Set the account's current character avatar and return the resolved character DTO. */
+async function setCurrentCharacterAvatar(userId: number, url: string | null) {
+	const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+	if (!user?.currentCharacter) throw new HTTPException(409, { message: 'No character' });
+
+	await db.update(characters).set({ avatarUrl: url }).where(eq(characters.id, user.currentCharacter));
+	const [row] = await db.select().from(characters).where(eq(characters.id, user.currentCharacter)).limit(1);
+	return characterToDTO(row!, user.avatarUrl);
+}

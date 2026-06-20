@@ -1,4 +1,5 @@
 import { ScoreDTO } from '@osu-idle/shared/score';
+import Synced from '@osu-idle/shared/helpers/synced';
 import { boolean, Column, DAO, DB, integer, real, table, text } from '../dao';
 import { ScoreBest } from './score_best';
 import { ScoreBestPP } from './score_best_pp';
@@ -32,6 +33,11 @@ const t = table('score', {
 	},
 });
 
+/** Bumped on every score write so live views (the carousel card grades) re-query
+ *  instead of holding a stale best - e.g. a global leaderboard load that imports
+ *  one of the live character's scores. */
+export const scoresVersion = new Synced(0);
+
 export class Score extends DAO(t) {
 
 	async add() {
@@ -49,7 +55,9 @@ export class Score extends DAO(t) {
 			await ScoreBestPP.fromScore(this).add();
 		}
 
-		return this;	
+		void scoresVersion.set(scoresVersion.get() + 1);
+
+		return this;
 	}
 
 	public isHigherThan(score: Score): boolean {

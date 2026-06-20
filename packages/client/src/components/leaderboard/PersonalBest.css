@@ -1,0 +1,11 @@
+.lb__pb {
+  flex-shrink: 0;
+  padding: 0.4rem 0.8rem 0.8rem;
+}
+.lb__pb_label {
+  padding: 0.35rem 0 0.75rem;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+}

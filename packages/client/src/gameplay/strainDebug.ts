@@ -6,11 +6,25 @@ import { JUDGEMENT } from '@osu-idle/shared/judgement';
 import { Beatmap } from 'osu-classes';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 import { HitWindows, judge, maniaWindows, ScoreState } from '@osu-idle/shared/sim/scoring';
+ 
+import Reading from '@osu-idle/shared/sim/skills/reading';
+import Speed from '@osu-idle/shared/sim/skills/speed';
+import Stamina from '@osu-idle/shared/sim/skills/stamina';
+import JackSpeed from '@osu-idle/shared/sim/skills/jackspeed';
+import Concentration from '@osu-idle/shared/sim/skills/concentration';
+import Consistency from '@osu-idle/shared/sim/skills/consistency';
+import Accuracy from '@osu-idle/shared/sim/skills/accuracy';
+import Release from '@osu-idle/shared/sim/skills/release';
+import Coordination from '@osu-idle/shared/sim/skills/coordination';
+import Memory from '@osu-idle/shared/sim/skills/memory';
+import SpeedJam from '@osu-idle/shared/sim/skills/speedjam';
 
 
 /** Skill level the debug bot runs at - shared by the strain analysis and the
  *  debug play launched from the strain view, so they match. */
-export const DEBUG_BOT_LEVEL = 110;
+export const DEBUG_BOT_LEVEL = 70;
+
+export const DEBUG_BOT_TIMES_PLAYED = 6;
 
 export interface StrainSeries {
 	name: string
@@ -78,7 +92,23 @@ export function analyzeBeatmap(
 	beatmap: Beatmap,
 	scrollMs = 600,
 ): StrainAnalysis {
-	const skills = makeOrderedSkills(DEBUG_BOT_LEVEL) ?? character.skills;
+	// const debugSkills = null;
+	const memory = new Memory(48);
+	memory.timesPlayed.set(DEBUG_BOT_TIMES_PLAYED);
+	const debugSkills = [
+		new Reading(66),
+		new Speed(79),
+		new Stamina(77),
+		new JackSpeed(32),
+		new Concentration(72),
+		new Consistency(88),
+		new Accuracy(87),
+		new Release(75),
+		new Coordination(79),
+		memory,
+		new SpeedJam(68),
+	];
+	const skills = debugSkills ?? makeOrderedSkills(DEBUG_BOT_LEVEL) ?? character.skills;
 	const bot = new CharacterBot(skills, beatmap.difficulty.overallDifficulty);
 	const game = new ManiaGame(beatmap, bot, { scrollMs });
 

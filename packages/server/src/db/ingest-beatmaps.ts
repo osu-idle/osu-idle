@@ -7,10 +7,12 @@ import '@osu-idle/shared/osu/controlPointPatch';
 import { BeatmapDecoder } from 'osu-parsers';
 import { ManiaRuleset } from 'osu-mania-stable';
 import * as rosu from 'rosu-pp-js';
-import { isProd } from '../env';
+import { env, isProd } from '../env';
 import { db, pool } from './client';
 import { beatmaps, type NewBeatmapRow } from './schema/beatmap';
 import { beatmapset, type NewBeatmapsetRow } from './schema/beatmapset';
+import type { Beatmap } from 'osu-classes';
+import { publish } from '../discord/publish';
 
 /**
  * Server-side beatmap ingestion - the authoritative-play analog of the client's
@@ -49,6 +51,35 @@ function loadManifest(): Set<string> {
 	}
 }
 
+const send = (rows: [Beatmap, number][]) => {
+	if (!isProd || !env.MAP_FEED_WEBHOOK) return;
+
+	const asc = rows.sort((a, b) => a[1] - b[1]);
+
+	publish(env.MAP_FEED_WEBHOOK, {
+		embeds: [
+			{
+				title: `${asc[0][0].metadata.artist} - ${asc[0][0].metadata.title}`,
+				description: asc.map(row => `\`${row[1].toFixed(2)}☆\` \`${row[0].metadata.version}\``).join('\n'),
+				color: 5814783,
+				author: {
+					name: `New ranked map by ${asc[0][0].metadata.creator}`
+				},
+				fields: [
+					{
+						name: 'Ranked',
+						value: `<t:${Math.floor(Date.now() / 1000)}:R>`
+					}
+				],
+				image: {
+					url: `https://assets.ppy.sh/beatmaps/${asc[0][0].metadata.beatmapSetId}/covers/cover.jpg`
+				}
+			}
+		],
+		attachments: []
+	});
+};
+
 async function ingest(): Promise<void> {
 	let files: string[] = [];
 	try {
@@ -69,6 +100,8 @@ async function ingest(): Promise<void> {
 		const zip = new AdmZip(join(corpus, file));
 		const entries = zip.getEntries().filter(e => e.entryName.toLowerCase().endsWith('.osu'));
 		const setDone = false;
+
+		const rows: [Beatmap, number][] = [];
 
 		for (const entry of entries) {
 			const text = entry.getData().toString('utf8');
@@ -138,9 +171,13 @@ async function ingest(): Promise<void> {
 				});
 			}
 
+
+			rows.push([decoded, sr]);
 			ingested++;
 			console.log(`✓ ${id} ${row.artist} - ${row.title} [${row.version}] (${row.keys}K, ${row.sr}★)`);
 		}
+
+		send(rows);
 
 		// Mark the file done only after every difficulty in it landed, so an
 		// interrupt mid-file re-processes it next run instead of silently skipping.

@@ -1,0 +1,44 @@
+.dupdate {
+	position: fixed;
+	bottom: 30px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 9000;
+	display: flex;
+	align-items: center;
+	max-width: 92vw;
+	border-radius: 10px;
+	color: #fff;
+	font-size: 25px;
+	backdrop-filter: blur(6px);
+	overflow: hidden;
+
+	transition: all .2s ease;
+}
+.dupdate.downloading {
+	background: #00000021;
+	box-shadow: inset 0px 0px 58px -24px #000;
+}
+.dupdate span {
+	padding: 10px 14px;
+}
+.dupdate.downloading span {
+	padding: 10px 75px;
+}
+
+.dupdate:hover {
+	transform: translateX(-50%) scale(1.1);
+}
+
+.dupdate__bar-fill {
+	position: absolute;
+	height: 100%;
+	background: color-mix(in srgb, var(--osu-pink) 100%, transparent 25%);
+	transition: width 0.2s ease;
+	z-index: -1;
+}
+
+.dupdate.error {
+	background: #3d000077;
+	box-shadow: inset 0px 0px 58px -24px #ff0000;
+}

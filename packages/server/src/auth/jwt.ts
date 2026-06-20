@@ -22,12 +22,24 @@ export async function verifySession(token: string): Promise<SessionPayload> {
 	return { uid: payload.uid as number, username: payload.username as string };
 }
 
-/** Short-lived signed CSRF state for the OAuth round-trip. */
-export function signState(): Promise<string> {
-	return sign({ nonce: crypto.randomUUID(), iat: now(), exp: now() + STATE_TTL }, env.JWT_SECRET);
+/** Where the OAuth round-trip was started from, so the callback knows whether to
+ *  set a browser cookie (web) or hand a token back to the desktop app. */
+export type OAuthClient = 'web' | 'desktop';
+
+/** Short-lived signed CSRF state for the OAuth round-trip, tagged with the client
+ *  that started it. Desktop also carries its one-time `poll` code so the callback
+ *  can stash the session under it for the app to poll for. */
+export function signState(client: OAuthClient, poll?: string): Promise<string> {
+	return sign({ nonce: crypto.randomUUID(), client, poll, iat: now(), exp: now() + STATE_TTL }, env.JWT_SECRET);
 }
 
-/** Verify the CSRF state; throws if invalid or expired. */
-export async function verifyState(state: string): Promise<void> {
-	await verify(state, env.JWT_SECRET, 'HS256');
+/** Verify the CSRF state and recover the client tag, nonce, and desktop poll
+ *  code; throws if invalid/expired. */
+export async function verifyState(state: string): Promise<{ client: OAuthClient; nonce: string; poll?: string }> {
+	const payload = await verify(state, env.JWT_SECRET, 'HS256');
+	return {
+		client: payload.client === 'desktop' ? 'desktop' : 'web',
+		nonce: payload.nonce as string,
+		poll: typeof payload.poll === 'string' ? payload.poll : undefined,
+	};
 }

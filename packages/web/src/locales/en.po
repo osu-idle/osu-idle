@@ -13,6 +13,14 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/pages/DesktopDone.tsx
+msgid "Back in osu!idle already? You can close this tab."
+msgstr "Back in osu!idle already? You can close this tab."
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Best for performance and idling."
+msgstr "Best for performance and idling."
+
 #. placeholder {0}: mapset.artist
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "by {0}"
@@ -26,10 +34,45 @@ msgstr "Connect your osu! account to appear in the leaderboards."
 msgid "Contact"
 msgstr "Contact"
 
+#. placeholder {0}: primary.label
+#: src/pages/PlayOsuIdle.tsx
+msgid "Download for {0} (v{version})"
+msgstr "Download for {0} (v{version})"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Download the desktop app"
+msgstr "Download the desktop app"
+
+#. placeholder {0}: user.username
+#: src/pages/AuthCallback.tsx
+msgid "Hello {0}!"
+msgstr "Hello {0}!"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "How do you want to play?"
+msgstr "How do you want to play?"
+
 #. placeholder {0}: mapset.creator
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "mapped by {0}"
 msgstr "mapped by {0}"
+
+#. placeholder {0}: PLATFORM_LABEL[platform]
+#: src/pages/PlayOsuIdle.tsx
+msgid "Not yet available for {0}"
+msgstr "Not yet available for {0}"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Other platforms:"
+msgstr "Other platforms:"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Play in the browser"
+msgstr "Play in the browser"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Play now"
+msgstr "Play now"
 
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Plays"
@@ -43,6 +86,10 @@ msgstr "Privacy"
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Ranked"
 msgstr "Ranked"
+
+#: src/pages/DesktopDone.tsx
+msgid "Return to osu!idle"
+msgstr "Return to osu!idle"
 
 #: src/Footer.tsx
 msgid "Rules"
@@ -60,6 +107,10 @@ msgstr "Sign in"
 msgid "Sign in with osu!"
 msgstr "Sign in with osu!"
 
+#: src/pages/PlayOsuIdle.tsx
+msgid "Simplest, nothing to install."
+msgstr "Simplest, nothing to install."
+
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Sort by"
 msgstr "Sort by"
@@ -71,3 +122,7 @@ msgstr "Source code"
 #: src/Footer.tsx
 msgid "Terms"
 msgstr "Terms"
+
+#: src/pages/DesktopDone.tsx
+msgid "You're signed in!"
+msgstr "You're signed in!"

@@ -18,6 +18,10 @@ import useSynced from '@osu-idle/shared/hooks/useSynced';
 import Entities from '../entity/entities';
 import { SETTINGS } from '../db/settings';
 import { VERSION } from '@osu-idle/shared/version';
+import DesktopUpdate from '../components/DesktopUpdate';
+import Auth from '../online/auth';
+import ContextMenu from '../components/ContextMenu';
+import { desktop } from '@osu-idle/shared/desktop';
 
 interface Props {
 	/** play the white-flash "drop" entrance (true when arriving from the intro) */
@@ -46,6 +50,7 @@ export default function MainMenu({ flash = false }: Props) {
 	const closeTimeout = 500000;
 	const { t } = useLingui();
 	const [menu, setMenu] = useState<Menu>(MENU.CLOSED);
+	const [exitConfirm, setExitConfirm] = useState(false);
 	const [parallaxOn] = useSynced(SETTINGS.parallax);
 	const parallax = useParallax(0.08, parallaxOn);
 	const [character] = useSynced(Entities.character);
@@ -76,6 +81,10 @@ export default function MainMenu({ flash = false }: Props) {
 		clearTimeout(cancelTimeout);
 		SceneManager.set(SCENE.SELECT);
 	};
+
+	// Exit only works in the desktop app; the browser forbids closing its own tab.
+	const isDesktop = !!desktop();
+	const exit = () => desktop()?.quit();
 
 	const back = useCallback(() => {
 		clearTimeout(cancelTimeout);
@@ -112,7 +121,8 @@ export default function MainMenu({ flash = false }: Props) {
 			flip: false,
 			order: 2,
 			onSelect: async () => {
-				await webUrl.set(character.isGuest() ? 'login' : `c/${character.id}`);
+				if (character.isGuest()) { Auth.signIn(); return; }
+				await webUrl.set(`c/${character.id}`);
 				await isWebOpen.set(true);
 			},
 		},
@@ -129,9 +139,9 @@ export default function MainMenu({ flash = false }: Props) {
 			title: t`Exit`,
 			band: 'out',
 			flip: true,
-			disabled: true,
 			order: 4,
-			onSelect: () => {},
+			disabled: isDesktop ? undefined : true,
+			onSelect: () => { if (isDesktop) setExitConfirm(true); },
 		},
 
 		// Play menu
@@ -232,6 +242,19 @@ export default function MainMenu({ flash = false }: Props) {
 
 			<NowPlaying />
 			<Announce />
+			<DesktopUpdate />
+
+			{exitConfirm && (
+				<ContextMenu
+					title={t`Exit osu!idle`}
+					sub={t`Are you sure you want to quit?`}
+					onClose={() => setExitConfirm(false)}
+					options={[
+						{ label: t`Exit`, color: '#e93100', onClick: exit },
+						{ label: t`Cancel`, color: '#6b6b6b', onClick: () => setExitConfirm(false) },
+					]}
+				/>
+			)}
 
 			{flash && <div className="menu__flash" />}
 		</div>

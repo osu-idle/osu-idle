@@ -6,7 +6,7 @@ import Auth from '../online/auth';
 import Account from '../online/account';
 import SceneManager, { SCENE } from '../scenes/SceneManager';
 import { SETTINGS } from '../db/settings';
-import { isMobile, isWebOpen, webUrl } from '../globals';
+import { isMobile } from '../globals';
 import { Trans, useLingui } from '@lingui/react/macro';
 
 /** Let the menu's song + logo "pop" entrance land before the wizard fades in. */
@@ -104,10 +104,7 @@ export default function Tutorial() {
 	const last = step === STEPS.length - 1;
 	const goTo = (s: number) => void SETTINGS.tutorial.set(s);
 
-	const signIn = async () => {
-		await webUrl.set('login');
-		await isWebOpen.set(true);
-	};
+	const signIn = () => Auth.signIn();
 
 	return (
 		<div className="tutorial">

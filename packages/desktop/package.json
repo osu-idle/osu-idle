@@ -1,0 +1,29 @@
+{
+  "name": "@osu-idle/desktop",
+  "version": "0.12.0.0",
+  "author": {
+    "name": "Adrien Boitelle",
+    "email": "adrien.boitelle@gmail.com",
+    "url": "https://osu.idle.rhythmgamers.net/"
+  },
+  "private": true,
+  "description": "osu!idle",
+  "main": "out/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "docker run --rm -t -v /main/osu/idle:/project -w /project/packages/desktop --user $(id -u):$(id -g) -e XDG_CACHE_HOME=/project/.cache -e npm_config_cache=/project/.npm-cache -e HOME=/project/.cache electronuserland/builder:wine node build.js",
+    "dist:linuxwin": "electron-builder --linux --win"
+  },
+  "dependencies": {
+    "@osu-idle/shared": "*",
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "electron": "33.2.0",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.6.3"
+  }
+}

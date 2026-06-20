@@ -223,6 +223,9 @@ export class ManiaGame {
 		this.lastTime = nowMs;
 
 		while (this.schedPtr < this.schedule.length && this.schedule[this.schedPtr].time <= nowMs) {
+			// the play is over the instant HP hit 0 - never resolve anything past the
+			// failure point (a single jumped update must not score the rest of the map)
+			if (this.score.failed) break;
 			const { event, timedOut } = this.schedule[this.schedPtr++];
 			if (timedOut) this.applyMiss(event);
 			else this.applyEvent(event);

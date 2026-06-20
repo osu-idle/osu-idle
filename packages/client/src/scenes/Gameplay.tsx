@@ -7,7 +7,7 @@ import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 import type { Bot } from '@osu-idle/shared/sim/bot';
 import { DEBUG_BOT_LEVEL } from '../gameplay/strainDebug';
 import ReplayBot from '../gameplay/replayBot';
-import { abortPlaySession, fetchPlayResult, playSessionHeartbeat, skipPlaySession, startPlaySession, type PlayContext } from '../online/play';
+import { abortPlaySession, fetchPlayResult, playSessionHeartbeat, PlayResultError, skipPlaySession, startPlaySession, type PlayContext } from '../online/play';
 import Account from '../online/account';
 import Entities from '../entity/entities';
 import { drawHitErrorBar } from '../gameplay/hitError';
@@ -22,7 +22,6 @@ import BeatmapStore from '../osu/beatmap/beatmap_store';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import SceneManager, { SCENE } from './SceneManager';
 import { Transition, DialogPanel } from './Transition';
-import Log from '@osu-idle/shared/helpers/log';
 import Controls from '../input/Controls';
 import { debugMode } from '../globals';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
@@ -293,10 +292,16 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			}
 
 			if (play.mode === 'ranked') {
+				// the ranked play is a deterministic replay of the server's offsets, so
+				// `local` already reproduces the server's exact score - show it whenever
+				// the authoritative result can't be fetched (gone server-side, or the
+				// server unreachable) so the player still reaches their result screen.
+				const showLocal = () => SceneManager.set(SCENE.RESULT, local, game, undefined, failed);
+
 				const handleRanked = async (tries = 0) => {
 					try {
 						const result = await fetchPlayResult(play.token, true);
-						
+
 						if (result.failed || !('score' in result) || !result.score) {
 							SceneManager.set(SCENE.RESULT, local, game, undefined, true);
 							return;
@@ -308,7 +313,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 							ch.skills.find(s => s.name === g.skill)?.xp.set(g.toXp);
 						}
 						void ch.persistSkills();
-			
+
 						// mirror the authoritative server score into the local DB so it
 						// shows up in local history / leaderboards (keyed by its onlineId)
 						const score = Score.fromDTO(result.score);
@@ -320,12 +325,21 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 							});
 						return;
 					} catch (e) {
-						if (tries >= 10) {
-							Log.errorPopup(`Score submission error: ${e}`);
+						// 404: the result is gone (finalised then TTL-expired, or a long
+						// AFK at the end of the play) - fall back to the in-memory replay.
+						if (e instanceof PlayResultError && e.status === 404) {
+							showLocal();
 							return;
 						}
-						await sleep(Math.pow(2, tries) * 1000);
-						await handleRanked(tries++);
+						// otherwise it may not be finalised yet (clock skew) - retry, then
+						// fall back to the in-memory replay rather than leaving the player stuck.
+						if (tries >= 8) {
+							console.warn('[score] result fetch failed, showing local replay', e);
+							showLocal();
+							return;
+						}
+						await sleep(Math.min(8, Math.pow(2, tries)) * 1000);
+						await handleRanked(tries + 1);
 					}
 				};
 
@@ -352,12 +366,16 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		});
 	}, [done]);
 
-	// Watch for an aborted play
+	// Watch for a remote abort (another tab/device quitting this play). Only
+	// meaningful while the play is still live: once we're past its end the record
+	// is gone because the server finalised it (the sweep), not because it was
+	// aborted - polling then would misread the finished play as aborted and eject
+	// us to song select instead of letting us reach our own result.
 	useEffect(() => {
 		if (play.mode !== 'ranked') return;
 
 		const watch = setInterval(async () => {
-			if (savedRef.current) return;
+			if (savedRef.current || Date.now() > play.endsAt) return;
 			const state = await playSessionHeartbeat(play.token);
 			if (state && 'aborted' in state) {
 				clearInterval(watch);
@@ -491,6 +509,12 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		let raf = 0;
 		let finished = false;
 		let firstFrame = true;
+		// once the play ends we keep the playfield scrolling under the result-loading
+		// spinner instead of freezing. The song clock can stop advancing when the
+		// track hands back to the streaming player, so drive this outro off a plain
+		// perf timer anchored at the finish position.
+		let outroFrom = 0;
+		let outroAt = 0;
 
 		// background fill, then the dimmed cover image. Dim is read live each
 		// frame so the slider updates without needing a replay.
@@ -771,7 +795,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		};
 
 		const draw = () => {
-			const now = songTime();
+			const now = finished ? outroFrom + (performance.now() - outroAt) : songTime();
 			nowRef.current = now;
 			// pick up a live scroll-speed change (visual only - lineY set on resize)
 			pxPerUnit = lineY / scrollMsRef.current;
@@ -790,6 +814,10 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			// end of map
 			if (!finished && (game.finished || (now > game.songEndMs && (play.mode !== 'ranked' || (now > play.endsAt))))) {
 				finished = true;
+				// hand the outro clock the live song position so the playfield keeps
+				// scrolling seamlessly while the result screen loads
+				outroFrom = now;
+				outroAt = performance.now();
 				// a fail stops gameplay before the map ends; silence the hitsounds
 				// already queued ahead on the audio clock so they don't play on past it
 				if (game.score.failed) stopScheduledHitsounds();
@@ -816,10 +844,10 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				}
 			}
 
-			// once finished, stop the draw loop: the play is finalised and the track
-			// is left riding out for the result screen (releaseAudio), so there's
-			// nothing left to render here
-			if (!finished) raf = requestAnimationFrame(draw);
+			// keep the loop running after the play ends so the playfield keeps
+			// scrolling under the result-loading spinner; it's torn down by the effect
+			// cleanup when the scene swaps to RESULT.
+			raf = requestAnimationFrame(draw);
 		};
 		raf = requestAnimationFrame(draw);
 
@@ -860,6 +888,12 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		<div className="play">
 			<canvas ref={canvasRef} className="play__canvas" />
 			{!done && Skin.grade(grade, 'play__grade')}
+			{done && play.mode === 'ranked' && (
+				<div className="play__loading">
+					<div className="play__loading-spinner" />
+					<Trans>Submitting score…</Trans>
+				</div>
+			)}
 			<button className="play__back" onClick={onQuit}>
 				<span className="game__back-arrow">‹</span> <Trans>quit</Trans>
 			</button>

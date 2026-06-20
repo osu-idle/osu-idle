@@ -1,8 +1,6 @@
-import { readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
 import { skillProfiler } from '@osu-idle/shared/sim/profiler';
-import { loadBeatmap, simulate, uniform } from './sim';
+import { CHARTS, loadBeatmap, simulate, uniform } from './sim';
 
 /**
  * Score-generation benchmark - its own suite, excluded from `npm test` (run with
@@ -15,8 +13,6 @@ import { loadBeatmap, simulate, uniform } from './sim';
  * fails loudly without making the suite flaky on raw wall-clock numbers).
  */
 
-const CHARTS_DIR = fileURLToPath(new URL('../fixtures/charts/', import.meta.url));
-
 /** Discarded JIT-warmup runs, then measured runs, per chart. */
 const WARMUP = 3;
 const RUNS = 10;
@@ -25,7 +21,7 @@ const PROFILE_RUNS = 8;
 /** Uniform skill level for the playing bot (every skill analyzes regardless). */
 const LEVEL = 50;
 
-const charts = readdirSync(CHARTS_DIR).filter(f => f.endsWith('.osu')).sort();
+const charts = Object.entries(CHARTS).sort(([a], [b]) => a.localeCompare(b));
 
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 const percentile = (xs: number[], p: number) => {
@@ -62,8 +58,8 @@ describe('score generation benchmark', () => {
 
 		// Pass 1 - clean wall-clock timing, profiler OFF (its `performance.now()`
 		// per skill per note would otherwise inflate these headline numbers).
-		for (const file of charts) {
-			const beatmap = loadBeatmap(file);
+		for (const [name, id] of charts) {
+			const beatmap = await loadBeatmap(id);
 			for (let i = 0; i < WARMUP; i++) { simulate(beatmap, skills); await breathe(); }
 
 			const times: number[] = [];
@@ -78,7 +74,7 @@ describe('score generation benchmark', () => {
 
 			const meanMs = mean(times);
 			rows.push({
-				chart: file.replace('.osu', ''),
+				chart: name,
 				notes,
 				meanMs,
 				medianMs: percentile(times, 0.5),
@@ -88,16 +84,16 @@ describe('score generation benchmark', () => {
 			});
 
 			// correctness smoke check - a real, finite play, never zero notes
-			expect(notes, `${file} produced no judged notes`).toBeGreaterThan(0);
-			expect(Number.isFinite(meanMs), `${file} timing not finite`).toBe(true);
+			expect(notes, `${name} produced no judged notes`).toBeGreaterThan(0);
+			expect(Number.isFinite(meanMs), `${name} timing not finite`).toBe(true);
 			await breathe();
 		}
 
 		// Pass 2 - profiled, fewer runs: only the *relative* per-skill split matters.
 		skillProfiler.reset();
 		skillProfiler.enable();
-		for (const file of charts) {
-			const beatmap = loadBeatmap(file);
+		for (const [, id] of charts) {
+			const beatmap = await loadBeatmap(id);
 			for (let i = 0; i < PROFILE_RUNS; i++) { simulate(beatmap, skills); await breathe(); }
 		}
 		skillProfiler.disable();

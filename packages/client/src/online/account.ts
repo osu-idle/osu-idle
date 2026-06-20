@@ -7,6 +7,7 @@ import Auth from './auth';
 import Entities from '../entity/entities';
 import { isWebOpen } from '../globals';
 import Character from '../db/schema/character';
+import { desktop } from '@osu-idle/shared/desktop';
 
 /** Give a single validation attempt this long before declaring us offline. */
 const VALIDATE_TIMEOUT_MS = 15_000;
@@ -217,5 +218,9 @@ void syncSession();
 window.addEventListener('storage', e => {
 	if (e.key === AUTH_PING_KEY) void syncSession(true);
 });
+
+// Desktop holds the session as a Bearer token (no cookie / no storage ping), so
+// re-resolve whenever the app reports the token changed (sign-in or sign-out).
+desktop()?.onAuthChanged(() => void syncSession(true));
 
 Account.init();

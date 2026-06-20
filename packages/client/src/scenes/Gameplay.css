@@ -82,6 +82,43 @@
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
 }
 
+/* result-loading overlay: shown while a finished ranked play waits for its
+   server result, over the still-scrolling playfield */
+.play__loading {
+  position: absolute;
+  bottom: 2.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.45);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+  animation: play__loading-in 0.6s ease both;
+}
+@keyframes play__loading-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.play__loading-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: var(--osu-pink-light);
+  animation: play__spin 0.7s linear infinite;
+}
+@keyframes play__spin {
+  to { transform: rotate(360deg); }
+}
+
 .play__skip {
   position: absolute;
   bottom: 1rem;

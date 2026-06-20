@@ -21,6 +21,7 @@ import num from '@osu-idle/shared/display/num';
 
 /** A finished play's result stays fetchable this long (resume / cross-tab). */
 const RESULT_TTL_MS = 10 * 60 * 1000;
+const RESULT_BREATH_TTL_MS = 5 * 1000;
 const ONLINE_TTL = 60 * 60 * 1000;
 const SESSION_TTL = 60 * 60 * 1000;
 
@@ -313,8 +314,8 @@ async function simulateAndStore(
 	};
 
 	const failedAt = score.failed ? score.failedIndex : undefined;
-	const lastNoteStart = game.notes.reduce((m, n) => Math.max(m, n.time), 0);
-	const endSongTime = failedAt ? game.hits[failedAt - 1].time : lastNoteStart;
+	const lastNoteEnd = game.notes.reduce((m, n) => Math.max(m, n.hold ? n.endTime : n.time), 0);
+	const endSongTime = failedAt ? game.hits[failedAt - 1].time : lastNoteEnd;
 	const startedAt = Date.now();
 	const endsAt = startedAt + LEAD_IN_MS + endSongTime;
 
@@ -419,7 +420,7 @@ export async function finalizePlay(characterId: number, serverSide: boolean = fa
 
 const UnknownResult = { ok: false, reason: 'unknown', code: 404 } as const;
 const CacheMissResult = { ok: false, reason: 'cache-miss', code: 410 } as const;
-const UnfinalizedResult = { ok: false, reason: 'unfinalyzed', code: 432 } as const;
+const UnfinalizedResult = { ok: false, reason: 'unfinalized', code: 432 } as const;
 const TooSoonResult = { ok: false, reason: 'tooSoon', code: 425 } as const;
 const ScoreResult = (result: StoredResult) => ({
 	ok: true,
@@ -454,10 +455,6 @@ export async function fetchResult(characterId: number, token: string, forceSee: 
 	if (isProd && Date.now() < play.endsAt) return TooSoonResult;
 
 	const result = (await finalizePlay(characterId));
-
-	if (!result) {
-		return await fetchResult(characterId, token, forceSee);
-	}
 	
 	return result ? ScoreResult(result) : UnfinalizedResult;
 }
@@ -512,7 +509,7 @@ export async function getActivePlay(characterId: number) {
 /** Finalise every play whose end time has passed, so abandoned plays still
  *  submit. Safe to run on every worker - the atomic claim guards single submit. */
 export async function sweepDuePlays(): Promise<void> {
-	const due = await redis.zrangebyscore(PLAYING_KEY, '-inf', Date.now());
+	const due = await redis.zrangebyscore(PLAYING_KEY, '-inf', Date.now() - RESULT_BREATH_TTL_MS);
 	for (const id of due) {
 		try {
 			await finalizePlay(Number(id), true);

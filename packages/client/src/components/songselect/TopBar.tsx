@@ -18,6 +18,7 @@ function optionLabel(option: GroupOption | SortOption): ReactNode {
 		case 'By BPM': return <Trans>By BPM</Trans>;
 		case 'By Creator': return <Trans>By Creator</Trans>;
 		case 'By Difficulty': return <Trans>By Difficulty</Trans>;
+		case 'By Download Status': return <Trans>By Download Status</Trans>;
 		case 'By Length': return <Trans>By Length</Trans>;
 		case 'By Playlist': return <Trans>By Playlist</Trans>;
 		case 'By Rank Achieved': return <Trans>By Rank Achieved</Trans>;

@@ -7,7 +7,7 @@ import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import { SETTINGS } from '../db/settings';
 import './IntroScreen.css';
 import SceneManager, { SCENE } from './SceneManager';
-import { isMobile } from '../globals';
+import { isMobile, isStandalone } from '../globals';
 import { Trans } from '@lingui/react/macro';
 
 const INTRO_MS = 2500;
@@ -71,6 +71,10 @@ export default function IntroScreen() {
 				console.log(beatmap.set.metadata.title, firstBeat, startMs.current, holdMs.current);
 			}
 			await music.preload(startMs.current);
+
+			// desktop can start audio without a user gesture (autoplayPolicy), so
+			// skip the click gate and activate the intro straight away.
+			if (isStandalone.get()) begin();
 		})();
 	}, []);
 

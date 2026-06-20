@@ -19,11 +19,31 @@
   transform: translateX(0px);
 }
 .score_entry__avatar {
+	position: relative;
 	height: 56px;
 	width: 56px;
 
     background-repeat: no-repeat;
     background-size: contain;
+}
+.score_entry__rank {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.55);
+	color: #fff;
+	font-size: 1rem;
+	font-weight: 800;
+	letter-spacing: 0.03rem;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+	opacity: 0;
+	transition: opacity 0.14s ease;
+	pointer-events: none;
+}
+.score_entry__row:hover .score_entry__rank {
+	opacity: 1;
 }
 .score_entry__row:hover {
   background: rgba(0, 0, 0, 0.09);

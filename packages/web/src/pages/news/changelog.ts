@@ -14,6 +14,7 @@
 /** Project → badge hue. Echoes the news tag hues so the palettes feel related. */
 const PROJECT_HUES: Record<string, number> = {
 	client: 205, // blue
+	desktop: 205, // blue
 	server: 15,  // red
 	web:    150, // green
 	shared: 265, // purple

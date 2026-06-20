@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { navigate, ROUTE } from '../router';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { pageTitle } from '../globals';
+import { Trans } from '@lingui/react/macro';
+import PlayOsuIdle from './PlayOsuIdle';
 
 /** osu! → API → here. The API already set the session cookie; this page just
  * notifies the game (same-origin localStorage ping) and closes the popup. */
@@ -33,14 +35,9 @@ export default function AuthCallback() {
 		<main className="page-contents">
 			<div className="page-text">
 				{user && (<>
-					<h1 className='center'>Hello {user.username}!</h1>
+					<h1 className='center'><Trans>Hello {user.username}!</Trans></h1>
                     
-					{/* New CTA Button */}
-					<div className='center' style={{ marginTop: '30px' }}>
-						<a href='/' className='cta-button'>
-							<span>Start Game</span>
-						</a>
-					</div>
+					<PlayOsuIdle />
 				</>)}
 			</div>
 		</main>

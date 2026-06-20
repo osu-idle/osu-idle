@@ -38,6 +38,10 @@ const schema = z.object({
 	REDIS_PORT: z.coerce.number().int().positive().default(6379),
 	REDIS_PASSWORD: z.string().optional(),
 	REDIS_DB: z.coerce.number().int().min(0).default(0),
+	
+	MAP_FEED_WEBHOOK: z.string(),
+	USER_FEED_WEBHOOK: z.string(),
+	ERROR_FEED_WEBHOOK: z.string(),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -96,6 +100,10 @@ export const apiBaseUrl = isProd
 
 /** osu! OAuth callback (both dev + prod variants are registered on the app). */
 export const OSU_REDIRECT_URI = `${apiBaseUrl}/v1/auth/osu/callback`;
+
+/** Origin the desktop renderer reports (it loads its bundle from a registered
+ *  `app://` scheme). Allowed through CORS so the Bearer-authed app can call us. */
+export const DESKTOP_ORIGIN = 'app://idle';
 
 /** Session cookie is Secure only over https (prod). */
 export const cookieSecure = isProd;

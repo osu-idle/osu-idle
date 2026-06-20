@@ -13,8 +13,10 @@ import Message from './components/Message';
 import Options from './scenes/Options';
 import FpsCounter from './components/FpsCounter';
 import Spectate from './online/spectate';
+import Presence from './online/presence';
 
 Spectate.start();
+Presence.start();
 
 export default function App() {
 	const [scene] = useSynced(SceneManager.scene);

@@ -8,10 +8,11 @@ import CountryRankings from './pages/rankings/Country';
 import News from './pages/news/News';
 import NewsArticle from './pages/news/NewsArticle';
 import NewsAdmin from './pages/news/NewsAdmin';
-import PlayOsu from './pages/PlayOsu';
+import PlayOsuIdle from './pages/PlayOsuIdle';
 import FAQ from './pages/help/FAQ';
 import Logout from './pages/Logout';
 import AuthError from './pages/AuthError';
+import DesktopDone from './pages/DesktopDone';
 import CharacterPage from './pages/characters/CharacterPage';
 import PlaysRankings from './pages/rankings/TopPlays';
 import ScoreRankings from './pages/rankings/Score';
@@ -30,7 +31,7 @@ const PAGE: {[key in Path]: ComponentType<PageProps>} = {
 	[ROUTE.HOME]: Home,
 	[ROUTE.NEWS]: News,
 	[ROUTE.NEWS_ADMIN]: NewsAdmin,
-	[ROUTE.PLAY_OSU]: PlayOsu,
+	[ROUTE.DOWNLOAD]: PlayOsuIdle,
 
 	[ROUTE.LOGIN]: Login,
 	[ROUTE.LOGOUT]: Logout,
@@ -52,6 +53,7 @@ const PAGE: {[key in Path]: ComponentType<PageProps>} = {
 	[ROUTE.HELP_FAQ]: FAQ,
 
 	[ROUTE.AUTH_CALLBACK]: AuthCallback,
+	[ROUTE.AUTH_DESKTOP]: DesktopDone,
 	[ROUTE.AUTH_ERROR]: AuthError,
 	
 	[ROUTE.ADMIN_BALANCING]: BalancingPage,

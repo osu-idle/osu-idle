@@ -44,6 +44,10 @@ msgstr "{months, plural, one {# month ago} other {# months ago}}"
 msgid "{nbMaps} maps"
 msgstr "{nbMaps} maps"
 
+#: src/online/presence.ts
+msgid "{result} on {map}"
+msgstr "{result} on {map}"
+
 #: src/components/BeatmapCarousel.tsx
 msgid "{totalCount, plural, one {that's all # difficulty} other {that's all # difficulties}}"
 msgstr "{totalCount, plural, one {that's all # difficulty} other {that's all # difficulties}}"
@@ -80,17 +84,26 @@ msgstr "5-10 min"
 msgid "A game is already in progress. Play locally instead? It won't be submitted."
 msgstr "A game is already in progress. Play locally instead? It won't be submitted."
 
-#: src/globals.ts
-#~ msgid "A new version is available ! Refresh the page to update."
-#~ msgstr "A new version is available ! Refresh the page to update."
+#: src/components/DesktopUpdate.tsx
+msgid "A new update is available. Click here to download it !"
+msgstr "A new update is available. Click here to download it !"
 
 #: src/scenes/Result.tsx
 msgid "Accuracy"
 msgstr "Accuracy"
 
+#: src/components/leaderboard/ScoreTooltip.tsx
+msgid "Accuracy: {acc}"
+msgstr "Accuracy: {acc}"
+
 #: src/components/songselect/UserCard.tsx
 msgid "Accuracy: {accText}"
 msgstr "Accuracy: {accText}"
+
+#. placeholder {0}: dateAgo(score.playedAt)
+#: src/components/leaderboard/ScoreTooltip.tsx
+msgid "Achieved on {date} ({0})"
+msgstr "Achieved on {date} ({0})"
 
 #: src/components/PlaylistOverlay.tsx
 msgid "Add this difficulty"
@@ -99,6 +112,10 @@ msgstr "Add this difficulty"
 #: src/components/options/DeleteAllBeatmaps.tsx
 msgid "All beatmaps deleted."
 msgstr "All beatmaps deleted."
+
+#: src/scenes/MainMenu.tsx
+msgid "Are you sure you want to quit?"
+msgstr "Are you sure you want to quit?"
 
 #: src/components/options/AutopilotDelay.tsx
 msgid "Autopilot delay"
@@ -112,10 +129,6 @@ msgstr "Autopilot mode"
 msgid "Autopilot: nothing playable"
 msgstr "Autopilot: nothing playable"
 
-#: src/scenes/Result.tsx
-#~ msgid "Autopilot: nothing playable in the playlist"
-#~ msgstr "Autopilot: nothing playable in the playlist"
-
 #: src/scenes/Options.tsx
 msgid "autopilot|delay|restart"
 msgstr "autopilot|delay|restart"
@@ -123,6 +136,10 @@ msgstr "autopilot|delay|restart"
 #: src/scenes/Options.tsx
 msgid "autopilot|mode|playlist|loop|next|song"
 msgstr "autopilot|mode|playlist|loop|next|song"
+
+#: src/osu/beatmap/grouping.ts
+msgid "Available"
+msgstr "Available"
 
 #: src/components/songselect/TopBar.tsx
 #: src/components/Tutorial.tsx
@@ -158,10 +175,6 @@ msgid "Bundled maps are listed in <0>song select</0>:<1> double-click</1> a map 
 msgstr "Bundled maps are listed in <0>song select</0>:<1> double-click</1> a map to download it, then <2>single-click</2> to start playing."
 
 #: src/components/Tutorial.tsx
-#~ msgid "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to download it, then <2>single-click</2> to start playing."
-#~ msgstr "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to download it, then <2>single-click</2> to start playing."
-
-#: src/components/Tutorial.tsx
 msgid "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to download it, then <2>single-tap</2> to start playing."
 msgstr "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to download it, then <2>single-tap</2> to start playing."
 
@@ -182,6 +195,10 @@ msgid "By Difficulty"
 msgstr "By Difficulty"
 
 #: src/components/songselect/TopBar.tsx
+msgid "By Download Status"
+msgstr "By Download Status"
+
+#: src/components/songselect/TopBar.tsx
 msgid "By Length"
 msgstr "By Length"
 
@@ -198,16 +215,13 @@ msgid "By Title"
 msgstr "By Title"
 
 #: src/scenes/Gameplay.tsx
+#: src/scenes/MainMenu.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
 #: src/scenes/Options.tsx
 msgid "Change the way osu!idle behaves"
 msgstr "Change the way osu!idle behaves"
-
-#: src/scenes/SongSelect.tsx
-#~ msgid "Clear local scores"
-#~ msgstr "Clear local scores"
 
 #: src/scenes/SongSelect.tsx
 msgid "Clearing local scores is not available yet"
@@ -253,10 +267,6 @@ msgstr "Couldn't start play"
 msgid "Current Fatigue"
 msgstr "Current Fatigue"
 
-#: src/scenes/SongSelect.tsx
-#~ msgid "Delete"
-#~ msgstr "Delete"
-
 #: src/components/options/DeleteAllBeatmaps.tsx
 msgid "Delete all beatmaps"
 msgstr "Delete all beatmaps"
@@ -269,10 +279,6 @@ msgstr "Delete the playlist"
 msgid "delete|beatmap|beatmaps"
 msgstr "delete|beatmap|beatmaps"
 
-#: src/scenes/SongSelect.tsx
-#~ msgid "Deleting beatmaps is not available yet"
-#~ msgstr "Deleting beatmaps is not available yet"
-
 #: src/components/BeatmapCard.tsx
 msgid "Double click to download"
 msgstr "Double click to download"
@@ -280,6 +286,14 @@ msgstr "Double click to download"
 #: src/scenes/SongSelect.tsx
 msgid "Download the beatmap first"
 msgstr "Download the beatmap first"
+
+#: src/osu/beatmap/grouping.ts
+msgid "Downloaded"
+msgstr "Downloaded"
+
+#: src/components/DesktopUpdate.tsx
+msgid "Downloading update…"
+msgstr "Downloading update…"
 
 #: src/components/Tutorial.tsx
 msgid "Each completed play earns your character <0>XP</0> and <1>levels</1> across various skillsets, making it perform better on future plays."
@@ -294,16 +308,17 @@ msgid "Effect"
 msgstr "Effect"
 
 #: src/scenes/MainMenu.tsx
+#: src/scenes/MainMenu.tsx
 msgid "Exit"
 msgstr "Exit"
+
+#: src/scenes/MainMenu.tsx
+msgid "Exit osu!idle"
+msgstr "Exit osu!idle"
 
 #: src/scenes/Result.tsx
 msgid "FAILED"
 msgstr "FAILED"
-
-#: src/scenes/SongSelect.tsx
-#~ msgid "Fatigue: {fatigue}"
-#~ msgstr "Fatigue: {fatigue}"
 
 #: src/scenes/Options.tsx
 msgid "fps|frame|rate|refresh|hz"
@@ -346,6 +361,10 @@ msgstr "Group"
 #: src/scenes/Result.tsx
 msgid "Hit deviance · {ur} UR"
 msgstr "Hit deviance · {ur} UR"
+
+#: src/online/presence.ts
+msgid "In the menus"
+msgstr "In the menus"
 
 #: src/scenes/Options.tsx
 msgid "Language"
@@ -391,10 +410,6 @@ msgstr "Main menu"
 #: src/scenes/Options.tsx
 msgid "MAINTENANCE"
 msgstr "MAINTENANCE"
-
-#: src/components/PlaylistOverlay.tsx
-#~ msgid "Manage Playlists"
-#~ msgstr "Manage Playlists"
 
 #. placeholder {0}: version.set.metadata.creator
 #: src/components/songselect/TopBar.tsx
@@ -483,8 +498,8 @@ msgid "osu!idle is in <0>alpha</0> and under active development - if you hit a b
 msgstr "osu!idle is in <0>alpha</0> and under active development - if you hit a bug, report it on <1>discord</1>. Have fun!"
 
 #: src/components/Alpha.tsx
-msgid "osu!idle is in <0>early alpha</0>: report bugs on <1>discord</1>"
-msgstr "osu!idle is in <0>early alpha</0>: report bugs on <1>discord</1>"
+msgid "osu!idle is in <0>early alpha</0>: report bugs on <1>discord</1> or <2>github</2>"
+msgstr "osu!idle is in <0>early alpha</0>: report bugs on <1>discord</1> or <2>github</2>"
 
 #: src/scenes/Options.tsx
 msgid "osu|music|theme"
@@ -533,6 +548,10 @@ msgstr "Play unranked ?"
 #: src/components/result/ResultMeta.tsx
 msgid "Played by {playerName} on {playedAt}"
 msgstr "Played by {playerName} on {playedAt}"
+
+#: src/online/presence.ts
+msgid "Playing"
+msgstr "Playing"
 
 #: src/gameplay/autopilot.ts
 msgid "Playlist"
@@ -595,6 +614,10 @@ msgstr "Select a playlist or create a new one here..."
 msgid "Select language"
 msgstr "Select language"
 
+#: src/online/presence.ts
+msgid "Selecting a song"
+msgstr "Selecting a song"
+
 #: src/components/options/ShowFPS.tsx
 msgid "Show FPS counter"
 msgstr "Show FPS counter"
@@ -651,6 +674,10 @@ msgstr "Star Rating: {0}★"
 msgid "Strain debug"
 msgstr "Strain debug"
 
+#: src/scenes/Gameplay.tsx
+msgid "Submitting score…"
+msgstr "Submitting score…"
+
 #: src/scenes/IntroScreen.tsx
 msgid "tap to play..."
 msgstr "tap to play..."
@@ -688,9 +715,23 @@ msgstr "Type to search!"
 msgid "Unplayed"
 msgstr "Unplayed"
 
+#. placeholder {0}: status.message
+#: src/components/DesktopUpdate.tsx
+msgid "Update failed ({0}). Please restart the game."
+msgstr "Update failed ({0}). Please restart the game."
+
 #: src/globals.ts
 msgid "Version {currentVersion} is available ! Refresh the page to update."
 msgstr "Version {currentVersion} is available ! Refresh the page to update."
+
+#: src/globals.ts
+msgid "Version {currentVersion} is available ! Update in the main menu."
+msgstr "Version {currentVersion} is available ! Update in the main menu."
+
+#: src/online/presence.ts
+#: src/online/presence.ts
+msgid "Viewing results"
+msgstr "Viewing results"
 
 #: src/scenes/Options.tsx
 #: src/scenes/Options.tsx
@@ -725,7 +766,3 @@ msgstr "Your character can play <0>on-repeat</0>, automatically, on playlists yo
 #: src/components/Tutorial.tsx
 msgid "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1> Righ-click</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."
 msgstr "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1> Righ-click</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."
-
-#: src/components/Tutorial.tsx
-#~ msgid "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1>Righ-click</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."
-#~ msgstr "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1>Righ-click</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."

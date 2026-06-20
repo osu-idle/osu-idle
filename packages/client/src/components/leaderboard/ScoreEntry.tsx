@@ -1,4 +1,5 @@
 import './ScoreEntry.css';
+import { useState } from 'react';
 import { Score } from '../../db/schema/score';
 import Character from '../../db/schema/character';
 import SceneManager, { SCENE } from '../../scenes/SceneManager';
@@ -9,14 +10,26 @@ import Skin from '../../osu/skin/Skin';
 import { getUser } from '../../online/services/users';
 import { recentTimeAgo } from '@osu-idle/shared/display/ago';
 import Entities from '../../entity/entities';
+import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
+import ScoreTooltip from './ScoreTooltip';
 
 interface Props {
 	score: Score | ScoreDTO,
 	previous?: { score: number },
+	rank?: number,
 }
 
-export default function ScoreEntry({ score, previous }: Props) {
-	const character = useAsync(async () => 
+type EntryCharacter = Character | Awaited<ReturnType<typeof getCharacter>>;
+
+/** Server characters carry a resolved avatar (custom upload or osu! fallback);
+ *  the local Guest has none, so fall back to the user avatar then the default. */
+function entryAvatar(character: EntryCharacter | undefined, userAvatarUrl: string | null | undefined) {
+	if (character && 'avatarUrl' in character && character.avatarUrl) return character.avatarUrl;
+	return userAvatarUrl || GUEST_AVATAR_URL;
+}
+
+export default function ScoreEntry({ score, previous, rank }: Props) {
+	const character = useAsync(async () =>
 		score.characterId <= 1 ? await Character.get({ id: score.characterId }) : await getCharacter(score.characterId)
 	, [score]);
 	const user = useAsync(async () => character && ('userId' in character) ? getUser(character.userId) : null, [character]);
@@ -25,9 +38,20 @@ export default function ScoreEntry({ score, previous }: Props) {
 
 	const ago = recentTimeAgo(Date.now() - score.playedAt);
 
+	const [hover, setHover] = useState(false);
+	const [mouse, setMouse] = useState({ x: 0, y: 0 });
+
 	return (
-		<li key={score.id} className={`score_entry__row ${loaded ? 'loaded' : ''} ${score.pfc ? 'is-pfc' : ''}`} onClick={() => SceneManager.set(SCENE.RESULT, score)}>
-			<span className="score_entry__avatar" style={{ backgroundImage: `url(${user ? user.avatarUrl : '/web/guest.png'})`}}>
+		<li
+			key={score.id}
+			className={`score_entry__row ${loaded ? 'loaded' : ''} ${score.pfc ? 'is-pfc' : ''}`}
+			onClick={() => SceneManager.set(SCENE.RESULT, score)}
+			onMouseEnter={() => setHover(true)}
+			onMouseLeave={() => setHover(false)}
+			onMouseMove={e => setMouse({ x: e.clientX, y: e.clientY })}
+		>
+			<span className="score_entry__avatar" style={{ backgroundImage: `url(${entryAvatar(character, user?.avatarUrl)})`}}>
+				{rank !== undefined && <span className="score_entry__rank">#{rank}</span>}
 			</span>
 			<span className="score_entry__grade">
 				{Skin.grade(score.grade)}
@@ -56,6 +80,8 @@ export default function ScoreEntry({ score, previous }: Props) {
 				<img src="/new.png"/>
 				{ago}
 			</span>}
+
+			{hover && <ScoreTooltip score={score} x={mouse.x} y={mouse.y} />}
 		</li>
 	);
 }

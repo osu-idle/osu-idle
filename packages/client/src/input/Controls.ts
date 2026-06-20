@@ -2,7 +2,7 @@ import Listener from '@osu-idle/shared/helpers/listener';
 import Synced from '@osu-idle/shared/helpers/synced';
 import SceneManager, { SCENE } from '../scenes/SceneManager';
 import { SETTINGS } from '../db/settings';
-import { isOptionsOpen, message } from '../globals';
+import { isOptionsOpen, isStandalone, message } from '../globals';
 
 type KeyCallback = (press: boolean, release: boolean) => void;
 
@@ -39,8 +39,12 @@ export default class Controls {
 	public static volumeUp = new KeyListener();
 	public static volumeDown = new KeyListener();
 
+	public static confirm = new KeyListener();
 	public static back = new KeyListener();
 	public static skip = new KeyListener();
+	
+	public static previous = new KeyListener();
+	public static next = new KeyListener();
 
 	// debug transport (gated to debug mode by the gameplay scene)
 	public static pause = new KeyListener();
@@ -80,45 +84,54 @@ export default class Controls {
 			if (this.mode_Alt.get() !== e.altKey) this.mode_Alt.set(e.altKey);
 		};
 
+		// eslint-disable-next-line complexity
 		const handle = async (e: KeyboardEvent, press: boolean, release: boolean) => {
 			syncModifiers(e);
-			switch(e.key) {
-				case 'Control':
+			switch(e.key.toLowerCase()) {
+				case 'control':
 					this.control.trigger(press, release);
 					break;
-				case 'Shift':
+				case 'shift':
 					this.shift.trigger(press, release);
 					break;
-				case 'Alt':
+				case 'alt':
 					e.preventDefault();
 					this.alt.trigger(press, release);
 					break;
 				//@ts-expect-error fallsthrough
-				case 'BrowserBack':
+				case 'browserback':
 					e.preventDefault();
-				case 'Escape':
+				case 'escape':
 					this.back.trigger(press, release);
+					break;
+				case 'enter':
+					this.confirm.trigger(press, release);
 					break;
 				case ' ':
 					this.skip.trigger(press, release);
 					this.pause.trigger(press, release);
 					break;
-				case 'ArrowRight':
+				case 'arrowright':
+				case 'arrowdown':
+					this.next.trigger(press, release);
 					this.seekForward.trigger(press, release);
 					break;
-				case 'ArrowLeft':
+				case 'arrowleft':
+				case 'arrowup':
+					this.previous.trigger(press, release);
 					this.seekBack.trigger(press, release);
 					break;
-				case 'F4':
+				case 'f4':
 					await this.increaseScrollSpeed.trigger(press, release);
 					break;
-				case 'F3':
+				case 'f3':
 					e.preventDefault();
 					e.stopPropagation();
 					await this.decreaseScrollSpeed.trigger(press, release);
 					break;
-				case 'O':
-					if (this.mode_Control.get() && this.mode_Shift.get()) {
+				case 'o':
+					if ((this.mode_Control.get() && this.mode_Shift.get())
+						|| (this.mode_Control.get() && isStandalone.get())) {
 						e.preventDefault();
 						e.stopPropagation();
 						await this.openOptions.trigger(press, release);

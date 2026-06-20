@@ -1,134 +1,141 @@
 .lb {
-  width: 100%;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  overflow-x: visible;
+	width: 100%;
+	height: 100%;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	overflow-x: visible;
 }
 
 .lb__tabs {
-  display: flex;
-  gap: 0.4rem;
-  padding: 1rem 1.1rem 0.8rem;
-  overflow-x: visible;
+	display: flex;
+	gap: 0.4rem;
+	padding: 1rem 1.1rem 0.8rem;
+	overflow-x: visible;
 }
 .lb__tab {
-  flex: 1;
-  padding: 0.55rem 0;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid transparent;
-  transition: all 0.16s ease;
+	flex: 1;
+	padding: 0.55rem 0;
+	border-radius: 10px;
+	font-weight: 700;
+	font-size: 0.82rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--text-dim);
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid transparent;
+	transition: all 0.16s ease;
 }
 .lb__tab:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.07);
+	color: var(--text);
+	background: rgba(255, 255, 255, 0.07);
 }
 .lb__tab.is-active {
-  color: #fff;
-  background: rgba(255, 102, 171, 0.2);
-  border-color: rgba(255, 102, 171, 0.5);
+	color: #fff;
+	background: rgba(255, 102, 171, 0.2);
+	border-color: rgba(255, 102, 171, 0.5);
 }
 
 .lb__body {
-  flex: 1;
-  min-height: 0;
-  /* iOS: own the vertical drag, keep momentum, don't chain to the page. */
-  touch-action: pan-y;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  padding: 0.7rem 0.8rem 2rem;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 102, 171, 0.5) transparent;
-  overflow: visible;
+	flex: 1;
+	min-height: 0;
+	max-height: calc(100vh - 220px);
+	touch-action: pan-y;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+
+	padding: .7rem 15.5rem 2rem;
+	margin: 0 -14.7rem;
+	
+	overflow-y: auto;
+	scrollbar-width: none;
+}
+.lb__body::-webkit-scrollbar {
+	display: none;
 }
 
 .lb__empty {
-  margin-top: 2.5rem;
-  text-align: center;
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  padding: 0 1rem;
-  line-height: 1.5;
+	margin-top: 2.5rem;
+	text-align: center;
+	color: var(--text-dim);
+	font-size: 0.9rem;
+	padding: 0 1rem;
+	line-height: 1.5;
 }
 
 .lb__list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	overflow-x: visible;
 }
 
 .lb__row {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 0.7rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  transition: background 0.16s ease;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.55rem 0.7rem;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.035);
+	border: 1px solid rgba(255, 255, 255, 0.04);
+	transition: background 0.16s ease;
 }
 .lb__row:hover {
-  background: rgba(255, 102, 171, 0.1);
+	background: rgba(255, 102, 171, 0.1);
 }
 .lb__row.is-pfc {
-  border-color: rgba(255, 210, 74, 0.4);
-  box-shadow: inset 0 0 12px rgba(255, 210, 74, 0.08);
+	border-color: rgba(255, 210, 74, 0.4);
+	box-shadow: inset 0 0 12px rgba(255, 210, 74, 0.08);
 }
 
 .lb__rank {
-  width: 1.8rem;
-  flex-shrink: 0;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--text-dim);
+	width: 1.8rem;
+	flex-shrink: 0;
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: var(--text-dim);
 }
 .lb__grade {
-  width: 1.6rem;
-  flex-shrink: 0;
-  text-align: center;
-  font-size: 1.1rem;
-  font-weight: 900;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+	width: 1.6rem;
+	flex-shrink: 0;
+	text-align: center;
+	font-size: 1.1rem;
+	font-weight: 900;
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 .lb__main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
 }
 .lb__name {
-  font-size: 0.9rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	font-size: 0.9rem;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 .lb__sub {
-  font-size: 0.7rem;
-  color: var(--text-dim);
+	font-size: 0.7rem;
+	color: var(--text-dim);
 }
 .lb__stats {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.1rem;
-  flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.1rem;
+	flex-shrink: 0;
 }
 .lb__score {
-  font-size: 0.92rem;
-  font-weight: 800;
+	font-size: 0.92rem;
+	font-weight: 800;
 }
 .lb__acc {
-  font-size: 0.7rem;
-  color: var(--osu-pink-light);
+	font-size: 0.7rem;
+	color: var(--osu-pink-light);
 }

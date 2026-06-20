@@ -21,6 +21,9 @@ export const characterDTO = z.object({
 	id: z.number().int().positive(),
 	userId: z.number().int().positive(),
 	name: z.string(),
+	// The character's profile picture, always a usable absolute URL: its custom
+	// upload, else the account's osu! avatar, else the guest default.
+	avatarUrl: z.string(),
 	skills: skillsDTO,
 });
 export type CharacterDTO = z.infer<typeof characterDTO>;

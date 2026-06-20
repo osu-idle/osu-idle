@@ -18,10 +18,15 @@ export default function Link({ to, href, target, className, children, onMouseEnt
 	const external = href !== undefined || target === '_blank';
 
 	const onClick = (e: MouseEvent) => {
+		// a Link handles its own click - never let it bubble to an enclosing Link
+		// (nav dropdown items sit inside the parent nav link), which would otherwise
+		// hijack an external/new-tab click and navigate the SPA away.
+		e.stopPropagation();
+		// external link or a modifier/middle click: leave it to the browser (new tab,
+		// real navigation) - just don't bubble.
 		if (external || to === undefined) return;
 		if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
 		e.preventDefault();
-		e.stopPropagation();
 		if (to === ':play') {
 			window.location.assign('/');
 			return;

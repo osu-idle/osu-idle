@@ -24,6 +24,7 @@ import { SETTINGS } from '../db/settings';
 import CountUp, { COUNT_UP_MS } from '../components/result/CountUp';
 import ResultMeta from '../components/result/ResultMeta';
 import SkillProgression from '../components/result/SkillProgression';
+import { currentScore } from '../globals';
 
 const JUDGE_ORDER: Judgement[] = [
 	JUDGEMENT.PERFECT, JUDGEMENT.MARVELOUS,
@@ -50,6 +51,11 @@ export default function Result({ score, game, progression, failed }: Props) {
 		void flushCharacter(score.characterId);
 		void flushCharacterStats(score.characterId);
 	}, [gains]);
+
+	useEffect(() => {
+		currentScore.set(score);
+		return () => { currentScore.set(undefined); };
+	}, []);
 
 	const onBack = () => {
 		// leaving the result screen by hand ends the playlist automation

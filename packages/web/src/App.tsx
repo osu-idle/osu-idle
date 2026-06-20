@@ -13,7 +13,7 @@ const TITLE = {
 	[ROUTE.HOME]: 'dashboard',
 	[ROUTE.NEWS]: 'news',
 	[ROUTE.NEWS_ADMIN]: 'manage news',
-	[ROUTE.PLAY_OSU]: 'osu!',
+	[ROUTE.DOWNLOAD]: 'play osu!idle',
 
 	[ROUTE.LOGIN]: 'login',
 	[ROUTE.LOGOUT]: 'logging out...',
@@ -35,6 +35,7 @@ const TITLE = {
 	[ROUTE.HELP_FAQ]: 'FAQ',
 
 	[ROUTE.AUTH_CALLBACK]: 'hi !',
+	[ROUTE.AUTH_DESKTOP]: 'signed in',
 	[ROUTE.AUTH_ERROR]: 'oh no!',
 
 	[ROUTE.ADMIN_BALANCING]: 'balancing',

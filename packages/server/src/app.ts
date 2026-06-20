@@ -4,8 +4,9 @@ import { logger } from 'hono/logger';
 import { HTTPException } from 'hono/http-exception';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { ZodError } from 'zod';
-import { clientUrl, isProd } from './env';
+import { clientUrl, DESKTOP_ORIGIN, isProd } from './env';
 import { i18nMiddleware } from './i18n';
+import { reportError } from './discord/error';
 import { __ } from '@osu-idle/shared/i18n/translate';
 import { UPLOAD_DIR, UPLOAD_ROUTE } from './uploads';
 import { usersRoutes } from './routes/users';
@@ -19,10 +20,14 @@ import { rankingRoutes } from './routes/ranking';
 import { beatmapsRoutes } from './routes/beatmap';
 import { playRoutes } from './routes/play';
 
-// In dev also accept the web app's own Vite origin (port 5174) - it's normally
-// reached through the game's /web proxy (CLIENT_URL), but opening it directly is
-// common while iterating on the web platform. Prod stays locked to CLIENT_URL.
-const allowedOrigins = isProd ? clientUrl : [clientUrl, 'http://localhost:5174'];
+// The desktop app loads its bundle from a registered `app://` scheme, so it
+// calls us from that origin (Bearer-authed, no cookie). In dev also accept the
+// web app's own Vite origin (port 5174) - it's normally reached through the
+// game's /web proxy (CLIENT_URL), but opening it directly is common while
+// iterating on the web platform. Prod stays locked to CLIENT_URL + the app.
+const allowedOrigins = isProd
+	? [clientUrl, DESKTOP_ORIGIN]
+	: [clientUrl, DESKTOP_ORIGIN, 'http://localhost:5174'];
 
 // Versioned API surface. Mount future feature routers here.
 const v1 = new Hono()
@@ -63,6 +68,7 @@ app.onError((err, c) => {
 		return c.json({ error: 'Validation failed', issues: err.issues }, 400);
 	}
 	console.error(err);
+	reportError(err, c);
 	return c.json({ error: 'Internal server error' }, 500);
 });
 

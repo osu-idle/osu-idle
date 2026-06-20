@@ -13,7 +13,6 @@ import CardContextMenu from '../components/songselect/CardContextMenu';
 import StrainDebug from './StrainDebug';
 import { matchesSearch } from '../osu/beatmap/beatmapSearch';
 import Entities from '../entity/entities';
-import Auth from '../online/auth';
 import { music, PLAYER_MODE } from '../audio/MusicPlayer';
 import BeatmapAPI, { Metadata } from '../osu/beatmap/beatmap_api';
 import LightBeatmapSet from '../osu/beatmap/LightBeatmapSet';
@@ -42,6 +41,11 @@ import { launchPlay } from './launchPlay';
  *  sessionStorage so a full dev-server reload (a skill edit forces one) reopens
  *  it instead of dropping back to the intro. See SceneManager's boot. */
 export const STRAIN_DEBUG_KEY = 'strain-debug-diff';
+
+/** The group a play was launched from, kept across the gameplay scene so that
+ *  returning to song select reopens that group - not just the first group the
+ *  played map happens to belong to. Consumed once by the next mount. */
+let lastLaunchedGroupKey: string | null = null;
 
 const getHistory = async (character: Character) => {
 	const scores = await Score.query('SELECT * FROM score WHERE characterId = ?', [character.id]);
@@ -97,6 +101,7 @@ type CarouselRows = { rows: CarouselRow[]; orderedItems: CarouselItem[]; expande
 function buildCarouselRows(
 	filteredItems: CarouselItem[], group: GroupOption, history: History | undefined,
 	expandedKey: string | null, playlistsByBeatmap: PlaylistsByBeatmap,
+	downloaded: ReadonlySet<number> | undefined,
 ): CarouselRows {
 	if (group === 'No Grouping') {
 		return {
@@ -109,7 +114,7 @@ function buildCarouselRows(
 	const now = Date.now();
 	const buckets = new Map<string, { group: Group; items: CarouselItem[] }>();
 	for (const item of filteredItems) {
-		for (const g of groupsOf(item, group, hist, now, playlistsByBeatmap)) {
+		for (const g of groupsOf(item, group, hist, now, playlistsByBeatmap, downloaded)) {
 			let bucket = buckets.get(g.key);
 			if (!bucket) buckets.set(g.key, bucket = { group: g, items: [] });
 			bucket.items.push(item);
@@ -174,7 +179,6 @@ export default function SongSelect() {
 	const [character] = useSynced(Entities.character);
 	const online_character = useAsync(async () => character.id > 1 ? getCharacter(character.id) : undefined, [character]);
 	const online_stats = useAsync(async () => character.id > 1 ? getCharacterStats(character.id) : undefined, [character]);
-	const [user] = useSynced(Auth.user);
 	const [debug] = useSynced(debugMode);
 	const { t } = useLingui(); // for strings outside JSX text (attrs, toasts, menu)
 
@@ -276,6 +280,23 @@ export default function SongSelect() {
 	const [expandedKey, setExpandedKey] = useState<string | null>(null);
 	useEffect(() => { setExpandedKey(null); }, [group]);
 
+	// the group a play was launched from (set when leaving for gameplay), captured
+	// once for this mount so returning here reopens it; cleared so a later mount
+	// only restores after a fresh play.
+	const restoreGroupKey = useRef(lastLaunchedGroupKey);
+	useEffect(() => { lastLaunchedGroupKey = null; }, []);
+
+	// frozen downloaded set for the "By Download Status" group mode: captured once
+	// per entry into the mode so a map downloaded mid-session stays under "Available"
+	// rather than jumping to "Downloaded" and dragging the selection with it. Cleared
+	// when leaving the mode; (re)captured from the freshest items once they're loaded.
+	const [downloadSnapshot, setDownloadSnapshot] = useState<ReadonlySet<number>>();
+	useEffect(() => {
+		if (group !== 'By Download Status') { setDownloadSnapshot(undefined); return; }
+		if (downloadSnapshot || !items.length) return;
+		setDownloadSnapshot(new Set(items.filter((i) => i.beatmap.metadata.runtime).map((i) => i.beatmap.metadata.id)));
+	}, [group, items, downloadSnapshot]);
+
 	// opening a group closes the previously open one; clicking the open one collapses it
 	const toggleGroup = useCallback((key: string) => {
 		setExpandedKey((prev) => (prev === key ? null : key));
@@ -288,9 +309,9 @@ export default function SongSelect() {
 		if (group === 'No Grouping' || !version) return '';
 		const item = items.find((i) => i.beatmap.is(version));
 		if (!item) return '';
-		return groupsOf(item, group, history ?? EMPTY_HISTORY, Date.now(), playlistsByBeatmap)
+		return groupsOf(item, group, history ?? EMPTY_HISTORY, Date.now(), playlistsByBeatmap, downloadSnapshot)
 			.map((g) => g.key).join('\n');
-	}, [group, version, items, history, playlistsByBeatmap]);
+	}, [group, version, items, history, playlistsByBeatmap, downloadSnapshot]);
 
 	// the selection's group opens automatically when the selection moves into it
 	// (closing any other) - but stays collapsible by hand, since we only re-open on
@@ -299,13 +320,18 @@ export default function SongSelect() {
 	useEffect(() => {
 		const keys = activeGroupKeys ? activeGroupKeys.split('\n') : [];
 		if (keys.length === 0) return;
-		setExpandedKey((prev) => (prev && keys.includes(prev) ? prev : keys[0]));
+		setExpandedKey((prev) => {
+			if (prev && keys.includes(prev)) return prev;
+			const restore = restoreGroupKey.current;
+			if (restore && keys.includes(restore)) return restore;
+			return keys[0];
+		});
 	}, [activeGroupKeys]);
 
 	// grouped carousel rows folded from the sorted, filtered list (see buildCarouselRows)
 	const { rows, orderedItems, expanded } = useMemo(
-		() => buildCarouselRows(filteredItems, group, history, expandedKey, playlistsByBeatmap),
-		[filteredItems, group, history, expandedKey, playlistsByBeatmap],
+		() => buildCarouselRows(filteredItems, group, history, expandedKey, playlistsByBeatmap, downloadSnapshot),
+		[filteredItems, group, history, expandedKey, playlistsByBeatmap, downloadSnapshot],
 	);
 
 	/**
@@ -323,24 +349,26 @@ export default function SongSelect() {
 		await music.play(beatmap.metadata.runtime ? beatmap.metadata.previewTime : 0);
 	}, []);
 
-	// up/down arrows step the selection through the visible carousel (osu!-style),
-	// regardless of search-box focus; the carousel glides the new card to centre
-	useEffect(() => {
-		const onKey = (e: KeyboardEvent) => {
-			if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
-			if (orderedItems.length === 0) return;
-			e.preventDefault();
-			const current = orderedItems.findIndex((i) => i.beatmap.is(music.beatmap.get()));
-			const step = e.key === 'ArrowDown' ? 1 : -1;
-			// when nothing is selected, ArrowDown lands on the first card, ArrowUp the last
-			const next = current === -1
-				? (step === 1 ? 0 : orderedItems.length - 1)
-				: Math.min(Math.max(current + step, 0), orderedItems.length - 1);
-			void selectItem(orderedItems[next].beatmap);
-		};
-		window.addEventListener('keydown', onKey);
-		return () => window.removeEventListener('keydown', onKey);
+	const move = useCallback((step: number) => {
+		const current = orderedItems.findIndex((i) => i.beatmap.is(music.beatmap.get()));
+		// when nothing is selected, next lands on the first card, previous the last
+		const next = current === -1
+			? (step === 1 ? 0 : orderedItems.length - 1)
+			: Math.min(Math.max(current + step, 0), orderedItems.length - 1);
+		void selectItem(orderedItems[next].beatmap);
 	}, [orderedItems, selectItem]);
+
+	Controls.next.usePress(() => move(1));
+	Controls.previous.usePress(() => move(-1));
+	Controls.confirm.usePress(() => {
+		if (playlistItem) { return; }
+		if (menuItem) { return; }
+		const map = music.beatmap.get();
+		if (!map) return;
+		if (!handleCardClick(map, false)) {
+			handleCardDoubleClick(map);
+		}
+	});
 
 	const flashToast = useCallback((msg: string) => {
 		setToast(msg);
@@ -357,6 +385,7 @@ export default function SongSelect() {
 	 *              otherwise the whole search-filtered list
 	 */
 	const play = useCallback((beatmap: LightBeatmap, debug = false) => {
+		lastLaunchedGroupKey = expanded?.group.key ?? null;
 		if (!debug) {
 			const mode = SETTINGS.autopilotMode.get();
 			if (mode === AUTOPILOT_MODE.LOOP) {
@@ -392,11 +421,18 @@ export default function SongSelect() {
 	}, [downloads, loadLibrary, selectItem]);
 
 	// single click: select + preview; clicking the already-selected downloaded card plays it
-	const handleCardClick = useCallback((beatmap: LightBeatmap) => {
-		if (scoreView) return;
+	const handleCardClick = useCallback((beatmap: LightBeatmap, pointer: boolean = true) => {
+		if (scoreView) return false;
 		console.log('Clicked on card', beatmap.metadata.version);
-		if (beatmap.metadata.runtime && beatmap.isPlaying()) play(beatmap);
-		else void selectItem(beatmap);
+		if (beatmap.metadata.runtime && beatmap.isPlaying()) {
+			play(beatmap);
+			return true;
+		}
+
+		if (pointer) {
+			void selectItem(beatmap);
+		}
+		return false;
 	}, [scoreView, play, selectItem]);
 
 	// double click: download the set - but do nothing if it's already downloaded
@@ -520,7 +556,7 @@ export default function SongSelect() {
 				<button className="game__exit" onClick={onBack}>
 					<Trans>BACK</Trans>
 				</button>
-				<UserCard character={character} user={user} online_character={online_character} online_stats={online_stats} />
+				<UserCard character={character} online_character={online_character} online_stats={online_stats} />
 			</div>
 
 			{toast && <div className="game__toast">{toast}</div>}

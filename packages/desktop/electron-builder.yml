@@ -1,0 +1,77 @@
+appId: net.rhythmgamers.osuidle
+productName: osu!idle
+
+electronVersion: 33.2.0
+
+directories:
+  output: release
+  buildResources: build
+
+# Stable, version-less names so the download URL never changes (productName has a
+# "!" and a space, so we can't use it). Each deploy overwrites osu-idle.exe /
+# osu-idle.AppImage + latest*.yml; electron-updater carries the version inside the
+# feed, so a fixed filename is exactly what "always download the latest" wants.
+artifactName: osu-idle.${ext}
+
+# Self-update feed: electron-builder writes latest*.yml next to the installers and
+# bundles app-update.yml so electron-updater reads from here with no extra setup.
+# The deploy copies the installers + latest*.yml into the dir served at this URL.
+publish:
+  provider: generic
+  url: https://osu.idle.rhythmgamers.net/download/
+
+# Our versions carry a `-buildNNNN` prerelease tag (4-segment MAJOR.MINOR.PATCH.BUILD
+# → semver). Don't infer a per-build update channel from it, or every build would
+# publish to its own `buildNNNN.yml` and clients would never see the next one - keep
+# everyone on a single `latest.yml`.
+detectUpdateChannel: false
+
+# Only the compiled main/preload ship in the asar; the renderer bundles are
+# copied verbatim as resources (served by the app:// protocol at runtime).
+files:
+  - out/**/*
+  - package.json
+
+extraResources:
+  # the running window's icon (BrowserWindow.icon) - distinct from the installer
+  # icon below, which only sets the exe/AppImage/shortcut. Without this the live
+  # window falls back to the default Electron icon (visible on Linux).
+  - from: ../web/public/idle-white.png
+    to: icon.png
+  # ship only the app shell - the ~2.4 GB on-demand library (beatmaps, previews)
+  # is streamed from the website at runtime (see protocol.ts REMOTE_PREFIXES), so
+  # the installer stays small and NSIS doesn't choke on a multi-GB embed.
+  - from: ../client/dist
+    to: renderer/client
+    filter:
+      - "**/*"
+      - "!beatmaps/**"
+      - "!previews/**"
+      - "!download/**"
+  - from: ../web/dist
+    to: renderer/web
+
+# Custom scheme the OS routes back to the running app (app-directed deep links).
+protocols:
+  - name: osu!idle
+    schemes:
+      - osu-idle
+
+mac:
+  category: public.app-category.games
+  target:
+    - dmg
+    - zip
+
+# App icon (path is relative to this package). A single square PNG - electron-
+# builder generates the Windows .ico and the Linux icon set from it.
+win:
+  icon: ../web/public/idle-white.png
+  target:
+    - nsis
+
+linux:
+  icon: ../web/public/idle-white.png
+  category: Game
+  target:
+    - AppImage

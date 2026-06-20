@@ -6,7 +6,7 @@ export default function Alpha() {
 		<div className='alpha__warning'>
 			<div className='alpha__border'></div>
 			<div className='alpha__text'>
-				<Trans>osu!idle is in <b>early alpha</b>: report bugs on <a href="https://discord.gg/Yd5GEaX8AJ" target='_blank'>discord</a></Trans>
+				<Trans>osu!idle is in <b>early alpha</b>: report bugs on <a href="https://discord.gg/Yd5GEaX8AJ" target='_blank'>discord</a> or <a href="https://github.com/osu-idle/osu-idle" target='_blank'>github</a></Trans>
 			</div>
 		</div>
 	);

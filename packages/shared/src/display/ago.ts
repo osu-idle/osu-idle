@@ -42,7 +42,7 @@ export const timeAgo = (ms?: number | null): string => {
 	return __('{y} years ago', undefined, { y: Math.floor(mo / 12) });
 };
 
-export const dateAgo = (date?: string | null): string => {
+export const dateAgo = (date?: string | number | null): string => {
 	if (!date) return '';
 	return timeAgo(Date.now() - new Date(date).getTime());
 };

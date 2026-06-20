@@ -1,0 +1,77 @@
+.playosu {
+	max-width: 980px;
+	margin: 0 auto;
+	padding: 20px 16px 60px;
+}
+
+.playosu__lead {
+	text-align: center;
+	font-size: 26px;
+	margin: 10px 0 28px;
+}
+
+.playosu__choices {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 22px;
+}
+
+@media (max-width: 720px) {
+	.playosu__choices {
+		grid-template-columns: 1fr;
+	}
+}
+
+.playosu__card {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 26px 24px;
+	border-radius: 14px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.playosu__card--featured {
+	border-color: rgba(255, 102, 171, 0.55);
+	background: rgba(255, 102, 171, 0.08);
+}
+
+.playosu__card-title {
+	font-size: 20px;
+	margin: 0;
+}
+
+.playosu__card-text {
+	margin: 0;
+	color: rgba(255, 255, 255, 0.72);
+	line-height: 1.5;
+	flex: 1;
+}
+
+.playosu__cta {
+	align-self: flex-start;
+	margin-top: 6px;
+}
+
+.playosu__cta--disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.playosu__alt {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.playosu__alt a {
+	color: #ff8ec4;
+	text-decoration: none;
+}
+
+.playosu__alt a:hover {
+	text-decoration: underline;
+}

@@ -2,16 +2,29 @@ msgid ""
 msgstr ""
 "POT-Creation-Date: 2026-06-11 09:50+0000\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: fr\n"
-"Project-Id-Version: \n"
+"Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: \n"
+"PO-Revision-Date: 2026-06-20 18:35\n"
 "Last-Translator: \n"
-"Language-Team: \n"
-"Plural-Forms: \n"
+"Language-Team: French\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Crowdin-Project: osu-idle\n"
+"X-Crowdin-Project-ID: 907073\n"
+"X-Crowdin-Language: fr\n"
+"X-Crowdin-File: /packages/web/src/locales/en.po\n"
+"X-Crowdin-File-ID: 47\n"
+
+#: src/pages/DesktopDone.tsx
+msgid "Back in osu!idle already? You can close this tab."
+msgstr "Déjà de retour sur osu!idle ? Vous pouvez fermer cet onglet."
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Best for performance and idling."
+msgstr "Plus adapté pour le jeu passif et de meilleures performances."
 
 #. placeholder {0}: mapset.artist
 #: src/pages/beatmaps/RankedMaps.tsx
@@ -26,10 +39,45 @@ msgstr "Connectez votre compte osu! pour apparaître dans les classements."
 msgid "Contact"
 msgstr "Contact"
 
+#. placeholder {0}: primary.label
+#: src/pages/PlayOsuIdle.tsx
+msgid "Download for {0} (v{version})"
+msgstr "Télécharger pour {0} (v{version})"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Download the desktop app"
+msgstr "Télécharger l'appli bureau"
+
+#. placeholder {0}: user.username
+#: src/pages/AuthCallback.tsx
+msgid "Hello {0}!"
+msgstr "Bonjour {0} !"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "How do you want to play?"
+msgstr "Comment souhaitez-vous jouer ?"
+
 #. placeholder {0}: mapset.creator
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "mapped by {0}"
 msgstr "mappé par {0}"
+
+#. placeholder {0}: PLATFORM_LABEL[platform]
+#: src/pages/PlayOsuIdle.tsx
+msgid "Not yet available for {0}"
+msgstr "Pas encore disponible pour {0}"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Other platforms:"
+msgstr "Autres plateformes :"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Play in the browser"
+msgstr "Jouer dans le navigateur"
+
+#: src/pages/PlayOsuIdle.tsx
+msgid "Play now"
+msgstr "Jouer maintenant"
 
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Plays"
@@ -43,6 +91,10 @@ msgstr "Vie privée"
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Ranked"
 msgstr "Classé"
+
+#: src/pages/DesktopDone.tsx
+msgid "Return to osu!idle"
+msgstr "Retourner sur osu!idle"
 
 #: src/Footer.tsx
 msgid "Rules"
@@ -60,14 +112,23 @@ msgstr "Se connecter"
 msgid "Sign in with osu!"
 msgstr "Se connecter avec osu!"
 
+#: src/pages/PlayOsuIdle.tsx
+msgid "Simplest, nothing to install."
+msgstr "Le plus simple, rien à installer."
+
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Sort by"
 msgstr "Trier par"
 
 #: src/Footer.tsx
 msgid "Source code"
-msgstr ""
+msgstr "Code source"
 
 #: src/Footer.tsx
 msgid "Terms"
 msgstr "Conditions"
+
+#: src/pages/DesktopDone.tsx
+msgid "You're signed in!"
+msgstr "Vous êtes connecté !"
+

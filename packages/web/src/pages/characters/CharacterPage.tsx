@@ -53,11 +53,11 @@ export default function CharacterPage({ params }: PageProps) {
 			<div className='character__info'>
 				{isSelf
 					? <EditableProfilePicture
-						avatarUrl={avatarOverride !== undefined ? avatarOverride : user.avatarUrl}
+						avatarUrl={avatarOverride !== undefined ? avatarOverride : character.avatarUrl}
 						className='character__avatar'
 						onChange={url => { setAvatarOverride(url); void refreshCurrentUser(); }}
 					/>
-					: <ProfilePicture avatarUrl={user.avatarUrl} className='character__avatar' />}
+					: <ProfilePicture avatarUrl={character.avatarUrl} className='character__avatar' />}
 				<div className='character__meta'>
 					<div className='character__meta-up'>
 						<div className='character__meta-name'>{character.name}</div>

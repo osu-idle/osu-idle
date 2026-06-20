@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { UserDTO } from '@osu-idle/shared/user';
-
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+import { desktop } from '@osu-idle/shared/desktop';
+import { apiUrl, withAuth } from '../api/client';
 
 // Module-level cache shared by every consumer: the session is fetched once and
 // the result fanned out to all hook instances, rather than each mount firing
@@ -12,7 +12,7 @@ let inFlight: Promise<void> | null = null;
 const subscribers = new Set<() => void>();
 
 function load(): Promise<void> {
-	inFlight ??= fetch(`${API_URL}/v1/auth/me`, { credentials: 'include' })
+	inFlight ??= fetch(apiUrl('/v1/auth/me'), withAuth())
 		.then(res => (res.ok ? res.json() : null))
 		.then((data: UserDTO | null) => { user = data ?? null; })
 		.catch(() => { user = null; })
@@ -37,6 +37,9 @@ if (typeof window !== 'undefined') {
 	window.addEventListener('storage', e => {
 		if (e.key === 'osu-idle:auth') void refreshCurrentUser();
 	});
+	// Desktop delivers the session as a Bearer token (no cookie / storage ping),
+	// so re-read whenever the app reports it changed (sign-in or sign-out).
+	desktop()?.onAuthChanged(() => void refreshCurrentUser());
 }
 
 function subscribe(cb: () => void): () => void {

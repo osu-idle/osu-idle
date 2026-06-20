@@ -5,12 +5,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiscord } from '@fortawesome/free-brands-svg-icons';
 
 import Link from './components/Link';
-import { Asset, beatmapListing, characterPath, globalSkillRankPath, ROUTE } from './router';
+import { Asset, beatmapListing, characterPath, globalSkillRankPath, ROUTE, type Path } from './router';
 import { useCurrentUser } from './hooks/useCurrentUser';
 import { useCurrentCharacter } from './hooks/useCurrentCharacter';
 import { useAdmin } from './hooks/useAdmin';
+import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 
-const NAV_ITEMS = [
+// a dropdown entry: an in-app route, or an external link (e.g. the real osu! site)
+type NavSub =
+	| { label: string; to: Path | ':play' }
+	| { label: string; href: string; target?: string };
+type NavItem = { label: string; to: Path; sub: NavSub[] };
+
+const NAV_ITEMS: NavItem[] = [
 	{
 		label: 'home',
 		to: ROUTE.HOME,
@@ -21,11 +28,12 @@ const NAV_ITEMS = [
 			},
 			{
 				label: 'play osu!',
-				to: ROUTE.PLAY_OSU,
+				href: 'https://osu.ppy.sh',
+				target: '_blank',
 			},
 			{
 				label: 'play osu!idle',
-				to: ':play',
+				to: ROUTE.DOWNLOAD,
 			},
 		],
 	},
@@ -116,9 +124,12 @@ export default function Header() {
 							<span>{label}</span>
 							{sub && (
 								<div className='topbar__sub'>
-									{sub.map(({ label, to }) => (
-										<Link key={label} to={to} className="topbar__sublink">
-											<span>{label}</span>
+									{sub.map(item => (
+										<Link key={item.label} className="topbar__sublink"
+											to={'to' in item ? item.to : undefined}
+											href={'href' in item ? item.href : undefined}
+											target={'target' in item ? item.target : undefined}>
+											<span>{item.label}</span>
 										</Link>
 									))}
 								</div>
@@ -136,7 +147,7 @@ export default function Header() {
 						<div
 							ref={userMenu}
 							className={`topbar__avatar ${userMenuActive ? 'active' : ''}`}
-							style={{ backgroundImage: `url(${Asset(user?.avatarUrl ? user.avatarUrl : '/guest.png')})` }}
+							style={{ backgroundImage: `url(${Asset(user?.avatarUrl ? user.avatarUrl : GUEST_AVATAR_URL)})` }}
 							onClick={(e) => e.target === userMenu.current ? setUserMenuActive(!userMenuActive) : setUserMenuActive(true)}
 						>
 							{userMenuActive && (

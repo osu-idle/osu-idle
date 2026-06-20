@@ -7,7 +7,7 @@ import { DownloadState } from './BeatmapCarousel';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import LightBeatmapSet from '../osu/beatmap/LightBeatmapSet';
 import { music } from '../audio/MusicPlayer';
-import { Score } from '../db/schema/score';
+import { Score, scoresVersion } from '../db/schema/score';
 import Entities from '../entity/entities';
 import Skin from '../osu/skin/Skin';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
@@ -56,7 +56,10 @@ export default function BeatmapCard({
 	// the card always reflects whoever is currently signed in.
 	const [character] = useSynced(Entities.character);
 	const [showThumbnails] = useSynced(SETTINGS.showThumbnails);
-	const grade = useAsync(async () => (await Score.best(character.id, beatmap.metadata.id))?.grade, [beatmap, character.id]);
+	// scoresVersion bumps on any score write, so an imported leaderboard score for
+	// the live character refreshes the grade without a reselect.
+	const [scoresV] = useSynced(scoresVersion);
+	const grade = useAsync(async () => (await Score.best(character.id, beatmap.metadata.id))?.grade, [beatmap, character.id, scoresV]);
 
 	const version = beatmap.metadata.version;
 	const artist = set.metadata.artist;

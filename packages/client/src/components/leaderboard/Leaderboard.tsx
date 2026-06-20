@@ -2,6 +2,7 @@ import './Leaderboard.css';
 import { useEffect, useState } from 'react';
 import { Score } from '../../db/schema/score';
 import ScoreEntry from './ScoreEntry';
+import PersonalBest from './PersonalBest';
 import { music } from '../../audio/MusicPlayer';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { ScoreDTO } from '@osu-idle/shared/score';
@@ -71,11 +72,15 @@ export default function Leaderboard() {
 				) : (
 					<ol className="lb__list">
 						{scores.map((score, i) => (
-							<ScoreEntry key={score.id} score={score} previous={i < (scores.length - 1) ? scores[i+1] : undefined} />
+							<ScoreEntry key={score.id} score={score} rank={i + 1} previous={i < (scores.length - 1) ? scores[i+1] : undefined} />
 						))}
 					</ol>
 				)}
 			</div>
+
+			{category !== SCORE_TAB.LOCAL && beatmap?.metadata.id !== undefined && (
+				<PersonalBest beatmapId={beatmap.metadata.id} />
+			)}
 		</aside>
 	);
 }

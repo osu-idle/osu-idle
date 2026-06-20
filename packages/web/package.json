@@ -1,7 +1,7 @@
 {
   "name": "@osu-idle/web",
   "private": true,
-  "version": "0.11.0.0",
+  "version": "0.12.0.0",
   "type": "module",
   "description": "osu!web-style site served at /web, browsable in-game",
   "scripts": {
@@ -9,7 +9,7 @@
     "build": "tsc -b && vite build",
 	"typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "extract": "lingui extract",
+    "extract": "lingui extract --clean",
     "compile": "lingui compile"
   },
   "dependencies": {

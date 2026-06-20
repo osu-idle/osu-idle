@@ -65,11 +65,20 @@ export async function getActivePlay() {
 	}
 }
 
+/** Thrown by {@link fetchPlayResult} on a non-OK response, carrying the HTTP
+ *  status so the caller can branch (404 = the result is gone server-side). */
+export class PlayResultError extends Error {
+	constructor(public readonly status: number) {
+		super(`play result failed (${status})`);
+		this.name = 'PlayResultError';
+	}
+}
+
 /** Try to get an already finalized play if not already read */
 export async function fetchPlayResult(token: string, forceSee: boolean = false) {
 	const res = await rpc.v1.play[':token'].result[':forceSee'].$get({ param: { token, forceSee: forceSee ? 'true' : 'false' } });
 	if (!res.ok) {
-		throw new Error(`play result failed (${res.status})`);
+		throw new PlayResultError(res.status);
 	}
 	return res.json();
 }

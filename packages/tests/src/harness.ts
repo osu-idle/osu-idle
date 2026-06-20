@@ -3,7 +3,8 @@ import { Grades, type Grade } from '@osu-idle/shared/judgement';
 import type { HitRecord } from '@osu-idle/shared/sim/maniaGame';
 import type { ScoreState } from '@osu-idle/shared/sim/scoring';
 import type { SkillName } from '@osu-idle/shared/skills';
-import { loadBeatmap, simulate, analyzeSkill, type SkillSpec } from './sim';
+import type { Beatmap } from 'osu-classes';
+import { getBeatmap, simulate, analyzeSkill, type SkillSpec } from './sim';
 import sum from '@osu-idle/shared/helpers/sum';
 import avg from '@osu-idle/shared/math/avg';
 
@@ -22,8 +23,8 @@ import avg from '@osu-idle/shared/math/avg';
 
 /** Full-bot play, or a single skill in isolation. */
 export type ScenarioInput =
-	| { chart: string; runs?: number; skills: SkillSpec }
-	| { chart: string; runs?: number; skill: SkillName; level: number };
+	| { chart: number; runs?: number; skills: SkillSpec }
+	| { chart: number; runs?: number; skill: SkillName; level: number };
 
 /** The result metrics of a single play. */
 interface Outcome {
@@ -52,7 +53,7 @@ function outcomeOf(score: ScoreState, hits: HitRecord[]): Outcome {
 	};
 }
 
-function playOnce(input: ScenarioInput, beatmap: ReturnType<typeof loadBeatmap>): Outcome {
+function playOnce(input: ScenarioInput, beatmap: Beatmap): Outcome {
 	if ('skill' in input) {
 		const r = analyzeSkill(beatmap, input.skill, input.level);
 		return outcomeOf(r.score, r.hits);
@@ -88,7 +89,7 @@ const stdev = (xs: number[]) => {
 
 /** Run a scenario `runs` times and collect the result metrics. */
 export function aggregate(input: ScenarioInput): Aggregate {
-	const beatmap = loadBeatmap(`${input.chart}.osu`);
+	const beatmap = getBeatmap(input.chart);
 	const runs = input.runs ?? 25;
 	const outcomes: Outcome[] = [];
 	for (let i = 0; i < runs; i++) outcomes.push(playOnce(input, beatmap));

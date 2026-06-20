@@ -6,6 +6,7 @@ import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { SETTINGS } from '../db/settings';
 import { NEWS_TAGS } from '@osu-idle/shared/news';
 import { BASE_URL } from '../online/client';
+import { updateStatus } from '../online/desktopUpdate';
 
 /**
  * Lazer-style announcement toast for the latest news article, sitting at the
@@ -14,6 +15,7 @@ import { BASE_URL } from '../online/client';
  * reappears when something newer is published.
  */
 export default function Announce() {
+	const [status] = useSynced(updateStatus);
 	const latest = useAsync(getLatest, []);
 	const [seen] = useSynced(SETTINGS.news);
 
@@ -35,6 +37,8 @@ export default function Announce() {
 	const open = async () => {
 		window.open(`web/news/${latest.slug}`, '_blank');
 	};
+
+	if (status.state !== 'idle' && status.state !== 'none' && status.state !== 'checking') return null;
 
 	return (
 		<aside className="announce" style={{ '--tag-hue': tag.hue } as CSSProperties}>

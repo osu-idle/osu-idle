@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Auth from '../online/auth';
 import Account from '../online/account';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
+import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 
 /**
  * First-login onboarding. Shown once when signed in but the account has no
@@ -62,7 +63,7 @@ export default function Onboarding() {
 						disabled={uploading}
 						title="Upload a profile picture"
 					>
-						<img className="onboard__avatar-img" src={user.avatarUrl ?? '/web/guest.png'} alt="" />
+						<img className="onboard__avatar-img" src={user.avatarUrl ?? GUEST_AVATAR_URL} alt="" />
 						<span className="onboard__avatar-overlay">{uploading ? 'Uploading…' : 'Change'}</span>
 					</button>
 					<span className="onboard__avatar-hint">Profile picture<br />Defaults to your osu! avatar</span>

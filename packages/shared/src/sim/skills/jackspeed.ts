@@ -139,7 +139,7 @@ export default class JackSpeed extends Skill {
 			// drifting: each press lands a bit late unless the player recovers
 			const t = (speed - this.nps) / (this.max - this.nps);
 			currentStrain.strain = lerp(0.1, 0.4, t);
-			if (Math.random() >= this.recovery_min) {
+			if (Math.random() <= this.recovery_min) {
 				currentStrain.unpure += lerp(0.01, 0.05, t);
 				debt += t * DRIFT_FACTOR * maxInterval;
 			}

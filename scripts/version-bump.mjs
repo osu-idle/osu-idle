@@ -21,6 +21,7 @@ const PACKAGE_JSONS = [
 	'packages/server/package.json',
 	'packages/client/package.json',
 	'packages/web/package.json',
+	'packages/desktop/package.json',
 ];
 
 // Generated runtime carrier consumed via `@osu-idle/shared/version`.

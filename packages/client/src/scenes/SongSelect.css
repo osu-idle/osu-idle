@@ -154,13 +154,9 @@
 }
 .game__top_lb-container {
 	position: absolute;
-	/* equivalent to bottom:0 + translateY(100% - 65px), but without a transform
-	   (which would establish a stacking context and trap the children's z-index
-	   below the bar shape) */
 	top: calc(100% - 65px);
+	height: calc(100vh - 244px);
 	width: 100%;
-	/* the leaderboard + Show-scores button are the only interactive parts of the
-	   overlay, so re-enable clicks here (topinfo disables them) */
 	pointer-events: auto;
 }
 .game__topinfo {

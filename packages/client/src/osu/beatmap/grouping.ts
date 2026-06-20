@@ -66,14 +66,15 @@ function recencyGroup(last: number | undefined, now: number): Group {
  * is hidden from the view entirely (empty result).
  */
 export function groupsOf(
-	item: CarouselItem, mode: string, history: PlayHistory, now: number, playlists: PlaylistsByBeatmap,
+	item: CarouselItem, mode: string, history: PlayHistory, now: number,
+	playlists: PlaylistsByBeatmap, downloaded?: ReadonlySet<number>,
 ): Group[] {
 	if (mode === 'By Playlist') {
 		// all order 0: playlists render alphabetically via the label tiebreak
 		return (playlists.get(item.beatmap.metadata.id) ?? [])
 			.map((p) => ({ key: `p${p.id}`, label: p.name, order: 0 }));
 	}
-	const g = groupOf(item, mode, history, now);
+	const g = groupOf(item, mode, history, now, downloaded);
 	return g ? [g] : [];
 }
 
@@ -82,7 +83,9 @@ export function groupsOf(
  * "No Grouping". Groups are rendered in ascending `order`; items within a group
  * keep the active sort order.
  */
-export function groupOf(item: CarouselItem, mode: string, history: PlayHistory, now: number): Group | null {
+export function groupOf(
+	item: CarouselItem, mode: string, history: PlayHistory, now: number, downloaded?: ReadonlySet<number>,
+): Group | null {
 	const bm = item.beatmap.metadata;
 	const set = item.set.metadata;
 	switch (mode) {
@@ -98,6 +101,15 @@ export function groupOf(item: CarouselItem, mode: string, history: PlayHistory, 
 			return { key: `b${lo}`, label: `${lo} - ${lo + 10} BPM`, order: lo };
 		}
 		case 'By Length': return lengthGroup(bm.total_length);
+		case 'By Download Status': {
+			// `downloaded` is a frozen snapshot when present, so a map downloaded
+			// mid-session keeps showing under "Available" instead of jumping groups
+			// (which would drag the selection along). Live `runtime` before it's set.
+			const has = downloaded ? downloaded.has(bm.id) : bm.runtime;
+			return has
+				? { key: 'downloaded', label: t`Downloaded`, order: 0 }
+				: { key: 'available', label: t`Available`, order: 1 };
+		}
 		case 'By Rank Achieved': {
 			const rank = history.bestRank.get(bm.id);
 			if (rank === undefined) return { key: 'unplayed', label: t`Unplayed`, order: LAST };

@@ -8,10 +8,19 @@ const endpoint = rpc.v1.scores;
 
 type ScoreResponse = InferResponseType<typeof endpoint[':id']['$get'], 200>;
 type BeatmapScoresResponse = InferResponseType<typeof endpoint['beatmap'][':beatmap']['$get'], 200>;
+type MyBeatmapScoreResponse = InferResponseType<typeof endpoint['beatmap'][':beatmap']['me']['$get'], 200>;
 
 export const getScore = async (id: number): Promise<ScoreResponse> => {
 	const res = await endpoint[':id'].$get({ param: { id: String(id) } });
 	if (!res.ok) throw new Error(`getScore(${id}) failed: ${res.status}`);
+	return res.json();
+};
+
+/** The signed-in character's own best on this beatmap + global rank (null when
+ *  signed out or no play yet). */
+export const getMyBeatmapScore = async (beatmap: number): Promise<MyBeatmapScoreResponse> => {
+	const res = await endpoint['beatmap'][':beatmap']['me'].$get({ param: { beatmap: String(beatmap) } });
+	if (!res.ok) throw new Error(`getMyBeatmapScore(${beatmap}) failed: ${res.status}`);
 	return res.json();
 };
 

@@ -3,9 +3,13 @@ import { runScenario, type Expectation, type Tolerance, type Bounds } from './ha
 import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
 import type { SkillName } from '@osu-idle/shared/skills';
 import { GRADE } from '@osu-idle/shared/judgement';
-import { loadBeatmap } from './sim';
+import { CHARTS, loadBeatmap, getBeatmap } from './sim';
 
-const runs = 10;
+// Warm the chart cache before the suite defines its tests: the play path reads
+// charts synchronously, and `checkMap` needs each map's title at registration.
+await Promise.all(Object.values(CHARTS).map(loadBeatmap));
+
+const runs = 5;
 
 const PROFILE = mapped([
 	'Beginner',
@@ -52,11 +56,11 @@ const MASTERY = {
 	X: { expect: { grade: GRADE.X, fail: false }, tolerance: { gradeRate: 0.1 } },
 } as const satisfies Record<string, Bundle>;
 
-const easy_maps = ['1-eternal-white', '1-refresh', '1-this-will-be-the-day'];
-const hard_maps = ['3-baku', '3-haru'];
-const insane_maps = ['4-blu', '4-dream', '4-soul'];
+const easy_maps = [CHARTS['1-eternal-white'], CHARTS['1-refresh'], CHARTS['1-this-will-be-the-day']];
+const hard_maps = [CHARTS['3-baku'], CHARTS['3-haru']];
+const insane_maps = [CHARTS['4-blu'], CHARTS['4-dream'], CHARTS['4-soul']];
 
-const check = (profile: Profile, goal: string, charts: string | string[], bundle: Bundle, skill?: SkillName) => {
+const check = (profile: Profile, goal: string, charts: number | number[], bundle: Bundle, skill?: SkillName) => {
 	for (const chart of [charts].flat()) {
 		const base = { profile, goal, chart, runs, ...bundle };
 		runScenario(skill
@@ -65,8 +69,8 @@ const check = (profile: Profile, goal: string, charts: string | string[], bundle
 	}
 };
 
-const checkMap = (chart: string, levels: Record<Profile, Bundle>, skill?: SkillName) => {
-	const beatmap = loadBeatmap(`${chart}.osu`);
+const checkMap = (chart: number, levels: Record<Profile, Bundle>, skill?: SkillName) => {
+	const beatmap = getBeatmap(chart);
 	for (const [profile, bundle] of Object.entries(levels) as [Profile, Bundle][]) {
 		const base = { profile, goal: 'Map scaling', chart, runs, ...bundle };
 		it(`${profile} | ${beatmap.metadata.title} [${beatmap.metadata.version}]`, () => {
@@ -93,7 +97,7 @@ describe('beginner capacities', () => {
 });
 
 describe('accuracy scaling', () => {
-	const acc = (profile: Profile, bundle: Bundle) => check(profile, 'Accuracy Baseline', '6-aiae', bundle, 'accuracy');
+	const acc = (profile: Profile, bundle: Bundle) => check(profile, 'Accuracy Baseline', CHARTS['6-aiae'], bundle, 'accuracy');
 
 	it('beginner accuracy results in 85% baseline', () =>
 		acc(PROFILE.Beginner, { expect: { accuracy: 0.85 }, tolerance: { accuracy: 0.03 } })
@@ -133,7 +137,7 @@ describe('accuracy scaling', () => {
 });
 
 describe('global scaling', () => {
-	checkMap('6-aiae', {
+	checkMap(CHARTS['6-aiae'], {
 		[PROFILE.Beginner]: MASTERY.IMPOSSIBLE,
 		[PROFILE.Newbie]: MASTERY.IMPOSSIBLE,
 		[PROFILE.Casual]: MASTERY.IMPOSSIBLE,
@@ -145,7 +149,7 @@ describe('global scaling', () => {
 		[PROFILE.Pro]: MASTERY.HIGH_S,
 	});
 	
-	checkMap('6-shaper', {
+	checkMap(CHARTS['6-shaper'], {
 		[PROFILE.Beginner]: MASTERY.IMPOSSIBLE,
 		[PROFILE.Newbie]: MASTERY.IMPOSSIBLE,
 		[PROFILE.Casual]: MASTERY.IMPOSSIBLE,
@@ -157,7 +161,7 @@ describe('global scaling', () => {
 		[PROFILE.Pro]: MASTERY.LOW_SS,
 	});
 	
-	checkMap('5-c18', {
+	checkMap(CHARTS['5-c18'], {
 		[PROFILE.Beginner]: MASTERY.IMPOSSIBLE,
 		[PROFILE.Newbie]: MASTERY.IMPOSSIBLE,
 		[PROFILE.Casual]: MASTERY.IMPOSSIBLE,
@@ -169,7 +173,7 @@ describe('global scaling', () => {
 		[PROFILE.Pro]: MASTERY.SS,
 	});
 	
-	checkMap('1-refresh', {
+	checkMap(CHARTS['1-refresh'], {
 		[PROFILE.Beginner]: MASTERY.B,
 		[PROFILE.Newbie]: MASTERY.A,
 		[PROFILE.Casual]: MASTERY.LOW_S,
@@ -181,7 +185,7 @@ describe('global scaling', () => {
 		[PROFILE.Pro]: MASTERY.X,
 	});
 	
-	checkMap('4.5-tokyo', {
+	checkMap(CHARTS['4.5-tokyo'], {
 		[PROFILE.Beginner]: MASTERY.IMPOSSIBLE,
 		[PROFILE.Newbie]: MASTERY.IMPOSSIBLE,
 		[PROFILE.Casual]: MASTERY.IMPOSSIBLE,

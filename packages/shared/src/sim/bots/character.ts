@@ -9,6 +9,7 @@ import type RuntimeNote from '../runtimeNote.js';
 import { maniaWindows } from '../scoring.js';
 import { JUDGEMENT } from '../../judgement.js';
 import { skillProfiler } from '../profiler.js';
+import clamp from '../../math/clamp.js';
 
 // Strain: abstract amount of difficulty
 
@@ -167,6 +168,11 @@ export const speedBasedScoreFactor = (skillLevel: number, score: ScoreLike) => {
 	return Math.min(1, Math.max(0, normalized));
 };
 
+export const levelFactorCB = cubic_bezier(0,.8,.4,1);
+export const xpFactorForLevel = (skillLevel: number): number => {
+	return 1 + ((1 - levelFactorCB(clamp(skillLevel / 40, 0, 1))) * 2);
+};
+
 export const xpFactorForScore = (skill: SkillName, skillLevel: number, score: ScoreLike): number => {
 	switch(skill) {
 		case SKILL.reading:
@@ -250,7 +256,8 @@ export const CONSISTENCY_MISS_PENALTY = 0.5;
 export const factorXP = (skill: SkillName, noteXP: number, level: number, score: ScoreLike, notes: number, nonAcc: number, length: number): number => {
 	const skillNotes = skill === SKILL.accuracy ?  notes : nonAcc;
 	if (skillNotes === 0) return 0; // no notes credited to this skill - avoid 0/0 → NaN
-	const factor = xpFactorForScore(skill, level, score)
+	const factor =  xpFactorForLevel(level)
+		* xpFactorForScore(skill, level, score)
 		* xpFactorForNotes(skill, level, skillNotes)
 		* xpFactorForLength(length)
 	;

@@ -11,7 +11,7 @@ export const ROUTE = {
 	HOME: '/',
 	NEWS: '/news',
 	NEWS_ADMIN: '/news/admin',
-	PLAY_OSU: '/osu!',
+	DOWNLOAD: '/download',
 
 	LOGIN: '/login',
 	LOGOUT: '/logout',
@@ -33,6 +33,7 @@ export const ROUTE = {
 	HELP_FAQ: '/help/faq',
 
 	AUTH_CALLBACK: '/auth/callback',
+	AUTH_DESKTOP: '/auth/desktop',
 	AUTH_ERROR: '/auth/error',
 
 	ADMIN_BALANCING: '/admin/balancing',

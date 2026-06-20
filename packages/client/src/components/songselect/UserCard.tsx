@@ -1,19 +1,19 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import Character from '../../db/schema/character';
-import type { UserDTO } from '@osu-idle/shared/user';
 import { getCharacter, getCharacterStats } from '../../online/services/characters';
 import { webUrl, isWebOpen } from '../../globals';
+import Auth from '../../online/auth';
 import num from '@osu-idle/shared/display/num';
 import accuracy from '@osu-idle/shared/display/accuracy';
 import hitAccuracy from '@osu-idle/shared/osu/hitAccuracy';
 import { xpForLevel } from '@osu-idle/shared/sim/skills/xp';
 import { recentTimeAgo } from '@osu-idle/shared/display/ago';
+import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 
 /** Profile card: avatar + online stats, clicking through to osu! web
  *  (or the login flow for a guest). Online stats only show once loaded. */
-export default function UserCard({ character, user, online_character, online_stats }: {
+export default function UserCard({ character, online_character, online_stats }: {
 	character: Character;
-	user: UserDTO | null;
 	online_character: Awaited<ReturnType<typeof getCharacter>> | undefined;
 	online_stats: Awaited<ReturnType<typeof getCharacterStats>> | undefined;
 }) {
@@ -28,12 +28,13 @@ export default function UserCard({ character, user, online_character, online_sta
 			className="game__user"
 			title={t`Open osu! web`}
 			onClick={async () => {
-				await webUrl.set(character.isGuest() ? 'login' : `c/${character.id}`);
+				if (character.isGuest()) { Auth.signIn(); return; }
+				await webUrl.set(`c/${character.id}`);
 				await isWebOpen.set(true);
 			}}
 		>
 			<div className="game__avatar">
-				<img className="game__avatar-img" src={user?.avatarUrl ?? '/web/guest.png'} alt="" />
+				<img className="game__avatar-img" src={online_character?.avatarUrl ?? GUEST_AVATAR_URL} alt="" />
 			</div>
 			<div className="game__user-meta">
 				<span className="game__user-name">{character.name}</span>
