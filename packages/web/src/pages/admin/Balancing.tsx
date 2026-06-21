@@ -9,7 +9,7 @@ import Reading from '@osu-idle/shared/sim/skills/reading';
 import Speed from '@osu-idle/shared/sim/skills/speed';
 import Stamina from '@osu-idle/shared/sim/skills/stamina';
 import JackSpeed from '@osu-idle/shared/sim/skills/jackspeed';
-import normalize from '@osu-idle/shared/math/normalize';
+import normalize, { smoothNormalize } from '@osu-idle/shared/math/normalize';
 
 export default function BalancingPage() {
 	const admin = useAdmin();
@@ -76,7 +76,7 @@ export default function BalancingPage() {
 	const skillJackNps = getProgression(n => JackSpeed.computeForLevel(n).nps);
 	const skillJackMax = getProgression(n => JackSpeed.computeForLevel(n).max);
 
-	const test = getProgression(n => normalize(n, [70, 100]));
+	const test = getProgression(n => smoothNormalize(n, [70, 100], .25));
 	return (
 		<main>
 			<div className="page-contents">

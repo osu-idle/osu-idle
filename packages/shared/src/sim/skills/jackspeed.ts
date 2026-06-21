@@ -7,7 +7,7 @@ import Skill from './skill.js';
 import { SKILL } from '../../skills.js';
 import { manipChance, hand } from './speed.js';
 import transpose from '../../math/transpose.js';
-import normalize from '../../math/normalize.js';
+import { smoothNormalize } from '../../math/normalize.js';
 
 /** One hand's last press: the strain entry carrying the running late debt, the
  *  group anchor (chord/manip notes merge into a single press), and whether that
@@ -72,13 +72,13 @@ export default class JackSpeed extends Skill {
 	}
 
 	public static computeForLevel(level: number) {
-		const base = JackSpeed.fn(normalize(level, [0, 100]));
-		const normal = JackSpeed.fn(normalize(level, [0, 50]));
-		const late = JackSpeed.fn(normalize(level, [70, 100]));
-		const verylate = JackSpeed.fn(normalize(level, [90, 100]));
-		const bonus = JackSpeed.fn(normalize(level, [100, 200]));
+		const base = JackSpeed.fn(smoothNormalize(level, [0, 100], .25));
+		const normal = JackSpeed.fn(smoothNormalize(level, [0, 50], .25));
+		const late = JackSpeed.fn(smoothNormalize(level, [70, 100], .25));
+		const verylate = JackSpeed.fn(smoothNormalize(level, [90, 100], .25));
+		const bonus = JackSpeed.fn(smoothNormalize(level, [100, 200], .25));
 
-		const comfort = 2 + 2 * base + 0.75 * normal + 0.5 * late + 1.75 * verylate + 8 * bonus;
+		const comfort = 2 + 2 * base + 0.5 * normal + 0.65 * late + 1.75 * verylate + 8 * bonus;
 		const nps = comfort + 1 + 2 * base;
 		
 		return {
