@@ -4,9 +4,10 @@ import type { HitRecord } from '@osu-idle/shared/sim/maniaGame';
 import type { ScoreState } from '@osu-idle/shared/sim/scoring';
 import type { SkillName } from '@osu-idle/shared/skills';
 import type { Beatmap } from 'osu-classes';
-import { getBeatmap, simulate, analyzeSkill, type SkillSpec } from './sim';
+import { simulate, analyzeSkill, type SkillSpec } from '../sim';
 import sum from '@osu-idle/shared/helpers/sum';
 import avg from '@osu-idle/shared/math/avg';
+import { getBeatmap } from './charts';
 
 /**
  * Scenario harness for "does this skill set perform as expected on this chart?".
@@ -160,7 +161,14 @@ export interface Bounds {
 	gradeRate?: Bound;
 }
 
-export type Scenario = ScenarioInput & { profile: string, goal: string, expect: Expectation; tolerance?: Tolerance; bounds?: Bounds };
+export type Scenario = ScenarioInput & { 
+	profile: string, 
+	goal: string, 
+	expect: Expectation,
+	disabled?: (keyof Expectation)[],
+	tolerance?: Tolerance, 
+	bounds?: Bounds,
+};
 
 const DEFAULT_TOLERANCE: Required<Tolerance> = {
 	score: 40_000,
@@ -275,7 +283,10 @@ export function runScenario(scenario: Scenario): void {
 	const tol = { ...DEFAULT_TOLERANCE, ...scenario.tolerance };
 	const bounds = scenario.bounds ?? {};
 	const a = aggregate(scenario);
-	const exp = scenario.expect;
+	const exp = { ...scenario.expect };
+	for (const d of scenario.disabled ?? []) {
+		delete exp[d];
+	}
 
 	const gradeDist = [...a.gradeCounts.entries()]
 		.sort((x, y) => y[1] - x[1])

@@ -1,64 +1,13 @@
 import { describe, it } from 'vitest';
-import { runScenario, type Expectation, type Tolerance, type Bounds } from './harness';
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
-import type { SkillName } from '@osu-idle/shared/skills';
-import { GRADE } from '@osu-idle/shared/judgement';
-import { CHARTS, loadBeatmap, getBeatmap } from './sim';
+import { Expectation, runScenario } from './balancing/harness';
+import { SKILL, type SkillName } from '@osu-idle/shared/skills';
+import { LEVEL, Profile, PROFILE } from './balancing/experience';
+import { Bundle, MASTERY } from './balancing/mastery';
+import { CHARTS, EZ, getBeatmap, HD, IX, loadBeatmap } from './balancing/charts';
 
-// Warm the chart cache before the suite defines its tests: the play path reads
-// charts synchronously, and `checkMap` needs each map's title at registration.
 await Promise.all(Object.values(CHARTS).map(loadBeatmap));
 
 const runs = 5;
-
-const PROFILE = mapped([
-	'Beginner',
-	'Newbie',
-	'Casual',
-	'Regular',
-	'Confirmed',
-	'Seasoned',
-	'Good',
-	'Expert',
-	'Pro'
-]);
-type Profile = ValueIn<typeof PROFILE>;
-
-const LEVEL: {[key in Profile]: number} = {
-	[PROFILE.Beginner]: 0,
-	[PROFILE.Newbie]: 5,
-	[PROFILE.Casual]: 10,
-	[PROFILE.Regular]: 20,
-	[PROFILE.Confirmed]: 30,
-	[PROFILE.Seasoned]: 50,
-	[PROFILE.Good]: 75,
-	[PROFILE.Expert]: 90,
-	[PROFILE.Pro]: 100,
-} as const;
-
-type Bundle = { expect: Expectation; tolerance?: Tolerance; bounds?: Bounds };
-
-const MASTERY = {
-	IMPOSSIBLE: { expect: { fail: true }, tolerance: { failRate: 0 } },
-	LUCK: { expect: { fail: true }, tolerance: { failRate: 0.25 } },
-	LOW_B: { expect: { accuracy: 0.8 }, tolerance: { accuracy: 0.1 } },
-	CLEAR_B: { expect: { accuracy: 0.85, fail: false }, tolerance: { accuracy: 0.05, failRate: 0 } },
-	B: { expect: { accuracy: 0.85, fail: false }, tolerance: { accuracy: 0.05, failRate: 1 } },
-	HARD_A: { expect: { accuracy: 0.925, fail: false }, tolerance: { accuracy: 0.025, failRate: 0.50 } },
-	A: { expect: { accuracy: 0.925, fail: false }, tolerance: { accuracy: 0.025, failRate: 0.50 } },
-	HIGH_A: { expect: { accuracy: 0.94, fail: false }, tolerance: { accuracy: 0.02, failRate: 0.50 } },
-	LOW_S: { expect: { accuracy: 0.96, fail: false }, tolerance: { accuracy: 0.015, failRate: 0.25 } },
-	S: { expect: { accuracy: 0.97, fail: false }, tolerance: { accuracy: 0.02, failRate: 0.25 } },
-	HIGH_S: { expect: { accuracy: 0.9825, fail: false }, tolerance: { accuracy: 0.0175, failRate: 0.25 } },
-	LOW_SS: { expect: { accuracy: 0.99, ratio: 5, fail: false }, bounds: { accuracy: 'gte', ratio: 'lte' } },
-	SS: { expect: { accuracy: 1, ratio: 6, fail: false }, tolerance: { accuracy: 0.005, ratio: 2.5 } },
-	HIGH_SS: { expect: { accuracy: 1, ratio: 10, fail: false }, tolerance: { accuracy: 0.005 }, bounds: { ratio: 'gte'} },
-	X: { expect: { grade: GRADE.X, fail: false }, tolerance: { gradeRate: 0.1 } },
-} as const satisfies Record<string, Bundle>;
-
-const easy_maps = [CHARTS['1-eternal-white'], CHARTS['1-refresh'], CHARTS['1-this-will-be-the-day']];
-const hard_maps = [CHARTS['3-baku'], CHARTS['3-haru']];
-const insane_maps = [CHARTS['4-blu'], CHARTS['4-dream'], CHARTS['4-soul']];
 
 const check = (profile: Profile, goal: string, charts: number | number[], bundle: Bundle, skill?: SkillName) => {
 	for (const chart of [charts].flat()) {
@@ -69,14 +18,14 @@ const check = (profile: Profile, goal: string, charts: number | number[], bundle
 	}
 };
 
-const checkMap = (chart: number, levels: Record<Profile, Bundle>, skill?: SkillName) => {
+const checkMap = (chart: number, levels: Record<Profile, Bundle>, skill?: SkillName, disabled?: (keyof Expectation)[]) => {
 	const beatmap = getBeatmap(chart);
 	for (const [profile, bundle] of Object.entries(levels) as [Profile, Bundle][]) {
 		const base = { profile, goal: 'Map scaling', chart, runs, ...bundle };
 		it(`${profile} | ${beatmap.metadata.title} [${beatmap.metadata.version}]`, () => {
 			runScenario(skill
-				? { ...base, skill, level: LEVEL[profile] }
-				: { ...base, skills: LEVEL[profile] },
+				? { ...base, skill, level: LEVEL[profile], disabled }
+				: { ...base, skills: LEVEL[profile], disabled },
 			);
 		});
 	}
@@ -84,15 +33,15 @@ const checkMap = (chart: number, levels: Record<Profile, Bundle>, skill?: SkillN
 
 describe('beginner capacities', () => {
 	it('a new player can at least clear easy charts around B rank', () => {
-		const mastery = MASTERY.CLEAR_B as Bundle;
+		const mastery = MASTERY.CLEAR_B;
 		mastery.expect.fail = false;
 		mastery.tolerance = { failRate: 0.25, accuracy: 0.05 };
-		check(PROFILE.Beginner, 'Minimal capacities', easy_maps, mastery);
+		check(PROFILE.BEGINNER, 'Minimal capacities', EZ, mastery);
 	});
 
 	it('a new player can never clear maps too difficult for him', () => {
-		check(PROFILE.Beginner, 'Minimal capacities', hard_maps, MASTERY.IMPOSSIBLE);
-		check(PROFILE.Beginner, 'Minimal capacities', insane_maps, MASTERY.IMPOSSIBLE);
+		check(PROFILE.BEGINNER, 'Minimal capacities', HD, MASTERY.IMPOSSIBLE);
+		check(PROFILE.BEGINNER, 'Minimal capacities', IX, MASTERY.IMPOSSIBLE);
 	});
 });
 
@@ -100,100 +49,114 @@ describe('accuracy scaling', () => {
 	const acc = (profile: Profile, bundle: Bundle) => check(profile, 'Accuracy Baseline', CHARTS['6-aiae'], bundle, 'accuracy');
 
 	it('beginner accuracy results in 85% baseline', () =>
-		acc(PROFILE.Beginner, { expect: { accuracy: 0.85 }, tolerance: { accuracy: 0.03 } })
+		acc(PROFILE.BEGINNER, { expect: { accuracy: 0.85 }, tolerance: { accuracy: 0.03 } })
 	);
 
 	it('newbie accuracy results in Low A baseline', () =>
-		acc(PROFILE.Newbie, { expect: { accuracy: 0.92 }, tolerance: { accuracy: 0.02 } })
+		acc(PROFILE.NEWBIE, { expect: { accuracy: 0.92 }, tolerance: { accuracy: 0.02 } })
 	);
 
 	it('casual accuracy results in Low S baseline', () =>
-		acc(PROFILE.Casual, { expect: { accuracy: 0.95 }, tolerance: { accuracy: 0.02 } })
+		acc(PROFILE.CASUAL, { expect: { accuracy: 0.95 }, tolerance: { accuracy: 0.02 } })
 	);
 
 	it('regular accuracy results in High S baseline', () =>
-		acc(PROFILE.Regular, { expect: { accuracy: 0.985 }, tolerance: { accuracy: 0.01 } })
+		acc(PROFILE.REGULAR, { expect: { accuracy: 0.985 }, tolerance: { accuracy: 0.01 } })
 	);
 
 	it('confirmed accuracy results in low SS baseline', () =>
-		acc(PROFILE.Confirmed, { expect: { accuracy: 1, ratio: 2 }, tolerance: { accuracy: 0.01, ratio: 1.5 } })
+		acc(PROFILE.CONFIRMED, { expect: { accuracy: 1, ratio: 2 }, tolerance: { accuracy: 0.01, ratio: 1.5 } })
 	);
 
 	it('seasoned accuracy results in mid SS baseline', () =>
-		acc(PROFILE.Seasoned, { expect: { accuracy: 1, ratio: 4 }, tolerance: { accuracy: 0.005, ratio: 1.5 } })
+		acc(PROFILE.SEASONED, { expect: { accuracy: 1, ratio: 4 }, tolerance: { accuracy: 0.005, ratio: 1.5 } })
 	);
 
 	it('good accuracy results in high SS baseline', () =>
-		acc(PROFILE.Good, { expect: { accuracy: 1, ratio: 15 }, tolerance: { accuracy: 0.005, ratio: 1.5 } })
+		acc(PROFILE.GOOD, { expect: { accuracy: 1, ratio: 15 }, tolerance: { accuracy: 0.005, ratio: 1.5 } })
 	);
 
 	it('expert accuracy results in top SS baseline', () =>
-		acc(PROFILE.Expert, { expect: { accuracy: 1, ratio: 50 }, tolerance: { accuracy: 0.002, ratio: 1.5 } })
+		acc(PROFILE.EXPERT, { expect: { accuracy: 1, ratio: 50 }, tolerance: { accuracy: 0.002, ratio: 1.5 } })
 	);
 
 	it('pro accuracy results in X baseline', () =>
-		acc(PROFILE.Pro, { expect: { accuracy: 1, ratio: 300 }, tolerance: { accuracy: 0, ratio: 1.5 } })
+		acc(PROFILE.PRO, { expect: { accuracy: 1, ratio: 300 }, tolerance: { accuracy: 0, ratio: 1.5 } })
 	);
+});
+
+describe('jacks scaling', () => {
+	checkMap(CHARTS['vital vitriol 1.0'], {
+		[PROFILE.BEGINNER]: MASTERY.IMPOSSIBLE,
+		[PROFILE.NEWBIE]: MASTERY.IMPOSSIBLE,
+		[PROFILE.CASUAL]: MASTERY.IMPOSSIBLE,
+		[PROFILE.REGULAR]: MASTERY.IMPOSSIBLE,
+		[PROFILE.CONFIRMED]: MASTERY.IMPOSSIBLE,
+		[PROFILE.SEASONED]: MASTERY.IMPOSSIBLE,
+		[PROFILE.GOOD]: MASTERY.B,
+		[PROFILE.EXPERT]: MASTERY.LOW_S,
+		[PROFILE.PRO]: MASTERY.LOW_SS,
+	}, SKILL.jackspeed, ['ratio']);
 });
 
 describe('global scaling', () => {
 	checkMap(CHARTS['6-aiae'], {
-		[PROFILE.Beginner]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Newbie]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Casual]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Regular]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Confirmed]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Seasoned]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Good]: MASTERY.B,
-		[PROFILE.Expert]: MASTERY.HARD_A,
-		[PROFILE.Pro]: MASTERY.HIGH_S,
+		[PROFILE.BEGINNER]: MASTERY.IMPOSSIBLE,
+		[PROFILE.NEWBIE]: MASTERY.IMPOSSIBLE,
+		[PROFILE.CASUAL]: MASTERY.IMPOSSIBLE,
+		[PROFILE.REGULAR]: MASTERY.IMPOSSIBLE,
+		[PROFILE.CONFIRMED]: MASTERY.IMPOSSIBLE,
+		[PROFILE.SEASONED]: MASTERY.IMPOSSIBLE,
+		[PROFILE.GOOD]: MASTERY.B,
+		[PROFILE.EXPERT]: MASTERY.A,
+		[PROFILE.PRO]: MASTERY.HIGH_S,
 	});
 	
 	checkMap(CHARTS['6-shaper'], {
-		[PROFILE.Beginner]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Newbie]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Casual]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Regular]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Confirmed]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Seasoned]: MASTERY.B,
-		[PROFILE.Good]: MASTERY.S,
-		[PROFILE.Expert]: MASTERY.HIGH_S,
-		[PROFILE.Pro]: MASTERY.LOW_SS,
+		[PROFILE.BEGINNER]: MASTERY.IMPOSSIBLE,
+		[PROFILE.NEWBIE]: MASTERY.IMPOSSIBLE,
+		[PROFILE.CASUAL]: MASTERY.IMPOSSIBLE,
+		[PROFILE.REGULAR]: MASTERY.IMPOSSIBLE,
+		[PROFILE.CONFIRMED]: MASTERY.IMPOSSIBLE,
+		[PROFILE.SEASONED]: MASTERY.B,
+		[PROFILE.GOOD]: MASTERY.S,
+		[PROFILE.EXPERT]: MASTERY.HIGH_S,
+		[PROFILE.PRO]: MASTERY.LOW_SS,
 	});
 	
 	checkMap(CHARTS['5-c18'], {
-		[PROFILE.Beginner]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Newbie]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Casual]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Regular]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Confirmed]: MASTERY.B,
-		[PROFILE.Seasoned]: MASTERY.S,
-		[PROFILE.Good]: MASTERY.HIGH_S,
-		[PROFILE.Expert]: MASTERY.LOW_SS,
-		[PROFILE.Pro]: MASTERY.SS,
+		[PROFILE.BEGINNER]: MASTERY.IMPOSSIBLE,
+		[PROFILE.NEWBIE]: MASTERY.IMPOSSIBLE,
+		[PROFILE.CASUAL]: MASTERY.IMPOSSIBLE,
+		[PROFILE.REGULAR]: MASTERY.IMPOSSIBLE,
+		[PROFILE.CONFIRMED]: MASTERY.B,
+		[PROFILE.SEASONED]: MASTERY.S,
+		[PROFILE.GOOD]: MASTERY.HIGH_S,
+		[PROFILE.EXPERT]: MASTERY.LOW_SS,
+		[PROFILE.PRO]: MASTERY.SS,
 	});
 	
 	checkMap(CHARTS['1-refresh'], {
-		[PROFILE.Beginner]: MASTERY.B,
-		[PROFILE.Newbie]: MASTERY.A,
-		[PROFILE.Casual]: MASTERY.LOW_S,
-		[PROFILE.Regular]: MASTERY.HIGH_S,
-		[PROFILE.Confirmed]: MASTERY.LOW_SS,
-		[PROFILE.Seasoned]: MASTERY.SS,
-		[PROFILE.Good]: MASTERY.HIGH_SS,
-		[PROFILE.Expert]: MASTERY.HIGH_SS,
-		[PROFILE.Pro]: MASTERY.X,
+		[PROFILE.BEGINNER]: MASTERY.B,
+		[PROFILE.NEWBIE]: MASTERY.A,
+		[PROFILE.CASUAL]: MASTERY.LOW_S,
+		[PROFILE.REGULAR]: MASTERY.HIGH_S,
+		[PROFILE.CONFIRMED]: MASTERY.LOW_SS,
+		[PROFILE.SEASONED]: MASTERY.SS,
+		[PROFILE.GOOD]: MASTERY.HIGH_SS,
+		[PROFILE.EXPERT]: MASTERY.HIGH_SS,
+		[PROFILE.PRO]: MASTERY.X,
 	});
 	
 	checkMap(CHARTS['4.5-tokyo'], {
-		[PROFILE.Beginner]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Newbie]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Casual]: MASTERY.IMPOSSIBLE,
-		[PROFILE.Regular]: MASTERY.LUCK,
-		[PROFILE.Confirmed]: MASTERY.LOW_B,
-		[PROFILE.Seasoned]: MASTERY.HIGH_A,
-		[PROFILE.Good]: MASTERY.HIGH_S,
-		[PROFILE.Expert]: MASTERY.LOW_SS,
-		[PROFILE.Pro]: MASTERY.SS,
+		[PROFILE.BEGINNER]: MASTERY.IMPOSSIBLE,
+		[PROFILE.NEWBIE]: MASTERY.IMPOSSIBLE,
+		[PROFILE.CASUAL]: MASTERY.IMPOSSIBLE,
+		[PROFILE.REGULAR]: MASTERY.LUCK,
+		[PROFILE.CONFIRMED]: MASTERY.LOW_B,
+		[PROFILE.SEASONED]: MASTERY.HIGH_A,
+		[PROFILE.GOOD]: MASTERY.HIGH_S,
+		[PROFILE.EXPERT]: MASTERY.LOW_SS,
+		[PROFILE.PRO]: MASTERY.SS,
 	});
 });

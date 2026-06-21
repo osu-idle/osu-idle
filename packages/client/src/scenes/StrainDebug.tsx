@@ -40,7 +40,7 @@ export default function StrainDebug({ beatmapInfo, onClose, onPlay }: Props) {
 		<div className="strain">
 			<header className="strain__bar">
 				<div className="strain__title">
-					Strain debug - {beatmap.metadata.artist} - {beatmap.metadata.title} <span>[{beatmap.metadata.version}]</span>
+					Strain debug - {beatmap.metadata.artist} - {beatmap.metadata.title} <span>[{beatmap.metadata.version}] {beatmap.metadata.beatmapId}</span>
 				</div>
 				<div className="strain__actions">
 					<button className="strain__btn" onClick={onPlay}>
