@@ -4,7 +4,7 @@ import { type Locale, detectBrowserLocale } from '@osu-idle/shared/i18n/locales'
 import { AUTOPILOT_MODE, AutopilotMode } from '../gameplay/autopilot';
 import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
 
-export const SCORE_TAB = mapped(['LOCAL', 'GLOBAL']);
+export const SCORE_TAB = mapped(['LOCAL', 'GLOBAL', 'COUNTRY']);
 export type ScoreTab = ValueIn<typeof SCORE_TAB>;
 
 export const GroupOptions = [

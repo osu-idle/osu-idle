@@ -2,7 +2,7 @@ import './PlayerLeaderboard.css';
 import Link from '../Link';
 import { characterPath, globalCountryRankPath, globalScoreCountryRankPath, Path, ROUTE, useQueryParam } from '../../router';
 import int from '@osu-idle/shared/math/int';
-import { getGlobalRanking, getScoreRanking } from '../../api/rankings';
+import { getCountryGlobalRanking, getCountryScoreRanking, getGlobalRanking, getScoreRanking } from '../../api/rankings';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import Flag from '../Flag';
 import rank from '@osu-idle/shared/display/rank';
@@ -32,11 +32,11 @@ export default function PlayerLeaderboard({ sort, country }: {
 	};
 
 	const getRanking = {
-		[SORT.pp]: (page: number) => getGlobalRanking(page),
-		[SORT.rankedScore]: (page: number) => getScoreRanking(page),
+		[SORT.pp]: (page: number) => country ? getCountryGlobalRanking(country, page) : getGlobalRanking(page),
+		[SORT.rankedScore]: (page: number) => country ? getCountryScoreRanking(country, page) : getScoreRanking(page),
 	};
 
-	const players = useAsync(async () => await getRanking[sort](page), [sort, page]);
+	const players = useAsync(async () => await getRanking[sort](page), [sort, page, country]);
 	
 	return (<div className='player__lb'>
 		<div className='player__lb_sort'>

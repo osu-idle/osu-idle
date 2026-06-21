@@ -7,6 +7,7 @@ import { SETTINGS } from '../db/settings';
 import { NEWS_TAGS } from '@osu-idle/shared/news';
 import { BASE_URL } from '../online/client';
 import { updateStatus } from '../online/desktopUpdate';
+import { useLingui } from '@lingui/react/macro';
 
 /**
  * Lazer-style announcement toast for the latest news article, sitting at the
@@ -15,6 +16,8 @@ import { updateStatus } from '../online/desktopUpdate';
  * reappears when something newer is published.
  */
 export default function Announce() {
+	const { t } = useLingui();
+
 	const [status] = useSynced(updateStatus);
 	const latest = useAsync(getLatest, []);
 	const [seen] = useSynced(SETTINGS.news);
@@ -42,7 +45,7 @@ export default function Announce() {
 
 	return (
 		<aside className="announce" style={{ '--tag-hue': tag.hue } as CSSProperties}>
-			<button className="announce__body" onClick={open} title="Read the full article">
+			<button className="announce__body" onClick={open} title={t`Read the full article`}>
 				<div
 					className="announce__cover"
 					style={cover ? { backgroundImage: `url(${cover})` } : undefined}
@@ -67,7 +70,7 @@ export default function Announce() {
 					</div>
 				</div>
 			</button>
-			<button className="announce__close" onClick={dismiss} title="Dismiss">✕</button>
+			<button className="announce__close" onClick={dismiss} title={t`Dismiss`}>✕</button>
 		</aside>
 	);
 }

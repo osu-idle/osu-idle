@@ -17,10 +17,11 @@ const SKILL_NAMES = defineMessages({
 	concentration: 'Concentration',
 	release: 'Release',
 	speedjam: 'Speed Jam',
-} satisfies Record<SkillName, string>);
+	overall: 'Overall',
+} satisfies Record<SkillName & 'overall', string>);
 
 /** The player-facing, localized name of a skill. */
-export function skillName(skill: SkillName): string {
+export function skillName(skill: SkillName | 'overall'): string {
 	return __(SKILL_NAMES[skill]);
 }
 

@@ -4,7 +4,7 @@ import { BeatmapDecoder } from 'osu-parsers';
 import { LEAD_IN_MS, ManiaGame, unstableRate, type ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
 import CharacterBot, { fatigueXPFactor, getRecoveryTime } from '@osu-idle/shared/sim/bots/character';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
-import { type SkillName } from '@osu-idle/shared/skills';
+import { MINDBLOCK_SKILLS, type SkillName } from '@osu-idle/shared/skills';
 import { Judgements, type Judgement } from '@osu-idle/shared/judgement';
 import type { ScoreDTO } from '@osu-idle/shared/score';
 import type { CharacterRow } from './db/schema/character';
@@ -13,8 +13,9 @@ import Memory from '@osu-idle/shared/sim/skills/memory';
 import { calculatePP } from './pp';
 import { loadChart } from './beatmaps';
 import { getPlays } from './db/schema/beatmaps_played';
-import { MINDBLOCK_SKILLS, mindblockFactor, recentMapPlays } from './mindblock';
+import { mindblockFactor, recentMapPlays } from './mindblock';
 import { applySkillXp, submitScore } from './scores';
+import { reindexBeatmap, reindexCharacter } from './rankings';
 import { isProd, redisKeyPrefix } from './env';
 import { redis } from './redis';
 import num from '@osu-idle/shared/display/num';
@@ -375,6 +376,8 @@ const parsePlayResult = async (play: Pending, notify: boolean): Promise<StoredRe
 	play.draft.playedAt = new Date();
 	const row = await submitScore(play.draft);
 	const gains = await applySkillXp(characterId, play.skillXp);
+	await reindexCharacter(characterId);
+	await reindexBeatmap(characterId, play.draft.beatmapId);
 
 	const session = (await getPlayTime(characterId)) ?? {
 		characterId,

@@ -1,10 +1,10 @@
 import type { BotContext } from '../bot.js';
-import { PRESSURE_SKILLS, type Strain, type SkillStrain } from '../bots/character.js';
+import { type Strain, type SkillStrain } from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import lerp from '../../math/lerp.js';
 import Skill from './skill.js';
-import { SKILL } from '../../skills.js';
+import { PRESSURE_SKILLS, SKILL } from '../../skills.js';
 
 /**
  * Consistency is the anti-choke skill. With a small, level-shrinking chance,

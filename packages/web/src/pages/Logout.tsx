@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { logout } from '../api/logout';
 import { navigate, ROUTE } from '../router';
 import { refreshCurrentUser } from '../hooks/useCurrentUser';
+import { Trans } from '@lingui/react/macro';
 
 export default function Logout() {
 	useEffect(() => {
@@ -17,7 +18,7 @@ export default function Logout() {
 
 	return (<>
 		<main className="page-contents">
-			See you later!
+			<Trans>See you later!</Trans>
 		</main>
 	</>);
 }

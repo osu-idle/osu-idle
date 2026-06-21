@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Skill from '@osu-idle/shared/sim/skills/skill';
 import { SkillProgress } from '@osu-idle/shared/sim/bots/character';
+import { skillName } from '@osu-idle/shared/display/skills';
 
 const SEGMENT_MS = 2000;     // time to pour a full level's worth of fill
 const MIN_SEGMENT_MS = 1000; // floor so tiny gains still read as a fill
@@ -68,7 +69,7 @@ export default function SkillXPBar({ progress, delay = 0 }: { progress: SkillPro
 			style={{ animationDelay: `${delay}ms` }}
 			onAnimationEnd={(e) => { if (e.animationName === 'skillxp-enter') setAppeared(true); }}
 		>
-			<span className="skillxp__name">{skill}</span>
+			<span className="skillxp__name">{skillName(skill)}</span>
 			{/* keyed so each level-up remounts and replays the pop animation */}
 			<span className="skillxp__level" key={state.level}>
 				<i>Lv</i>{state.level}

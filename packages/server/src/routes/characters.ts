@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { and, count, eq, gt } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client';
 import { characters, getCharacterById, resolveAvatarUrl } from '../db/schema/character';
-import { getUserById, users } from '../db/schema/user';
-import { character_totals, getCharacterTotals } from '../db/schema/character_totals';
+import { getUserById } from '../db/schema/user';
+import { getCharacterTotals } from '../db/schema/character_totals';
+import { bestSkillRank, countryRank, globalRank } from '../rankings';
 import { getMostPlayed, getTotalPlayed } from '../db/schema/beatmaps_played';
 import { getBestPP } from '../db/schema/best_pp';
 import { getFirstPlaces, getNbFirstPlaces } from '../db/schema/first_place';
@@ -47,28 +48,22 @@ export const charactersRoutes = new Hono()
 		const user = await getUserById(character.userId);
 		const totals = await getCharacterTotals(character.id);
 
-		const [{ ahead: globalAhead }] = await db
-			.select({ ahead: count() })
-			.from(characters)
-			.where(gt(characters.pp, character.pp));
-
-		const [{ ahead: scoreAhead }] = await db
-			.select({ ahead: count() })
-			.from(character_totals)
-			.where(gt(character_totals.rankedScore, totals.rankedScore));
-
-		const [{ ahead: countryAhead }] = await db
-			.select({ ahead: count() })
-			.from(characters)
-			.innerJoin(users, and(eq(users.country, user.country) , eq(users.id, characters.userId)))
-			.where(gt(characters.pp, character.pp));
+		const [globalRk, countryRk, scoreRk, overallRk, bestSkill] = await Promise.all([
+			globalRank('pp', character.id),
+			countryRank('pp', user.country, character.id),
+			globalRank('score', character.id),
+			globalRank('overall', character.id),
+			bestSkillRank(character.id),
+		]);
 
 		const stats = {
 			pp: Number(character.pp),
 			totalHits: totals.hits,
-			globalRank: globalAhead + 1,
-			countryRank: countryAhead + 1,
-			scoreRank: scoreAhead + 1,
+			globalRank: globalRk,
+			countryRank: countryRk,
+			scoreRank: scoreRk,
+			overallRank: overallRk,
+			bestSkill,
 			...totals,
 		};
 

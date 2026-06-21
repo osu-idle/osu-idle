@@ -1,4 +1,4 @@
-import LeaderboardFilters from '../../components/leaderboard/LeaderboardFilters';
+import CountryFilter from '../../components/leaderboard/CountryFilter';
 import PlayerLeaderboard from '../../components/leaderboard/PlayerLeaderboard';
 import { globalCountryRankPath, navigate, ROUTE } from '../../router';
 import RankingsNav from './RankingsNav';
@@ -9,28 +9,7 @@ export default function GlobalRankings({ params: { country }}: {
 	return (<>
 		<main>
 			<RankingsNav current={ROUTE.RANKINGS_GLOBAL} />
-			<LeaderboardFilters filters={[
-				{
-					label: 'country',
-					type: 'select',
-					items: [
-						{
-							label: 'All',
-							value: 'All',
-						},
-						{
-							label: 'France',
-							value: 'FR',
-						},
-						{
-							label: 'Guyane Française',
-							value: 'GF',
-						},
-					],
-					selected: country ?? 'All',
-					onSelection: (item) => { navigate(item.value === 'All' ? ROUTE.RANKINGS_GLOBAL : globalCountryRankPath(item.value)); },
-				}
-			]} />
+			<CountryFilter selected={country} onSelect={value => navigate(value ? globalCountryRankPath(value) : ROUTE.RANKINGS_GLOBAL)} />
 
 			<div className='page-contents'>
 				<PlayerLeaderboard sort={'pp'} country={country} />

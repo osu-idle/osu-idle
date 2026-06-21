@@ -2,11 +2,14 @@ import './NowPlaying.css';
 import { useEffect, useRef } from 'react';
 import { music } from '../audio/MusicPlayer';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
+import { useLingui } from '@lingui/react/macro';
 
 const BARS = 5;
 
 /** osu!-style bottom music widget: track info, transport and a live visualiser. */
 export default function NowPlaying() {
+	const { t } = useLingui();
+
 	const [playing = false] = useSynced(music.playing);
 	const [beatmap] = useSynced(music.beatmap);
 	const barsRef = useRef<HTMLDivElement>(null);
@@ -55,7 +58,7 @@ export default function NowPlaying() {
 				)}
 			</button>
 
-			<button className="nowplaying__next" onClick={() => music.next()} aria-label="Next track">
+			<button className="nowplaying__next" onClick={() => music.next()} aria-label={t`Next track`}>
 				<svg viewBox="0 0 24 24" width="18" height="18">
 					<path d="M6 5l10 7-10 7z" fill="currentColor" />
 					<rect x="17" y="5" width="3" height="14" rx="1" fill="currentColor" />

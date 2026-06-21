@@ -12,12 +12,16 @@ import Link from '../components/Link';
 import NewsCard, { articleToCard } from '../components/NewsCard';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import { getGeneralStats } from '../api/stats';
+import { Trans, useLingui } from '@lingui/react/macro';
+import Footer from '../Footer';
 
 function formatCount(n: number): string {
 	return n.toLocaleString('en-US');
 }
 
 export default function PublicLanding() {
+	const { t } = useLingui();
+
 	const [articles, setArticles] = useState<NewsDTO[] | null>(null);
 	useEffect(() => {
 		listNews().then(setArticles).catch(() => setArticles([]));
@@ -26,10 +30,10 @@ export default function PublicLanding() {
 	const stats = useAsync(getGeneralStats, []);
 
 	const STATS = [
-		{ label: 'scores set', value: stats?.scores ?? 0 },
-		{ label: 'characters', value: stats?.users ?? 0 },
-		{ label: 'online now', value: stats?.online ?? 0 },
-		{ label: 'playing now', value: stats?.playing ?? 0 },
+		{ label: t`scores set`, value: stats?.scores ?? 0 },
+		{ label: t`characters`, value: stats?.users ?? 0 },
+		{ label: t`online now`, value: stats?.online ?? 0 },
+		{ label: t`playing now`, value: stats?.playing ?? 0 },
 	] as const;
 
 	return (
@@ -46,7 +50,7 @@ export default function PublicLanding() {
 						<FontAwesomeIcon icon={faDiscord} />
 					</a>
 					<button type="button" className="landing__signin" onClick={loginWithOsu}>
-						Sign in
+						<Trans>Sign in</Trans>
 					</button>
 				</nav>
 			</header>
@@ -67,17 +71,17 @@ export default function PublicLanding() {
 						<img className="hero__logo-back" src={Asset('/idle-back.png')} alt="" aria-hidden="true" />
 						<img className="hero__logo-front" src={Asset('/idle-white.png')} alt="osu!idle" />
 					</div>
-					<h1 className="hero__title">The ultimate<br/>osu!mania idle game</h1>
+					<h1 className="hero__title"><Trans>The ultimate<br/>osu!mania idle game</Trans></h1>
 					<p className="hero__tagline">
-						Create your own osu! character and watch it grow to become a<br /><b>legendary mania player</b>.
+						<Trans>Create your own osu! character and watch it grow to become a<br /><b>legendary mania player</b>.</Trans>
 					</p>
 					<div className="hero__cta">
 						<button type="button" className="btn-osu" onClick={loginWithOsu}>
 							<img src={Asset('/idle.png')} alt="" aria-hidden="true" />
-							Sign in with osu!
+							<Trans>Sign in with osu!</Trans>
 						</button>
 						<a className="btn-ghost" href="https://discord.gg/Yd5GEaX8AJ" target="_blank" rel="noopener noreferrer">
-							Join the community
+							<Trans>Join the community</Trans>
 						</a>
 					</div>
 
@@ -94,25 +98,16 @@ export default function PublicLanding() {
 
 			<section className="news">
 				<div className="news__head">
-					<h2 className="news__heading">Latest news</h2>
-					<Link to={ROUTE.NEWS} className="news__all">View all →</Link>
+					<h2 className="news__heading"><Trans>Latest news</Trans></h2>
+					<Link to={ROUTE.NEWS} className="news__all"><Trans>View all</Trans> →</Link>
 				</div>
 				<div className="news-grid">
 					{live && live.map(a => <NewsCard key={a.id} {...articleToCard(a)} />)}
-					{!live && 'No news yet. Check back soon!'}
+					{!live && t`No news yet. Check back soon!`}
 				</div>
 			</section>
 
-			<footer className="landing__footer">
-				<nav className="landing__footer-links">
-					<a href="https://discord.gg/Yd5GEaX8AJ" target="_blank" rel="noopener noreferrer">
-						<FontAwesomeIcon icon={faDiscord} /> Discord
-					</a>
-				</nav>
-				<span className="landing__footer-note">
-					An unofficial fan project. Not affiliated with osu! or ppy.
-				</span>
-			</footer>
+			<Footer />
 		</div>
 	);
 }

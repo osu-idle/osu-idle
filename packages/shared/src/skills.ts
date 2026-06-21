@@ -163,3 +163,10 @@ export const UPGRADE = defineMessages({
 		"Dualscreen",
 	]
 } satisfies Record<SkillName, FixedLength<(string | number), 11>>);
+
+/** The "pressure" skills whose strained notes train consistency: playing
+ *  through speed-family pressure without choking is what consistency rewards. */
+export const PRESSURE_SKILLS: Set<SkillName> = new Set([SKILL.speed, SKILL.stamina, SKILL.jackspeed, SKILL.coordination, SKILL.reading, SKILL.speedjam]);
+
+const MINDBLOCK_EXEMPT = new Set<SkillName>([SKILL.stamina, SKILL.memory, SKILL.speed, SKILL.jackspeed]);
+export const MINDBLOCK_SKILLS: SkillName[] = Skills.filter(s => !MINDBLOCK_EXEMPT.has(s));

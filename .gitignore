@@ -37,6 +37,8 @@ packages/client/public/download
 *.tsbuildinfo
 .cache
 .npm-cache
+packages/client/dist.next/
+packages/web/dist.next/
 
 # Uploaded media (news cover images)
 /packages/server/uploads/

@@ -7,41 +7,11 @@ import { Path, ROUTE, useRoute } from './router';
 import { pageTitle } from './globals';
 import Blackout from './components/Blackout';
 import Footer from './Footer';
-
-const TITLE = {
-	[ROUTE.LANDING]: 'dashboard',
-	[ROUTE.HOME]: 'dashboard',
-	[ROUTE.NEWS]: 'news',
-	[ROUTE.NEWS_ADMIN]: 'manage news',
-	[ROUTE.DOWNLOAD]: 'play osu!idle',
-
-	[ROUTE.LOGIN]: 'login',
-	[ROUTE.LOGOUT]: 'logging out...',
-	
-	[ROUTE.BEATMAP_LISTING]: 'beatmap listing',
-
-	[ROUTE.RANKINGS_GLOBAL]: 'rankings',
-	[ROUTE.RANKINGS_GLOBAL_SCORE]: 'rankings',
-	[ROUTE.RANKINGS_GLOBAL_COUNTRY]: 'rankings',
-	[ROUTE.RANKINGS_GLOBAL_SCORE_COUNTRY]: 'rankings',
-	[ROUTE.RANKINGS_COUNTRY]: 'rankings',
-	[ROUTE.RANKINGS_PLAYS]: 'rankings',
-	[ROUTE.RANKINGS_SKILLS]: 'rankings',
-	[ROUTE.RANKINGS_SKILLS_COUNTRY]: 'rankings',
-
-	[ROUTE.NEWS_ARTICLE]: 'news',
-	[ROUTE.CHARACTER_PAGE]: 'character info',
-
-	[ROUTE.HELP_FAQ]: 'FAQ',
-
-	[ROUTE.AUTH_CALLBACK]: 'hi !',
-	[ROUTE.AUTH_DESKTOP]: 'signed in',
-	[ROUTE.AUTH_ERROR]: 'oh no!',
-
-	[ROUTE.ADMIN_BALANCING]: 'balancing',
-} as const satisfies {[key in Path]: string};
+import { useLingui } from '@lingui/react/macro';
 
 export default function App() {
+	const { t } = useLingui();
+
 	const route = useRoute();
 	const user = useCurrentUser();
 	const authLoaded = useAuthLoaded();
@@ -54,8 +24,41 @@ export default function App() {
 	if (onLandingRoute && !authLoaded) return null;
 
 	const publicLanding = !user && onLandingRoute;
+	
+	const TITLE = {
+		[ROUTE.LANDING]: t`dashboard`,
+		[ROUTE.HOME]: t`dashboard`,
+		[ROUTE.NEWS]: t`news`,
+		[ROUTE.NEWS_ADMIN]: t`manage news`,
+		[ROUTE.DOWNLOAD]: t`play osu!idle`,
 
-	const displayTitle = title !== '' ? title : TITLE[route] ?? 'dashboard';
+		[ROUTE.LOGIN]: t`login`,
+		[ROUTE.LOGOUT]: t`logging out...`,
+	
+		[ROUTE.BEATMAP_LISTING]: t`beatmap listing`,
+
+		[ROUTE.RANKINGS_GLOBAL]: t`rankings`,
+		[ROUTE.RANKINGS_GLOBAL_SCORE]: t`rankings`,
+		[ROUTE.RANKINGS_GLOBAL_COUNTRY]: t`rankings`,
+		[ROUTE.RANKINGS_GLOBAL_SCORE_COUNTRY]: t`rankings`,
+		[ROUTE.RANKINGS_COUNTRY]: t`rankings`,
+		[ROUTE.RANKINGS_PLAYS]: t`rankings`,
+		[ROUTE.RANKINGS_SKILLS]: t`rankings`,
+		[ROUTE.RANKINGS_SKILLS_COUNTRY]: t`rankings`,
+
+		[ROUTE.NEWS_ARTICLE]: t`news`,
+		[ROUTE.CHARACTER_PAGE]: t`character info`,
+
+		[ROUTE.HELP_FAQ]: t`FAQ`,
+
+		[ROUTE.AUTH_CALLBACK]: t`hi !`,
+		[ROUTE.AUTH_DESKTOP]: t`signed in`,
+		[ROUTE.AUTH_ERROR]: t`oh no!`,
+
+		[ROUTE.ADMIN_BALANCING]: t`balancing`,
+	} as const satisfies {[key in Path]: string};
+
+	const displayTitle = title !== '' ? title : TITLE[route] ?? t`dashboard`;
 
 	return (<>
 		{publicLanding && <PublicLanding />}

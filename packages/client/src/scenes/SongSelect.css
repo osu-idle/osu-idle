@@ -154,8 +154,8 @@
 }
 .game__top_lb-container {
 	position: absolute;
-	top: calc(100% - 65px);
-	height: calc(100vh - 244px);
+    top: calc(100% - 55px);
+    height: calc(100vh - 250px);
 	width: 100%;
 	pointer-events: auto;
 }

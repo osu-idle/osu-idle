@@ -13,18 +13,68 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: mp.beatmap.title
+#. placeholder {1}: mp.beatmap.version
+#. placeholder {2}: mp.beatmap.artist
+#: src/pages/characters/CharacterPage.tsx
+msgid "{0} [{1}] by {2}"
+msgstr "{0} [{1}] by {2}"
+
+#: src/components/character/CharacterRanks.tsx
+msgid "{skill} Ranking"
+msgstr "{skill} Ranking"
+
+#: src/components/leaderboard/CountryFilter.tsx
+msgid "All"
+msgstr "All"
+
+#: src/pages/AuthError.tsx
+msgid "An error occurred when communicating with osu! ... if your osu! account is valid, please try again"
+msgstr "An error occurred when communicating with osu! ... if your osu! account is valid, please try again"
+
 #: src/pages/DesktopDone.tsx
 msgid "Back in osu!idle already? You can close this tab."
 msgstr "Back in osu!idle already? You can close this tab."
+
+#: src/App.tsx
+msgid "balancing"
+msgstr "balancing"
+
+#: src/Header.tsx
+msgid "Balancing"
+msgstr "Balancing"
+
+#: src/App.tsx
+#: src/Header.tsx
+msgid "beatmap listing"
+msgstr "beatmap listing"
+
+#: src/Header.tsx
+msgid "beatmaps"
+msgstr "beatmaps"
 
 #: src/pages/PlayOsuIdle.tsx
 msgid "Best for performance and idling."
 msgstr "Best for performance and idling."
 
+#: src/pages/characters/CharacterPage.tsx
+msgid "Best Performance"
+msgstr "Best Performance"
+
+#. placeholder {0}: map.creator
 #. placeholder {0}: mapset.artist
 #: src/pages/beatmaps/RankedMaps.tsx
+#: src/pages/Home.tsx
 msgid "by {0}"
 msgstr "by {0}"
+
+#: src/App.tsx
+msgid "character info"
+msgstr "character info"
+
+#: src/pages/PublicLanding.tsx
+msgid "characters"
+msgstr "characters"
 
 #: src/pages/Login.tsx
 msgid "Connect your osu! account to appear in the leaderboards."
@@ -33,6 +83,26 @@ msgstr "Connect your osu! account to appear in the leaderboards."
 #: src/Footer.tsx
 msgid "Contact"
 msgstr "Contact"
+
+#: src/components/leaderboard/CountryFilter.tsx
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "country"
+msgstr "country"
+
+#: src/components/character/CharacterRanks.tsx
+msgid "Country Ranking"
+msgstr "Country Ranking"
+
+#: src/pages/PublicLanding.tsx
+msgid "Create your own osu! character and watch it grow to become a<0/><1>legendary mania player</1>."
+msgstr "Create your own osu! character and watch it grow to become a<0/><1>legendary mania player</1>."
+
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+msgid "dashboard"
+msgstr "dashboard"
 
 #. placeholder {0}: primary.label
 #: src/pages/PlayOsuIdle.tsx
@@ -43,28 +113,145 @@ msgstr "Download for {0} (v{version})"
 msgid "Download the desktop app"
 msgstr "Download the desktop app"
 
+#: src/pages/AuthError.tsx
+msgid "Error"
+msgstr "Error"
+
+#: src/Header.tsx
+msgid "faq"
+msgstr "faq"
+
+#: src/App.tsx
+msgid "FAQ"
+msgstr "FAQ"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "First Place Ranks"
+msgstr "First Place Ranks"
+
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "global"
+msgstr "global"
+
+#: src/components/character/CharacterRanks.tsx
+msgid "Global Ranking"
+msgstr "Global Ranking"
+
 #. placeholder {0}: user.username
 #: src/pages/AuthCallback.tsx
 msgid "Hello {0}!"
 msgstr "Hello {0}!"
 
+#: src/Header.tsx
+msgid "help"
+msgstr "help"
+
+#: src/App.tsx
+msgid "hi !"
+msgstr "hi !"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Historical"
+msgstr "Historical"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Hit Accuracy"
+msgstr "Hit Accuracy"
+
+#: src/Header.tsx
+msgid "home"
+msgstr "home"
+
 #: src/pages/PlayOsuIdle.tsx
 msgid "How do you want to play?"
 msgstr "How do you want to play?"
+
+#: src/pages/PublicLanding.tsx
+msgid "Join the community"
+msgstr "Join the community"
+
+#: src/pages/PublicLanding.tsx
+msgid "Latest news"
+msgstr "Latest news"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Loading…"
+msgstr "Loading…"
+
+#: src/App.tsx
+msgid "logging out..."
+msgstr "logging out..."
+
+#: src/App.tsx
+msgid "login"
+msgstr "login"
+
+#: src/App.tsx
+msgid "manage news"
+msgstr "manage news"
 
 #. placeholder {0}: mapset.creator
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "mapped by {0}"
 msgstr "mapped by {0}"
 
+#. placeholder {0}: mp.beatmapset.creator
+#: src/pages/characters/CharacterPage.tsx
+msgid "mapped by <0>{0}</0>"
+msgstr "mapped by <0>{0}</0>"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Most Played Beatmaps"
+msgstr "Most Played Beatmaps"
+
+#: src/Header.tsx
+msgid "My Profile"
+msgstr "My Profile"
+
+#: src/pages/Home.tsx
+msgid "New Ranked Beatmaps"
+msgstr "New Ranked Beatmaps"
+
+#: src/App.tsx
+#: src/App.tsx
+#: src/Header.tsx
+msgid "news"
+msgstr "news"
+
+#: src/pages/Home.tsx
+msgid "News"
+msgstr "News"
+
+#: src/pages/news/News.tsx
+#: src/pages/PublicLanding.tsx
+msgid "No news yet. Check back soon!"
+msgstr "No news yet. Check back soon!"
+
 #. placeholder {0}: PLATFORM_LABEL[platform]
 #: src/pages/PlayOsuIdle.tsx
 msgid "Not yet available for {0}"
 msgstr "Not yet available for {0}"
 
+#: src/App.tsx
+msgid "oh no!"
+msgstr "oh no!"
+
+#: src/pages/PublicLanding.tsx
+msgid "online now"
+msgstr "online now"
+
+#: src/pages/Home.tsx
+msgid "Online Users"
+msgstr "Online Users"
+
 #: src/pages/PlayOsuIdle.tsx
 msgid "Other platforms:"
 msgstr "Other platforms:"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Play Count"
+msgstr "Play Count"
 
 #: src/pages/PlayOsuIdle.tsx
 msgid "Play in the browser"
@@ -73,6 +260,23 @@ msgstr "Play in the browser"
 #: src/pages/PlayOsuIdle.tsx
 msgid "Play now"
 msgstr "Play now"
+
+#: src/Header.tsx
+msgid "play osu!"
+msgstr "play osu!"
+
+#: src/App.tsx
+#: src/Header.tsx
+msgid "play osu!idle"
+msgstr "play osu!idle"
+
+#: src/pages/Home.tsx
+msgid "Playing"
+msgstr "Playing"
+
+#: src/pages/PublicLanding.tsx
+msgid "playing now"
+msgstr "playing now"
 
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Plays"
@@ -87,6 +291,34 @@ msgstr "Privacy"
 msgid "Ranked"
 msgstr "Ranked"
 
+#: src/pages/characters/CharacterPage.tsx
+msgid "Ranked Score"
+msgstr "Ranked Score"
+
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/Header.tsx
+msgid "rankings"
+msgstr "rankings"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Ranks"
+msgstr "Ranks"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Recent scores"
+msgstr "Recent scores"
+
+#: src/components/EditableProfilePicture.tsx
+msgid "Reset to osu! avatar"
+msgstr "Reset to osu! avatar"
+
 #: src/pages/DesktopDone.tsx
 msgid "Return to osu!idle"
 msgstr "Return to osu!idle"
@@ -95,22 +327,59 @@ msgstr "Return to osu!idle"
 msgid "Rules"
 msgstr "Rules"
 
+#: src/components/character/CharacterRanks.tsx
+msgid "Score Ranking"
+msgstr "Score Ranking"
+
+#: src/pages/PublicLanding.tsx
+msgid "scores set"
+msgstr "scores set"
+
+#: src/pages/Logout.tsx
+msgid "See you later!"
+msgstr "See you later!"
+
 #: src/Footer.tsx
 msgid "Server Status"
 msgstr "Server Status"
 
+#: src/Header.tsx
 #: src/pages/Login.tsx
+#: src/pages/PublicLanding.tsx
 msgid "Sign in"
 msgstr "Sign in"
 
 #: src/pages/Login.tsx
+#: src/pages/PublicLanding.tsx
 msgid "Sign in with osu!"
 msgstr "Sign in with osu!"
+
+#: src/Header.tsx
+msgid "Sign out"
+msgstr "Sign out"
+
+#: src/App.tsx
+msgid "signed in"
+msgstr "signed in"
 
 #: src/pages/PlayOsuIdle.tsx
 msgid "Simplest, nothing to install."
 msgstr "Simplest, nothing to install."
 
+#: src/components/character/CharacterRanks.tsx
+msgid "Skill Ranking"
+msgstr "Skill Ranking"
+
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "skills"
+msgstr "skills"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Skills"
+msgstr "Skills"
+
+#: src/components/leaderboard/PlayerSkillLeaderboard.tsx
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Sort by"
 msgstr "Sort by"
@@ -122,6 +391,31 @@ msgstr "Source code"
 #: src/Footer.tsx
 msgid "Terms"
 msgstr "Terms"
+
+#: src/pages/PublicLanding.tsx
+msgid "The ultimate<0/>osu!mania idle game"
+msgstr "The ultimate<0/>osu!mania idle game"
+
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "top plays"
+msgstr "top plays"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Total Hits"
+msgstr "Total Hits"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Total Score"
+msgstr "Total Score"
+
+#: src/components/EditableProfilePicture.tsx
+msgid "Upload a profile picture"
+msgstr "Upload a profile picture"
+
+#: src/pages/PublicLanding.tsx
+msgid "View all"
+msgstr "View all"
 
 #: src/pages/DesktopDone.tsx
 msgid "You're signed in!"

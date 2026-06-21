@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-20 18:35\n"
+"PO-Revision-Date: 2026-06-21 19:59\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -148,6 +148,7 @@ msgstr "Disponible"
 
 #: src/components/songselect/TopBar.tsx
 #: src/components/Tutorial.tsx
+#: src/components/WebBrowser.tsx
 #: src/scenes/Gameplay.tsx
 #: src/scenes/MainMenu.tsx
 msgid "Back"
@@ -224,9 +225,17 @@ msgstr "Par titre"
 msgid "Cancel"
 msgstr "Annuler"
 
+#: src/components/Onboarding.tsx
+msgid "Change"
+msgstr "Changer"
+
 #: src/scenes/Options.tsx
 msgid "Change the way osu!idle behaves"
 msgstr "Changez la façon dont osu!idle se comporte"
+
+#: src/components/Onboarding.tsx
+msgid "Character name"
+msgstr "Nom du personnage"
 
 #: src/scenes/SongSelect.tsx
 msgid "Clearing local scores is not available yet"
@@ -248,6 +257,10 @@ msgstr "cliquez pour jouer..."
 msgid "Close"
 msgstr "Fermer"
 
+#: src/components/WebBrowser.tsx
+msgid "Close (Esc)"
+msgstr "Fermer (Échap)"
+
 #: src/scenes/Result.tsx
 msgid "Combo"
 msgstr "Combo"
@@ -268,6 +281,14 @@ msgstr "Impossible de charger les beatmaps : {error}"
 msgid "Couldn't start play"
 msgstr "Impossible de démarrer la partie"
 
+#: src/components/Onboarding.tsx
+msgid "Create character"
+msgstr "Créer le personnage"
+
+#: src/components/Onboarding.tsx
+msgid "Create your character to finish setting up your account."
+msgstr "Créez votre premier personnage pour finaliser la création de votre compte."
+
 #: src/scenes/Gameplay.tsx
 msgid "Current Fatigue"
 msgstr "Fatigue actuelle"
@@ -283,6 +304,10 @@ msgstr "Supprimer la playlist"
 #: src/scenes/Options.tsx
 msgid "delete|beatmap|beatmaps"
 msgstr "supprimer|beatmap|beatmaps"
+
+#: src/components/Announce.tsx
+msgid "Dismiss"
+msgstr "Ignorer"
 
 #: src/components/BeatmapCard.tsx
 msgid "Double click to download"
@@ -324,6 +349,10 @@ msgstr "Quitter osu!idle"
 #: src/scenes/Result.tsx
 msgid "FAILED"
 msgstr "ÉCHEC"
+
+#: src/components/WebBrowser.tsx
+msgid "Forward"
+msgstr "Suivant"
 
 #: src/scenes/Options.tsx
 msgid "fps|frame|rate|refresh|hz"
@@ -400,6 +429,10 @@ msgstr "Gain de niveau"
 msgid "loading library…"
 msgstr "chargement de la bibliothèque…"
 
+#: src/components/leaderboard/Leaderboard.tsx
+msgid "Loading…"
+msgstr "Chargement…"
+
 #: src/gameplay/autopilot.ts
 msgid "Loop"
 msgstr "En boucle"
@@ -449,6 +482,10 @@ msgstr "Suivant"
 msgid "Next song"
 msgstr "Chanson suivante"
 
+#: src/components/NowPlaying.tsx
+msgid "Next track"
+msgstr "Chanson suivante"
+
 #: src/scenes/Result.tsx
 msgid "Next up in {countdown}s:"
 msgstr "Prochaine dans {countdown}s :"
@@ -476,6 +513,10 @@ msgstr "Aucune playlist. Saisissez un nom plus haut et appuyez sur Entrée."
 #: src/scenes/Result.tsx
 msgid "No replay data"
 msgstr "Aucune donnée de replay"
+
+#: src/components/leaderboard/Leaderboard.tsx
+msgid "No scores yet, be the first!"
+msgstr "Pas de score pour le moment, envoyez le premier !"
 
 #: src/components/result/SkillProgression.tsx
 msgid "No skill gains"
@@ -530,6 +571,10 @@ msgstr "Performance"
 msgid "Performance: {pp}pp"
 msgstr "Performance : {pp}pp"
 
+#: src/components/leaderboard/PersonalBest.tsx
+msgid "Personal best"
+msgstr "Record personnel"
+
 #: src/components/Tutorial.tsx
 msgid "Pick a song"
 msgstr "Choisir une musique"
@@ -567,9 +612,17 @@ msgstr "Playlist"
 msgid "Playlists"
 msgstr "Playlists"
 
+#: src/components/Onboarding.tsx
+msgid "Profile picture<0/>Defaults to your osu! avatar"
+msgstr "Avatar<0/>Votre avatar osu! est utilisé par défaut"
+
 #: src/scenes/Gameplay.tsx
 msgid "quit"
 msgstr "quitter"
+
+#: src/components/Announce.tsx
+msgid "Read the full article"
+msgstr "Lire en entier"
 
 #. placeholder {0}: selected?.name
 #: src/components/PlaylistOverlay.tsx
@@ -579,6 +632,10 @@ msgstr "Vraiment supprimer \"{0}\"?"
 #: src/components/songselect/TopBar.tsx
 msgid "Recently Played"
 msgstr "Joué récemment"
+
+#: src/components/WebBrowser.tsx
+msgid "Reload"
+msgstr "Recharger"
 
 #: src/components/PlaylistOverlay.tsx
 msgid "Remove this difficulty"
@@ -610,6 +667,10 @@ msgstr "droit|clique|appui|duree|durée"
 #: src/scenes/SongSelect.tsx
 msgid "Search:"
 msgstr "Recherche :"
+
+#: src/components/leaderboard/Leaderboard.tsx
+msgid "Select a difficulty to see its scores."
+msgstr "Choisissez une map pour voir ses scores."
 
 #: src/components/PlaylistOverlay.tsx
 msgid "Select a playlist or create a new one here..."
@@ -725,6 +786,14 @@ msgstr "Non joué"
 msgid "Update failed ({0}). Please restart the game."
 msgstr "Échec ({0}). Merci de redémarrer le jeu."
 
+#: src/components/Onboarding.tsx
+msgid "Upload a profile picture"
+msgstr "Envoyer un avatar"
+
+#: src/components/Onboarding.tsx
+msgid "Uploading…"
+msgstr "Envoi…"
+
 #: src/globals.ts
 msgid "Version {currentVersion} is available ! Refresh the page to update."
 msgstr "La version {currentVersion} est disponible ! Actualisez la page pour mettre à jour le jeu."
@@ -755,6 +824,11 @@ msgstr "Site web"
 #: src/components/Tutorial.tsx
 msgid "Welcome to osu!idle"
 msgstr "Bienvenue sur osu!idle"
+
+#. placeholder {0}: user.username
+#: src/components/Onboarding.tsx
+msgid "Welcome, {0}!"
+msgstr "Bienvenue, {0} !"
 
 #: src/components/songselect/CardContextMenu.tsx
 msgid "What do you want to do with this beatmap?"

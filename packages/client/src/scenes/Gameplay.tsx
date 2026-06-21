@@ -35,6 +35,8 @@ import { SKILL, Skills, type SkillName } from '@osu-idle/shared/skills';
 import { skillName } from '@osu-idle/shared/display/skills';
 import { type Grade } from '@osu-idle/shared/judgement';
 import Skin from '../osu/skin/Skin';
+import { drawHpBar } from '../gameplay/hpBar';
+import { MAX_HP } from '@osu-idle/shared/sim/scoring';
 import { SETTINGS } from '../db/settings';
 import { scrollSpeedToMs } from '@osu-idle/shared/osu/scroll_speed';
 import sleep from '@osu-idle/shared/helpers/sleep';
@@ -696,6 +698,11 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			}
 		};
 
+		// eased HP fraction for the bar, carried between frames so drains/heals glide
+		// instead of snapping (the canvas bar has no CSS transition to lean on)
+		let hpEased = game.score.hp / MAX_HP;
+		let hpLast = performance.now();
+
 		const drawHud = (x0: number, now: number) => {
 			const cxField = x0 + fieldWidth / 2;
 
@@ -782,6 +789,13 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			ctx.fillRect(0, 0, w, 4);
 			ctx.fillStyle = '#ff66ab';
 			ctx.fillRect(0, 0, w * prog, 4);
+
+			// HP bar (right of the playfield) - eased toward the live value, drawn
+			// before the hit-error bar so that bar stays on top of it
+			const tNow = performance.now();
+			hpEased += (game.score.hp / MAX_HP - hpEased) * (1 - Math.exp(-(tNow - hpLast) / Skin.hpBar.transitionMs));
+			hpLast = tNow;
+			drawHpBar(ctx, { hp: hpEased, x: x0 + fieldWidth + Skin.hpBar.gap, bottom: h - Skin.hpBar.fromBottom });
 
 			// hit-error bar (below the receptors)
 			drawHitErrorBar(ctx, {

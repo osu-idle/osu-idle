@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-20 18:35\n"
+"PO-Revision-Date: 2026-06-21 20:19\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -18,18 +18,68 @@ msgstr ""
 "X-Crowdin-File: /packages/web/src/locales/en.po\n"
 "X-Crowdin-File-ID: 47\n"
 
+#. placeholder {0}: mp.beatmap.title
+#. placeholder {1}: mp.beatmap.version
+#. placeholder {2}: mp.beatmap.artist
+#: src/pages/characters/CharacterPage.tsx
+msgid "{0} [{1}] by {2}"
+msgstr "{0} [{1}] par {2}"
+
+#: src/components/character/CharacterRanks.tsx
+msgid "{skill} Ranking"
+msgstr "Rang en {skill}"
+
+#: src/components/leaderboard/CountryFilter.tsx
+msgid "All"
+msgstr "Tout"
+
+#: src/pages/AuthError.tsx
+msgid "An error occurred when communicating with osu! ... if your osu! account is valid, please try again"
+msgstr "Une erreur est survenue lors de la communication avec osu!... Si votre compte osu! est valide, veuillez réessayer"
+
 #: src/pages/DesktopDone.tsx
 msgid "Back in osu!idle already? You can close this tab."
 msgstr "Déjà de retour sur osu!idle ? Vous pouvez fermer cet onglet."
+
+#: src/App.tsx
+msgid "balancing"
+msgstr "équilibrage"
+
+#: src/Header.tsx
+msgid "Balancing"
+msgstr "Équilibrage"
+
+#: src/App.tsx
+#: src/Header.tsx
+msgid "beatmap listing"
+msgstr "liste des maps"
+
+#: src/Header.tsx
+msgid "beatmaps"
+msgstr "maps"
 
 #: src/pages/PlayOsuIdle.tsx
 msgid "Best for performance and idling."
 msgstr "Plus adapté pour le jeu passif et de meilleures performances."
 
+#: src/pages/characters/CharacterPage.tsx
+msgid "Best Performance"
+msgstr "Meilleure performance"
+
+#. placeholder {0}: map.creator
 #. placeholder {0}: mapset.artist
 #: src/pages/beatmaps/RankedMaps.tsx
+#: src/pages/Home.tsx
 msgid "by {0}"
 msgstr "par {0}"
+
+#: src/App.tsx
+msgid "character info"
+msgstr "infos du personnnage"
+
+#: src/pages/PublicLanding.tsx
+msgid "characters"
+msgstr "personnages"
 
 #: src/pages/Login.tsx
 msgid "Connect your osu! account to appear in the leaderboards."
@@ -38,6 +88,26 @@ msgstr "Connectez votre compte osu! pour apparaître dans les classements."
 #: src/Footer.tsx
 msgid "Contact"
 msgstr "Contact"
+
+#: src/components/leaderboard/CountryFilter.tsx
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "country"
+msgstr "pays"
+
+#: src/components/character/CharacterRanks.tsx
+msgid "Country Ranking"
+msgstr "Rang pays"
+
+#: src/pages/PublicLanding.tsx
+msgid "Create your own osu! character and watch it grow to become a<0/><1>legendary mania player</1>."
+msgstr "Créez votre joueur osu! et regardez-le s'améliorer jusqu'à devenir un <0/><1>joueur légendaire d'osu!mania</1>."
+
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+msgid "dashboard"
+msgstr "tableau de bord"
 
 #. placeholder {0}: primary.label
 #: src/pages/PlayOsuIdle.tsx
@@ -48,28 +118,145 @@ msgstr "Télécharger pour {0} (v{version})"
 msgid "Download the desktop app"
 msgstr "Télécharger l'appli bureau"
 
+#: src/pages/AuthError.tsx
+msgid "Error"
+msgstr "Erreur"
+
+#: src/Header.tsx
+msgid "faq"
+msgstr "faq"
+
+#: src/App.tsx
+msgid "FAQ"
+msgstr "FAQ"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "First Place Ranks"
+msgstr "Premières places"
+
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "global"
+msgstr "global"
+
+#: src/components/character/CharacterRanks.tsx
+msgid "Global Ranking"
+msgstr "Rang global"
+
 #. placeholder {0}: user.username
 #: src/pages/AuthCallback.tsx
 msgid "Hello {0}!"
 msgstr "Bonjour {0} !"
 
+#: src/Header.tsx
+msgid "help"
+msgstr "aide"
+
+#: src/App.tsx
+msgid "hi !"
+msgstr "salut !"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Historical"
+msgstr "Historique"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Hit Accuracy"
+msgstr "Précision"
+
+#: src/Header.tsx
+msgid "home"
+msgstr "accueil"
+
 #: src/pages/PlayOsuIdle.tsx
 msgid "How do you want to play?"
 msgstr "Comment souhaitez-vous jouer ?"
+
+#: src/pages/PublicLanding.tsx
+msgid "Join the community"
+msgstr "Rejoindre la communauté"
+
+#: src/pages/PublicLanding.tsx
+msgid "Latest news"
+msgstr "Derniers articles"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Loading…"
+msgstr "Chargement…"
+
+#: src/App.tsx
+msgid "logging out..."
+msgstr "déconnexion..."
+
+#: src/App.tsx
+msgid "login"
+msgstr "connexion"
+
+#: src/App.tsx
+msgid "manage news"
+msgstr "gérer les articles"
 
 #. placeholder {0}: mapset.creator
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "mapped by {0}"
 msgstr "mappé par {0}"
 
+#. placeholder {0}: mp.beatmapset.creator
+#: src/pages/characters/CharacterPage.tsx
+msgid "mapped by <0>{0}</0>"
+msgstr "créée par <0>{0}</0>"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Most Played Beatmaps"
+msgstr "Maps les plus jouées"
+
+#: src/Header.tsx
+msgid "My Profile"
+msgstr "Mon Profil"
+
+#: src/pages/Home.tsx
+msgid "New Ranked Beatmaps"
+msgstr "Nouvelles maps classées"
+
+#: src/App.tsx
+#: src/App.tsx
+#: src/Header.tsx
+msgid "news"
+msgstr "articles"
+
+#: src/pages/Home.tsx
+msgid "News"
+msgstr "Articles"
+
+#: src/pages/news/News.tsx
+#: src/pages/PublicLanding.tsx
+msgid "No news yet. Check back soon!"
+msgstr "Pas encore d'articles. Revenez bientôt !"
+
 #. placeholder {0}: PLATFORM_LABEL[platform]
 #: src/pages/PlayOsuIdle.tsx
 msgid "Not yet available for {0}"
 msgstr "Pas encore disponible pour {0}"
 
+#: src/App.tsx
+msgid "oh no!"
+msgstr "oh non!"
+
+#: src/pages/PublicLanding.tsx
+msgid "online now"
+msgstr "en ligne"
+
+#: src/pages/Home.tsx
+msgid "Online Users"
+msgstr "Joueurs en ligne"
+
 #: src/pages/PlayOsuIdle.tsx
 msgid "Other platforms:"
 msgstr "Autres plateformes :"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Play Count"
+msgstr "Parties"
 
 #: src/pages/PlayOsuIdle.tsx
 msgid "Play in the browser"
@@ -78,6 +265,23 @@ msgstr "Jouer dans le navigateur"
 #: src/pages/PlayOsuIdle.tsx
 msgid "Play now"
 msgstr "Jouer maintenant"
+
+#: src/Header.tsx
+msgid "play osu!"
+msgstr "jouer à osu!"
+
+#: src/App.tsx
+#: src/Header.tsx
+msgid "play osu!idle"
+msgstr "jouer à osu!idle"
+
+#: src/pages/Home.tsx
+msgid "Playing"
+msgstr "En jeu"
+
+#: src/pages/PublicLanding.tsx
+msgid "playing now"
+msgstr "en jeu"
 
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Plays"
@@ -92,6 +296,34 @@ msgstr "Vie privée"
 msgid "Ranked"
 msgstr "Classé"
 
+#: src/pages/characters/CharacterPage.tsx
+msgid "Ranked Score"
+msgstr "Score classé"
+
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/App.tsx
+#: src/Header.tsx
+msgid "rankings"
+msgstr "classements"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Ranks"
+msgstr "Rangs"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Recent scores"
+msgstr "Scores récents"
+
+#: src/components/EditableProfilePicture.tsx
+msgid "Reset to osu! avatar"
+msgstr "Remettre votre avatar osu!"
+
 #: src/pages/DesktopDone.tsx
 msgid "Return to osu!idle"
 msgstr "Retourner sur osu!idle"
@@ -100,22 +332,59 @@ msgstr "Retourner sur osu!idle"
 msgid "Rules"
 msgstr "Règles"
 
+#: src/components/character/CharacterRanks.tsx
+msgid "Score Ranking"
+msgstr "Rang Score"
+
+#: src/pages/PublicLanding.tsx
+msgid "scores set"
+msgstr "scores"
+
+#: src/pages/Logout.tsx
+msgid "See you later!"
+msgstr "À bientôt !"
+
 #: src/Footer.tsx
 msgid "Server Status"
 msgstr "Statut du serveur"
 
+#: src/Header.tsx
 #: src/pages/Login.tsx
+#: src/pages/PublicLanding.tsx
 msgid "Sign in"
 msgstr "Se connecter"
 
 #: src/pages/Login.tsx
+#: src/pages/PublicLanding.tsx
 msgid "Sign in with osu!"
 msgstr "Se connecter avec osu!"
+
+#: src/Header.tsx
+msgid "Sign out"
+msgstr "Déconnexion"
+
+#: src/App.tsx
+msgid "signed in"
+msgstr "connecté"
 
 #: src/pages/PlayOsuIdle.tsx
 msgid "Simplest, nothing to install."
 msgstr "Le plus simple, rien à installer."
 
+#: src/components/character/CharacterRanks.tsx
+msgid "Skill Ranking"
+msgstr "Rang compétence"
+
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "skills"
+msgstr "compétences"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Skills"
+msgstr "Compétences"
+
+#: src/components/leaderboard/PlayerSkillLeaderboard.tsx
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Sort by"
 msgstr "Trier par"
@@ -127,6 +396,31 @@ msgstr "Code source"
 #: src/Footer.tsx
 msgid "Terms"
 msgstr "Conditions"
+
+#: src/pages/PublicLanding.tsx
+msgid "The ultimate<0/>osu!mania idle game"
+msgstr "L'ultime<0/>jeu idle osu!mania"
+
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "top plays"
+msgstr "meilleurs plays"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Total Hits"
+msgstr "Notes totales"
+
+#: src/pages/characters/CharacterPage.tsx
+msgid "Total Score"
+msgstr "Score total"
+
+#: src/components/EditableProfilePicture.tsx
+msgid "Upload a profile picture"
+msgstr "Envoyer un avatar"
+
+#: src/pages/PublicLanding.tsx
+msgid "View all"
+msgstr "Tout voir"
 
 #: src/pages/DesktopDone.tsx
 msgid "You're signed in!"

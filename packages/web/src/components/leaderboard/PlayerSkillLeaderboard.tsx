@@ -9,25 +9,12 @@ import rank from '@osu-idle/shared/display/rank';
 import { level } from '@osu-idle/shared/display/num';
 import { Skills } from '@osu-idle/shared/skills';
 import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import { skillName } from '@osu-idle/shared/display/skills';
+import { Trans } from '@lingui/react/macro';
 
 export const SkillSorts = ['overall', ...Skills] as const;
 export const SKILL_SORT = mapped(SkillSorts);
 export type SkillSort = ValueIn<typeof SKILL_SORT>;
-
-const sortLabel: {[key in SkillSort]: string} = {
-	[SKILL_SORT.overall]: 'Overall',
-	[SKILL_SORT.accuracy]: 'Accuracy',
-	[SKILL_SORT.concentration]: 'Concentration',
-	[SKILL_SORT.consistency]: 'Consistency',
-	[SKILL_SORT.coordination]: 'Coordination',
-	[SKILL_SORT.jackspeed]: 'JackSpeed',
-	[SKILL_SORT.memory]: 'Memory',
-	[SKILL_SORT.reading]: 'Reading',
-	[SKILL_SORT.release]: 'Release',
-	[SKILL_SORT.speed]: 'Speed',
-	[SKILL_SORT.speedjam]: 'Speedjam',
-	[SKILL_SORT.stamina]: 'Stamina',
-};
 
 export default function PlayerSkillLeaderboard({ sort, country }: {
 	sort: SkillSort,
@@ -39,15 +26,15 @@ export default function PlayerSkillLeaderboard({ sort, country }: {
 
 	const getRanking = (skill: SkillSort, country?: string) => (page: number) => country === undefined ? getSkillRanking(skill, page) : getCountrySkillRanking(skill, country, page);
 
-	const players = useAsync(async () => await getRanking(sort, country)(page), [sort, page]);
+	const players = useAsync(async () => await getRanking(sort, country)(page), [sort, page, country]);
 	
 	return (<div className='player__lb'>
 		<div className='player__lb_sort'>
-			<span>Sort by</span>
+			<span><Trans>Sort by</Trans></span>
 			{SkillSorts.map(type => <Link
 				to={getTo(type)}
 				className={`${sort === type ? 'current' : ''}`}>
-				{sortLabel[type]}
+				{skillName(type)}
 			</Link>)}
 		</div>
 
@@ -55,7 +42,7 @@ export default function PlayerSkillLeaderboard({ sort, country }: {
 			<thead>
 				<th></th>
 				<th></th>
-				{SkillSorts.map(s => <th className={sort === SKILL_SORT[s] ? 'current' : ''}>{`${s.charAt(0).toUpperCase()}${s.substring(1)}`}</th>)}
+				{SkillSorts.map(s => <th className={sort === SKILL_SORT[s] ? 'current' : ''}>{skillName(s)}</th>)}
 			</thead>
 			<tbody>
 				{players?.map((player, r) => <tr>

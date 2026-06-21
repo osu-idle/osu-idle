@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-20 18:35\n"
+"PO-Revision-Date: 2026-06-21 20:19\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -349,6 +349,10 @@ msgstr "MasterPlus+ optimisé"
 #: src/skills.ts
 msgid "Outdated stock Windows drivers"
 msgstr "Pilotes Windows obsolètes"
+
+#: src/display/skills.ts
+msgid "Overall"
+msgstr "Global"
 
 #: src/skills.ts
 msgid "Passive learning"

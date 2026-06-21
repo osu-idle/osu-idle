@@ -4,6 +4,11 @@ header {
     width: 100%;
 
 	z-index: 100;
+    transition: all 300ms ease;
+}
+
+header:has(.shrunk) {
+	background-color: hsl(var(--hsl-h2));
 }
 
 .topbar {
@@ -18,7 +23,11 @@ header {
     font-weight: 500;
     height: 90px;
     transform: translateZ(0);
-    transition: height 300ms;
+    transition: all 300ms ease;
+}
+
+.topbar.shrunk {
+	height: 50px;
 }
 
 .topbar__group {
@@ -57,6 +66,11 @@ header {
 .topbar__logo-bg {
 	background-image: var(--nav-logo-bg);
     opacity: 0;
+}
+
+.topbar.shrunk .topbar__logo-link {
+	height: 40px;
+	width: 40px;
 }
 
 .topbar__group:hover .topbar__link.regular {
@@ -160,7 +174,6 @@ header {
     box-shadow: none;
     height: 60px;
     position: relative;
-    transition: width var(--header-pinned-animation-duration), height var(--header-pinned-animation-duration);
     width: 60px;
 	cursor: pointer;
 	
@@ -175,6 +188,13 @@ header {
     margin: 0;
     outline: none;
     padding: 0;
+
+    transition: width 300ms, height 300ms;
+}
+
+.topbar.shrunk .topbar__avatar {
+	height: 40px;
+	width: 40px;
 }
 
 .topbar__link.for-avatar {

@@ -1,6 +1,6 @@
 {
   "name": "@osu-idle/desktop",
-  "version": "0.12.4.0",
+  "version": "0.12.5.0",
   "author": {
     "name": "Adrien Boitelle",
     "email": "adrien.boitelle@gmail.com",
@@ -13,7 +13,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "docker run --rm -t -v /main/osu/idle:/project -w /project/packages/desktop --user $(id -u):$(id -g) -e XDG_CACHE_HOME=/project/.cache -e npm_config_cache=/project/.npm-cache -e HOME=/project/.cache electronuserland/builder:wine node build.js",
+    "dist": "docker run --rm -t -v /main/osu/idle:/project -w /project/packages/desktop --user $(id -u):$(id -g) -e XDG_CACHE_HOME=/project/.cache -e npm_config_cache=/project/.npm-cache -e HOME=/project/.cache -e RENDERER_DIST electronuserland/builder:wine node build.js",
     "dist:linuxwin": "electron-builder --linux --win"
   },
   "dependencies": {

@@ -6,69 +6,72 @@ import PersonalBest from './PersonalBest';
 import { music } from '../../audio/MusicPlayer';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { ScoreDTO } from '@osu-idle/shared/score';
-import { getBeatmapScores } from '../../online/services/scores';
-import { SCORE_TAB, SETTINGS } from '../../db/settings';
+import { countryName } from '@osu-idle/shared/display/country';
+import { getBeatmapScores, getCountryBeatmapScores } from '../../online/services/scores';
+import { SCORE_TAB, ScoreTab, SETTINGS } from '../../db/settings';
+import Account from '../../online/account';
+import Dropdown, { DropdownOption } from '../dropdown/Dropdown';
+import { i18n } from '../../i18n';
+import { Trans } from '@lingui/react/macro';
 
 /**
  * Score leaderboard for the currently-selected difficulty. The category is
- * switchable between Local (populated from SQLite) and Global (placeholder).
+ * switchable between Local (from SQLite), Global, and Country (the signed-in
+ * player's own country - only offered while signed in).
  */
 export default function Leaderboard() {
 	const [beatmap] = useSynced(music.beatmap);
+	const [account] = useSynced(Account.character);
 	const [category] = useSynced(SETTINGS.leaderboard);
 	const [scores, setScores] = useState<(Score | ScoreDTO)[]>([]);
 	const [loading, setLoading] = useState(false);
 
+	const country = account?.country;
+	// The Country tab needs a signed-in country; fall back to Global without it.
+	const effective = category === SCORE_TAB.COUNTRY && !country ? SCORE_TAB.GLOBAL : category;
+
+	const options: DropdownOption<ScoreTab>[] = [
+		{ value: SCORE_TAB.LOCAL, label: 'Local' },
+		{ value: SCORE_TAB.GLOBAL, label: 'Global' },
+		...(country ? [{ value: SCORE_TAB.COUNTRY, label: countryName(country, i18n.locale) }] : []),
+	];
+
 	useEffect(() => {
 		if (!beatmap) return;
 
-		if (beatmap.metadata.id === undefined) {
+		const id = beatmap.metadata.id;
+		if (id === undefined) {
 			setScores([]);
 			return;
 		}
 		let cancelled = false;
 		setLoading(true);
 
-		if (category === SCORE_TAB.LOCAL) {
-			Score.forBeatmap(beatmap.metadata.id)
-				.then((s) => !cancelled && setScores(s))
-				.catch(() => !cancelled && setScores([]))
-				.finally(() => !cancelled && setLoading(false));
-		} else {
-			getBeatmapScores(beatmap.metadata.id)
-				.then((s) => !cancelled && setScores(s))
-				.catch(() => !cancelled && setScores([]))
-				.finally(() => !cancelled && setLoading(false));
-		}
+		const fetch =
+			effective === SCORE_TAB.LOCAL ? Score.forBeatmap(id)
+				: effective === SCORE_TAB.COUNTRY ? getCountryBeatmapScores(id, country!)
+					: getBeatmapScores(id);
+
+		fetch
+			.then((s) => !cancelled && setScores(s))
+			.catch(() => !cancelled && setScores([]))
+			.finally(() => !cancelled && setLoading(false));
 		return () => {
 			cancelled = true;
 		};
-	}, [beatmap, category]);
+	}, [beatmap, effective, country]);
 
 	return (
 		<aside className="lb">
-			<div className="lb__tabs">
-				<button
-					className={`lb__tab ${category === SCORE_TAB.LOCAL ? 'is-active' : ''}`}
-					onClick={() => SETTINGS.leaderboard.set(SCORE_TAB.LOCAL)}
-				>
-					Local
-				</button>
-				<button
-					className={`lb__tab ${category === SCORE_TAB.GLOBAL ? 'is-active' : ''}`}
-					onClick={() => SETTINGS.leaderboard.set(SCORE_TAB.GLOBAL)}
-				>
-					Global
-				</button>
-			</div>
+			<Dropdown className="lb__select" value={SETTINGS.leaderboard} options={options} />
 
 			<div className="lb__body">
 				{beatmap === undefined ? (
-					<p className="lb__empty">Select a difficulty to see its scores.</p>
+					<p className="lb__empty"><Trans>Select a difficulty to see its scores.</Trans></p>
 				) : loading ? (
-					<p className="lb__empty">Loading…</p>
+					<p className="lb__empty"><Trans>Loading…</Trans></p>
 				) : scores.length === 0 ? (
-					<p className="lb__empty">No scores yet - be the first!</p>
+					<p className="lb__empty"><Trans>No scores yet, be the first!</Trans></p>
 				) : (
 					<ol className="lb__list">
 						{scores.map((score, i) => (
@@ -78,8 +81,8 @@ export default function Leaderboard() {
 				)}
 			</div>
 
-			{category !== SCORE_TAB.LOCAL && beatmap?.metadata.id !== undefined && (
-				<PersonalBest beatmapId={beatmap.metadata.id} />
+			{effective !== SCORE_TAB.LOCAL && beatmap?.metadata.id !== undefined && (
+				<PersonalBest beatmapId={beatmap.metadata.id} country={effective === SCORE_TAB.COUNTRY ? country : undefined} />
 			)}
 		</aside>
 	);

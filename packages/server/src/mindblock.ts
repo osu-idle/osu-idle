@@ -1,5 +1,4 @@
 import { and, desc, eq, gte } from 'drizzle-orm';
-import { SKILL, Skills, type SkillName } from '@osu-idle/shared/skills';
 import cubic_bezier from '@osu-idle/shared/math/cubic_bezier';
 import lerp from '@osu-idle/shared/math/lerp';
 import { db } from './db/client';
@@ -10,9 +9,6 @@ const RECENT_LIMIT = 50;
 const PLAYS_FOR_FULL_BLOCK = 25;
 const MIN_FACTOR = 0.25;
 const BLOCK_CB = cubic_bezier(.6, 0, .6, 1);
-
-const MINDBLOCK_EXEMPT = new Set<SkillName>([SKILL.stamina, SKILL.memory, SKILL.speed]);
-export const MINDBLOCK_SKILLS: SkillName[] = Skills.filter(s => !MINDBLOCK_EXEMPT.has(s));
 
 export const recentMapPlays = async (characterId: number, beatmapId: number): Promise<number> => {
 	const since = new Date(Date.now() - WINDOW_MS);

@@ -1,4 +1,4 @@
-import { SKILL, type SkillName } from '../../skills.js';
+import { PRESSURE_SKILLS, SKILL, type SkillName } from '../../skills.js';
 import type Skill from '../skills/skill.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import gaussian from '../../math/gaussian.js';
@@ -243,10 +243,6 @@ export const lengthCB = cubic_bezier(.2,0,.75,.0);
 export const xpFactorForLength = (length: number): number => {
 	return 1 + lengthCB(Math.max(0, Math.min(1, (length - LENGTH_START) / (LENGTH_END - LENGTH_START)))) * (LENGTH_FACTOR - 1);
 };
-
-/** The "pressure" skills whose strained notes train consistency: playing
- *  through speed-family pressure without choking is what consistency rewards. */
-export const PRESSURE_SKILLS: Set<SkillName> = new Set([SKILL.speed, SKILL.stamina, SKILL.jackspeed, SKILL.coordination, SKILL.reading, SKILL.speedjam]);
 
 /** Each miss in a play multiplies consistency's earned pressure notes down -
  *  chokes are rare by nature, so a handful of misses must bite hard for

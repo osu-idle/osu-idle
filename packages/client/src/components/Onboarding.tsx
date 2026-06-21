@@ -4,6 +4,7 @@ import Auth from '../online/auth';
 import Account from '../online/account';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
+import { Trans, useLingui } from '@lingui/react/macro';
 
 /**
  * First-login onboarding. Shown once when signed in but the account has no
@@ -11,6 +12,7 @@ import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
  * always starts fresh - local Guest progress is no longer migrated online.
  */
 export default function Onboarding() {
+	const { t } = useLingui();
 	const [needs] = useSynced(Account.needsOnboarding);
 	const [user] = useSynced(Auth.user);
 	const [name, setName] = useState('');
@@ -52,8 +54,8 @@ export default function Onboarding() {
 	return (
 		<div className="onboard">
 			<div className="onboard__card">
-				<h1 className="onboard__title">Welcome, {user.username}!</h1>
-				<p className="onboard__sub">Create your character to finish setting up your account.</p>
+				<h1 className="onboard__title"><Trans>Welcome, {user.username}!</Trans></h1>
+				<p className="onboard__sub"><Trans>Create your character to finish setting up your account.</Trans></p>
 
 				<div className="onboard__avatar-field">
 					<button
@@ -61,12 +63,12 @@ export default function Onboarding() {
 						className="onboard__avatar"
 						onClick={() => fileInput.current?.click()}
 						disabled={uploading}
-						title="Upload a profile picture"
+						title={t`Upload a profile picture`}
 					>
 						<img className="onboard__avatar-img" src={user.avatarUrl ?? GUEST_AVATAR_URL} alt="" />
-						<span className="onboard__avatar-overlay">{uploading ? 'Uploading…' : 'Change'}</span>
+						<span className="onboard__avatar-overlay">{uploading ? t`Uploading…` : t`Change`}</span>
 					</button>
-					<span className="onboard__avatar-hint">Profile picture<br />Defaults to your osu! avatar</span>
+					<span className="onboard__avatar-hint"><Trans>Profile picture<br />Defaults to your osu! avatar</Trans></span>
 					<input
 						ref={fileInput}
 						type="file"
@@ -77,7 +79,7 @@ export default function Onboarding() {
 				</div>
 
 				<label className="onboard__field">
-					<span className="onboard__label">Character name</span>
+					<span className="onboard__label"><Trans>Character name</Trans></span>
 					<input
 						className="onboard__input"
 						value={name}
@@ -96,7 +98,7 @@ export default function Onboarding() {
 						disabled={busy || !name.trim()}
 						onClick={submit}
 					>
-						Create character
+						<Trans>Create character</Trans>
 					</button>
 				</div>
 			</div>

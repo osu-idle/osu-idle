@@ -24,6 +24,8 @@ export const characterDTO = z.object({
 	// The character's profile picture, always a usable absolute URL: its custom
 	// upload, else the account's osu! avatar, else the guest default.
 	avatarUrl: z.string(),
+	// The account's osu! country code. Absent for the local Guest.
+	country: z.string().optional(),
 	skills: skillsDTO,
 });
 export type CharacterDTO = z.infer<typeof characterDTO>;

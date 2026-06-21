@@ -143,6 +143,7 @@ msgstr "Available"
 
 #: src/components/songselect/TopBar.tsx
 #: src/components/Tutorial.tsx
+#: src/components/WebBrowser.tsx
 #: src/scenes/Gameplay.tsx
 #: src/scenes/MainMenu.tsx
 msgid "Back"
@@ -219,9 +220,17 @@ msgstr "By Title"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: src/components/Onboarding.tsx
+msgid "Change"
+msgstr "Change"
+
 #: src/scenes/Options.tsx
 msgid "Change the way osu!idle behaves"
 msgstr "Change the way osu!idle behaves"
+
+#: src/components/Onboarding.tsx
+msgid "Character name"
+msgstr "Character name"
 
 #: src/scenes/SongSelect.tsx
 msgid "Clearing local scores is not available yet"
@@ -243,6 +252,10 @@ msgstr "click to play..."
 msgid "Close"
 msgstr "Close"
 
+#: src/components/WebBrowser.tsx
+msgid "Close (Esc)"
+msgstr "Close (Esc)"
+
 #: src/scenes/Result.tsx
 msgid "Combo"
 msgstr "Combo"
@@ -263,6 +276,14 @@ msgstr "Couldn't load beatmaps: {error}"
 msgid "Couldn't start play"
 msgstr "Couldn't start play"
 
+#: src/components/Onboarding.tsx
+msgid "Create character"
+msgstr "Create character"
+
+#: src/components/Onboarding.tsx
+msgid "Create your character to finish setting up your account."
+msgstr "Create your character to finish setting up your account."
+
 #: src/scenes/Gameplay.tsx
 msgid "Current Fatigue"
 msgstr "Current Fatigue"
@@ -278,6 +299,10 @@ msgstr "Delete the playlist"
 #: src/scenes/Options.tsx
 msgid "delete|beatmap|beatmaps"
 msgstr "delete|beatmap|beatmaps"
+
+#: src/components/Announce.tsx
+msgid "Dismiss"
+msgstr "Dismiss"
 
 #: src/components/BeatmapCard.tsx
 msgid "Double click to download"
@@ -319,6 +344,10 @@ msgstr "Exit osu!idle"
 #: src/scenes/Result.tsx
 msgid "FAILED"
 msgstr "FAILED"
+
+#: src/components/WebBrowser.tsx
+msgid "Forward"
+msgstr "Forward"
 
 #: src/scenes/Options.tsx
 msgid "fps|frame|rate|refresh|hz"
@@ -395,6 +424,10 @@ msgstr "Level up"
 msgid "loading library…"
 msgstr "loading library…"
 
+#: src/components/leaderboard/Leaderboard.tsx
+msgid "Loading…"
+msgstr "Loading…"
+
 #: src/gameplay/autopilot.ts
 msgid "Loop"
 msgstr "Loop"
@@ -444,6 +477,10 @@ msgstr "Next"
 msgid "Next song"
 msgstr "Next song"
 
+#: src/components/NowPlaying.tsx
+msgid "Next track"
+msgstr "Next track"
+
 #: src/scenes/Result.tsx
 msgid "Next up in {countdown}s:"
 msgstr "Next up in {countdown}s:"
@@ -471,6 +508,10 @@ msgstr "No playlists yet. Type a name above and press Enter."
 #: src/scenes/Result.tsx
 msgid "No replay data"
 msgstr "No replay data"
+
+#: src/components/leaderboard/Leaderboard.tsx
+msgid "No scores yet, be the first!"
+msgstr "No scores yet, be the first!"
 
 #: src/components/result/SkillProgression.tsx
 msgid "No skill gains"
@@ -525,6 +566,10 @@ msgstr "Performance"
 msgid "Performance: {pp}pp"
 msgstr "Performance: {pp}pp"
 
+#: src/components/leaderboard/PersonalBest.tsx
+msgid "Personal best"
+msgstr "Personal best"
+
 #: src/components/Tutorial.tsx
 msgid "Pick a song"
 msgstr "Pick a song"
@@ -562,9 +607,17 @@ msgstr "Playlist"
 msgid "Playlists"
 msgstr "Playlists"
 
+#: src/components/Onboarding.tsx
+msgid "Profile picture<0/>Defaults to your osu! avatar"
+msgstr "Profile picture<0/>Defaults to your osu! avatar"
+
 #: src/scenes/Gameplay.tsx
 msgid "quit"
 msgstr "quit"
+
+#: src/components/Announce.tsx
+msgid "Read the full article"
+msgstr "Read the full article"
 
 #. placeholder {0}: selected?.name
 #: src/components/PlaylistOverlay.tsx
@@ -574,6 +627,10 @@ msgstr "Really delete \"{0}\"?"
 #: src/components/songselect/TopBar.tsx
 msgid "Recently Played"
 msgstr "Recently Played"
+
+#: src/components/WebBrowser.tsx
+msgid "Reload"
+msgstr "Reload"
 
 #: src/components/PlaylistOverlay.tsx
 msgid "Remove this difficulty"
@@ -605,6 +662,10 @@ msgstr "right|click|hold|time"
 #: src/scenes/SongSelect.tsx
 msgid "Search:"
 msgstr "Search:"
+
+#: src/components/leaderboard/Leaderboard.tsx
+msgid "Select a difficulty to see its scores."
+msgstr "Select a difficulty to see its scores."
 
 #: src/components/PlaylistOverlay.tsx
 msgid "Select a playlist or create a new one here..."
@@ -720,6 +781,14 @@ msgstr "Unplayed"
 msgid "Update failed ({0}). Please restart the game."
 msgstr "Update failed ({0}). Please restart the game."
 
+#: src/components/Onboarding.tsx
+msgid "Upload a profile picture"
+msgstr "Upload a profile picture"
+
+#: src/components/Onboarding.tsx
+msgid "Uploading…"
+msgstr "Uploading…"
+
 #: src/globals.ts
 msgid "Version {currentVersion} is available ! Refresh the page to update."
 msgstr "Version {currentVersion} is available ! Refresh the page to update."
@@ -750,6 +819,11 @@ msgstr "Website"
 #: src/components/Tutorial.tsx
 msgid "Welcome to osu!idle"
 msgstr "Welcome to osu!idle"
+
+#. placeholder {0}: user.username
+#: src/components/Onboarding.tsx
+msgid "Welcome, {0}!"
+msgstr "Welcome, {0}!"
 
 #: src/components/songselect/CardContextMenu.tsx
 msgid "What do you want to do with this beatmap?"

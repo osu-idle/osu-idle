@@ -3,7 +3,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -61,6 +61,40 @@ async function writeVersion(version) {
 		if (next !== text) await writeFile(path, next);
 	}
 	await writeFile(join(ROOT, VERSION_TS), `export const VERSION = '${version}';`);
+}
+
+// Snapshot the version files before a bump so a failed verify build can roll the
+// working tree back. Re-running the deploy then bumps once, not twice.
+async function snapshotVersionFiles() {
+	const snap = new Map();
+	for (const rel of [...PACKAGE_JSONS, VERSION_TS]) {
+		const path = join(ROOT, rel);
+		try { snap.set(path, await readFile(path, 'utf8')); } catch { /* missing: nothing to restore */ }
+	}
+	return snap;
+}
+
+async function restoreVersionFiles(snap) {
+	for (const [path, text] of snap) await writeFile(path, text);
+}
+
+// Build the release before the version is persisted. The git commit/push/publish
+// only runs once this returns - so a broken build never reaches public history.
+// On failure the bumped files are rolled back and the deploy aborts.
+function runBuild(command) {
+	return new Promise(resolve => {
+		const child = spawn(command, { cwd: ROOT, stdio: 'inherit', shell: true });
+		child.on('close', code => resolve(code === 0));
+		child.on('error', () => resolve(false));
+	});
+}
+
+async function verifyBuild(command, snap) {
+	stdout.write(`\nVerifying build before persisting version:\n  ${command}\n\n`);
+	if (await runBuild(command)) return;
+	if (snap) await restoreVersionFiles(snap);
+	stdout.write('\nBuild failed - version not persisted, working tree restored.\n');
+	process.exit(1);
 }
 
 // The remote tracked by the current branch, falling back to origin / the first
@@ -250,9 +284,22 @@ async function promptBump(current) {
 	}
 }
 
+// Split out a `--verify <command>` flag from the positional bump type. When
+// present, that command is the build run between writing the version and
+// persisting it (see verifyBuild).
+function parseArgs(argv) {
+	let verifyCmd;
+	const positional = [];
+	for (let i = 0; i < argv.length; i++) {
+		if (argv[i] === '--verify') verifyCmd = argv[++i];
+		else positional.push(argv[i]);
+	}
+	return { verifyCmd, bump: positional[0]?.toLowerCase() };
+}
+
 async function main() {
 	const current = await readRootVersion();
-	const arg = process.argv[2]?.toLowerCase();
+	const { verifyCmd, bump: arg } = parseArgs(process.argv.slice(2));
 
 	let choice;
 	if (arg) {
@@ -271,6 +318,8 @@ async function main() {
 		// Still rewrite, so a manually edited package.json and version.ts can't drift.
 		await writeVersion(current);
 		stdout.write(`Keeping version ${current}.\n`);
+		// Deploy still needs to build the current tree, even with no bump.
+		if (verifyCmd) await verifyBuild(verifyCmd, null);
 		return;
 	}
 
@@ -290,9 +339,14 @@ async function main() {
 	}
 
 	// Now safe to mutate the working tree
+	const snap = verifyCmd ? await snapshotVersionFiles() : null;
 	const next = BUMPS[choice](parse(current)).join('.');
 	await writeVersion(next);
 	stdout.write(`Bumped ${current} → ${next}.\n`);
+
+	// Gate persistence on a clean build. verifyBuild exits (after rolling the
+	// bump back) if it fails, so nothing below runs and the version stays private.
+	if (verifyCmd) await verifyBuild(verifyCmd, snap);
 
 	if (isGit) {
 		await commitVersion(next, release, toPublic, mergePublic);

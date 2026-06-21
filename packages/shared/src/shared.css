@@ -1,0 +1,55 @@
+.level_container {
+	font-weight: 600;
+	position: relative;
+}
+
+.level_part {
+	position: absolute;
+	font-size: 90%;
+	font-weight: 100;
+	bottom: 0;
+}
+
+.level_100 {
+	color: rgb(238, 198, 240);
+}
+
+.level_101 {
+	color: rgb(201, 143, 228);
+}
+
+.level_102 {
+	color: rgb(147, 102, 212);
+}
+
+.level_103 {
+	color: rgb(101, 91, 214);
+}
+
+.level_104 {
+	color: rgb(179, 82, 200);
+}
+
+.level_105 {
+	color: rgb(231, 76, 176);
+}
+
+.level_106 {
+	color: rgb(255, 86, 147);
+}
+
+.level_107 {
+	color: rgb(255, 111, 118);
+}
+
+.level_108 {
+	color: rgb(255, 144, 92);
+}
+
+.level_109 {
+	color: rgb(255, 179, 76);
+}
+
+.level_110 {
+	color: rgb(255, 212, 77);
+}

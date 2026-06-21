@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import { SKILL_SORT } from '../../components/leaderboard/PlayerSkillLeaderboard';
 import Nav from '../../components/Nav';
 import { globalSkillRankPath, Path, ROUTE } from '../../router';
@@ -5,22 +6,23 @@ import { globalSkillRankPath, Path, ROUTE } from '../../router';
 export default function RankingsNav({ current }: {
 	current: Path,
 }) {
+	const { t } = useLingui();
 
 	return (<Nav current={current} links={[
 		{
-			label: 'global',
+			label: t`global`,
 			link: ROUTE.RANKINGS_GLOBAL
 		},
 		{
-			label: 'skills',
+			label: t`skills`,
 			link: globalSkillRankPath(SKILL_SORT.overall, 1),
 		},
 		{
-			label: 'country',
+			label: t`country`,
 			link: ROUTE.RANKINGS_COUNTRY
 		},
 		{
-			label: 'top plays',
+			label: t`top plays`,
 			link: ROUTE.RANKINGS_PLAYS
 		},
 	]}/>);

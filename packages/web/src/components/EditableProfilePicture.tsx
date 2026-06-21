@@ -2,6 +2,7 @@ import './EditableProfilePicture.css';
 import { useRef, useState } from 'react';
 import ProfilePicture from './ProfilePicture';
 import { resetAvatar, uploadAvatar } from '../api/users';
+import { Trans, useLingui } from '@lingui/react/macro';
 
 type Props = {
 	avatarUrl?: string | null;
@@ -16,6 +17,8 @@ type Props = {
  * {@link ProfilePicture} when the viewer is looking at their own character.
  */
 export default function EditableProfilePicture({ avatarUrl, className, onChange }: Props) {
+	const { t } = useLingui();
+
 	const fileInput = useRef<HTMLInputElement>(null);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -42,7 +45,7 @@ export default function EditableProfilePicture({ avatarUrl, className, onChange 
 				className="editable-avatar__btn"
 				onClick={() => fileInput.current?.click()}
 				disabled={busy}
-				title="Upload a profile picture"
+				title={t`Upload a profile picture`}
 			>
 				<ProfilePicture avatarUrl={avatarUrl} className="editable-avatar__img" />
 				<span className="editable-avatar__overlay">{busy ? '…' : 'Change'}</span>
@@ -53,7 +56,7 @@ export default function EditableProfilePicture({ avatarUrl, className, onChange 
 				onClick={() => void run(resetAvatar)}
 				disabled={busy}
 			>
-				Reset to osu! avatar
+				<Trans>Reset to osu! avatar</Trans>
 			</button>
 			{error && <span className="editable-avatar__error">{error}</span>}
 			<input

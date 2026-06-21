@@ -345,6 +345,10 @@ msgstr "Optimized MasterPlus+"
 msgid "Outdated stock Windows drivers"
 msgstr "Outdated stock Windows drivers"
 
+#: src/display/skills.ts
+msgid "Overall"
+msgstr "Overall"
+
 #: src/skills.ts
 msgid "Passive learning"
 msgstr "Passive learning"

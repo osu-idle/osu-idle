@@ -4,27 +4,30 @@ import Account from '../../online/account';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import { getMyBeatmapScore } from '../../online/services/scores';
+import { Trans } from '@lingui/react/macro';
 
 interface Props {
 	beatmapId: number,
+	/** When set, the rank shown is the player's rank within that country. */
+	country?: string,
 }
 
-/** The signed-in player's own best on this beatmap + its global rank, shown
- *  below the leaderboard even when it falls outside the top 50. Hidden when
- *  signed out or the player has no play here yet. */
-export default function PersonalBest({ beatmapId }: Props) {
+/** The signed-in player's own best on this beatmap + its rank (global, or within
+ *  a country), shown below the leaderboard even when it falls outside the top 50.
+ *  Hidden when signed out or the player has no play here yet. */
+export default function PersonalBest({ beatmapId, country }: Props) {
 	const [account] = useSynced(Account.character);
 
 	const best = useAsync(async () => {
 		if (!account) return null;
-		return getMyBeatmapScore(beatmapId).catch(() => null);
-	}, [account, beatmapId]);
+		return getMyBeatmapScore(beatmapId, country).catch(() => null);
+	}, [account, beatmapId, country]);
 
 	if (!account || !best) return null;
 
 	return (
 		<div className="lb__pb">
-			<div className="lb__pb_label">Personal best</div>
+			<div className="lb__pb_label"><Trans>Personal best</Trans></div>
 			<ol className="lb__list">
 				<ScoreEntry score={best.score} rank={best.rank} />
 			</ol>

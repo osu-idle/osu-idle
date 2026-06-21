@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { eq, desc, asc, and, or, gt, lt, count } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client';
 import { scores, toScoreDTO } from '../db/schema/score';
@@ -8,6 +8,7 @@ import { best } from '../db/schema/best';
 import { characters } from '../db/schema/character';
 import { users } from '../db/schema/user';
 import { requireAuth } from '../auth/middleware';
+import { beatmapPageIds, beatmapRank } from '../rankings';
 
 const idParam = z.coerce.number().int().positive();
 
@@ -22,6 +23,35 @@ async function currentCharacter(userId: number) {
 	return row?.character;
 }
 
+/** Hydrate ranked character ids into their `best` rows on a beatmap, in rank order. */
+async function beatmapLeaderboard(beatmapId: number, page: number, country?: string) {
+	const ids = await beatmapPageIds(beatmapId, page, country);
+	if (ids.length === 0) return [];
+	const rows = await db
+		.select()
+		.from(best)
+		.where(and(eq(best.beatmapId, beatmapId), inArray(best.characterId, ids)));
+	const byCharacter = new Map(rows.map(r => [r.characterId, r]));
+	return ids.map(id => byCharacter.get(id)).filter((r): r is NonNullable<typeof r> => !!r);
+}
+
+/** The signed-in character's own best on this beatmap, with its rank (global or
+ *  within a country) - shown below the leaderboard even when outside the top 50. */
+async function myBeatmapScore(userId: number, beatmapId: number, country?: string) {
+	const character = await currentCharacter(userId);
+	if (!character) return null;
+
+	const [row] = await db
+		.select()
+		.from(best)
+		.where(and(eq(best.beatmapId, beatmapId), eq(best.characterId, character.id)))
+		.limit(1);
+	if (!row) return null;
+
+	const rank = await beatmapRank(beatmapId, character.id, country);
+	return { score: toScoreDTO(row), rank };
+}
+
 export const scoresRoutes = new Hono()
 	.get('/:id', async c => {
 		const id = idParam.parse(c.req.param('id'));
@@ -32,45 +62,7 @@ export const scoresRoutes = new Hono()
 
 		return c.json(row);
 	})
-	.get('/beatmap/:beatmap', async c => {
-		const id = idParam.parse(c.req.param('beatmap'));
-
-		const rows = await db
-			.select()
-			.from(best)
-			.where(eq(best.beatmapId, id))
-			.orderBy(desc(best.score), asc(best.id))
-			.limit(50);
-
-		return c.json(rows.map(toScoreDTO));
-	})
-	// The signed-in character's own best on this beatmap, with its global rank -
-	// shown below the leaderboard even when it's outside the top 50.
-	.get('/beatmap/:beatmap/me', requireAuth, async c => {
-		const id = idParam.parse(c.req.param('beatmap'));
-
-		const character = await currentCharacter(c.get('userId'));
-		if (!character) return c.json(null);
-
-		const [row] = await db
-			.select()
-			.from(best)
-			.where(and(eq(best.beatmapId, id), eq(best.characterId, character.id)))
-			.limit(1);
-		if (!row) return c.json(null);
-
-		// Rank = how many bests sort above this one, matching the leaderboard order
-		// (score desc, id asc), plus one.
-		const [{ above }] = await db
-			.select({ above: count() })
-			.from(best)
-			.where(and(
-				eq(best.beatmapId, id),
-				or(
-					gt(best.score, row.score),
-					and(eq(best.score, row.score), lt(best.id, row.id)),
-				),
-			));
-
-		return c.json({ score: toScoreDTO(row), rank: above + 1 });
-	});
+	.get('/beatmap/:beatmap', async c => c.json((await beatmapLeaderboard(idParam.parse(c.req.param('beatmap')), 1)).map(toScoreDTO)))
+	.get('/beatmap/:beatmap/country/:country', async c => c.json((await beatmapLeaderboard(idParam.parse(c.req.param('beatmap')), 1, c.req.param('country'))).map(toScoreDTO)))
+	.get('/beatmap/:beatmap/me', requireAuth, async c => c.json(await myBeatmapScore(c.get('userId'), idParam.parse(c.req.param('beatmap')))))
+	.get('/beatmap/:beatmap/country/:country/me', requireAuth, async c => c.json(await myBeatmapScore(c.get('userId'), idParam.parse(c.req.param('beatmap')), c.req.param('country'))));

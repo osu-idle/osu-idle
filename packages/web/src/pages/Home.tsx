@@ -10,6 +10,7 @@ import { getRecentMaps } from '../api/maps';
 import { dateAgo } from '@osu-idle/shared/display/ago';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight';
+import { Trans } from '@lingui/react/macro';
 
 export default function Home() {
 	const articles = useAsync(async () => await listNews(), []);
@@ -20,18 +21,18 @@ export default function Home() {
 	return (
 		<main className="dashboard">
 			<section className="dashboard__left">
-				<h2 className="dashboard__title">News</h2>
+				<h2 className="dashboard__title"><Trans>News</Trans></h2>
 				{articles?.slice(0, 6).map(a => <NewsCard key={a.id} {...articleToCard(a)} className='home-news' />)}
 			</section>
 			<section className="dashboard__right">
 				<div className='dashboard__stats'>
 					<div className='dashboard__stats_n'>
 						<div className='dashboard__stats_g'>
-							<div className='dashboard__stats_g-title'>Online Users</div>
+							<div className='dashboard__stats_g-title'><Trans>Online Users</Trans></div>
 							<div className='dashboard__stats_g-num'>{num(stats?.online)}</div>
 						</div>
 						<div className='dashboard__stats_g'>
-							<div className='dashboard__stats_g-title'>Playing</div>
+							<div className='dashboard__stats_g-title'><Trans>Playing</Trans></div>
 							<div className='dashboard__stats_g-num'>{num(stats?.playing)}</div>
 						</div>
 
@@ -44,7 +45,7 @@ export default function Home() {
 				</div>
 				<div className='dashboard__ranked'>
 					<div className='dashboard__ranked_title'>
-						New Ranked Beatmaps
+						<Trans>New Ranked Beatmaps</Trans>
 					</div>
 					<div className='dashboard__ranked_list'>
 						{recentMaps?.map(map => (<a className='dashboard__ranked_list_map'>
@@ -53,7 +54,7 @@ export default function Home() {
 								<div className='dashboard__ranked_list_map-md-title'>{map.title}</div>
 								<div className='dashboard__ranked_list_map-md-artist'>{map.artist}</div>
 								<div className='dashboard__ranked_list_map-md-info'>
-									<div className='dashboard__ranked_list_map-md-info-c'>by {map.creator}</div>
+									<div className='dashboard__ranked_list_map-md-info-c'><Trans>by {map.creator}</Trans></div>
 									<div className='dashboard__ranked_list_map-md-info-d'>{dateAgo(map.rankedAt)}</div>
 								</div>
 							</div>

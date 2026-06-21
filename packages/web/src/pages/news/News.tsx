@@ -9,6 +9,7 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 import Link from '../../components/Link';
 import NewsCard, { articleToCard } from '../../components/NewsCard';
 import { ROUTE } from '../../router';
+import { Trans } from '@lingui/react/macro';
 
 export default function News() {
 	const user = useCurrentUser();
@@ -29,7 +30,7 @@ export default function News() {
 
 			{error && <p className="news-msg news-msg--error">{error}</p>}
 			{!articles && !error && <p className="news-msg">Loading…</p>}
-			{articles?.length === 0 && <p className="news-msg">No news yet. Check back soon!</p>}
+			{articles?.length === 0 && <p className="news-msg"><Trans>No news yet. Check back soon!</Trans></p>}
 
 			<div className="news-grid">
 				{articles?.map(a => <NewsCard key={a.id} {...articleToCard(a)} />)}

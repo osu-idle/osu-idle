@@ -11,6 +11,7 @@ import type { RowDataPacket } from 'mysql2/promise';
 import { env } from '../env';
 import { publish } from '../discord/publish';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
+import { reindexCharacter } from '../rankings';
 
 /** The signed-in account's own character (created during first-login onboarding). */
 export const meRoutes = new Hono()
@@ -22,7 +23,7 @@ export const meRoutes = new Hono()
 			.innerJoin(users, eq(users.currentCharacter, characters.id))
 			.where(eq(users.id, c.get('userId')))
 			.limit(1);
-		return c.json(row ? characterToDTO(row.character, row.user.avatarUrl) : null);
+		return c.json(row ? characterToDTO(row.character, row.user.avatarUrl, row.user.country) : null);
 	})
 
 	// Onboarding: create the account's character once, always fresh.
@@ -63,6 +64,8 @@ export const meRoutes = new Hono()
 			.set({ currentCharacter: characterId })
 			.where(eq(users.id, userId));
 
+		await reindexCharacter(characterId);
+
 		const [row] = await db.select().from(characters).where(eq(characters.id, characterId)).limit(1);
 
 		void publish(env.USER_FEED_WEBHOOK, {
@@ -76,7 +79,7 @@ export const meRoutes = new Hono()
 			}]
 		});
 
-		return c.json(characterToDTO(row!, user.avatarUrl), 201);
+		return c.json(characterToDTO(row!, user.avatarUrl, user.country), 201);
 	})
 
 	// Upload a custom profile picture for the account's current character,
@@ -100,5 +103,5 @@ async function setCurrentCharacterAvatar(userId: number, url: string | null) {
 
 	await db.update(characters).set({ avatarUrl: url }).where(eq(characters.id, user.currentCharacter));
 	const [row] = await db.select().from(characters).where(eq(characters.id, user.currentCharacter)).limit(1);
-	return characterToDTO(row!, user.avatarUrl);
+	return characterToDTO(row!, user.avatarUrl, user.country);
 }

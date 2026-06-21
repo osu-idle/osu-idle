@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nProvider } from '@lingui/react';
 import { i18n, activateLocale } from './i18n';
+import '@osu-idle/shared/shared.css';
 import './index.css';
 import './online/account'; // resolve the session + account, listen for login
 import { initWakeLock } from './responsive/wakeLock';

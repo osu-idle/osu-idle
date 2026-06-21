@@ -5,12 +5,17 @@ import { app } from './app';
 import { port } from './env';
 import { redis } from './redis';
 import { sweepDuePlays } from './play';
+import { ensureRankings } from './rankings';
 
 Logfile.setWriter(lines => appendFile('runtime.log', lines.join('\n') + '\n'));
 
 const server = serve({ fetch: app.fetch, port }, info => {
 	console.log(`🎵 osu! idle API listening on http://localhost:${info.port}`);
 });
+
+// Build the Redis ranking index from MySQL once per deploy (one cluster worker
+// wins the lock; the rest return immediately).
+void ensureRankings();
 
 // Finalise plays whose end time has passed even if no client ever returns to
 // finish them - the server is authoritative. Safe on every worker: the atomic

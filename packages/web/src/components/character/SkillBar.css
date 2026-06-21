@@ -45,3 +45,7 @@
 	font-size: 11px;
 	color: hsl(var(--hsl-f1));
 }
+
+.skill__level .level_part {
+	position: relative;
+}

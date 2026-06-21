@@ -7,35 +7,6 @@
 	overflow-x: visible;
 }
 
-.lb__tabs {
-	display: flex;
-	gap: 0.4rem;
-	padding: 1rem 1.1rem 0.8rem;
-	overflow-x: visible;
-}
-.lb__tab {
-	flex: 1;
-	padding: 0.55rem 0;
-	border-radius: 10px;
-	font-weight: 700;
-	font-size: 0.82rem;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: var(--text-dim);
-	background: rgba(255, 255, 255, 0.04);
-	border: 1px solid transparent;
-	transition: all 0.16s ease;
-}
-.lb__tab:hover {
-	color: var(--text);
-	background: rgba(255, 255, 255, 0.07);
-}
-.lb__tab.is-active {
-	color: #fff;
-	background: rgba(255, 102, 171, 0.2);
-	border-color: rgba(255, 102, 171, 0.5);
-}
-
 .lb__body {
 	flex: 1;
 	min-height: 0;
@@ -71,6 +42,14 @@
 	margin: 0;
 	padding: 0;
 	overflow-x: visible;
+}
+
+/* Outer spacing must be margin, not padding: the dropdown is the positioning
+   context for its options panel, which is absolutely placed at left/right:0 -
+   i.e. the padding box - so padding here would let the panel overhang the
+   trigger. Margin spaces the whole box and keeps them aligned. */
+.lb__select {
+	margin: 10px;
 }
 
 .lb__row {

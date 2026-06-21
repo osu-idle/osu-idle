@@ -20,11 +20,14 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RELEASE = join(ROOT, 'packages/desktop/release');
 
+// CLIENT_DIST points at the served client build - overridden to the staged
+// `dist.next` by the staged deploy, so installers ride along into the swap.
+const CLIENT_DIST = process.env.CLIENT_DIST ?? 'packages/client/dist';
 const dests = process.env.DESKTOP_PUBLISH_DIR
 	? [process.env.DESKTOP_PUBLISH_DIR]
 	: [
 		join(ROOT, 'packages/client/public/download'), // durable: re-emitted to dist on every client build
-		join(ROOT, 'packages/client/dist/download'),   // immediate: served this deploy without a rebuild
+		join(ROOT, CLIENT_DIST, 'download'),           // immediate: served this deploy without a rebuild
 	];
 
 const { version } = JSON.parse(await readFile(join(ROOT, 'package.json'), 'utf8'));

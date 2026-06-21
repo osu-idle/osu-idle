@@ -49,7 +49,7 @@ export const resolveAvatarUrl = (characterAvatarUrl: string | null, userAvatarUr
 	characterAvatarUrl ? `${apiBaseUrl}${characterAvatarUrl}` : userAvatarUrl || GUEST_AVATAR_URL;
 
 /** Map a character row to the shared wire contract (skill columns → nested skills). */
-export function characterToDTO(row: CharacterRow, userAvatarUrl?: string | null): CharacterDTO {
+export function characterToDTO(row: CharacterRow, userAvatarUrl?: string | null, userCountry?: string): CharacterDTO {
 	const skills = Object.fromEntries(
 		Skills.map(s => [s, { level: row[`${s}Level`], xp: row[`${s}Xp`] }]),
 	) as CharacterDTO['skills'];
@@ -59,6 +59,7 @@ export function characterToDTO(row: CharacterRow, userAvatarUrl?: string | null)
 		userId: row.userId,
 		name: row.name,
 		avatarUrl: resolveAvatarUrl(row.avatarUrl, userAvatarUrl),
+		country: userCountry,
 		skills,
 	};
 }

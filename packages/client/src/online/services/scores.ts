@@ -16,31 +16,46 @@ export const getScore = async (id: number): Promise<ScoreResponse> => {
 	return res.json();
 };
 
-/** The signed-in character's own best on this beatmap + global rank (null when
- *  signed out or no play yet). */
-export const getMyBeatmapScore = async (beatmap: number): Promise<MyBeatmapScoreResponse> => {
-	const res = await endpoint['beatmap'][':beatmap']['me'].$get({ param: { beatmap: String(beatmap) } });
+/** The signed-in character's own best on this beatmap + its rank, global or
+ *  within a country (null when signed out or no play yet). */
+export const getMyBeatmapScore = async (beatmap: number, country?: string): Promise<MyBeatmapScoreResponse> => {
+	const res = country === undefined
+		? await endpoint['beatmap'][':beatmap']['me'].$get({ param: { beatmap: String(beatmap) } })
+		: await endpoint['beatmap'][':beatmap']['country'][':country']['me'].$get({ param: { beatmap: String(beatmap), country } });
 	if (!res.ok) throw new Error(`getMyBeatmapScore(${beatmap}) failed: ${res.status}`);
 	return res.json();
 };
 
 export const flushBeatmapScores = async (beatmap: number) => MemCache.get<BeatmapScoresResponse>('API.getBeatmapScores').delete(beatmap);
+
+const importScores = (scores: BeatmapScoresResponse) => {
+	void (async () => {
+		for (const score of scores) {
+			const char = await Character.get(score.characterId);
+			if (!char) continue;
+			const local = await Score.getByOnlineId(score.id);
+			if (local) continue;
+			Score.fromDTO(score).add();
+		}
+	})();
+};
+
 export const getBeatmapScores = async (beatmap: number): Promise<BeatmapScoresResponse> => {
 	return MemCache.get<BeatmapScoresResponse>('API.getBeatmapScores').process(beatmap, async () => {
 		const res = await endpoint['beatmap'][':beatmap'].$get({ param: { beatmap: String(beatmap) } });
 		if (!res.ok) throw new Error(`getBeatmapScores(${beatmap}) failed: ${res.status}`);
 		const scores: BeatmapScoresResponse = await res.json();
+		importScores(scores);
+		return scores;
+	}, 1000 * 60);
+};
 
-		(async () => {
-			for (const score of scores) {
-				const char = await Character.get(score.characterId);
-				if (!char) continue;
-				const local = await Score.getByOnlineId(score.id);
-				if (local) continue;
-				Score.fromDTO(score).add();
-			}
-		})();
-
+export const getCountryBeatmapScores = async (beatmap: number, country: string): Promise<BeatmapScoresResponse> => {
+	return MemCache.get<BeatmapScoresResponse>('API.getCountryBeatmapScores').process(`${beatmap}:${country}`, async () => {
+		const res = await endpoint['beatmap'][':beatmap']['country'][':country'].$get({ param: { beatmap: String(beatmap), country } });
+		if (!res.ok) throw new Error(`getCountryBeatmapScores(${beatmap}, ${country}) failed: ${res.status}`);
+		const scores: BeatmapScoresResponse = await res.json();
+		importScores(scores);
 		return scores;
 	}, 1000 * 60);
 };
