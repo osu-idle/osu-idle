@@ -6,8 +6,7 @@ import { JUDGEMENT } from '@osu-idle/shared/judgement';
 import { Beatmap } from 'osu-classes';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 import { HitWindows, judge, maniaWindows, ScoreState } from '@osu-idle/shared/sim/scoring';
- 
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import Reading from '@osu-idle/shared/sim/skills/reading';
 import Speed from '@osu-idle/shared/sim/skills/speed';
 import Stamina from '@osu-idle/shared/sim/skills/stamina';
@@ -19,6 +18,10 @@ import Release from '@osu-idle/shared/sim/skills/release';
 import Coordination from '@osu-idle/shared/sim/skills/coordination';
 import Memory from '@osu-idle/shared/sim/skills/memory';
 import SpeedJam from '@osu-idle/shared/sim/skills/speedjam';
+
+/* keep the skill imports loaded for ad-hoc debugging - reference them so tsc
+ * (noUnusedLocals) doesn't strip them while they're commented out of use. */
+void [Reading, Speed, Stamina, JackSpeed, Concentration, Consistency, Accuracy, Release, Coordination, Memory, SpeedJam];
 
 
 /** Skill level the debug bot runs at - shared by the strain analysis and the
