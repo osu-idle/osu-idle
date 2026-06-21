@@ -1,6 +1,6 @@
 {
   "name": "@osu-idle/shared",
-  "version": "0.12.3.0",
+  "version": "0.12.4.0",
   "private": true,
   "type": "module",
   "exports": {

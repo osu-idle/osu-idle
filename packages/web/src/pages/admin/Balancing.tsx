@@ -9,7 +9,7 @@ import Reading from '@osu-idle/shared/sim/skills/reading';
 import Speed from '@osu-idle/shared/sim/skills/speed';
 import Stamina from '@osu-idle/shared/sim/skills/stamina';
 import JackSpeed from '@osu-idle/shared/sim/skills/jackspeed';
-import normalize, { smoothNormalize } from '@osu-idle/shared/math/normalize';
+import { smoothNormalize } from '@osu-idle/shared/math/normalize';
 
 export default function BalancingPage() {
 	const admin = useAdmin();
