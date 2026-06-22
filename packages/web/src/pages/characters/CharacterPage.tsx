@@ -22,6 +22,8 @@ import { CharacterRanks } from '../../components/character/CharacterRanks';
 import { SkillName } from '@osu-idle/shared/skills';
 import { extractSkills } from '@osu-idle/shared/osu/level';
 import { Trans } from '@lingui/react/macro';
+import { countryName } from '@osu-idle/shared/display/country';
+import { i18n } from '../../i18n';
 
 /** Headline grades shown in the totals block (best play per beatmap). */
 const GRADE_DISPLAY = ['X', 'SS', 'S', 'A'] as const;
@@ -65,7 +67,7 @@ export default function CharacterPage({ params }: PageProps) {
 					</div>
 					<div className='character__meta-down'>
 						<div className='character__meta-flag'><Flag country={user.country} /></div>
-						<div className='character__meta-country'>{user.country}</div>
+						<div className='character__meta-country'>{countryName(user.country, i18n.locale)}</div>
 					</div>
 				</div>
 			</div>

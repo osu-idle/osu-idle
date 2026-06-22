@@ -1,7 +1,6 @@
 import './PlayerLeaderboard.css';
 import Link from '../Link';
-import { characterPath, countrySkillRankPath, globalSkillRankPath, Path, useQueryParam } from '../../router';
-import int from '@osu-idle/shared/math/int';
+import { characterPath, countrySkillRankPath, globalSkillRankPath, Path } from '../../router';
 import { getCountrySkillRanking, getSkillRanking } from '../../api/rankings';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import Flag from '../Flag';
@@ -16,12 +15,11 @@ export const SkillSorts = ['overall', ...Skills] as const;
 export const SKILL_SORT = mapped(SkillSorts);
 export type SkillSort = ValueIn<typeof SKILL_SORT>;
 
-export default function PlayerSkillLeaderboard({ sort, country }: {
+export default function PlayerSkillLeaderboard({ page, sort, country }: {
 	sort: SkillSort,
+	page: number,
 	country?: string
 }) {
-	const page = int(useQueryParam('page')) ?? 1;
-
 	const getTo = (skill: SkillSort, page: number = 1): Path => country ? countrySkillRankPath(skill, country, page) :  globalSkillRankPath(skill, page);
 
 	const getRanking = (skill: SkillSort, country?: string) => (page: number) => country === undefined ? getSkillRanking(skill, page) : getCountrySkillRanking(skill, country, page);

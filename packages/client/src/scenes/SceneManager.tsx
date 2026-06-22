@@ -3,6 +3,7 @@ import IntroScreen from './IntroScreen';
 import MainMenu from './MainMenu';
 import SongSelect, { STRAIN_DEBUG_KEY } from './SongSelect';
 import Gameplay from './Gameplay';
+import Addons, { type AddonsView } from './Addons';
 import { ManiaGame } from '@osu-idle/shared/sim/maniaGame';
 import { Score } from '../db/schema/score';
 import Result from './Result';
@@ -18,6 +19,7 @@ export const SCENE = mapped([
 	'SELECT',
 	'GAME',
 	'RESULT',
+	'ADDONS',
 ]);
 export type Scene = ValueIn<typeof SCENE>;
 
@@ -36,6 +38,7 @@ export default class SceneManager {
 		[SCENE.SELECT]: () =>  <SongSelect />,
 		[SCENE.GAME]: (beatmapInfo: LightBeatmap, transition: Transition, debug = false) => <Gameplay beatmapInfo={beatmapInfo} transition={transition} debugPlay={debug} />,
 		[SCENE.RESULT]: (score: Score | ScoreDTO, game?: ManiaGame, progression?: SkillProgress[], failed?: boolean) => <Result game={game} score={score} progression={progression} failed={failed} />,
+		[SCENE.ADDONS]: (view: AddonsView = 'manage') => <Addons view={view} />,
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as const satisfies Record<Scene, (...args: any[]) => JSX.Element>;
@@ -54,6 +57,7 @@ export default class SceneManager {
 			case SCENE.GAME:
 			case SCENE.RESULT:
 			case SCENE.SELECT:
+			case SCENE.ADDONS:
 				this.displayAlpha.set(false);
 				return;
 			default:

@@ -1,6 +1,6 @@
 {
   "name": "@osu-idle/server",
-  "version": "0.12.5.0",
+  "version": "0.13.0.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -26,8 +26,8 @@
     "seed:prod": "NODE_ENV=production tsx src/db/seed.ts",
     "script": "tsx src/db/set_map_plays.ts",
     "script:prod": "NODE_ENV=production tsx src/db/set_map_plays.ts",
-    "process": "tsx src/db/ingest-beatmaps.ts",
-    "process:prod": "NODE_ENV=production tsx src/db/ingest-beatmaps.ts",
+    "migrate:beatmaps": "tsx src/db/migrate-beatmaps.ts",
+    "migrate:beatmaps:prod": "NODE_ENV=production tsx src/db/migrate-beatmaps.ts",
     "test": "tsx src/db/test.ts",
     "extract": "lingui extract --clean"
   },

@@ -7,6 +7,7 @@ import { character_totals } from './db/schema/character_totals';
 import { users } from './db/schema/user';
 import { best } from './db/schema/best';
 import { redisKeyPrefix } from './env';
+import { GoodGrades, type GoodGrade } from '@osu-idle/shared/judgement';
 
 /**
  * Player rankings, kept in Redis sorted sets instead of recomputed on every
@@ -26,7 +27,7 @@ import { redisKeyPrefix } from './env';
 
 // Skills/overall are scored by *total* xp: it rises monotonically with level
 // then xp, so it orders identically to (level, xp) without packing two numbers.
-type GlobalMetric = 'pp' | 'score' | 'overall' | SkillName;
+type GlobalMetric = 'pp' | 'score' | 'overall' | SkillName | GoodGrade | 'allgrades';
 type CountryMetric = GlobalMetric;
 
 const PREFIX = `${redisKeyPrefix}ranking:`;
@@ -35,7 +36,7 @@ const PREFIX = `${redisKeyPrefix}ranking:`;
 // in parallel).
 const META = `${redisKeyPrefix}rankmeta:`;
 // Bump when the set layout changes so the next deploy rebuilds from MySQL.
-const SCHEMA = 2;
+const SCHEMA = 3;
 const builtKey = `${META}built:v${SCHEMA}`;
 const lockKey = `${META}lock:v${SCHEMA}`;
 
@@ -47,60 +48,52 @@ const beatmapKey = (beatmapId: number, country?: string) => `${PREFIX}bm:${beatm
 
 const PAGE_SIZE = 50;
 
-/** The metric values for one character, read from the joined tables. */
-type RankFields = {
-	id: number;
-	pp: number;
-	score: number;
-	country: string;
-	overall: number;
-} & Record<SkillName, number>;
-
-const selectFields = {
-	id: characters.id,
-	pp: characters.pp,
-	score: character_totals.rankedScore,
-	country: users.country,
-	overall: characters.overallTotalXp,
-	...Object.fromEntries(Skills.map(s => [s, characters[`${s}TotalXp`]])),
-};
-
-const toFields = (row: Record<string, unknown>): RankFields => ({
-	...row,
-	pp: Number(row.pp),
-	score: Number(row.score ?? 0),
-} as RankFields);
-
 /** Add/refresh every set entry for one character in a single pipeline. */
-function index(pipeline: ReturnType<typeof redis.pipeline>, f: RankFields) {
-	const member = String(f.id);
-	pipeline.zadd(globalKey('pp'), f.pp, member);
-	pipeline.zadd(globalKey('score'), f.score, member);
-	pipeline.zadd(globalKey('overall'), f.overall, member);
-	pipeline.zadd(countryKey('pp', f.country), f.pp, member);
-	pipeline.zadd(countryKey('score', f.country), f.score, member);
-	pipeline.zadd(countryKey('overall', f.country), f.overall, member);
-	for (const s of Skills) {
-		pipeline.zadd(globalKey(s), f[s], member);
-		pipeline.zadd(countryKey(s, f.country), f[s], member);
+function index(pipeline: ReturnType<typeof redis.pipeline>, data: Awaited<ReturnType<typeof getCharacterFields>>) {
+	if (!data) return;
+
+	const member = String(data.character.id);
+	pipeline.zadd(globalKey('pp'), Number(data.character.pp), member);
+	pipeline.zadd(globalKey('score'), data.character_totals?.rankedScore ?? 0, member);
+	pipeline.zadd(globalKey('overall'), data.character.overallTotalXp, member);
+	pipeline.zadd(countryKey('pp', data.user.country), Number(data.character.pp), member);
+	pipeline.zadd(countryKey('score', data.user.country), data.character_totals?.rankedScore ?? 0, member);
+	pipeline.zadd(countryKey('overall', data.user.country), data.character.overallTotalXp, member);
+	for (const skill of Skills) {
+		pipeline.zadd(globalKey(skill), data.character[`${skill}TotalXp`], member);
+		pipeline.zadd(countryKey(skill, data.user.country), data.character[`${skill}TotalXp`], member);
 	}
+	let allgrades = 0;
+	for (const grade of GoodGrades) {
+		pipeline.zadd(globalKey(grade), data.character_totals?.[grade] ?? 0, member);
+		pipeline.zadd(countryKey(grade, data.user.country), data.character_totals?.[grade] ?? 0, member);
+		allgrades += data.character_totals?.[grade] ?? 0;
+	}
+	pipeline.zadd(globalKey('allgrades'), allgrades, member);
+	pipeline.zadd(countryKey('allgrades', data.user.country), allgrades, member);
 }
 
-/** Re-index one character after its metrics change. Called once per finalized
- *  play and on character creation. */
-export async function reindexCharacter(id: number): Promise<void> {
+const getCharacterFields = async (id: number) => {
 	const [row] = await db
-		.select(selectFields)
+		.select()
 		.from(characters)
 		.leftJoin(character_totals, eq(character_totals.id, characters.id))
 		.innerJoin(users, eq(users.id, characters.userId))
 		.where(eq(characters.id, id))
 		.limit(1);
 	if (!row) return;
+	return row;
+};
+
+/** Re-index one character after its metrics change. Called once per finalized
+ *  play and on character creation. */
+export const reindexCharacter = async (id: number) => {
+	const character = await getCharacterFields(id);
+	if (!character) return;
 	const pipeline = redis.pipeline();
-	index(pipeline, toFields(row));
+	index(pipeline, character);
 	await pipeline.exec();
-}
+};
 
 /** 1-based rank, or undefined when the character is not in the set. */
 const rankIn = async (key: string, id: number): Promise<number | undefined> => {
@@ -169,6 +162,7 @@ export async function playerCountries(): Promise<{ country: string; count: numbe
 const metricKey = (m: GlobalMetric, country?: string) => country === undefined ? globalKey(m) : countryKey(m, country);
 
 export const skillPage = (skill: GlobalMetric, page: number, country?: string) => hydratePage(metricKey(skill, country), page);
+export const gradesPage = (grade: GoodGrade | 'all', page: number, country?: string) => hydratePage(metricKey(grade === 'all' ? 'allgrades' : grade, country), page);
 export const ppPage = (page: number, country?: string) => hydratePage(metricKey('pp', country), page);
 export const scorePage = (page: number, country?: string) => hydratePage(metricKey('score', country), page);
 
@@ -199,7 +193,7 @@ export async function rebuildAll(): Promise<void> {
 	for await (const key of scanKeys(`${PREFIX}*`)) await redis.del(key);
 
 	const rows = await db
-		.select(selectFields)
+		.select()
 		.from(characters)
 		.leftJoin(character_totals, eq(character_totals.id, characters.id))
 		.innerJoin(users, eq(users.id, characters.userId))
@@ -207,7 +201,7 @@ export async function rebuildAll(): Promise<void> {
 
 	let pipeline = redis.pipeline();
 	for (let i = 0; i < rows.length; i++) {
-		index(pipeline, toFields(rows[i]));
+		index(pipeline, rows[i]);
 		if (i % 200 === 199) {
 			await pipeline.exec();
 			pipeline = redis.pipeline();

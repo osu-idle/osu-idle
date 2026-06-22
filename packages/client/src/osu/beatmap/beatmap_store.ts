@@ -264,9 +264,9 @@ export default class BeatmapStore {
 			title: metadata.title,
 			versions: [],
 
-			// placeholders
-			audio: metadata.audio,
-			background: metadata.background,
+			// placeholders, overwritten below from the actual .osu files
+			audio: metadata.audio ?? '',
+			background: metadata.background ?? '',
 		};
 
 		const media = new Set<string>();
@@ -395,7 +395,7 @@ export default class BeatmapStore {
 		if (beatmap instanceof LightBeatmap && !beatmap.metadata.runtime) return beatmap.getAudioUri();
 		const audio = beatmap instanceof LightBeatmap ? beatmap.metadata.audio : beatmap.general.audioFilename;
 		const set = beatmap instanceof LightBeatmap ? beatmap.set.metadata.id : beatmap.metadata.beatmapSetId;
-		return this.getFileUrl(set, audio);
+		return audio ? this.getFileUrl(set, audio) : Promise.resolve(undefined);
 	}
 
 	public static getBeatmapBackground(beatmap: Beatmap | LightBeatmap): Promise<string | undefined> {

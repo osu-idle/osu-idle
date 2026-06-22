@@ -18,6 +18,9 @@ import PlaysRankings from './pages/rankings/TopPlays';
 import ScoreRankings from './pages/rankings/Score';
 import SkillsRankings from './pages/rankings/Skills';
 import RankedMaps from './pages/beatmaps/RankedMaps';
+import Nomination from './pages/admin/Nomination';
+import AddonsAdmin from './pages/admin/Addons';
+import GradesRankings from './pages/rankings/Grades';
 
 // Admin-only and the sole consumer of plotly (~4.7MB). Lazy-loaded so plotly
 // lands in its own chunk fetched only when an admin opens this page, instead of
@@ -46,6 +49,8 @@ const PAGE: {[key in Path]: ComponentType<PageProps>} = {
 	[ROUTE.RANKINGS_PLAYS]: PlaysRankings,
 	[ROUTE.RANKINGS_SKILLS]: SkillsRankings,
 	[ROUTE.RANKINGS_SKILLS_COUNTRY]: SkillsRankings,
+	[ROUTE.RANKINGS_GRADES]: GradesRankings,
+	[ROUTE.RANKINGS_GRADES_COUNTRY]: GradesRankings,
 
 	[ROUTE.NEWS_ARTICLE]: NewsArticle,
 	[ROUTE.CHARACTER_PAGE]: CharacterPage,
@@ -57,6 +62,8 @@ const PAGE: {[key in Path]: ComponentType<PageProps>} = {
 	[ROUTE.AUTH_ERROR]: AuthError,
 	
 	[ROUTE.ADMIN_BALANCING]: BalancingPage,
+	[ROUTE.ADMIN_NOMINATION]: Nomination,
+	[ROUTE.ADMIN_ADDONS]: AddonsAdmin,
 };
 
 export default function Page() {

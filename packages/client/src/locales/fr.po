@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-21 19:59\n"
+"PO-Revision-Date: 2026-06-22 21:24\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -114,6 +114,23 @@ msgstr "Fait le {date} ({0})"
 msgid "Add this difficulty"
 msgstr "Ajouter cette difficulté"
 
+#: src/scenes/Addons.tsx
+#: src/scenes/Options.tsx
+msgid "Add-ons"
+msgstr "Add-ons"
+
+#: src/scenes/Options.tsx
+msgid "ADD-ONS"
+msgstr "ADD-ONS"
+
+#: src/scenes/Options.tsx
+msgid "addon|addons|add-on|mod|mods|browse|catalog|install"
+msgstr "addon|addons|add-on|mod|mods|recherche|catalogue|installer"
+
+#: src/scenes/Options.tsx
+msgid "addon|addons|add-on|mod|mods|manage|installed"
+msgstr "addon|addons|add-on|mod|mods|gérer|gerer|installé"
+
 #: src/components/options/DeleteAllBeatmaps.tsx
 msgid "All beatmaps deleted."
 msgstr "Toutes les maps ont été supprimées."
@@ -159,6 +176,10 @@ msgstr "Retour"
 msgid "BACK"
 msgstr "RETOUR"
 
+#: src/scenes/Addons.tsx
+msgid "Back to Menu"
+msgstr "Retour au Menu"
+
 #: src/components/options/BackgroundDim.tsx
 msgid "Background dim"
 msgstr "Assombrissement du fond d'écran"
@@ -176,6 +197,18 @@ msgstr "Beatmap par {0}"
 msgid "Beatmap deleted"
 msgstr "Map supprimée"
 
+#: src/scenes/Addons.tsx
+msgid "Browse"
+msgstr "Rechercher"
+
+#: src/components/options/BrowseAddons.tsx
+msgid "Browse add-ons"
+msgstr "Rechercher des add-ons"
+
+#: src/scenes/Addons.tsx
+msgid "Browse the community catalogue"
+msgstr "Rechercher dans le catalogue de la communauté"
+
 #: src/components/Tutorial.tsx
 msgid "Bundled maps are listed in <0>song select</0>:<1> double-click</1> a map to download it, then <2>single-click</2> to start playing."
 msgstr "Des maps sont disponibles par défaut dans <0>l'écran de sélection</0>:<1> double-cliquez</1> sur une map pour la télécharger, puis <2>cliquez</2> dessus pour démarrer."
@@ -183,6 +216,11 @@ msgstr "Des maps sont disponibles par défaut dans <0>l'écran de sélection</0>
 #: src/components/Tutorial.tsx
 msgid "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to download it, then <2>single-tap</2> to start playing."
 msgstr "Des maps sont disponibles par défaut dans <0>l'écran de sélection</0>:<1> double-tappez</1> sur une map pour la télécharger, puis <2>tapez</2> dessus pour démarrer."
+
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/addons/ManageAddonsView.tsx
+msgid "by"
+msgstr "par"
 
 #: src/components/songselect/TopBar.tsx
 msgid "By Artist"
@@ -220,6 +258,7 @@ msgstr "Par note obtenue"
 msgid "By Title"
 msgstr "Par titre"
 
+#: src/components/addons/AddonEditor.tsx
 #: src/scenes/Gameplay.tsx
 #: src/scenes/MainMenu.tsx
 msgid "Cancel"
@@ -245,6 +284,10 @@ msgstr "La suppression des scores locaux n'est pas encore disponible"
 msgid "Click again to confirm"
 msgstr "Cliquez encore pour confirmer"
 
+#: src/components/addons/BrowseAddonsView.tsx
+msgid "Click again to confirm install"
+msgstr "Cliquez à nouveau pour confirmer"
+
 #: src/components/songselect/UserCard.tsx
 msgid "Click here to login!"
 msgstr "Cliquez ici pour vous connecter !"
@@ -261,9 +304,22 @@ msgstr "Fermer"
 msgid "Close (Esc)"
 msgstr "Fermer (Échap)"
 
+#: src/components/addons/AddonEditor.tsx
+msgid "Code"
+msgstr "Code"
+
 #: src/scenes/Result.tsx
 msgid "Combo"
 msgstr "Combo"
+
+#: src/components/addons/AddonEditor.tsx
+msgid "comma, separated, tags"
+msgstr "tags, séparés, par, virgules"
+
+#: src/components/addons/ManageAddonsView.tsx
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Confirm ?"
+msgstr "Confirmer ?"
 
 #: src/scenes/Options.tsx
 msgid "CONTROLS"
@@ -285,6 +341,10 @@ msgstr "Impossible de démarrer la partie"
 msgid "Create character"
 msgstr "Créer le personnage"
 
+#: src/scenes/Addons.tsx
+msgid "Create new add-on"
+msgstr "Créer un nouvel add-on"
+
 #: src/components/Onboarding.tsx
 msgid "Create your character to finish setting up your account."
 msgstr "Créez votre premier personnage pour finaliser la création de votre compte."
@@ -292,6 +352,10 @@ msgstr "Créez votre premier personnage pour finaliser la création de votre com
 #: src/scenes/Gameplay.tsx
 msgid "Current Fatigue"
 msgstr "Fatigue actuelle"
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Delete"
+msgstr "Supprimer"
 
 #: src/components/options/DeleteAllBeatmaps.tsx
 msgid "Delete all beatmaps"
@@ -304,6 +368,10 @@ msgstr "Supprimer la playlist"
 #: src/scenes/Options.tsx
 msgid "delete|beatmap|beatmaps"
 msgstr "supprimer|beatmap|beatmaps"
+
+#: src/components/addons/AddonEditor.tsx
+msgid "Description"
+msgstr "Description"
 
 #: src/components/Announce.tsx
 msgid "Dismiss"
@@ -333,9 +401,21 @@ msgstr "Chaque partie complétée octroie de <0>l'XP</0> et <1>des niveaux</1> �
 msgid "Early alpha"
 msgstr "Début d'alpha"
 
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Edit"
+msgstr "Modifier"
+
+#: src/components/addons/AddonEditor.tsx
+msgid "Edit add-on"
+msgstr "Modifier l'add-on"
+
 #: src/components/options/EffectVolume.tsx
 msgid "Effect"
 msgstr "Effet"
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Enabled"
+msgstr "Activé"
 
 #: src/scenes/MainMenu.tsx
 #: src/scenes/MainMenu.tsx
@@ -365,6 +445,10 @@ msgstr "plein|écran|ecran"
 #: src/components/options/Fullscreen.tsx
 msgid "Fullscreen mode"
 msgstr "Mode plein écran"
+
+#: src/components/addons/AddonEditor.tsx
+msgid "Game version"
+msgstr "Version du jeu"
 
 #: src/scenes/Options.tsx
 msgid "GAMEPLAY"
@@ -396,9 +480,23 @@ msgstr "Grouper"
 msgid "Hit deviance · {ur} UR"
 msgstr "Déviation · {ur} UR"
 
+#: src/components/addons/AddonIconField.tsx
+msgid "Icon"
+msgstr "Icône"
+
 #: src/online/presence.ts
 msgid "In the menus"
 msgstr "Dans les menus"
+
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Install"
+msgstr "Installer"
+
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Installed"
+msgstr "Installé"
 
 #: src/scenes/Options.tsx
 msgid "Language"
@@ -429,6 +527,7 @@ msgstr "Gain de niveau"
 msgid "loading library…"
 msgstr "chargement de la bibliothèque…"
 
+#: src/components/addons/BrowseAddonsView.tsx
 #: src/components/leaderboard/Leaderboard.tsx
 msgid "Loading…"
 msgstr "Chargement…"
@@ -449,6 +548,18 @@ msgstr "Menu principal"
 msgid "MAINTENANCE"
 msgstr "MAINTENANCE"
 
+#: src/scenes/Addons.tsx
+msgid "Manage"
+msgstr "Gérer"
+
+#: src/components/options/ManageAddons.tsx
+msgid "Manage add-ons"
+msgstr "Gérer les add-ons"
+
+#: src/scenes/Addons.tsx
+msgid "Manage your installed and created add-ons"
+msgstr "Gérez les add-ons que vous avez installés et créés"
+
 #. placeholder {0}: version.set.metadata.creator
 #: src/components/songselect/TopBar.tsx
 msgid "Mapped by {0}"
@@ -462,6 +573,10 @@ msgstr "créé par {creator}"
 msgid "Master"
 msgstr "Principal"
 
+#: src/components/addons/AddonEditor.tsx
+msgid "Moderator feedback"
+msgstr "Retours de la modération"
+
 #: src/scenes/MainMenu.tsx
 msgid "Multi"
 msgstr "Multi"
@@ -470,9 +585,25 @@ msgstr "Multi"
 msgid "Music"
 msgstr "Musique"
 
+#: src/components/addons/AddonEditor.tsx
+msgid "Name"
+msgstr "Nom"
+
+#: src/components/addons/BrowseAddonsView.tsx
+msgid "name, author or tag"
+msgstr "nom, auteur ou tag"
+
 #: src/osu/beatmap/grouping.ts
 msgid "Never"
 msgstr "Jamais"
+
+#: src/components/addons/AddonEditor.tsx
+msgid "New add-on"
+msgstr "Nouvel add-on"
+
+#: src/components/addons/BrowseAddonsView.tsx
+msgid "Newest"
+msgstr "Récents"
 
 #: src/components/Tutorial.tsx
 msgid "Next"
@@ -493,6 +624,14 @@ msgstr "Prochaine dans {countdown}s :"
 #: src/scenes/Gameplay.tsx
 msgid "Next up:"
 msgstr "Suivant:"
+
+#: src/components/addons/BrowseAddonsView.tsx
+msgid "No add-ons found."
+msgstr "Aucun add-on trouvé."
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "No add-ons installed. Browse the catalog to find some."
+msgstr "Aucun add-on installé. Vous en trouverez dans le catalogue."
 
 #: src/components/songselect/TopBar.tsx
 msgid "No Grouping"
@@ -616,6 +755,10 @@ msgstr "Playlists"
 msgid "Profile picture<0/>Defaults to your osu! avatar"
 msgstr "Avatar<0/>Votre avatar osu! est utilisé par défaut"
 
+#: src/components/addons/AddonEditor.tsx
+msgid "Published add-on code must be licensed under the AGPLv3 (or a compatible licence), regardless of its source code's license."
+msgstr "Les add-ons publiés doivent l'être sous une licence AGPLv3 (ou licence compatible), indépendamment de la licence de son code source."
+
 #: src/scenes/Gameplay.tsx
 msgid "quit"
 msgstr "quitter"
@@ -664,6 +807,15 @@ msgstr "Rice : {0} LN : {1}"
 msgid "right|click|hold|time"
 msgstr "droit|clique|appui|duree|durée"
 
+#: src/components/addons/AddonEditor.tsx
+msgid "Save"
+msgstr "Sauvegarder"
+
+#: src/components/addons/AddonEditor.tsx
+msgid "Saving…"
+msgstr "Sauvegarde…"
+
+#: src/components/addons/BrowseAddonsView.tsx
 #: src/scenes/SongSelect.tsx
 msgid "Search:"
 msgstr "Recherche :"
@@ -701,6 +853,10 @@ msgstr "Montrer les images"
 #: src/scenes/Options.tsx
 msgid "Sign in"
 msgstr "Se connecter"
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Sign in to create and publish add-ons."
+msgstr "Connectez-vous pour créer et publier des add-ons."
 
 #: src/components/options/SignIn.tsx
 msgid "Sign out"
@@ -740,9 +896,17 @@ msgstr "Difficulté : {0}★"
 msgid "Strain debug"
 msgstr "Strain debug"
 
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Submit"
+msgstr "Soumettre"
+
 #: src/scenes/Gameplay.tsx
 msgid "Submitting score…"
 msgstr "Envoi du score…"
+
+#: src/components/addons/AddonEditor.tsx
+msgid "Tags"
+msgstr "Tags"
 
 #: src/scenes/IntroScreen.tsx
 msgid "tap to play..."
@@ -777,22 +941,42 @@ msgstr "Aujourd'hui"
 msgid "Type to search!"
 msgstr "Tapez pour rechercher !"
 
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Uninstall"
+msgstr "Désinstaller"
+
 #: src/osu/beatmap/grouping.ts
 msgid "Unplayed"
 msgstr "Non joué"
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Update"
+msgstr "Mettre à jour"
 
 #. placeholder {0}: status.message
 #: src/components/DesktopUpdate.tsx
 msgid "Update failed ({0}). Please restart the game."
 msgstr "Échec ({0}). Merci de redémarrer le jeu."
 
+#: src/components/addons/BrowseAddonsView.tsx
+msgid "Updated"
+msgstr "Mis à jour"
+
 #: src/components/Onboarding.tsx
 msgid "Upload a profile picture"
 msgstr "Envoyer un avatar"
 
+#: src/components/addons/AddonIconField.tsx
+msgid "Upload image"
+msgstr "Envoyer une image"
+
 #: src/components/Onboarding.tsx
 msgid "Uploading…"
 msgstr "Envoi…"
+
+#: src/components/addons/AddonEditor.tsx
+msgid "Version"
+msgstr "Version"
 
 #: src/globals.ts
 msgid "Version {currentVersion} is available ! Refresh the page to update."
@@ -837,6 +1021,14 @@ msgstr "Que voulez-vous faire avec cette map ?"
 #: src/osu/beatmap/grouping.ts
 msgid "Yesterday"
 msgstr "Hier"
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "You haven't created any add-ons yet."
+msgstr "Vous n'avez créé aucun add-on pour le moment."
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Your add-ons"
+msgstr "Vos add-ons"
 
 #: src/components/Tutorial.tsx
 msgid "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1> Hold down</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."

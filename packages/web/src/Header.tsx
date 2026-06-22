@@ -5,12 +5,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiscord } from '@fortawesome/free-brands-svg-icons';
 
 import Link from './components/Link';
-import { Asset, beatmapListing, characterPath, globalSkillRankPath, ROUTE, type Path } from './router';
+import { Asset, beatmapListing, characterPath, countryRankPath, globalGradesRankPath, globalRankPath, globalSkillRankPath, playsRankPath, ROUTE, type Path } from './router';
 import { useCurrentUser } from './hooks/useCurrentUser';
 import { useCurrentCharacter } from './hooks/useCurrentCharacter';
 import { useAdmin } from './hooks/useAdmin';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 import { Trans, useLingui } from '@lingui/react/macro';
+import { GOOD_GRADE } from '@osu-idle/shared/judgement';
 
 // a dropdown entry: an in-app route, or an external link (e.g. the real osu! site)
 type NavSub =
@@ -65,19 +66,23 @@ export default function Header() {
 			sub: [
 				{
 					label: t`global`,
-					to: ROUTE.RANKINGS_GLOBAL,
+					to: globalRankPath(1),
 				},
 				{
 					label: t`skills`,
 					to: globalSkillRankPath('overall', 1),
 				},
 				{
+					label: t`grades`,
+					to: globalGradesRankPath(GOOD_GRADE.X, 1),
+				},
+				{
 					label: t`country`,
-					to: ROUTE.RANKINGS_COUNTRY,
+					to: countryRankPath(1),
 				},
 				{
 					label: t`top plays`,
-					to: ROUTE.RANKINGS_PLAYS,
+					to: playsRankPath(1),
 				},
 			],
 		},
@@ -166,7 +171,11 @@ export default function Header() {
 									<div className='usermenu_links'>
 										{user && (<>
 											{character && <Link to={characterPath(character.id)} className="usermenu__link"><Trans>My Profile</Trans></Link>}
-											{admin && <Link to={ROUTE.ADMIN_BALANCING} className="usermenu__link"><Trans>Balancing</Trans></Link>}
+											{admin && (<>
+												<Link to={ROUTE.ADMIN_BALANCING} className="usermenu__link"><Trans>Balancing</Trans></Link>
+												<Link to={ROUTE.ADMIN_NOMINATION} className="usermenu__link"><Trans>Nomination</Trans></Link>
+												<Link to={ROUTE.ADMIN_ADDONS} className="usermenu__link"><Trans>Add-ons</Trans></Link>
+											</>)}
 											<Link to={ROUTE.LOGOUT} className="usermenu__link"><Trans>Sign out</Trans></Link>
 										</>)}
 										{!user && (<>

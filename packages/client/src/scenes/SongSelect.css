@@ -208,40 +208,6 @@
   line-height: 0.6;
 }
 
-.game__modes {
-  display: flex;
-  gap: 0.4rem;
-  margin: 0 auto;
-}
-.game__mode {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  color: var(--text-dim);
-  transition: all 0.18s ease;
-  border: 1px solid transparent;
-}
-.game__mode:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
-}
-.game__mode.is-active {
-  color: #fff;
-  background: rgba(255, 102, 171, 0.2);
-  border-color: rgba(255, 102, 171, 0.5);
-  box-shadow: 0 4px 20px rgba(255, 102, 171, 0.25);
-}
-.game__mode-glyph {
-  font-size: 1.2rem;
-  color: var(--osu-pink);
-}
-.game__mode-label {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
 .game__user {
 	max-width: 450px;
 	min-width: 300px;

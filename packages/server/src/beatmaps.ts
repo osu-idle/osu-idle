@@ -15,3 +15,12 @@ export async function loadChart(beatmapId: number): Promise<string | null> {
 		.limit(1);
 	return row?.chart ?? null;
 }
+
+export async function getBeatmap(beatmapId: number) {
+	const [row] = await db
+		.select()
+		.from(beatmaps)
+		.where(eq(beatmaps.id, beatmapId))
+		.limit(1);
+	return row;
+}

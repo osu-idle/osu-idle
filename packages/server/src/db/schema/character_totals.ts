@@ -117,5 +117,6 @@ export const addScoreToTotals = async (totals: CharacterTotalsRow, score: BestSc
 		return;
 	}
 
-	totals.playTime += beatmap.total_length;
+	// total_length is milliseconds; playTime is accumulated in seconds.
+	totals.playTime += Math.round(beatmap.total_length / 1000);
 };

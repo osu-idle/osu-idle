@@ -5,20 +5,22 @@ import { LEAD_IN_MS, ManiaGame, unstableRate, type ReplayOffset } from '@osu-idl
 import CharacterBot, { fatigueXPFactor, getRecoveryTime } from '@osu-idle/shared/sim/bots/character';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 import { MINDBLOCK_SKILLS, type SkillName } from '@osu-idle/shared/skills';
-import { Judgements, type Judgement } from '@osu-idle/shared/judgement';
+import { compareGradeGT, compareGradeGTE, GRADE, Judgements, type Judgement } from '@osu-idle/shared/judgement';
 import type { ScoreDTO } from '@osu-idle/shared/score';
 import type { CharacterRow } from './db/schema/character';
 import type { NewScoreRow, ScoreRow } from './db/schema/score';
 import Memory from '@osu-idle/shared/sim/skills/memory';
 import { calculatePP } from './pp';
-import { loadChart } from './beatmaps';
+import { getBeatmap } from './beatmaps';
 import { getPlays } from './db/schema/beatmaps_played';
 import { mindblockFactor, recentMapPlays } from './mindblock';
 import { applySkillXp, submitScore } from './scores';
 import { reindexBeatmap, reindexCharacter } from './rankings';
 import { isProd, redisKeyPrefix } from './env';
 import { redis } from './redis';
-import num from '@osu-idle/shared/display/num';
+import { getBestPlay } from './db/schema/best';
+import type { Beatmap } from 'osu-classes';
+import type { ScoreState } from '@osu-idle/shared/sim/scoring';
 
 /** A finished play's result stays fetchable this long (resume / cross-tab). */
 const RESULT_TTL_MS = 10 * 60 * 1000;
@@ -251,26 +253,54 @@ export async function startPlay(
 		console.log(character.id, character.name, 'tried playing at once. remaining cooldown: ', held - now);
 		return { status: 'refused' };
 	}
-	const chart = await loadChart(beatmapId);
-	if (!chart) {
+	const beatmap = await getBeatmap(beatmapId);
+	if (!beatmap) {
 		await redis.zrem(PLAYING_KEY, String(character.id));
 		return { status: 'unranked' };
 	}
-	return simulateAndStore(character, beatmapId, chart);
+	return simulateAndStore(character, beatmapId, beatmap);
 }
+
+const getServerXP = async (
+	character: CharacterRow,
+	session: PlayTime,
+	bot: CharacterBot,
+	beatmap: Awaited<ReturnType<typeof getBeatmap>>,
+	chart: Beatmap,
+	score: ScoreState,
+) => {
+	const currentBest = await getBestPlay(character.id, beatmap.id);
+
+	const fatigue = fatigueXPFactor((session?.currentStrainTime ?? 0) / 1000);
+	const skillXp = bot.getSkillsXP(chart.totalLength, score, fatigue);
+
+	// Mindblock: grinding the same map recently dulls its technique XP (stamina /
+	// memory exempt). Read from the persisted history, before this play is stored.
+	const recentPlays = await recentMapPlays(character.id, beatmap.id);
+	const block = mindblockFactor(recentPlays);
+	if (block < 1) {
+		for (const name of MINDBLOCK_SKILLS) skillXp[name] = Math.floor(skillXp[name] * block);
+	}
+
+	if (compareGradeGTE(score.grade, GRADE.X) && (!currentBest || compareGradeGT(score.grade, currentBest.grade))) {
+		skillXp.accuracy += Math.floor(1000 * Number(beatmap.sr));
+	}
+
+	return skillXp;
+};
 
 /** Run the authoritative simulation, compute the score + XP, and store the play.
  *  The provisional lock is already held; this promotes it to the real end time. */
 async function simulateAndStore(
 	character: CharacterRow,
 	beatmapId: number,
-	chart: string,
+	beatmap: Awaited<ReturnType<typeof getBeatmap>>,
 ): Promise<StartPlayResult> {
 	const skills = await loadCharacterSkills(character, beatmapId);
 
-	const beatmap = decoder.decodeFromString(chart);
-	const bot = new CharacterBot(skills, beatmap.difficulty.overallDifficulty);
-	const game = new ManiaGame(beatmap, bot);
+	const chart = decoder.decodeFromString(beatmap.chart);
+	const bot = new CharacterBot(skills, chart.difficulty.overallDifficulty);
+	const game = new ManiaGame(chart, bot);
 	game.update(game.songEndMs + 1000); // advance past the end so every note is judged
 
 	const session = (await getPlayTime(character.id)) ?? {
@@ -281,23 +311,13 @@ async function simulateAndStore(
 	} satisfies PlayTime;
 
 	session.currentStrainTime = Math.max(0, session.currentStrainTime - getRecoveryTime(session.lastEnd, Date.now()));
-	session.currentMapTime = beatmap.totalLength;
+	session.currentMapTime = chart.totalLength;
 
 	await setPlayTime(session);
 
 	const score = game.score;
-	const fatigue = fatigueXPFactor((session?.currentStrainTime ?? 0) / 1000);
-	const skillXp = bot.getSkillsXP(beatmap.totalLength, score, fatigue);
 
-	// Mindblock: grinding the same map recently dulls its technique XP (stamina /
-	// memory exempt). Read from the persisted history, before this play is stored.
-	const recentPlays = await recentMapPlays(character.id, beatmapId);
-	const block = mindblockFactor(recentPlays);
-	if (block < 1) {
-		for (const name of MINDBLOCK_SKILLS) skillXp[name] = Math.floor(skillXp[name] * block);
-	}
-
-	const pp = calculatePP(score, chart);
+	const pp = calculatePP(score, beatmap.chart);
 	const c = score.counts;
 
 	const draft: NewScoreRow = {
@@ -330,7 +350,14 @@ async function simulateAndStore(
 		endsAt,
 		songStartMs: game.songStartMs,
 		draft,
-		skillXp,
+		skillXp: await getServerXP(
+			character,
+			session,
+			bot,
+			beatmap,
+			chart,
+			score,
+		),
 	};
 	if (failedAt) {
 		entry.failedAt = failedAt;
@@ -339,8 +366,6 @@ async function simulateAndStore(
 
 	// Promote the provisional lock to the real end time (drives the sweep + count).
 	await redis.zadd(PLAYING_KEY, endsAt, String(character.id));
-
-	console.log(character.id, character.name, 'is now playing (fatigue: ' + (num((1 - fatigue)* 100, 2)) + '%, mindblock: ' + num((1 - block) * 100, 2) + '% over ' + recentPlays + ' recent plays, strain time: ' + num((session.currentStrainTime ?? 0) / 1000 / 3600, 2) + 'h). playing users:', await getPlaying());
 
 	return {
 		status: 'ranked',
@@ -386,7 +411,7 @@ const parsePlayResult = async (play: Pending, notify: boolean): Promise<StoredRe
 		currentMapTime: 0,
 	} satisfies PlayTime;
 
-	session.currentStrainTime += session.currentMapTime ?? 0;
+	session.currentStrainTime += session.currentMapTime;
 	session.currentMapTime = 0;
 	session.lastEnd = Date.now();
 	await setPlayTime(session);

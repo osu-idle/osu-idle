@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-21 20:19\n"
+"PO-Revision-Date: 2026-06-22 21:06\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -28,6 +28,19 @@ msgstr "{0} [{1}] par {2}"
 #: src/components/character/CharacterRanks.tsx
 msgid "{skill} Ranking"
 msgstr "Rang en {skill}"
+
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
+msgid "Accuracy"
+msgstr "Précision"
+
+#: src/App.tsx
+msgid "add-ons"
+msgstr "add-ons"
+
+#: src/Header.tsx
+msgid "Add-ons"
+msgstr "Add-ons"
 
 #: src/components/leaderboard/CountryFilter.tsx
 msgid "All"
@@ -53,6 +66,10 @@ msgstr "Équilibrage"
 #: src/Header.tsx
 msgid "beatmap listing"
 msgstr "liste des maps"
+
+#: src/App.tsx
+msgid "beatmap nomination"
+msgstr "nomination de map"
 
 #: src/Header.tsx
 msgid "beatmaps"
@@ -142,6 +159,11 @@ msgstr "global"
 #: src/components/character/CharacterRanks.tsx
 msgid "Global Ranking"
 msgstr "Rang global"
+
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "grades"
+msgstr "rangs"
 
 #. placeholder {0}: user.username
 #: src/pages/AuthCallback.tsx
@@ -233,6 +255,10 @@ msgstr "Articles"
 msgid "No news yet. Check back soon!"
 msgstr "Pas encore d'articles. Revenez bientôt !"
 
+#: src/Header.tsx
+msgid "Nomination"
+msgstr "Nomination"
+
 #. placeholder {0}: PLATFORM_LABEL[platform]
 #: src/pages/PlayOsuIdle.tsx
 msgid "Not yet available for {0}"
@@ -254,6 +280,14 @@ msgstr "Joueurs en ligne"
 msgid "Other platforms:"
 msgstr "Autres plateformes :"
 
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
+msgid "Performance"
+msgstr "Performance"
+
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/pages/characters/CharacterPage.tsx
 msgid "Play Count"
 msgstr "Parties"
@@ -296,10 +330,15 @@ msgstr "Vie privée"
 msgid "Ranked"
 msgstr "Classé"
 
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/pages/characters/CharacterPage.tsx
 msgid "Ranked Score"
 msgstr "Score classé"
 
+#: src/App.tsx
+#: src/App.tsx
 #: src/App.tsx
 #: src/App.tsx
 #: src/App.tsx
@@ -384,6 +423,8 @@ msgstr "compétences"
 msgid "Skills"
 msgstr "Compétences"
 
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/components/leaderboard/PlayerSkillLeaderboard.tsx
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Sort by"
@@ -405,6 +446,10 @@ msgstr "L'ultime<0/>jeu idle osu!mania"
 #: src/pages/rankings/RankingsNav.tsx
 msgid "top plays"
 msgstr "meilleurs plays"
+
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+msgid "Total"
+msgstr "Total"
 
 #: src/pages/characters/CharacterPage.tsx
 msgid "Total Hits"

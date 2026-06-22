@@ -40,7 +40,9 @@ export default class BeatmapSet {
 	}
 
 	public static async getIntro(): Promise<LightBeatmapSet> {
-		return LightBeatmapSet.fromMetadata((await BeatmapAPI.downloadOsz((await BeatmapAPI.getManifest()).intro)).metadata);
+		const intro = (await BeatmapAPI.getManifest()).intro;
+		if (!intro) throw new Error('Intro beatmap is not available');
+		return LightBeatmapSet.fromMetadata((await BeatmapAPI.downloadOsz(intro)).metadata);
 	}
 
 }

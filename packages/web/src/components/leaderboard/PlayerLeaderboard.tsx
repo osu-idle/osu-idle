@@ -1,6 +1,6 @@
 import './PlayerLeaderboard.css';
 import Link from '../Link';
-import { characterPath, globalCountryRankPath, globalScoreCountryRankPath, Path, ROUTE, useQueryParam } from '../../router';
+import { characterPath, globalCountryRankPath, globalRankPath, globalScoreCountryRankPath, globalScoreRankPath, Path } from '../../router';
 import int from '@osu-idle/shared/math/int';
 import { getCountryGlobalRanking, getCountryScoreRanking, getGlobalRanking, getScoreRanking } from '../../api/rankings';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
@@ -10,25 +10,22 @@ import num from '@osu-idle/shared/display/num';
 import hitAccuracy from '@osu-idle/shared/osu/hitAccuracy';
 import accuracy from '@osu-idle/shared/display/accuracy';
 import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import { Trans, useLingui } from '@lingui/react/macro';
 
 const sorts = ['pp', 'rankedScore'] as const;
 const SORT = mapped(sorts);
 type Sort = ValueIn<typeof SORT>;
 
-const sortLabel: {[key in Sort]: string} = {
-	[SORT.pp]: 'Performance',
-	[SORT.rankedScore]: 'Ranked Score',
-};
-
-export default function PlayerLeaderboard({ sort, country }: {
+export default function PlayerLeaderboard({ sort, country, page }: {
 	sort: Sort,
+	page: number,
 	country?: string,
 }) {
-	const page = int(useQueryParam('page')) ?? 1;
+	const { t } = useLingui();
 
 	const getTo: {[key in Sort]: Path} = {
-		[SORT.pp]: !country ? ROUTE.RANKINGS_GLOBAL : globalCountryRankPath(country),
-		[SORT.rankedScore]: !country ? ROUTE.RANKINGS_GLOBAL_SCORE : globalScoreCountryRankPath(country),
+		[SORT.pp]: !country ? globalRankPath(page) : globalCountryRankPath(country, page),
+		[SORT.rankedScore]: !country ? globalScoreRankPath(page) : globalScoreCountryRankPath(country, page),
 	};
 
 	const getRanking = {
@@ -37,10 +34,15 @@ export default function PlayerLeaderboard({ sort, country }: {
 	};
 
 	const players = useAsync(async () => await getRanking[sort](page), [sort, page, country]);
+
+	const sortLabel: {[key in Sort]: string} = {
+		[SORT.pp]: t`Performance`,
+		[SORT.rankedScore]: t`Ranked Score`,
+	};
 	
 	return (<div className='player__lb'>
 		<div className='player__lb_sort'>
-			<span>Sort by</span>
+			<span><Trans>Sort by</Trans></span>
 			{sorts.map(type => <Link
 				to={getTo[type]}
 				className={`${sort === type ? 'current' : ''}`}>
@@ -52,10 +54,10 @@ export default function PlayerLeaderboard({ sort, country }: {
 			<thead>
 				<th></th>
 				<th></th>
-				<th>Accuracy</th>
-				<th>Play Count</th>
-				<th className={sort === SORT.rankedScore ? 'current' : ''}>Ranked Score</th>
-				<th className={sort === SORT.pp ? 'current' : ''}>Performance</th>
+				<th><Trans>Accuracy</Trans></th>
+				<th><Trans>Play Count</Trans></th>
+				<th className={sort === SORT.rankedScore ? 'current' : ''}><Trans>Ranked Score</Trans></th>
+				<th className={sort === SORT.pp ? 'current' : ''}><Trans>Performance</Trans></th>
 				<th>X</th>
 				<th>SS</th>
 				<th>S</th>

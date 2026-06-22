@@ -19,6 +19,8 @@ import DeleteAllBeatmaps from '../components/options/DeleteAllBeatmaps';
 import AutopilotDelay from '../components/options/AutopilotDelay';
 import AutopilotMode from '../components/options/AutopilotMode';
 import RightClickHold from '../components/options/RightClickHold';
+import ManageAddons from '../components/options/ManageAddons';
+import BrowseAddons from '../components/options/BrowseAddons';
 
 /** A consumer component rendered inside a group. */
 type OptComponent = () => JSX.Element;
@@ -34,6 +36,7 @@ export default function Options() {
 		'GRAPHICS',
 		'GAMEPLAY',
 		'CONTROLS',
+		'ADDONS',
 		'MAINTENANCE',
 	]);
 	type Category = ValueIn<typeof CATEGORY>;
@@ -43,6 +46,7 @@ export default function Options() {
 		[CATEGORY.GRAPHICS]: t`GRAPHICS`,
 		[CATEGORY.GAMEPLAY]: t`GAMEPLAY`,
 		[CATEGORY.CONTROLS]: t`CONTROLS`,
+		[CATEGORY.ADDONS]: t`ADD-ONS`,
 		[CATEGORY.MAINTENANCE]: t`MAINTENANCE`,
 	};
 
@@ -174,6 +178,24 @@ export default function Options() {
 						{
 							search: t`right|click|hold|time`,
 							component: () => RightClickHold,
+						},
+					],
+				},
+			]
+		},
+		{
+			name: CATEGORY.ADDONS,
+			groups: [
+				{
+					title: t`Add-ons`,
+					components: [
+						{
+							search: t`addon|addons|add-on|mod|mods|manage|installed`,
+							component: () => ManageAddons,
+						},
+						{
+							search: t`addon|addons|add-on|mod|mods|browse|catalog|install`,
+							component: () => BrowseAddons,
 						},
 					],
 				},

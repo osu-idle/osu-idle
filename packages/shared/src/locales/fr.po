@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-21 20:19\n"
+"PO-Revision-Date: 2026-06-22 21:06\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -210,6 +210,10 @@ msgstr "Notes skin par défaut"
 msgid "Dell XPS chiclet keyboard"
 msgstr "Clavier chiclet Dell XPS"
 
+#: src/display/addon.ts
+msgid "Denied"
+msgstr "Refusé"
+
 #: src/skills.ts
 msgid "DFJK"
 msgstr "DFJK"
@@ -342,6 +346,10 @@ msgstr "Norbaforce Mark IV"
 msgid "Note snap coloring"
 msgstr "Couleur des notes selon le snap"
 
+#: src/display/addon.ts
+msgid "On Hold"
+msgstr "En Attente"
+
 #: src/skills.ts
 msgid "Optimized MasterPlus+"
 msgstr "MasterPlus+ optimisé"
@@ -358,6 +366,10 @@ msgstr "Global"
 msgid "Passive learning"
 msgstr "Apprentissage passif"
 
+#: src/display/addon.ts
+msgid "Pending"
+msgstr "En Traitement"
+
 #: src/skills.ts
 msgid "Per-map scroll speed setting"
 msgstr "Réglage de la scroll speed par map"
@@ -369,6 +381,10 @@ msgstr "Post-its"
 #: src/skills.ts
 msgid "Post-it pattern drawings"
 msgstr "Dessins de patterns sur Post-its"
+
+#: src/display/addon.ts
+msgid "Published"
+msgstr "Publié"
 
 #: src/skills.ts
 msgid "QW{}"
@@ -465,6 +481,10 @@ msgstr "S'échauffer mentalement"
 #: src/skills.ts
 msgid "Unbranded membrane keyboard"
 msgstr "Clavier à membrane premier prix"
+
+#: src/display/addon.ts
+msgid "Unpublished"
+msgstr "Dépublié"
 
 #: src/skills.ts
 msgid "Used earbuds"

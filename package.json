@@ -1,7 +1,7 @@
 {
   "name": "osu-idle",
   "private": true,
-  "version": "0.12.5.0",
+  "version": "0.13.0.0",
   "type": "module",
   "description": "osu! idle - a replica of the osu! startup experience (React client + Hono backend)",
   "workspaces": [
@@ -33,12 +33,11 @@
     "build:desktop:main": "npm -w @osu-idle/shared run build && npm -w @osu-idle/desktop run build",
     "dist:desktop": "npm run build && npm -w @osu-idle/desktop run dist",
     "build:types": "npm -w @osu-idle/server run build:types",
-    "newmap": "sudo echo 'starting' && npm -w @osu-idle/shared run build && npm -w @osu-idle/server run build:types && npm -w @osu-idle/client run build && npm -w @osu-idle/server run process:prod && sudo systemctl restart osu-idle",
     "generate": "npm -w @osu-idle/server run generate",
     "migrate": "npm -w @osu-idle/server run migrate",
     "migrate:prod": "npm -w @osu-idle/server run migrate:prod",
-    "process": "npm -w @osu-idle/server run process",
-    "process:prod": "npm -w @osu-idle/server run process:prod",
+    "migrate:beatmaps": "npm -w @osu-idle/server run migrate:beatmaps",
+    "migrate:beatmaps:prod": "npm -w @osu-idle/server run migrate:beatmaps:prod",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "i18n:extract": "npm -w @osu-idle/shared run extract && npm -w @osu-idle/server run extract && npm -w @osu-idle/client run extract && npm -w @osu-idle/web run extract",

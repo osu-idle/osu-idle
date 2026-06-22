@@ -1,29 +1,39 @@
+import Nav from '../../components/Nav';
 import { useLingui } from '@lingui/react/macro';
 import { SKILL_SORT } from '../../components/leaderboard/PlayerSkillLeaderboard';
-import Nav from '../../components/Nav';
-import { globalSkillRankPath, Path, ROUTE } from '../../router';
+import { countryRankPath, globalGradesRankPath, globalRankPath, globalSkillRankPath, playsRankPath } from '../../router';
+import { GOOD_GRADE } from '@osu-idle/shared/judgement';
 
 export default function RankingsNav({ current }: {
-	current: Path,
+	current: string,
 }) {
 	const { t } = useLingui();
 
 	return (<Nav current={current} links={[
 		{
+			id: 'global',
 			label: t`global`,
-			link: ROUTE.RANKINGS_GLOBAL
+			link: globalRankPath(1),
 		},
 		{
+			id: 'skills',
 			label: t`skills`,
 			link: globalSkillRankPath(SKILL_SORT.overall, 1),
 		},
 		{
-			label: t`country`,
-			link: ROUTE.RANKINGS_COUNTRY
+			id: 'grades',
+			label: t`grades`,
+			link: globalGradesRankPath(GOOD_GRADE.X, 1),
 		},
 		{
+			id: 'country',
+			label: t`country`,
+			link: countryRankPath(1),
+		},
+		{
+			id: 'top plays',
 			label: t`top plays`,
-			link: ROUTE.RANKINGS_PLAYS
+			link: playsRankPath(1),
 		},
 	]}/>);
 }

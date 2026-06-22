@@ -19,6 +19,7 @@ import { statsRoutes } from './routes/stats';
 import { rankingRoutes } from './routes/ranking';
 import { beatmapsRoutes } from './routes/beatmap';
 import { playRoutes } from './routes/play';
+import { addonsRoutes } from './routes/addons';
 
 // The desktop app loads its bundle from a registered `app://` scheme, so it
 // calls us from that origin (Bearer-authed, no cookie). In dev also accept the
@@ -40,7 +41,8 @@ const v1 = new Hono()
 	.route('/auth', authRoutes)
 	.route('/me', meRoutes)
 	.route('/play', playRoutes)
-	.route('/news', newsRoutes);
+	.route('/news', newsRoutes)
+	.route('/addons', addonsRoutes);
 
 // Built as one chained expression so the route schema is captured in the type
 // of `app`; `AppType` is then consumed by the client's typed RPC client to

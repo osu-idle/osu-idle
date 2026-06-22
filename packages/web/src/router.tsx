@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SkillSort } from './components/leaderboard/PlayerSkillLeaderboard';
+import { GoodGrade } from '@osu-idle/shared/judgement';
 
 /** The web platform is mounted under this base path (matches vite `base`). */
 export const HOME = '/web';
@@ -18,14 +19,16 @@ export const ROUTE = {
 
 	BEATMAP_LISTING: '/maps/:sort/:dir',
 
-	RANKINGS_GLOBAL: '/rankings/global',
-	RANKINGS_GLOBAL_SCORE: '/rankings/score',
-	RANKINGS_GLOBAL_COUNTRY: '/rankings/country/:country',
-	RANKINGS_GLOBAL_SCORE_COUNTRY: '/rankings/score/country/:country',
-	RANKINGS_COUNTRY: '/rankings/country',
-	RANKINGS_PLAYS: '/rankings/plays',
+	RANKINGS_GLOBAL: '/rankings/global/page/:page',
+	RANKINGS_GLOBAL_SCORE: '/rankings/score/page/:page',
+	RANKINGS_GLOBAL_COUNTRY: '/rankings/country/:country/page/:page',
+	RANKINGS_GLOBAL_SCORE_COUNTRY: '/rankings/score/country/:country/page/:page',
+	RANKINGS_COUNTRY: '/rankings/country/page/:page',
+	RANKINGS_PLAYS: '/rankings/plays/page/:page',
 	RANKINGS_SKILLS: '/rankings/skills/:skill/page/:page',
 	RANKINGS_SKILLS_COUNTRY: '/rankings/skills/:skill/country/:country/page/:page',
+	RANKINGS_GRADES: '/rankings/grades/:grade/page/:page',
+	RANKINGS_GRADES_COUNTRY: '/rankings/grades/:grade/country/:country/page/:page',
 
 	NEWS_ARTICLE: '/news/:slug',
 	CHARACTER_PAGE: '/c/:id',
@@ -37,6 +40,8 @@ export const ROUTE = {
 	AUTH_ERROR: '/auth/error',
 
 	ADMIN_BALANCING: '/admin/balancing',
+	ADMIN_NOMINATION: '/admin/nomination',
+	ADMIN_ADDONS: '/admin/addons',
 } as const;
 export type Route = keyof typeof ROUTE;
 export type Path = (typeof ROUTE)[Route];
@@ -44,10 +49,16 @@ export type Path = (typeof ROUTE)[Route];
 export const newsArticlePath = (slug: string) => `${ROUTE.NEWS}/${slug}` as Path;
 export const characterPath = (id: string | number) => `/c/${id}` as Path;
 export const beatmapListing = (sort?: string, dir?: string) => `/maps/${sort ?? 'date'}/${dir ?? 'desc'}` as Path;
-export const globalCountryRankPath = (country: string | number) => `/rankings/country/${country}` as Path;
-export const globalScoreCountryRankPath = (country: string | number) => `/rankings/score/country/${country}` as Path;
+export const globalRankPath = (page: number) => `/rankings/global/page/${page}` as Path;
+export const globalScoreRankPath = (page: number) => `/rankings/score/page/${page}` as Path;
+export const countryRankPath = (page: number) => `/rankings/country/page/${page}` as Path;
+export const playsRankPath = (page: number) => `/rankings/plays/page/${page}` as Path;
+export const globalCountryRankPath = (country: string | number, page: number) => `/rankings/country/${country}/page/${page}` as Path;
+export const globalScoreCountryRankPath = (country: string | number, page: number) => `/rankings/score/country/${country}/page/${page}` as Path;
 export const globalSkillRankPath = (skill: SkillSort, page: number) => `/rankings/skills/${skill}/page/${page}` as Path;
 export const countrySkillRankPath = (skill: SkillSort, country: string, page: number) => `/rankings/skills/${skill}/country/${country}/page/${page}` as Path;
+export const globalGradesRankPath = (grade: GoodGrade | 'all', page: number) => `/rankings/grades/${grade}/page/${page}` as Path;
+export const countryGradesRankPath = (grade: GoodGrade | 'all', country: string, page: number) => `/rankings/grades/${grade}/country/${country}/page/${page}` as Path;
 
 /** Dynamic-segment values extracted from a path (e.g. { id: '42' }). */
 export type Params = Record<string, string>;
@@ -106,6 +117,7 @@ export function currentPath(): string {
 
 /** Navigation: client-side by default; pass refresh to do a full page load. */
 export function navigate(to: Path, refresh: boolean = false): void {
+	console.log(to);
 	const link = `${HOME}${to}`;
 	if (refresh) {
 		window.location.assign(link);

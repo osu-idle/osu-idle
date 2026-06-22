@@ -58,3 +58,6 @@ packages/web/dist.next/
 # ingest-beatmaps manifest of already-ingested `.osz` files (per-env)
 /packages/server/src/db/ingested-beatmaps.json
 /packages/server/src/db/ingested-beatmaps.dev.json
+
+/packages/server/beatmaps/
+/packages/server/previews/

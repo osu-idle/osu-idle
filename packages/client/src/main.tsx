@@ -8,10 +8,12 @@ import './online/account'; // resolve the session + account, listen for login
 import { initWakeLock } from './responsive/wakeLock';
 import { initFullscreen } from './responsive/fullscreen';
 import { SETTINGS } from './db/settings';
+import { bootAddons } from './addons/runtime';
 import App from './App.tsx';
 
 initWakeLock(); // keep mobile screens awake while playing
 initFullscreen(); // keep the fullscreen setting in sync with Esc/F11
+void bootAddons(); // mount enabled installed add-ons
 
 // Load the saved language's catalog before first render so the UI never flashes
 // message keys, and re-activate whenever the picker changes it. `sync` fires

@@ -169,6 +169,27 @@
       "when": 1781958182730,
       "tag": "0023_move_avatar_to_character",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1782121069240,
+      "tag": "0024_careless_lester",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1782122498095,
+      "tag": "0025_chief_steel_serpent",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1782157019802,
+      "tag": "0026_lonely_young_avengers",
+      "breakpoints": true
     }
   ]
 }

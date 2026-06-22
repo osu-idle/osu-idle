@@ -205,6 +205,10 @@ msgstr "Default skin notes"
 msgid "Dell XPS chiclet keyboard"
 msgstr "Dell XPS chiclet keyboard"
 
+#: src/display/addon.ts
+msgid "Denied"
+msgstr "Denied"
+
 #: src/skills.ts
 msgid "DFJK"
 msgstr "DFJK"
@@ -337,6 +341,10 @@ msgstr "Norbaforce Mark IV"
 msgid "Note snap coloring"
 msgstr "Note snap coloring"
 
+#: src/display/addon.ts
+msgid "On Hold"
+msgstr "On Hold"
+
 #: src/skills.ts
 msgid "Optimized MasterPlus+"
 msgstr "Optimized MasterPlus+"
@@ -353,6 +361,10 @@ msgstr "Overall"
 msgid "Passive learning"
 msgstr "Passive learning"
 
+#: src/display/addon.ts
+msgid "Pending"
+msgstr "Pending"
+
 #: src/skills.ts
 msgid "Per-map scroll speed setting"
 msgstr "Per-map scroll speed setting"
@@ -364,6 +376,10 @@ msgstr "Post-it notes"
 #: src/skills.ts
 msgid "Post-it pattern drawings"
 msgstr "Post-it pattern drawings"
+
+#: src/display/addon.ts
+msgid "Published"
+msgstr "Published"
 
 #: src/skills.ts
 msgid "QW{}"
@@ -460,6 +476,10 @@ msgstr "Thinks about warmup"
 #: src/skills.ts
 msgid "Unbranded membrane keyboard"
 msgstr "Unbranded membrane keyboard"
+
+#: src/display/addon.ts
+msgid "Unpublished"
+msgstr "Unpublished"
 
 #: src/skills.ts
 msgid "Used earbuds"

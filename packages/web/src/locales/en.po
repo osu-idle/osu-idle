@@ -24,6 +24,19 @@ msgstr "{0} [{1}] by {2}"
 msgid "{skill} Ranking"
 msgstr "{skill} Ranking"
 
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
+msgid "Accuracy"
+msgstr "Accuracy"
+
+#: src/App.tsx
+msgid "add-ons"
+msgstr "add-ons"
+
+#: src/Header.tsx
+msgid "Add-ons"
+msgstr "Add-ons"
+
 #: src/components/leaderboard/CountryFilter.tsx
 msgid "All"
 msgstr "All"
@@ -48,6 +61,10 @@ msgstr "Balancing"
 #: src/Header.tsx
 msgid "beatmap listing"
 msgstr "beatmap listing"
+
+#: src/App.tsx
+msgid "beatmap nomination"
+msgstr "beatmap nomination"
 
 #: src/Header.tsx
 msgid "beatmaps"
@@ -137,6 +154,11 @@ msgstr "global"
 #: src/components/character/CharacterRanks.tsx
 msgid "Global Ranking"
 msgstr "Global Ranking"
+
+#: src/Header.tsx
+#: src/pages/rankings/RankingsNav.tsx
+msgid "grades"
+msgstr "grades"
 
 #. placeholder {0}: user.username
 #: src/pages/AuthCallback.tsx
@@ -228,6 +250,10 @@ msgstr "News"
 msgid "No news yet. Check back soon!"
 msgstr "No news yet. Check back soon!"
 
+#: src/Header.tsx
+msgid "Nomination"
+msgstr "Nomination"
+
 #. placeholder {0}: PLATFORM_LABEL[platform]
 #: src/pages/PlayOsuIdle.tsx
 msgid "Not yet available for {0}"
@@ -249,6 +275,14 @@ msgstr "Online Users"
 msgid "Other platforms:"
 msgstr "Other platforms:"
 
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
+msgid "Performance"
+msgstr "Performance"
+
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/pages/characters/CharacterPage.tsx
 msgid "Play Count"
 msgstr "Play Count"
@@ -291,10 +325,15 @@ msgstr "Privacy"
 msgid "Ranked"
 msgstr "Ranked"
 
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/pages/characters/CharacterPage.tsx
 msgid "Ranked Score"
 msgstr "Ranked Score"
 
+#: src/App.tsx
+#: src/App.tsx
 #: src/App.tsx
 #: src/App.tsx
 #: src/App.tsx
@@ -379,6 +418,8 @@ msgstr "skills"
 msgid "Skills"
 msgstr "Skills"
 
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+#: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/components/leaderboard/PlayerSkillLeaderboard.tsx
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Sort by"
@@ -400,6 +441,10 @@ msgstr "The ultimate<0/>osu!mania idle game"
 #: src/pages/rankings/RankingsNav.tsx
 msgid "top plays"
 msgstr "top plays"
+
+#: src/components/leaderboard/PlayerGradesLeaderboard.tsx
+msgid "Total"
+msgstr "Total"
 
 #: src/pages/characters/CharacterPage.tsx
 msgid "Total Hits"

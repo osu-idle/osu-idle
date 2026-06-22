@@ -5,6 +5,7 @@ import { app } from './app';
 import { port } from './env';
 import { redis } from './redis';
 import { sweepDuePlays } from './play';
+import { sweepRankedMaps } from './beatmaps/sweep';
 import { ensureRankings } from './rankings';
 
 Logfile.setWriter(lines => appendFile('runtime.log', lines.join('\n') + '\n'));
@@ -22,6 +23,10 @@ void ensureRankings();
 // claim in finalizePlay guarantees a single submit.
 const sweep = setInterval(() => void sweepDuePlays(), 3_000);
 sweep.unref();
+
+// Announce scheduled maps whose rank time has passed (no redeploy needed).
+const rankSweep = setInterval(() => void sweepRankedMaps(), 30_000);
+rankSweep.unref();
 
 /**
  * Drain on a clean shutdown (systemd stop / restart, Ctrl-C, tsx-watch reload,

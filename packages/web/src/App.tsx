@@ -45,6 +45,8 @@ export default function App() {
 		[ROUTE.RANKINGS_PLAYS]: t`rankings`,
 		[ROUTE.RANKINGS_SKILLS]: t`rankings`,
 		[ROUTE.RANKINGS_SKILLS_COUNTRY]: t`rankings`,
+		[ROUTE.RANKINGS_GRADES]: t`rankings`,
+		[ROUTE.RANKINGS_GRADES_COUNTRY]: t`rankings`,
 
 		[ROUTE.NEWS_ARTICLE]: t`news`,
 		[ROUTE.CHARACTER_PAGE]: t`character info`,
@@ -56,6 +58,8 @@ export default function App() {
 		[ROUTE.AUTH_ERROR]: t`oh no!`,
 
 		[ROUTE.ADMIN_BALANCING]: t`balancing`,
+		[ROUTE.ADMIN_NOMINATION]: t`beatmap nomination`,
+		[ROUTE.ADMIN_ADDONS]: t`add-ons`,
 	} as const satisfies {[key in Path]: string};
 
 	const displayTitle = title !== '' ? title : TITLE[route] ?? t`dashboard`;

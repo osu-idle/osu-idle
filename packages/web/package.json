@@ -1,13 +1,13 @@
 {
   "name": "@osu-idle/web",
   "private": true,
-  "version": "0.12.5.0",
+  "version": "0.13.0.0",
   "type": "module",
   "description": "osu!web-style site served at /web, browsable in-game",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-	"typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "extract": "lingui extract --clean",
     "compile": "lingui compile"
@@ -23,6 +23,8 @@
     "d3-shape": "^3.2.0",
     "hono": "^4.6.14",
     "plotly.js-dist-min": "^3.6.0",
+    "prism-themes": "^1.9.0",
+    "prismjs": "^1.30.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-plotly.js": "^2.6.0"
@@ -33,6 +35,7 @@
     "@lingui/vite-plugin": "^5.9.5",
     "@types/d3-shape": "^3.1.8",
     "@types/plotly.js-dist-min": "^2.3.4",
+    "@types/prismjs": "^1.26.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/react-plotly.js": "^2.6.4",

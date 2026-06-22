@@ -1,0 +1,1 @@
+ALTER TABLE `beatmapset` ADD `submitted_at` timestamp DEFAULT (now()) NOT NULL;
