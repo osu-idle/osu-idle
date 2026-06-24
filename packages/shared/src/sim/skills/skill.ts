@@ -1,5 +1,8 @@
 import type { BotContext } from '../bot.js';
-import type { Strain, SkillStrain } from '../bots/character.js';
+import type {
+	Strain,
+	SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import Synced from '../../helpers/synced.js';
 import type { SkillName } from '../../skills.js';
@@ -17,7 +20,14 @@ export default abstract class Skill {
 		if (def !== 0) this.level.set(def);
 	}
 
-	abstract analyze(note: RuntimeNote, context: BotContext, mapStrain: Strain, colStrain: Strain, prev?: RuntimeNote, next?: RuntimeNote): SkillStrain;
+	abstract analyze(
+		note: RuntimeNote, 
+		context: BotContext, 
+		mapStrain: Strain, 
+		colStrain: Strain,
+		prev?: RuntimeNote, 
+		next?: RuntimeNote
+	): SkillStrain;
 
 	public static xpForLevel(level: number): number {
 		return xpForLevel(level);

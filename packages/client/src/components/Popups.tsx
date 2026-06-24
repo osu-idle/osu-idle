@@ -1,4 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import {
+	useCallback,
+	useEffect,
+	useState,
+} from 'react';
 import Log from '@osu-idle/shared/helpers/log';
 import type { Popup } from '@osu-idle/shared/helpers/log';
 import './Popups.css';
@@ -19,14 +23,21 @@ export default function Popups() {
 
 	// mark as leaving (triggers the slide-out), then drop once the exit finishes
 	const dismiss = useCallback((id: number) => {
-		setPopups((cur) => cur.map((p) => (p.id === id ? { ...p, leaving: true } : p)));
+		setPopups((cur) => cur.map((p) => (p.id === id ? {
+			...p, leaving: true, 
+		} : p)));
 		setTimeout(() => setPopups((cur) => cur.filter((p) => p.id !== id)), EXIT_MS);
 	}, []);
 
 	useEffect(() => {
 		return Log.listeners.popup.on((popup) => {
-			setPopups((cur) => [...cur, { ...popup, leaving: false }]);
-			if (!popup.sticky) setTimeout(() => dismiss(popup.id), popup.type === 'bad' ? ERROR_HOLD_MD : HOLD_MS);
+			setPopups((cur) => [...cur, {
+				...popup, leaving: false, 
+			}]);
+			if (!popup.sticky) 
+				setTimeout(() => 
+					dismiss(popup.id)
+				, popup.type === 'bad' ? ERROR_HOLD_MD : HOLD_MS);
 		});
 	}, [dismiss]);
 

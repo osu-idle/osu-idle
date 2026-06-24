@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react';
+import {
+	useEffect,
+	useRef,
+} from 'react';
 import type { Parallax } from '@osu-idle/shared/hooks/useParallax';
 
 interface Triangle {
@@ -30,7 +33,11 @@ const PINKS = [
  * The osu! signature: soft triangles slowly drifting upward. Nearer triangles
  * (higher depth) are larger, brighter and react more strongly to parallax.
  */
-export default function Triangles({ parallax, intensity = 1, count = 64 }: Props) {
+export default function Triangles({ 
+	parallax, 
+	intensity = 1, 
+	count = 64, 
+}: Props) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const trianglesRef = useRef<Triangle[]>([]);
 	const parallaxRef = useRef(parallax);

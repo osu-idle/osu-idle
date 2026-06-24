@@ -15,9 +15,9 @@
 	overscroll-behavior: contain;
 	-webkit-overflow-scrolling: touch;
 
-	padding: .7rem 15.5rem 2rem;
+	padding: 0.7rem 15.5rem 2rem;
 	margin: 0 -14.7rem;
-	
+
 	overflow-y: auto;
 	scrollbar-width: none;
 }

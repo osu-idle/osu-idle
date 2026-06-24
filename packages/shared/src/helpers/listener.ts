@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react';
+import {
+	useEffect,
+	useRef,
+} from 'react';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Callback = (...args: any) => unknown | void | Promise<void>;
@@ -26,7 +29,9 @@ export default class Listener<T extends Callback = (() => void)> {
 	public use(callback: T): void {
 		const ref = useRef(callback);
 		ref.current = callback;
-		useEffect(() => this.on(((...args: Parameters<T>) => ref.current(...args)) as T), [this]);
+		useEffect(() => 
+			this.on(((...args: Parameters<T>) => 
+				ref.current(...args)) as T), [this]);
 	}
 
 	public async trigger(...args: Parameters<T>): Promise<void> {

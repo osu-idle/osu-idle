@@ -1,5 +1,13 @@
-import { decimal, int, mysqlTable, varchar } from 'drizzle-orm/mysql-core';
-import { Skills, type SkillName } from '@osu-idle/shared/skills';
+import {
+	decimal,
+	int,
+	mysqlTable,
+	varchar,
+} from 'drizzle-orm/mysql-core';
+import {
+	Skills,
+	type SkillName,
+} from '@osu-idle/shared/skills';
 import type { CharacterDTO } from '@osu-idle/shared/character';
 import { users } from './user';
 import { apiBaseUrl } from '../../env';
@@ -35,7 +43,9 @@ export const characters = mysqlTable('character', {
 	overallLevel: skillColumn(),
 	overallXp: skillColumn(),
 	overallTotalXp: skillColumn(),
-	pp: decimal({ precision: 10, scale: 3 }).notNull().default('0'),
+	pp: decimal({
+		precision: 10, scale: 3, 
+	}).notNull().default('0'),
 });
 
 export type CharacterRow = typeof characters.$inferSelect;
@@ -45,13 +55,22 @@ export type NewCharacterRow = typeof characters.$inferInsert;
  * The character's profile picture, always a usable absolute URL: its own upload,
  * else the account's osu! avatar, else the guest default.
  */
-export const resolveAvatarUrl = (characterAvatarUrl: string | null, userAvatarUrl?: string | null) =>
+export const resolveAvatarUrl = (
+	characterAvatarUrl: string | null,
+	userAvatarUrl?: string | null,
+) =>
 	characterAvatarUrl ? `${apiBaseUrl}${characterAvatarUrl}` : userAvatarUrl || GUEST_AVATAR_URL;
 
 /** Map a character row to the shared wire contract (skill columns → nested skills). */
-export function characterToDTO(row: CharacterRow, userAvatarUrl?: string | null, userCountry?: string): CharacterDTO {
+export function characterToDTO(
+	row: CharacterRow, 
+	userAvatarUrl?: string | null, 
+	userCountry?: string,
+): CharacterDTO {
 	const skills = Object.fromEntries(
-		Skills.map(s => [s, { level: row[`${s}Level`], xp: row[`${s}Xp`] }]),
+		Skills.map(s => [s, {
+			level: row[`${s}Level`], xp: row[`${s}Xp`], 
+		}]),
 	) as CharacterDTO['skills'];
 
 	return {

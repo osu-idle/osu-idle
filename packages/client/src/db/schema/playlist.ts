@@ -1,5 +1,11 @@
 import Synced from '@osu-idle/shared/helpers/synced';
-import { DAO, DB, integer, table, text } from '../dao';
+import {
+	DAO,
+	DB,
+	integer,
+	table,
+	text,
+} from '../dao';
 
 const playlist = table('playlist', {
 	id:        integer().primaryKey().autoincrement(),
@@ -31,7 +37,9 @@ export class Playlist extends DAO(playlist) {
 	}
 
 	static async create(name: string): Promise<Playlist> {
-		const p = await new Playlist({ name, createdAt: Date.now() }).add();
+		const p = await new Playlist({
+			name, createdAt: Date.now(), 
+		}).add();
 		touch();
 		return p;
 	}
@@ -48,12 +56,17 @@ export class Playlist extends DAO(playlist) {
 	}
 
 	async addBeatmap(beatmapId: number): Promise<void> {
-		await new PlaylistEntry({ playlistId: this.id, beatmapId }).add();
+		await new PlaylistEntry({
+			playlistId: this.id, beatmapId, 
+		}).add();
 		touch();
 	}
 
 	async removeBeatmap(beatmapId: number): Promise<void> {
-		await DB.run('DELETE FROM playlist_entry WHERE playlistId = ? AND beatmapId = ?', [this.id, beatmapId]);
+		await DB.run(
+			'DELETE FROM playlist_entry WHERE playlistId = ? AND beatmapId = ?'
+			, [this.id, beatmapId],
+		);
 		touch();
 	}
 }
@@ -67,7 +80,8 @@ export interface PlaylistIndex {
 }
 
 export async function getPlaylistIndex(): Promise<PlaylistIndex> {
-	const playlists = (await Playlist.getAll()).sort((a, b) => a.name.localeCompare(b.name));
+	const playlists = (await Playlist.getAll())
+		.sort((a, b) => a.name.localeCompare(b.name));
 	const entries = await PlaylistEntry.getAll();
 	const byId = new Map(playlists.map(p => [p.id, p]));
 	const counts = new Map<number, number>();
@@ -80,5 +94,7 @@ export async function getPlaylistIndex(): Promise<PlaylistIndex> {
 		if (!list) byBeatmap.set(e.beatmapId, list = []);
 		list.push(p);
 	}
-	return { playlists, counts, byBeatmap };
+	return {
+		playlists, counts, byBeatmap, 
+	};
 }

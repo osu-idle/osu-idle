@@ -1,44 +1,44 @@
 /* CTA Button Styles */
 .cta-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 36px;
-    
-    /* osu! pink inspired gradient */
-    background: linear-gradient(135deg, #ff66aa, #e83884); 
-    color: #ffffff;
-    
-    font-size: 1.25rem;
-    font-weight: 700;
-    text-decoration: none;
-    letter-spacing: 0.5px;
-    
-    border-radius: 50px;
-    box-shadow: 0 4px 15px rgba(255, 102, 170, 0.3);
-    
-    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-    cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 14px 36px;
+
+	/* osu! pink inspired gradient */
+	background: linear-gradient(135deg, #ff66aa, #e83884);
+	color: #ffffff;
+
+	font-size: 1.25rem;
+	font-weight: 700;
+	text-decoration: none;
+	letter-spacing: 0.5px;
+
+	border-radius: 50px;
+	box-shadow: 0 4px 15px rgba(255, 102, 170, 0.3);
+
+	transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+	cursor: pointer;
 }
 
 /* Hover effect: slight scale up and brighter shadow */
 .cta-button:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(255, 102, 170, 0.5);
-    color: #ffffff; /* Ensures text stays white on hover */
+	transform: translateY(-3px) scale(1.02);
+	box-shadow: 0 8px 25px rgba(255, 102, 170, 0.5);
+	color: #ffffff; /* Ensures text stays white on hover */
 }
 
 /* Click effect: pushes the button down */
 .cta-button:active {
-    transform: translateY(1px) scale(0.98);
-    box-shadow: 0 2px 10px rgba(255, 102, 170, 0.4);
+	transform: translateY(1px) scale(0.98);
+	box-shadow: 0 2px 10px rgba(255, 102, 170, 0.4);
 }
 
 /* Optional icon transition */
 .cta-button svg {
-    transition: transform 0.2s ease-in-out;
+	transition: transform 0.2s ease-in-out;
 }
 
 .cta-button:hover svg {
-    transform: translateX(4px);
+	transform: translateX(4px);
 }

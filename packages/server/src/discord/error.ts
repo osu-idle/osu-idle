@@ -1,5 +1,8 @@
 import type { Context } from 'hono';
-import { env, isProd } from '../env';
+import {
+	env,
+	isProd,
+} from '../env';
 import { publish } from './publish';
 
 // Discord caps a field value at 1024 chars; keep room for the code fence.

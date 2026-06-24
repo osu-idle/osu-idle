@@ -22,7 +22,10 @@ export default class LightBeatmap {
 	}
 
 	public is(beatmap?: LightBeatmap | number): boolean {
-		return this.metadata.id === (typeof beatmap === 'number' ? beatmap : beatmap?.metadata.id);
+		return this.metadata.id === (typeof beatmap === 'number' ? 
+			beatmap : 
+			beatmap?.metadata.id
+		);
 	}
 
 	public async load(): Promise<Beatmap> {
@@ -33,11 +36,15 @@ export default class LightBeatmap {
 	}
 
 	public async getBackgroundUri(): Promise<string | undefined> {
-		return this.metadata.runtime ? BeatmapStore.getBeatmapBackground(this) : BeatmapAPI.assetUrl(this.metadata.background);
+		return this.metadata.runtime ? 
+			BeatmapStore.getBeatmapBackground(this) 
+			: BeatmapAPI.assetUrl(this.metadata.background);
 	}
 
 	public async getAudioUri(): Promise<string | undefined> {
-		return this.metadata.runtime ? BeatmapStore.getBeatmapAudio(this) : BeatmapAPI.assetUrl(this.metadata.audio);
+		return this.metadata.runtime ? 
+			BeatmapStore.getBeatmapAudio(this) 
+			: BeatmapAPI.assetUrl(this.metadata.audio);
 	}
 
 }

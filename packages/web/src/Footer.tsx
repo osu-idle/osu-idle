@@ -3,7 +3,7 @@ import { VERSION } from '@osu-idle/shared/version';
 import { Trans } from '@lingui/react/macro';
 
 export default function Footer() {
-
+	const years = `2026${(new Date().getFullYear() !== 2026) ? `-${new Date().getFullYear()}` : ''}`;
 	return (<footer>
 		<div className='footer__links'>
 			<a><Trans>Rules</Trans></a>
@@ -13,6 +13,8 @@ export default function Footer() {
 			<a href="https://github.com/osu-idle/osu-idle"><Trans>Source code</Trans></a>
 			<a><Trans>Contact</Trans></a>
 		</div>
-		<div className='footer__credits'>v{VERSION} | adri powered {`2026${(new Date().getFullYear() !== 2026) ? `-${new Date().getFullYear()}` : ''}`}</div>
+		<div className='footer__credits'>
+			v{VERSION} | adri powered {years}
+		</div>
 	</footer>);
 }

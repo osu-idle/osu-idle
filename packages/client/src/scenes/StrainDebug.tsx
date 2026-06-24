@@ -1,4 +1,7 @@
-import { useMemo, useState } from 'react';
+import {
+	useMemo,
+	useState,
+} from 'react';
 import Entities from '../entity/entities';
 import { analyzeBeatmap } from '../gameplay/strainDebug';
 import { unstableRate } from '../gameplay/hitError';
@@ -8,7 +11,7 @@ import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import { Judgements } from '@osu-idle/shared/judgement';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
-import Skin from '../osu/skin/Skin';
+import { currentSkin } from '../osu/skin/Skin';
 
 interface Props {
 	beatmapInfo: LightBeatmap
@@ -24,6 +27,7 @@ interface Props {
  * re-samples the randomness.
  */
 export default function StrainDebug({ beatmapInfo, onClose, onPlay }: Props) {
+	const [skin] = useSynced(currentSkin);
 	const [character] = useSynced(Entities.character);
 	const [roll, setRoll] = useState(0);
 	const beatmap = useAsync(async () => await beatmapInfo.load(), [beatmapInfo]);
@@ -36,11 +40,14 @@ export default function StrainDebug({ beatmapInfo, onClose, onPlay }: Props) {
 
 	if (!beatmap) return;
 
+	const title = `${beatmap.metadata.artist} - ${beatmap.metadata.title}`;
+	const subtitle = `[${beatmap.metadata.version}] ${beatmap.metadata.beatmapId}`;
+
 	return (
 		<div className="strain">
 			<header className="strain__bar">
 				<div className="strain__title">
-					Strain debug - {beatmap.metadata.artist} - {beatmap.metadata.title} <span>[{beatmap.metadata.version}] {beatmap.metadata.beatmapId}</span>
+					Strain debug - {title} <span>{subtitle}</span>
 				</div>
 				<div className="strain__actions">
 					<button className="strain__btn" onClick={onPlay}>
@@ -72,18 +79,28 @@ export default function StrainDebug({ beatmapInfo, onClose, onPlay }: Props) {
 							<span className="strain__ur">{unstableRate(s.hits).toFixed(0)} UR</span>
 						</div>
 						<div className="strain__stats">
-							<span className="strain__score">{Math.round(s.score.score).toLocaleString()}</span>
+							<span className="strain__score">
+								{Math.round(s.score.score).toLocaleString()}
+							</span>
 							<span className="strain__acc">{(s.score.accuracy * 100).toFixed(2)}%</span>
-							{s.xp !== undefined && <span className="strain__xp">+{s.xp.toLocaleString()} XP</span>}
+							{s.xp !== undefined && <span className="strain__xp">
+								+{s.xp.toLocaleString()} XP
+							</span>}
 							<span className="strain__judges">
 								{Judgements.map((j) => (
-									<i key={j} style={{ color: Skin.judgeColor(j) }}>
+									<i key={j} style={{ color: skin.data.judgements[j] }}>
 										{s.score.counts[j]}
 									</i>
 								))}
 							</span>
 						</div>
-						<StrainGraph hits={s.hits} windows={analysis.windows} songEndMs={analysis.songEndMs} failMs={s.failMs} overlay={s.overlay} />
+						<StrainGraph 
+							hits={s.hits} 
+							windows={analysis.windows} 
+							songEndMs={analysis.songEndMs}
+							failMs={s.failMs}
+							overlay={s.overlay}
+						/>
 					</div>
 				))}
 			</div>

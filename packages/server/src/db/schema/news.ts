@@ -1,5 +1,15 @@
-import { boolean, int, mysqlTable, text, timestamp, varchar } from 'drizzle-orm/mysql-core';
-import type { NewsDTO, NewsTag } from '@osu-idle/shared/news';
+import {
+	boolean,
+	int,
+	mysqlTable,
+	text,
+	timestamp,
+	varchar,
+} from 'drizzle-orm/mysql-core';
+import type {
+	NewsDTO,
+	NewsTag,
+} from '@osu-idle/shared/news';
 import { users } from './user';
 
 export const news = mysqlTable('news', {

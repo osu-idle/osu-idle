@@ -11,7 +11,9 @@ const toLocalInput = (iso: string | null): string => {
 };
 
 const fmt = (iso: string | null): string =>
-	iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+	iso ? new Date(iso).toLocaleString(undefined, {
+		dateStyle: 'medium', timeStyle: 'short', 
+	}) : '—';
 
 const HOUR = 3600e3;
 // Quick-schedule windows: a random moment within the next hour/day/week/month.
@@ -25,7 +27,13 @@ const WINDOWS: [label: string, ms: number][] = [
 export default function NominationRow({ row, busy, onPatch, onDelete }: {
 	row: Nomination;
 	busy: boolean;
-	onPatch: (setId: number, body: { rankedAt?: string | null; status?: 'pending' | 'ranked' | 'rejected' }) => void;
+	onPatch: (
+		setId: number, 
+		body: { 
+			rankedAt?: string | null; 
+			status?: 'pending' | 'ranked' | 'rejected'
+		}
+	) => void;
 	onDelete: (setId: number) => void;
 }) {
 	const [date, setDate] = useState(toLocalInput(row.rankedAt));
@@ -33,11 +41,19 @@ export default function NominationRow({ row, busy, onPatch, onDelete }: {
 	const phase = phaseOf(row);
 	const live = phase === 'live';
 
-	const schedule = () => date && onPatch(row.id, { rankedAt: new Date(date).toISOString(), status: 'ranked' });
-	const rankNow = () => onPatch(row.id, { rankedAt: new Date().toISOString(), status: 'ranked' });
+	const schedule = () => date && onPatch(row.id, {
+		rankedAt: new Date(date).toISOString(), status: 'ranked', 
+	});
+	const rankNow = () => onPatch(row.id, {
+		rankedAt: new Date().toISOString(), status: 'ranked', 
+	});
 	const scheduleIn = (ms: number) =>
-		onPatch(row.id, { rankedAt: new Date(Date.now() + Math.random() * ms).toISOString(), status: 'ranked' });
-	const unrank = () => onPatch(row.id, { status: 'pending', rankedAt: null });
+		onPatch(row.id, {
+			rankedAt: new Date(Date.now() + Math.random() * ms).toISOString(), status: 'ranked', 
+		});
+	const unrank = () => onPatch(row.id, {
+		status: 'pending', rankedAt: null, 
+	});
 	const reject = () => onPatch(row.id, { status: 'rejected' });
 
 	return (
@@ -53,14 +69,29 @@ export default function NominationRow({ row, busy, onPatch, onDelete }: {
 
 				<span className={`nomination__badge nomination__badge--${phase}`}>{phase}</span>
 
-				<div className='nomination__stat'><span className='nomination__label'>Diffs</span><span>{row.difficulties}</span></div>
-				<div className='nomination__stat'><span className='nomination__label'>Plays</span><span>{row.plays ?? 0}</span></div>
-				<div className='nomination__stat'><span className='nomination__label'>Submitted</span><span>{fmt(row.submittedAt)}</span></div>
+				<div className='nomination__stat'>
+					<span className='nomination__label'>Diffs</span>
+					<span>{row.difficulties}</span>
+				</div>
+				<div className='nomination__stat'>
+					<span className='nomination__label'>Plays</span>
+					<span>{row.plays ?? 0}</span>
+				</div>
+				<div className='nomination__stat'>
+					<span className='nomination__label'>Submitted</span>
+					<span>{fmt(row.submittedAt)}</span>
+				</div>
 				<div className='nomination__stat'>
 					<span className='nomination__label'>Ranked</span>
 					{live
 						? <span>{fmt(row.rankedAt)}</span>
-						: <input className='nomination__field' type='datetime-local' value={date} disabled={busy} onChange={e => setDate(e.target.value)} />}
+						: <input 
+							className='nomination__field'
+							type='datetime-local'
+							value={date} 
+							disabled={busy} 
+							onChange={e => setDate(e.target.value)}
+						/>}
 				</div>
 			</div>
 
@@ -76,11 +107,35 @@ export default function NominationRow({ row, busy, onPatch, onDelete }: {
 						))}
 					</div>
 				)}
-				{!live && <button className='nomination__btn nomination__btn--primary' disabled={busy || !date} onClick={schedule}>Schedule</button>}
+				{!live && <button 
+					className='nomination__btn nomination__btn--primary' 
+					disabled={busy || !date} 
+					onClick={schedule}
+				>
+					Schedule
+				</button>}
 				{!live && <button className='nomination__btn' disabled={busy} onClick={rankNow}>Rank now</button>}
-				{row.status === 'ranked' && <button className='nomination__btn' disabled={busy} onClick={unrank}>Unrank</button>}
-				{row.status === 'pending' && <button className='nomination__btn nomination__btn--warn' disabled={busy} onClick={reject}>Reject</button>}
-				<button className='nomination__btn nomination__btn--danger' disabled={busy} onClick={() => onDelete(row.id)}>Delete</button>
+				{row.status === 'ranked' && <button 
+					className='nomination__btn' 
+					disabled={busy} 
+					onClick={unrank}
+				>
+					Unrank
+				</button>}
+				{row.status === 'pending' && <button
+					className='nomination__btn nomination__btn--warn' 
+					disabled={busy} 
+					onClick={reject}
+				>
+					Reject
+				</button>}
+				<button 
+					className='nomination__btn nomination__btn--danger'
+					disabled={busy}
+					onClick={() => onDelete(row.id)}
+				>
+					Delete
+				</button>
 			</div>
 		</div>
 	);

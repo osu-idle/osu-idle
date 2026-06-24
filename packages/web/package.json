@@ -1,7 +1,7 @@
 {
   "name": "@osu-idle/web",
   "private": true,
-  "version": "0.13.0.0",
+  "version": "0.14.0.0",
   "type": "module",
   "description": "osu!web-style site served at /web, browsable in-game",
   "scripts": {
@@ -20,6 +20,8 @@
     "@lingui/react": "^5.9.5",
     "@osu-idle/server": "*",
     "@osu-idle/shared": "*",
+    "@tanstack/react-router": "^1.170.16",
+    "@tanstack/zod-adapter": "^1.167.0",
     "d3-shape": "^3.2.0",
     "hono": "^4.6.14",
     "plotly.js-dist-min": "^3.6.0",
@@ -27,12 +29,14 @@
     "prismjs": "^1.30.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-plotly.js": "^2.6.0"
+    "react-plotly.js": "^2.6.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@lingui/babel-plugin-lingui-macro": "^5.9.5",
     "@lingui/cli": "^5.9.5",
     "@lingui/vite-plugin": "^5.9.5",
+    "@tanstack/router-plugin": "^1.168.18",
     "@types/d3-shape": "^3.1.8",
     "@types/plotly.js-dist-min": "^2.3.4",
     "@types/prismjs": "^1.26.6",

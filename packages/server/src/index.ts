@@ -10,7 +10,9 @@ import { ensureRankings } from './rankings';
 
 Logfile.setWriter(lines => appendFile('runtime.log', lines.join('\n') + '\n'));
 
-const server = serve({ fetch: app.fetch, port }, info => {
+const server = serve({
+	fetch: app.fetch, port, 
+}, info => {
 	console.log(`🎵 osu! idle API listening on http://localhost:${info.port}`);
 });
 

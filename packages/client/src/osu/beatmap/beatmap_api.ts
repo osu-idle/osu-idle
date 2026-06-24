@@ -1,7 +1,13 @@
-import { unzip, Unzipped } from 'fflate';
+import {
+	unzip,
+	Unzipped,
+} from 'fflate';
 import type { InferResponseType } from 'hono/client';
 import API from '../../online/api';
-import { BASE_URL, rpc } from '../../online/client';
+import {
+	BASE_URL,
+	rpc,
+} from '../../online/client';
 import BeatmapStore, { SetRecord } from './beatmap_store';
 
 /** The live catalog and its metadata types, as returned by the server. */

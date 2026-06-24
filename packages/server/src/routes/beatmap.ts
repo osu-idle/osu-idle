@@ -1,18 +1,42 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { zValidator } from '@hono/zod-validator';
-import { and, asc, count, desc, eq, getTableColumns, ne, sum } from 'drizzle-orm';
+import {
+	and,
+	asc,
+	count,
+	desc,
+	eq,
+	getTableColumns,
+	ne,
+	sum,
+} from 'drizzle-orm';
 import { z } from 'zod';
-import { BEATMAP_STATUS, INTRO_SET_ID } from '@osu-idle/shared/beatmap';
+import {
+	BEATMAP_STATUS,
+	INTRO_SET_ID,
+} from '@osu-idle/shared/beatmap';
 import { existsSync } from 'node:fs';
-import { readFile, readdir, rm } from 'node:fs/promises';
+import {
+	readFile,
+	readdir,
+	rm,
+} from 'node:fs/promises';
 import { db } from '../db/client';
 import { beatmaps } from '../db/schema/beatmap';
 import { beatmapset } from '../db/schema/beatmapset';
 import { requireAdmin } from '../auth/admin';
 import { ingestOsz } from '../beatmaps/ingest';
-import { buildCatalog, isSetLive, liveCondition } from '../beatmaps/catalog';
-import { PREVIEW_DIR, oszPath, previewPath } from '../beatmaps/storage';
+import {
+	buildCatalog,
+	isSetLive,
+	liveCondition,
+} from '../beatmaps/catalog';
+import {
+	PREVIEW_DIR,
+	oszPath,
+	previewPath,
+} from '../beatmaps/storage';
 
 const idParam = z.coerce.number().int().positive();
 
@@ -50,7 +74,7 @@ export const beatmapsRoutes = new Hono()
 			.innerJoin(beatmaps, eq(beatmapset.id, beatmaps.setId))
 			.where(listedCondition)
 			.groupBy(beatmapset.id)
-			.orderBy(sort(beatmapset.rankedAt))
+			.orderBy(sort(beatmapset.rankedAt)),
 		);
 	})
 	.get('/recent', async c => {
@@ -59,7 +83,7 @@ export const beatmapsRoutes = new Hono()
 			.from(beatmapset)
 			.where(listedCondition)
 			.orderBy(desc(beatmapset.rankedAt))
-			.limit(10)
+			.limit(10),
 		);
 	})
 	.get('/popular/:dir', async c => {
@@ -74,7 +98,7 @@ export const beatmapsRoutes = new Hono()
 			.innerJoin(beatmaps, eq(beatmapset.id, beatmaps.setId))
 			.where(listedCondition)
 			.groupBy(beatmapset.id)
-			.orderBy(sort(plays))
+			.orderBy(sort(plays)),
 		);
 	})
 
@@ -130,7 +154,7 @@ export const beatmapsRoutes = new Hono()
 			.from(beatmapset)
 			.leftJoin(beatmaps, eq(beatmapset.id, beatmaps.setId))
 			.groupBy(beatmapset.id)
-			.orderBy(desc(beatmapset.id))
+			.orderBy(desc(beatmapset.id)),
 		);
 	})
 	.post('/nomination', requireAdmin, async c => {
@@ -171,7 +195,7 @@ export const beatmapsRoutes = new Hono()
 		const previews = await readdir(PREVIEW_DIR).catch(() => [] as string[]);
 		await Promise.all(previews
 			.filter(f => f.startsWith(`${id}.`) || f.startsWith(`${id}-`))
-			.map(f => rm(previewPath(f), { force: true }))
+			.map(f => rm(previewPath(f), { force: true })),
 		);
 
 		if (!res.affectedRows) throw new HTTPException(404, { message: 'Beatmap set not found' });

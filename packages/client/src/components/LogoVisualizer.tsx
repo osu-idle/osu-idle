@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react';
+import {
+	useEffect,
+	useRef,
+} from 'react';
 import { music } from '../audio/MusicPlayer';
 import { logoPulse } from './logoPulse';
 
@@ -23,60 +26,72 @@ const TOTAL = ROUNDS * BARS_PER_ROUND;
 // how many (low) frequency bins feed one round - bass/mids carry the motion
 const BINS_USED = 24;
 
-// The same bars are drawn three times, only the style differs: a solid headline pass,
-// a softer half-opacity ghost, and an outline-only (no fill) envelope. Their slightly
-// different heights make them overlap into a layered bloom.
 const LAYERS = [
-	{ mode: 'fill', width: 6, height: 0.35, baseAlpha: 0.4, gainAlpha: 0.55, opacity: 1 },
-	{ mode: 'fill', width: 6, height: 0.45, baseAlpha: 0.4, gainAlpha: 0.55, opacity: 0.5 },
-	{ mode: 'stroke', width: 8, height: 0.7, baseAlpha: 0.45, gainAlpha: 0.45, opacity: 0.9 },
+	{ 
+		mode: 'fill', 
+		width: 6,
+		height: 0.35, 
+		baseAlpha: 0.4, 
+		gainAlpha: 0.55, 
+		opacity: 1, 
+	},
+	{ 
+		mode: 'fill',
+		width: 6, 
+		height: 0.45, 
+		baseAlpha: 0.4,
+		gainAlpha: 0.55,
+		opacity: 0.5, 
+	},
+	{ 
+		mode: 'stroke',
+		width: 8, 
+		height: 0.7, 
+		baseAlpha: 0.45,
+		gainAlpha: 0.45, 
+		opacity: 0.9, 
+	},
 ] as const;
 
-// Every bar continuously follows the song (its "normal" height = the live spectrum).
-// On top of that sit the waves: each is a position rolling around the ring doing nothing -
-// until it fires, when the few bars it is currently over get multiplied up by a random
-// amount (sometimes very high, sometimes medium) and then fall back on their own.
 const SPECTRUM_GAIN = 1.25;// scales raw spectrum into the bar's normal height
 const NORMAL_RELEASE = 0.15;// normal-height fall per second (attack is instant)
 const RING_BASE = 0.12;// faint always-present ring (in maxLen units)
 
-const WAVE_SPEED = 20;// base roll speed (round-positions/sec); each wave scales off this
+const WAVE_SPEED = 20;// base roll speed (round-positions/sec)
 const WAVE_WIDTH = 2;// bars either side of a wave the spike reaches
 const WAVE_MIN = 1.5;// smallest spike multiplier boost ("medium high")
 const WAVE_MAX = 6;// largest spike multiplier boost ("very high")
 const WAVE_DECAY = 0.03;// spike fall per second after firing (drops on its own)
 
-// The independent waves circling the logo. `spikes` is how many evenly-spaced spikes the
-// wave carries per round (so ×ROUNDS around the full ring), `dir` the spin direction,
-// `speed` the roll rate (round-positions/sec), `strength` scales the spike height, `perBeat`
-// is how often it fires (1 = on the beat, 2 = every 1/2 beat, 4 = every 1/4 beat). Each
-// successive wave spins twice as fast, half as strong, firing twice as often. Add/remove
-// entries to change how many waves there are.
 const WAVES = [
-	{ spikes: 1, speed: WAVE_SPEED, dir: -1, strength: 1, perBeat: 1 },
-	{ spikes: 2, speed: WAVE_SPEED * 2, dir: -1, strength: 0.25, perBeat: 2 },
-	{ spikes: 4, speed: WAVE_SPEED * 4, dir: -1, strength: 0.125, perBeat: 4 },
+	{
+		spikes: 1, speed: WAVE_SPEED, dir: -1, strength: 1, perBeat: 1, 
+	},
+	{
+		spikes: 2, speed: WAVE_SPEED * 2, dir: -1, strength: 0.25, perBeat: 2, 
+	},
+	{
+		spikes: 4, speed: WAVE_SPEED * 4, dir: -1, strength: 0.125, perBeat: 4, 
+	},
 ] as const;
 
 /**
- * The white waveform that haloes the osu! logo and dances to the music. Drawn on a
- * canvas: bars continuously track the spectrum, and several waves roll around the ring
- * (alternating directions) spiking the handful of bars under each as it fires on the
- * beat before they fall back. Stroked as radial bars in three overlapping layers.
+ * The white waveform that haloes the osu! logo and dances to the music.
  */
-export default function LogoVisualizer({ size, baseRadius = 0.87, maxLength = 0.4 }: Props) {
+export default function LogoVisualizer({ 
+	size, 
+	baseRadius = 0.87, 
+	maxLength = 0.4, 
+}: Props) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	// everything is keyed by position *within a round* (the 5 rounds are identical rotated
-	// copies -> 5-fold symmetric, so a wave's spikes repeat in every round and fill the ring).
-	const normalHeight = useRef(new Array(BARS_PER_ROUND).fill(0));// live song-following height
-	const waveBoost = useRef(new Array(BARS_PER_ROUND).fill(0));// transient spike multiplier
-	const phases = useRef(WAVES.map(() => 0));// each wave's rolling position, in round-positions
+	const normalHeight = useRef(new Array(BARS_PER_ROUND).fill(0));
+	const waveBoost = useRef(new Array(BARS_PER_ROUND).fill(0));
+	const phases = useRef(WAVES.map(() => 0));
 
 	useEffect(() => {
 		const canvas = canvasRef.current!;
 		const ctx = canvas.getContext('2d')!;
 		const dpr = Math.min(window.devicePixelRatio || 1, 2);
-		// canvas is larger than the logo so bars have room to extend
 		const dim = size * 2;
 		canvas.width = dim * dpr;
 		canvas.height = dim * dpr;
@@ -86,12 +101,9 @@ export default function LogoVisualizer({ size, baseRadius = 0.87, maxLength = 0.
 
 		const cx = dim / 2;
 		const cy = dim / 2;
-		const half = size / 2;// the logo's half-size; base/length are fractions of it
+		const half = size / 2;
 		const maxLen = half * maxLength;
 
-		// fire wave w: spike the bars under each of its evenly-spaced spikes (within a round,
-		// so they repeat in every round) by a random multiplier scaled by its strength, each
-		// spike with its own roll; they fall back on their own afterwards.
 		const reach = Math.ceil(WAVE_WIDTH);
 		const spike = (w: number) => {
 			const wave = WAVES[w];
@@ -122,7 +134,10 @@ export default function LogoVisualizer({ size, baseRadius = 0.87, maxLength = 0.
 				spike(w);// the on-beat fire
 				if (interval <= 0) continue;
 				for (let k = 1; k < WAVES[w].perBeat; k++) {
-					const id = setTimeout(() => { timeouts.delete(id); spike(w); }, (k / WAVES[w].perBeat) * interval);
+					const id = setTimeout(() => {
+						timeouts.delete(id);
+						spike(w);
+					}, (k / WAVES[w].perBeat) * interval);
 					timeouts.add(id);
 				}
 			}
@@ -138,9 +153,11 @@ export default function LogoVisualizer({ size, baseRadius = 0.87, maxLength = 0.
 			// follow the logo's live breathing/beat scale, sitting just past the rim
 			const base = half * baseRadius * logoPulse.scale;
 
-			// roll each wave position; decay the beat-spikes; follow the spectrum (instant up)
 			for (let w = 0; w < WAVES.length; w++) {
-				let p = (phases.current[w] + WAVES[w].speed * WAVES[w].dir * dt) % BARS_PER_ROUND;
+				let p = (phases.current[w] 
+					+ WAVES[w].speed * WAVES[w].dir * dt
+				) % BARS_PER_ROUND;
+				
 				if (p < 0) p += BARS_PER_ROUND;// keep positive after a backwards (dir -1) step
 				phases.current[w] = p;
 			}

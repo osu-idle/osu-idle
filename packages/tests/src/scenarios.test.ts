@@ -1,31 +1,77 @@
-import { describe, it } from 'vitest';
-import { Expectation, runScenario } from './balancing/harness';
-import { SKILL, type SkillName } from '@osu-idle/shared/skills';
-import { LEVEL, Profile, PROFILE } from './balancing/experience';
-import { Bundle, MASTERY } from './balancing/mastery';
-import { CHARTS, EZ, getBeatmap, HD, IX, loadBeatmap } from './balancing/charts';
+import {
+	describe,
+	it,
+} from 'vitest';
+import {
+	Expectation,
+	runScenario,
+} from './balancing/harness';
+import {
+	SKILL,
+	type SkillName,
+} from '@osu-idle/shared/skills';
+import {
+	LEVEL,
+	Profile,
+	PROFILE,
+} from './balancing/experience';
+import {
+	Bundle,
+	MASTERY,
+} from './balancing/mastery';
+import {
+	CHARTS,
+	EZ,
+	getBeatmap,
+	HD,
+	IX,
+	loadBeatmap,
+} from './balancing/charts';
 
 await Promise.all(Object.values(CHARTS).map(loadBeatmap));
 
 const runs = 5;
 
-const check = (profile: Profile, goal: string, charts: number | number[], bundle: Bundle, skill?: SkillName) => {
+const check = (
+	profile: Profile, 
+	goal: string, 
+	charts: number | number[],
+	bundle: Bundle,
+	skill?: SkillName,
+) => {
 	for (const chart of [charts].flat()) {
-		const base = { profile, goal, chart, runs, ...bundle };
+		const base = {
+			profile, goal, chart, runs, ...bundle, 
+		};
 		runScenario(skill
-			? { ...base, skill, level: LEVEL[profile] }
-			: { ...base, skills: LEVEL[profile] });
+			? {
+				...base, skill, level: LEVEL[profile], 
+			}
+			: {
+				...base, skills: LEVEL[profile], 
+			});
 	}
 };
 
-const checkMap = (chart: number, levels: Record<Profile, Bundle>, skill?: SkillName, disabled?: (keyof Expectation)[]) => {
+const checkMap = (
+	chart: number, 
+	levels: Record<Profile, Bundle>,
+	skill?: SkillName,
+	disabled?: (keyof Expectation)[],
+) => {
 	const beatmap = getBeatmap(chart);
 	for (const [profile, bundle] of Object.entries(levels) as [Profile, Bundle][]) {
-		const base = { profile, goal: 'Map scaling', chart, runs, ...bundle };
+		const base = {
+			profile, goal: 'Map scaling', chart, runs, ...bundle, 
+		};
 		it(`${profile} | ${beatmap.metadata.title} [${beatmap.metadata.version}]`, () => {
 			runScenario(skill
-				? { ...base, skill, level: LEVEL[profile], disabled }
-				: { ...base, skills: LEVEL[profile], disabled },
+				? {
+					...base, skill, level: LEVEL[profile], disabled, 
+				}
+				: {
+					...base, skills: LEVEL[profile], disabled, 
+				},
 			);
 		});
 	}
@@ -35,7 +81,9 @@ describe('beginner capacities', () => {
 	it('a new player can at least clear easy charts around B rank', () => {
 		const mastery = MASTERY.CLEAR_B;
 		mastery.expect.fail = false;
-		mastery.tolerance = { failRate: 0.25, accuracy: 0.05 };
+		mastery.tolerance = {
+			failRate: 0.25, accuracy: 0.05, 
+		};
 		check(PROFILE.BEGINNER, 'Minimal capacities', EZ, mastery);
 	});
 
@@ -46,42 +94,81 @@ describe('beginner capacities', () => {
 });
 
 describe('accuracy scaling', () => {
-	const acc = (profile: Profile, bundle: Bundle) => check(profile, 'Accuracy Baseline', CHARTS['6-aiae'], bundle, 'accuracy');
+	const acc = (profile: Profile, bundle: Bundle) => 
+		check(profile, 'Accuracy Baseline', CHARTS['6-aiae'], bundle, 'accuracy');
 
 	it('beginner accuracy results in 85% baseline', () =>
-		acc(PROFILE.BEGINNER, { expect: { accuracy: 0.85 }, tolerance: { accuracy: 0.03 } })
+		acc(PROFILE.BEGINNER, {
+			expect: { accuracy: 0.85 }, tolerance: { accuracy: 0.03 }, 
+		}),
 	);
 
 	it('newbie accuracy results in Low A baseline', () =>
-		acc(PROFILE.NEWBIE, { expect: { accuracy: 0.92 }, tolerance: { accuracy: 0.02 } })
+		acc(PROFILE.NEWBIE, {
+			expect: { accuracy: 0.92 }, tolerance: { accuracy: 0.02 }, 
+		}),
 	);
 
 	it('casual accuracy results in Low S baseline', () =>
-		acc(PROFILE.CASUAL, { expect: { accuracy: 0.95 }, tolerance: { accuracy: 0.02 } })
+		acc(PROFILE.CASUAL, {
+			expect: { accuracy: 0.95 }, tolerance: { accuracy: 0.02 }, 
+		}),
 	);
 
 	it('regular accuracy results in High S baseline', () =>
-		acc(PROFILE.REGULAR, { expect: { accuracy: 0.985 }, tolerance: { accuracy: 0.01 } })
+		acc(PROFILE.REGULAR, {
+			expect: { accuracy: 0.985 }, tolerance: { accuracy: 0.01 }, 
+		}),
 	);
 
 	it('confirmed accuracy results in low SS baseline', () =>
-		acc(PROFILE.CONFIRMED, { expect: { accuracy: 1, ratio: 2 }, tolerance: { accuracy: 0.01, ratio: 1.5 } })
+		acc(PROFILE.CONFIRMED, {
+			expect: {
+				accuracy: 1, ratio: 2, 
+			}, tolerance: {
+				accuracy: 0.01, ratio: 1.5, 
+			}, 
+		}),
 	);
 
 	it('seasoned accuracy results in mid SS baseline', () =>
-		acc(PROFILE.SEASONED, { expect: { accuracy: 1, ratio: 4 }, tolerance: { accuracy: 0.005, ratio: 1.5 } })
+		acc(PROFILE.SEASONED, {
+			expect: {
+				accuracy: 1, ratio: 4, 
+			}, tolerance: {
+				accuracy: 0.005, ratio: 1.5, 
+			}, 
+		}),
 	);
 
 	it('good accuracy results in high SS baseline', () =>
-		acc(PROFILE.GOOD, { expect: { accuracy: 1, ratio: 15 }, tolerance: { accuracy: 0.005, ratio: 1.5 } })
+		acc(PROFILE.GOOD, {
+			expect: {
+				accuracy: 1, ratio: 15, 
+			}, tolerance: {
+				accuracy: 0.005, ratio: 1.5, 
+			}, 
+		}),
 	);
 
 	it('expert accuracy results in top SS baseline', () =>
-		acc(PROFILE.EXPERT, { expect: { accuracy: 1, ratio: 50 }, tolerance: { accuracy: 0.002, ratio: 1.5 } })
+		acc(PROFILE.EXPERT, {
+			expect: {
+				accuracy: 1, ratio: 50, 
+			}, tolerance: {
+				accuracy: 0.002, ratio: 1.5, 
+			}, 
+		}),
 	);
 
 	it('pro accuracy results in X baseline', () =>
-		acc(PROFILE.PRO, { expect: { accuracy: 1, ratio: 300 }, tolerance: { accuracy: 0, ratio: 1.5 } })
+		acc(PROFILE.PRO, {
+			expect: {
+				accuracy: 1, ratio: 300, 
+			}, tolerance: {
+				accuracy: 0, ratio: 1.5, 
+			}, 
+		}),
 	);
 });
 

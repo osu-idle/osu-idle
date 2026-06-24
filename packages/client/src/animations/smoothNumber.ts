@@ -6,7 +6,7 @@ export const easeInOutCubic: Easing = (t) =>
 	t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
 export type SmoothNumberOptions = {
-	/** ms taken to travel a full transition, regardless of distance (default 300) */
+	/** ms taken to travel a full transition, regardless of distance */
 	duration?: number;
 	/** easing applied across the transition (default easeOutCubic) */
 	easing?: Easing;

@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { Grades, Judgements, type Judgement } from './judgement.js';
+import {
+	Grades,
+	Judgements,
+	type Judgement,
+} from './judgement.js';
 
 export const judgementCountsDTO = z.object(
 	Object.fromEntries(

@@ -2,12 +2,34 @@ import { eq } from 'drizzle-orm';
 import { type SkillName } from '@osu-idle/shared/skills';
 import { db } from './db/client';
 import { characters } from './db/schema/character';
-import { getScoreById, scores, type NewScoreRow, type ScoreRow } from './db/schema/score';
-import { getBestPlay, setNewBestPlay } from './db/schema/best';
-import { addBestScoreToTotals, addScoreToTotals, getCharacterTotals, removeBestScoreFromTotals, updateCharacterTotals, type CharacterTotalsRow } from './db/schema/character_totals';
-import { bestPP, getBestPPPlay, setNewBestPPPlay } from './db/schema/best_pp';
+import {
+	getScoreById,
+	scores,
+	type NewScoreRow,
+	type ScoreRow,
+} from './db/schema/score';
+import {
+	getBestPlay,
+	setNewBestPlay,
+} from './db/schema/best';
+import {
+	addBestScoreToTotals,
+	addScoreToTotals,
+	getCharacterTotals,
+	removeBestScoreFromTotals,
+	updateCharacterTotals,
+	type CharacterTotalsRow,
+} from './db/schema/character_totals';
+import {
+	bestPP,
+	getBestPPPlay,
+	setNewBestPPPlay,
+} from './db/schema/best_pp';
 import { addBeatmapPlayed } from './db/schema/beatmaps_played';
-import { getFirstPlace, setNewFirstPlace } from './db/schema/first_place';
+import {
+	getFirstPlace,
+	setNewFirstPlace,
+} from './db/schema/first_place';
 import Overall from '@osu-idle/shared/sim/skills/overall';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 
@@ -42,7 +64,11 @@ export async function submitScore(draft: NewScoreRow) {
 	return score;
 }
 
-export const onSubmitScore = async (totals: CharacterTotalsRow, score: ScoreRow, recompute = true) => {
+export const onSubmitScore = async (
+	totals: CharacterTotalsRow, 
+	score: ScoreRow, 
+	recompute = true,
+) => {
 	await addScoreToTotals(totals, score);
 	await checkNewBest(totals, score);
 	await checkNewBestPP(score, recompute);
@@ -111,7 +137,16 @@ export async function applySkillXp(
 		skill.xp.set(fromXp);
 		overallXpGained += xp[skill.name];
 		const levels = skill.gainXP(xp[skill.name] ?? 0);
-		return { skill: skill.name, gained: xp[skill.name] ?? 0, fromLevel, fromXp, toLevel: skill.level.get(), toXp: Math.round(skill.xp.get()), levels, xp: xp[skill.name] };
+		return {
+			skill: skill.name, 
+			gained: xp[skill.name] ?? 0, 
+			fromLevel, 
+			fromXp,
+			toLevel: skill.level.get(),
+			toXp: Math.round(skill.xp.get()),
+			levels, 
+			xp: xp[skill.name], 
+		};
 	});
 
 	overall.gainXP(overallXpGained);
@@ -126,8 +161,16 @@ export async function applySkillXp(
 			['overallLevel', overall.level.get()],
 			['overallXp', overall.xp.get()],
 			['overallTotalXp', row.overallTotalXp + overallXpGained],
-		]
-	) as Record<`${'overall' | SkillName}Level` | `${'overall' | SkillName}Xp` | `${'overall' | SkillName}TotalXp`, number>;
+		],
+	) as Record<`${
+		'overall'
+		| SkillName}Level` 
+		| `${'overall' 
+		| SkillName}Xp` 
+		| `${'overall' 
+		| SkillName}TotalXp`,
+	number
+	>;
 
 	await db.update(characters).set(updates).where(eq(characters.id, characterId));
 	return gains;

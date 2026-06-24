@@ -1,7 +1,11 @@
 import net from 'node:net';
 import { randomUUID } from 'node:crypto';
+// eslint-disable-next-line @stylistic/max-len
 import type { DesktopPresence } from '@osu-idle/shared/desktop' with { 'resolution-mode': 'import' };
-import { DISCORD_CLIENT_ID, DISCORD_LARGE_IMAGE } from './config';
+import {
+	DISCORD_CLIENT_ID,
+	DISCORD_LARGE_IMAGE,
+} from './config';
 
 /**
  * Discord Rich Presence over Discord's local IPC socket - no dependency, just
@@ -28,7 +32,12 @@ function socketPaths(): string[] {
 	if (process.platform === 'win32') {
 		return Array.from({ length: 10 }, (_, i) => `\\\\?\\pipe\\discord-ipc-${i}`);
 	}
-	const base = process.env.XDG_RUNTIME_DIR || process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+	const base = process.env.XDG_RUNTIME_DIR
+		|| process.env.TMPDIR 
+		|| process.env.TMP 
+		|| process.env.TEMP 
+		|| '/tmp'
+	;
 	const dirs = ['', 'app/com.discordapp.Discord/', 'snap.discord/'];
 	return dirs.flatMap(dir => Array.from({ length: 10 }, (_, i) => `${base}/${dir}discord-ipc-${i}`));
 }
@@ -55,7 +64,9 @@ function sendActivity(): void {
 	};
 	socket.write(encode(OP_FRAME, {
 		cmd: 'SET_ACTIVITY',
-		args: { pid: process.pid, activity },
+		args: {
+			pid: process.pid, activity, 
+		},
 		nonce: randomUUID(),
 	}));
 }
@@ -85,7 +96,9 @@ function connect(index: number): void {
 		// the first frame Discord sends back is the READY dispatch - treat any reply
 		// as "handshake accepted" and flush whatever presence is pending.
 		sock.once('data', () => { connected = true; sendActivity(); });
-		sock.write(encode(OP_HANDSHAKE, { v: 1, client_id: DISCORD_CLIENT_ID }));
+		sock.write(encode(OP_HANDSHAKE, {
+			v: 1, client_id: DISCORD_CLIENT_ID, 
+		}));
 	});
 }
 

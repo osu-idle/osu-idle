@@ -32,7 +32,10 @@ export default function Announce() {
 		? `${BASE_URL}${latest.imageUrl}`
 		: tag.image && `/web/news-media/${tag.image}`;
 	const date = latest.publishedAt
-		? new Date(latest.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+		? new Date(latest.publishedAt)
+			.toLocaleDateString('en-US', {
+				month: 'short', day: 'numeric', 
+			})
 		: '';
 
 	const dismiss = () => SETTINGS.news.set(latest.id);
@@ -41,11 +44,18 @@ export default function Announce() {
 		window.open(`web/news/${latest.slug}`, '_blank');
 	};
 
-	if (status.state !== 'idle' && status.state !== 'none' && status.state !== 'checking') return null;
+	if (status.state !== 'idle' 
+		&& status.state !== 'none' 
+		&& status.state !== 'checking'
+	) return null;
 
 	return (
 		<aside className="announce" style={{ '--tag-hue': tag.hue } as CSSProperties}>
-			<button className="announce__body" onClick={open} title={t`Read the full article`}>
+			<button 
+				className="announce__body"
+				onClick={open} 
+				title={t`Read the full article`}
+			>
 				<div
 					className="announce__cover"
 					style={cover ? { backgroundImage: `url(${cover})` } : undefined}
@@ -70,7 +80,11 @@ export default function Announce() {
 					</div>
 				</div>
 			</button>
-			<button className="announce__close" onClick={dismiss} title={t`Dismiss`}>✕</button>
+			<button 
+				className="announce__close" 
+				onClick={dismiss} 
+				title={t`Dismiss`}
+			>✕</button>
 		</aside>
 	);
 }

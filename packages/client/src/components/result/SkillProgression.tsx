@@ -10,7 +10,9 @@ export default function SkillProgression({ failed, progression, gains }: {
 	gains: SkillProgress[];
 }) {
 	if (failed || !progression) return null;
-	if (gains.length === 0) return <div className="result__skills-empty"><Trans>No skill gains</Trans></div>;
+	if (gains.length === 0) return <div className="result__skills-empty">
+		<Trans>No skill gains</Trans>
+	</div>;
 	return (
 		<div className="result__skills">
 			{gains.map((p, i) => (

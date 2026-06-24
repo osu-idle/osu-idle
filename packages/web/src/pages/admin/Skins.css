@@ -1,0 +1,299 @@
+.skins-admin {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: 1.25rem;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.skins-admin__muted {
+	color: hsl(var(--hsl-f1));
+	font-size: 0.85rem;
+}
+.skins-admin__error {
+	color: hsl(var(--hsl-red-1));
+	background: hsl(var(--colour-red-hue), 30%, 18%);
+	padding: 0.6rem 0.9rem;
+	border-radius: 8px;
+}
+
+/* toolbar */
+.skins-admin__toolbar {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	padding: 0.6rem 0.8rem;
+	background-color: hsl(var(--hsl-b4));
+	border-radius: 8px;
+}
+.skins-admin__sort {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	flex-wrap: wrap;
+}
+.skins-admin__count {
+	margin-left: auto;
+	color: hsl(var(--hsl-f1));
+	font-size: 0.85rem;
+}
+
+.skins-admin__sort-btn {
+	background: none;
+	border: none;
+	border-radius: 4px;
+	padding: 0.3rem 0.6rem;
+	color: inherit;
+	font: inherit;
+	font-size: 0.85rem;
+	cursor: pointer;
+}
+.skins-admin__sort-btn:hover {
+	background-color: hsl(var(--hsl-b3));
+}
+.skins-admin__sort-btn.current {
+	background-color: hsl(var(--hsl-b3));
+	color: hsl(var(--hsl-c1));
+	font-weight: 600;
+}
+
+/* shared button */
+.skins-admin__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.4rem 0.75rem;
+	border: none;
+	border-radius: 6px;
+	background-color: hsl(var(--hsl-b3));
+	color: hsl(var(--hsl-c1));
+	font: inherit;
+	font-size: 0.82rem;
+	cursor: pointer;
+	transition:
+		background-color 0.12s,
+		opacity 0.12s;
+}
+.skins-admin__btn:hover:not(:disabled) {
+	background-color: hsl(var(--hsl-b1));
+}
+.skins-admin__btn:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.skins-admin__btn--primary {
+	background-color: hsl(var(--hsl-pink-3));
+	color: hsl(var(--hsl-b5));
+	font-weight: 700;
+}
+.skins-admin__btn--primary:hover:not(:disabled) {
+	background-color: hsl(var(--hsl-pink-2));
+}
+.skins-admin__btn--warn {
+	background-color: hsl(var(--hsl-orange-4));
+}
+.skins-admin__btn--warn:hover:not(:disabled) {
+	background-color: hsl(var(--hsl-orange-3));
+}
+
+/* list of entries */
+.skins-admin__list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+.skins-admin__entry {
+	display: flex;
+	flex-direction: column;
+	gap: 0.7rem;
+	padding: 0.8rem 1rem;
+	background-color: hsl(var(--hsl-b2));
+	border-radius: 10px;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+/* full-width info row */
+.skins-admin__info {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	min-width: 0;
+}
+.skins-admin__cover {
+	width: 52px;
+	height: 52px;
+	border-radius: 6px;
+	background-color: hsl(var(--hsl-b4));
+	object-fit: cover;
+	flex: none;
+}
+.skins-admin__cover--empty {
+	background-color: hsl(var(--hsl-b4));
+}
+.skins-admin__meta {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 14rem;
+	min-width: 0;
+}
+.skins-admin__title {
+	color: hsl(var(--hsl-c1));
+	font-weight: 600;
+}
+.skins-admin__ver {
+	color: hsl(var(--hsl-f1));
+	font-size: 0.8rem;
+	font-weight: 400;
+}
+.skins-admin__creator {
+	color: hsl(var(--hsl-f1));
+	font-size: 0.8rem;
+}
+.skins-admin__tags {
+	color: hsl(var(--hsl-f1));
+	font-size: 0.78rem;
+}
+
+.skins-admin__stat {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	flex: none;
+	font-size: 0.85rem;
+}
+.skins-admin__label {
+	color: hsl(var(--hsl-f1));
+	font-size: 0.68rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+/* status badge */
+.skins-admin__badge {
+	flex: none;
+	padding: 0.15rem 0.6rem;
+	border-radius: 10000px;
+	font-size: 0.7rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	line-height: 16px;
+}
+.skins-admin__badge--unpublished {
+	background-color: hsl(var(--hsl-b4));
+	color: hsl(var(--hsl-c2));
+}
+.skins-admin__badge--pending {
+	background-color: hsl(var(--hsl-orange-1));
+	color: hsl(var(--hsl-b4));
+}
+.skins-admin__badge--onHold {
+	background-color: hsl(var(--hsl-blue-1));
+	color: hsl(var(--hsl-b4));
+}
+.skins-admin__badge--published {
+	background-color: hsl(var(--hsl-lime-1));
+	color: hsl(var(--hsl-b4));
+}
+.skins-admin__badge--denied {
+	background-color: hsl(var(--hsl-red-2));
+	color: hsl(var(--hsl-b5));
+}
+
+.skins-admin__desc {
+	color: hsl(var(--hsl-c2));
+	font-size: 0.85rem;
+	margin: 0;
+}
+
+/* The VSCode Dark+ prism theme owns the code colours/background/padding (its
+   pre[class*="language-"] selector outranks this one); we just bound the box. */
+.skins-admin__code {
+	max-height: 360px;
+	overflow: auto;
+	border-radius: 8px;
+	font-size: 0.78rem;
+}
+
+.skins-admin__feedback {
+	width: 100%;
+	min-height: 48px;
+	padding: 0.35rem 0.5rem;
+	border: 1px solid hsl(var(--hsl-b1));
+	border-radius: 6px;
+	background-color: hsl(var(--hsl-b4));
+	color: hsl(var(--hsl-c1));
+	font: inherit;
+	font-size: 0.82rem;
+	color-scheme: dark;
+	box-sizing: border-box;
+	resize: vertical;
+}
+.skins-admin__feedback:focus {
+	outline: none;
+	border-color: hsl(var(--hsl-pink-3));
+}
+
+/* actions row, right aligned */
+.skins-admin__codebar {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.skins-admin__btn.current {
+	background-color: hsl(var(--hsl-b1));
+	color: hsl(var(--hsl-c1));
+}
+
+/* code diff */
+.skins-admin__diff {
+	margin: 0;
+	padding: 8px 0;
+	background: #1e1e1e;
+	color: #d4d4d4;
+	font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+	font-size: 0.78rem;
+	line-height: 1.5;
+	white-space: pre;
+	tab-size: 4;
+}
+.skins-admin__diffline {
+	display: flex;
+	gap: 8px;
+	padding: 0 10px;
+}
+.skins-admin__diffline code {
+	background: none;
+}
+.skins-admin__sigil {
+	flex: none;
+	width: 1ch;
+	color: rgba(255, 255, 255, 0.35);
+	user-select: none;
+}
+.skins-admin__diffline--add {
+	background: rgba(80, 200, 120, 0.16);
+}
+.skins-admin__diffline--add .skins-admin__sigil {
+	color: #6ee29a;
+}
+.skins-admin__diffline--remove {
+	background: rgba(214, 64, 69, 0.18);
+}
+.skins-admin__diffline--remove .skins-admin__sigil {
+	color: #ef8888;
+}
+
+.skins-admin__actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}

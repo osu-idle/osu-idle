@@ -1,23 +1,12 @@
 import './Nav.css';
-import { Path } from '../router';
-import Link from './Link';
+import type { ReactNode } from 'react';
 
-type Link = {
-	id: string,
-	label: string,
-	link: Path,
-};
-
-export default function Nav({ current, links }: {
-	current: string,
-	links: Link[]
-}) {
-
+/** The shared sub-nav bar container. Callers render their own typed Links inside,
+ *  each tagged `nav__item` (plus `current` for the active one). */
+export default function Nav({ children }: { children: ReactNode }) {
 	return (<div className='page-header nav__container'>
 		<div className='nav__list'>
-			{links.map(link => (<Link to={link.link} className={`nav__item ${link.id === current ? 'current' : ''}`}>
-				{link.label}
-			</Link>))}
+			{children}
 		</div>
 	</div>);
 }

@@ -1,11 +1,17 @@
 import type { BotContext } from '../bot.js';
-import type { Strain, SkillStrain } from '../bots/character.js';
+import type {
+	Strain,
+	SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import lerp from '../../math/lerp.js';
 import Skill from './skill.js';
 import { SKILL } from '../../skills.js';
-import { manipChance, hand } from './speed.js';
+import {
+	manipChance,
+	hand,
+} from './speed.js';
 import transpose from '../../math/transpose.js';
 import { smoothNormalize } from '../../math/normalize.js';
 
@@ -122,7 +128,9 @@ export default class JackSpeed extends Skill {
 			// a jump re-pressed onto a previous jump shares the hand's load across
 			// two fingers, so it strains less than the per-finger jack suggests
 			this.jack(currentStrain, action, note, maxInterval, jumping && (action?.jump ?? false));
-			fingers[finger] = { entry: currentStrain, anchor: note, jump: jumping };
+			fingers[finger] = {
+				entry: currentStrain, anchor: note, jump: jumping, 
+			};
 		}
 
 		colStrain.jackspeed.push(currentStrain);
@@ -151,7 +159,13 @@ export default class JackSpeed extends Skill {
 	 *  `jumpJack` (this press and the finger's previous press are both jumps) only
 	 *  shaves the strain THIS press adds - the carried debt presses on in full, so
 	 *  a jump-jack costs less to sustain without ever healing old lateness. */
-	private jack(currentStrain: SkillStrain, action: HandAction | undefined, note: RuntimeNote, maxInterval: number, jumpJack: boolean) {
+	private jack(
+		currentStrain: SkillStrain, 
+		action: HandAction | undefined, 
+		note: RuntimeNote, 
+		maxInterval: number, 
+		jumpJack: boolean,
+	) {
 		const previous = action?.entry;
 		currentStrain.unpure = (previous?.unpure ?? 0) / 2;
 
@@ -175,7 +189,13 @@ export default class JackSpeed extends Skill {
 	 *  late debt it adds on top of `carried`. A jump-jack's `relief` shaves only the
 	 *  new deficit this press introduces, never the carried debt or the gap slack
 	 *  that drains it. */
-	private bandStrain(currentStrain: SkillStrain, gap: number, carried: number, maxInterval: number, relief: number): number {
+	private bandStrain(
+		currentStrain: SkillStrain, 
+		gap: number, 
+		carried: number, 
+		maxInterval: number, 
+		relief: number,
+	): number {
 		const speed = 1000 / gap;
 		// new deficit this press adds (relieved); negative slack drains the carried
 		// debt and is left untouched so relief never heals old lateness

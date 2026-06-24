@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react';
+import {
+	useState,
+	useEffect,
+} from 'react';
 import Synced from '../helpers/synced.js'; 
 
 export default function useSynced<T>(synced: Synced<T>): [T, T | undefined] {
@@ -12,7 +15,9 @@ export default function useSynced<T>(synced: Synced<T>): [T, T | undefined] {
 
 		const handleUpdate = (current: T, previous?: T) => {
 			if (isMounted) {
-				setState({ current, previous });
+				setState({
+					current, previous, 
+				});
 			}
 		};
 

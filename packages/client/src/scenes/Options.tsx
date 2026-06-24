@@ -1,10 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import './Options.css';
 import { isOptionsOpen } from '../globals';
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import {
+	mapped,
+	ValueIn,
+} from '@osu-idle/shared/helpers/mapped';
 import SignIn from '../components/options/SignIn';
-import { Trans, useLingui } from '@lingui/react/macro';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
 import Language from '../components/options/Language';
 import ShowFPS from '../components/options/ShowFPS';
 import Fullscreen from '../components/options/Fullscreen';
@@ -21,6 +31,8 @@ import AutopilotMode from '../components/options/AutopilotMode';
 import RightClickHold from '../components/options/RightClickHold';
 import ManageAddons from '../components/options/ManageAddons';
 import BrowseAddons from '../components/options/BrowseAddons';
+import ManageSkins from '../components/options/ManageSkins';
+import BrowseSkins from '../components/options/BrowseSkins';
 
 /** A consumer component rendered inside a group. */
 type OptComponent = () => JSX.Element;
@@ -35,6 +47,7 @@ export default function Options() {
 		'GENERAL',
 		'GRAPHICS',
 		'GAMEPLAY',
+		'SKIN',
 		'CONTROLS',
 		'ADDONS',
 		'MAINTENANCE',
@@ -45,6 +58,7 @@ export default function Options() {
 		[CATEGORY.GENERAL]: t`GENERAL`,
 		[CATEGORY.GRAPHICS]: t`GRAPHICS`,
 		[CATEGORY.GAMEPLAY]: t`GAMEPLAY`,
+		[CATEGORY.SKIN]: t`Skin`,
 		[CATEGORY.CONTROLS]: t`CONTROLS`,
 		[CATEGORY.ADDONS]: t`ADD-ONS`,
 		[CATEGORY.MAINTENANCE]: t`MAINTENANCE`,
@@ -83,7 +97,7 @@ export default function Options() {
 						},
 					],
 				},
-			]
+			],
 		},
 		{
 			name: CATEGORY.GRAPHICS,
@@ -128,7 +142,7 @@ export default function Options() {
 						},
 					],
 				},
-			]
+			],
 		},
 		{
 			name: CATEGORY.GAMEPLAY,
@@ -167,7 +181,25 @@ export default function Options() {
 						},
 					],
 				},
-			]
+			],
+		},
+		{
+			name: CATEGORY.SKIN,
+			groups: [
+				{
+					title: t`Skinning`,
+					components: [
+						{
+							search: t`skin|skins|manage|installed`,
+							component: () => ManageSkins,
+						},
+						{
+							search: t`skin|skins|browse|catalog|install`,
+							component: () => BrowseSkins,
+						},
+					],
+				},
+			],
 		},
 		{
 			name: CATEGORY.CONTROLS,
@@ -181,7 +213,7 @@ export default function Options() {
 						},
 					],
 				},
-			]
+			],
 		},
 		{
 			name: CATEGORY.ADDONS,
@@ -199,7 +231,7 @@ export default function Options() {
 						},
 					],
 				},
-			]
+			],
 		},
 		{
 			name: CATEGORY.MAINTENANCE,
@@ -213,7 +245,7 @@ export default function Options() {
 						},
 					],
 				},
-			]
+			],
 		},
 	];
 
@@ -237,7 +269,10 @@ export default function Options() {
 	const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
 	const scrollTo = (name: string) => {
-		categoryRefs.current[name]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		categoryRefs.current[name]?.scrollIntoView({ 
+			behavior: 'smooth', 
+			block: 'start',
+		});
 	};
 
 	// Highlight the topmost category in the sidebar as the panel scrolls.
@@ -274,7 +309,9 @@ export default function Options() {
 						<button
 							key={category.name}
 							type='button'
-							className={`options__tab ${active === category.name ? 'is-active' : ''} ${shown ? '' : 'is-empty'}`}
+							className={
+								`options__tab ${active === category.name ? 'is-active' : ''} ${shown ? '' : 'is-empty'}`
+							}
 							disabled={!shown}
 							onClick={() => scrollTo(category.name)}
 						>
@@ -287,11 +324,18 @@ export default function Options() {
 			<div className='options__panel'>
 				<div className='options__scroll' ref={scrollRef} onScroll={onScroll}>
 					<div className='options__heading'><Trans>Options</Trans></div>
-					<div className='options__subheading'><Trans>Change the way osu!idle behaves</Trans></div>
+					<div className='options__subheading'>
+						<Trans>Change the way osu!idle behaves</Trans>
+					</div>
 
 					<label className='options__search'>
 						<svg className='options__search_icon' viewBox='0 0 24 24' aria-hidden>
-							<path fill='currentColor' d='M9.5 3a6.5 6.5 0 0 1 5.06 10.58l5.43 5.43-1.42 1.42-5.43-5.43A6.5 6.5 0 1 1 9.5 3m0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9' />
+							<path 
+								fill='currentColor' 
+								d={
+									`M9.5 3a6.5 6.5 0 0 1 5.06 10.58l5.43 5.43-1.42 1.42-5.43-5.43A6.5 6.5 0 1 1 9.5 3m0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9`
+								}
+							/>
 						</svg>
 						<input
 							className='options__search_input'

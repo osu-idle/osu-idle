@@ -1,6 +1,9 @@
 import { SKILL } from '../../skills.js';
 import type { BotContext } from '../bot.js';
-import type { Strain, SkillStrain } from '../bots/character.js';
+import type {
+	Strain,
+	SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import lerp from '../../math/lerp.js';
@@ -74,8 +77,16 @@ export default class Coordination extends Skill {
 		});
 	}
 
-	analyze(note: RuntimeNote, _context: BotContext, mapStrain: Strain, colStrain: Strain): SkillStrain {
-		const previous = mapStrain.coordination.length > 0 ? mapStrain.coordination[mapStrain.coordination.length - 1] : undefined;
+	analyze(
+		note: RuntimeNote, 
+		_context: BotContext, 
+		mapStrain: Strain, 
+		colStrain: Strain,
+	): SkillStrain {
+		const previous = mapStrain.coordination.length > 0 ? 
+			mapStrain.coordination[mapStrain.coordination.length - 1] :
+			undefined
+		 ;
 
 		const currentStrain: SkillStrain = {
 			note,
@@ -97,7 +108,8 @@ export default class Coordination extends Skill {
 		// drop holds that were fumble-released or have ended. An LN whose end lands
 		// exactly on this note is a transition (LN → note / LN → LN), not a held
 		// LN - hence the strict >.
-		this.active = this.active.filter(h => h.strain.forcedRelease?.at === undefined && h.note.endTime > note.time);
+		this.active = this.active
+			.filter(h => h.strain.forcedRelease?.at === undefined && h.note.endTime > note.time);
 
 		// already held = pressed strictly before this note; an LN head sharing this
 		// note's chord is being pressed *with* it, not held under it
@@ -105,7 +117,8 @@ export default class Coordination extends Skill {
 
 		if (held.length > 0) {
 			const heldMult = Coordination.HELD_MULT[Math.min(held.length, Coordination.HELD_MULT.length - 1)];
-			const handMult = held.some(h => hand(h.note.column) === hand(note.column)) ? Coordination.SAME_HAND_MULT : 1;
+			const handMult = held
+				.some(h => hand(h.note.column) === hand(note.column)) ? Coordination.SAME_HAND_MULT : 1;
 			const mult = Coordination.SAME_HAND_ADDITIVE ? heldMult + (handMult - 1) : heldMult * handMult;
 			currentStrain.strain = Math.min(1, currentStrain.strain + this.fatigueRate * mult);
 		}
@@ -120,7 +133,9 @@ export default class Coordination extends Skill {
 			this.breakDown(currentStrain, held, note);
 		}
 
-		if (note.hold) this.active.push({ note, strain: currentStrain });
+		if (note.hold) this.active.push({
+			note, strain: currentStrain, 
+		});
 
 		return currentStrain;
 	}

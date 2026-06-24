@@ -19,9 +19,14 @@ type AddonModule = {
 /** Loaded add-ons, by add-on id → its `unmount` (if any). */
 const live = new Map<number, () => void>();
 
-/** Import an add-on's source as an ES module (full page access, real exports). */
+/**
+ * Import an add-on's source as an ES module (full page access, real exports)
+ */
 const load = async (source: string): Promise<AddonModule> => {
-	const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
+	const url = URL.createObjectURL(
+		new Blob([source], 
+			{ type: 'text/javascript' },
+		));
 	try {
 		return await import(/* @vite-ignore */ url) as AddonModule;
 	} finally {
@@ -30,7 +35,11 @@ const load = async (source: string): Promise<AddonModule> => {
 };
 
 /** Run an add-on's source: import, call `mount`, and remember its `unmount`. */
-const mount = async (id: number, name: string, source: string): Promise<void> => {
+const mount = async (
+	id: number,
+	name: string, 
+	source: string,
+): Promise<void> => {
 	if (live.has(id)) return;
 	try {
 		const mod = await load(source);
@@ -81,5 +90,9 @@ export const remountAddon = async (addon: Addon): Promise<void> => {
 /** On boot, mount every enabled installed add-on. */
 export const bootAddons = async (): Promise<void> => {
 	const installed = await Addon.getAll();
-	await Promise.all(installed.filter(a => a.enabled).map(a => mount(a.id, a.name, a.source)));
+	await Promise.all(
+		installed
+			.filter(a => a.enabled)
+			.map(a => mount(a.id, a.name, a.source)),
+	);
 };

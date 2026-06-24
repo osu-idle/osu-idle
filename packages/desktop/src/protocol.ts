@@ -1,7 +1,16 @@
-import { net, protocol } from 'electron';
+import {
+	net,
+	protocol,
+} from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import { APP_HOST, APP_SCHEME, REMOTE_PREFIXES, rendererDir, SITE_BASE } from './config';
+import {
+	APP_HOST,
+	APP_SCHEME,
+	REMOTE_PREFIXES,
+	rendererDir,
+	SITE_BASE,
+} from './config';
 
 const MIME: Record<string, string> = {
 	'.html': 'text/html',
@@ -34,7 +43,9 @@ const MIME: Record<string, string> = {
 export function registerAppSchemePrivileges(): void {
 	protocol.registerSchemesAsPrivileged([{
 		scheme: APP_SCHEME,
-		privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true },
+		privileges: {
+			standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true, 
+		},
 	}]);
 }
 
@@ -43,9 +54,13 @@ const notFound = () => new Response('Not found', { status: 404 });
 async function fileInfo(file: string): Promise<{ isFile: boolean; isDir: boolean }> {
 	try {
 		const s = await fs.stat(file);
-		return { isFile: s.isFile(), isDir: s.isDirectory() };
+		return {
+			isFile: s.isFile(), isDir: s.isDirectory(), 
+		};
 	} catch {
-		return { isFile: false, isDir: false };
+		return {
+			isFile: false, isDir: false, 
+		};
 	}
 }
 

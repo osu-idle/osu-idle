@@ -1,4 +1,7 @@
-import { useRef, useState } from 'react';
+import {
+	useRef,
+	useState,
+} from 'react';
 import Synced from '@osu-idle/shared/helpers/synced';
 import Controls from '../input/Controls';
 import useSmoothNumber from '../animations/useSmoothNumber';
@@ -6,6 +9,7 @@ import './VolumeOverlay.css';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { SETTINGS } from '../db/settings';
 import { isVolumeVisible } from '../globals';
+import clamp from '@osu-idle/shared/math/clamp';
 
 type Channel = 'main' | 'music' | 'effects';
 
@@ -45,7 +49,7 @@ export default function VolumeOverlay() {
 
 	const adjust = (delta: number) => {
 		const channel = CHANNELS[hoveredRef.current ?? 'main'];
-		const next = Math.max(0, Math.min(1, Math.round((channel.get() + delta) * 100) / 100));
+		const next = clamp(Math.round((channel.get() + delta) * 100) / 100, 0, 1);
 		void channel.set(next);
 		isVolumeVisible.set(true);
 		armHide(() => { if (!hoveredRef.current) isVolumeVisible.set(false); });
@@ -94,7 +98,15 @@ type MeterProps = {
 };
 
 /** A circular dial that fills clockwise from the top in proportion to `value`. */
-function Meter({ label, value, position, active, large, onEnter, onLeave }: MeterProps) {
+function Meter({ 
+	label,
+	value, 
+	position,
+	active,
+	large, 
+	onEnter, 
+	onLeave, 
+}: MeterProps) {
 	// ease the displayed level so both the ring and the % glide on change
 	const shown = useSmoothNumber(value, { duration: 200 });
 	const size = large ? 124 : 96;
@@ -105,12 +117,26 @@ function Meter({ label, value, position, active, large, onEnter, onLeave }: Mete
 
 	return (
 		<div
-			className={`vol__meter vol__pos${position} ${active ? 'is-active' : ''} ${large ? 'is-large' : ''}`}
+			className={
+				`vol__meter vol__pos${position} ${active ? 'is-active' : ''} ${large ? 'is-large' : ''}`
+			}
 			onMouseEnter={onEnter}
 			onMouseLeave={onLeave}
 		>
-			<svg className="vol__ring" width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-				<circle className="vol__track" cx={size / 2} cy={size / 2} r={r} strokeWidth={stroke} fill="none" />
+			<svg 
+				className="vol__ring" 
+				width={size}
+				height={size} 
+				viewBox={`0 0 ${size} ${size}`}
+			>
+				<circle 
+					className="vol__track" 
+					cx={size / 2} 
+					cy={size / 2}
+					r={r} 
+					strokeWidth={stroke} 
+					fill="none" 
+				/>
 				<circle
 					className="vol__fill"
 					cx={size / 2} cy={size / 2} r={r}

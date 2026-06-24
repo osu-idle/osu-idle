@@ -17,7 +17,9 @@ const looksTranslatable = s => PROSE.test(s) && (/ /.test(s) || /[!?.]$/.test(s)
 // Translatable string-literal attributes.
 const ATTR = /(?:placeholder|title|aria-label|alt|label)="([A-Z][^"]*[a-z][^"]*)"/g;
 
-const files = execSync(`git ls-files -- ${ROOTS.map(r => `'${r}/**/*.tsx'`).join(' ')}`, { encoding: 'utf8' })
+const files = execSync(
+	`git ls-files -- ${ROOTS.map(r => `'${r}/**/*.tsx'`).join(' ')}`
+	, { encoding: 'utf8' })
 	.split('\n')
 	.filter(Boolean);
 

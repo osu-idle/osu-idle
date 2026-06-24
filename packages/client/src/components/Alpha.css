@@ -44,12 +44,11 @@
 	color: red;
 }
 
-
 @media (max-width: 850px) {
 	.alpha__warning {
-		filter: drop-shadow(0rem 0rem .1rem black);
+		filter: drop-shadow(0rem 0rem 0.1rem black);
 	}
 	.alpha__warning a {
-		filter: drop-shadow(0rem 0rem .1rem black);
+		filter: drop-shadow(0rem 0rem 0.1rem black);
 	}
 }

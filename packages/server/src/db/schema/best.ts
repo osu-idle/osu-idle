@@ -1,7 +1,14 @@
 import { mysqlTable } from 'drizzle-orm/mysql-core';
-import { bestConstraints, bestTableDefinition, type ScoreRow } from './score';
+import {
+	bestConstraints,
+	bestTableDefinition,
+	type ScoreRow,
+} from './score';
 import { db } from '../client';
-import { and, eq } from 'drizzle-orm';
+import {
+	and,
+	eq,
+} from 'drizzle-orm';
 
 export const best = mysqlTable('best', bestTableDefinition, bestConstraints);
 
@@ -15,7 +22,7 @@ export const getBestPlay = async (characterId: number, beatmapId: number) => {
 		.where(
 			and(
 				eq(best.characterId, characterId),
-				eq(best.beatmapId, beatmapId)
+				eq(best.beatmapId, beatmapId),
 			))
 		.limit(1);
 	return row;

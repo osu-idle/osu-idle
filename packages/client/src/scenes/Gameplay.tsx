@@ -1,13 +1,33 @@
 import './Gameplay.css';
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Trans, useLingui } from '@lingui/react/macro';
-import { LEAD_IN_MS, ManiaGame } from '@osu-idle/shared/sim/maniaGame';
+import {
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type ReactNode,
+} from 'react';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
+import {
+	LEAD_IN_MS,
+	ManiaGame,
+} from '@osu-idle/shared/sim/maniaGame';
 import CharacterBot from '@osu-idle/shared/sim/bots/character';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 import type { Bot } from '@osu-idle/shared/sim/bot';
 import { DEBUG_BOT_LEVEL } from '../gameplay/strainDebug';
 import ReplayBot from '../gameplay/replayBot';
-import { abortPlaySession, fetchPlayResult, playSessionHeartbeat, PlayResultError, skipPlaySession, startPlaySession, type PlayContext } from '../online/play';
+import {
+	abortPlaySession,
+	fetchPlayResult,
+	playSessionHeartbeat,
+	PlayResultError,
+	skipPlaySession,
+	startPlaySession,
+	type PlayContext,
+} from '../online/play';
 import Account from '../online/account';
 import Entities from '../entity/entities';
 import { drawHitErrorBar } from '../gameplay/hitError';
@@ -16,12 +36,29 @@ import Reading from '@osu-idle/shared/sim/skills/reading';
 import Memory from '@osu-idle/shared/sim/skills/memory';
 import { Beatmap } from 'osu-classes';
 import calculatePP from '../osu/pp';
-import { music, PLAYER_MODE } from '../audio/MusicPlayer';
-import { preloadDefaultHitsounds, scheduleHitsound, stopScheduledHitsounds } from '../audio/hitsounds';
+import {
+	music,
+	PLAYER_MODE,
+} from '../audio/MusicPlayer';
+import {
+	preloadDefaultHitsounds,
+	preloadSamples,
+	scheduleHitsound,
+	stopScheduledHitsounds,
+} from '../audio/hitsounds';
+import { SampleSchedule } from '../audio/SampleSchedule';
+import { effects } from '../audio/EffectPlayer';
+import {
+	assetKey,
+	loadStoryboardAssets,
+} from '../osu/beatmap/storyboard';
 import BeatmapStore from '../osu/beatmap/beatmap_store';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import SceneManager, { SCENE } from './SceneManager';
-import { Transition, DialogPanel } from './Transition';
+import {
+	Transition,
+	DialogPanel,
+} from './Transition';
 import Controls from '../input/Controls';
 import { debugMode } from '../globals';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
@@ -31,10 +68,14 @@ import num from '@osu-idle/shared/display/num';
 import accuracy from '@osu-idle/shared/display/accuracy';
 import { getCharacter } from '../online/services/characters';
 import Autopilot from '../gameplay/autopilot';
-import { SKILL, Skills, type SkillName } from '@osu-idle/shared/skills';
+import {
+	SKILL,
+	Skills,
+	type SkillName,
+} from '@osu-idle/shared/skills';
 import { skillName } from '@osu-idle/shared/display/skills';
 import { type Grade } from '@osu-idle/shared/judgement';
-import Skin from '../osu/skin/Skin';
+import { currentSkin } from '../osu/skin/Skin';
 import { drawHpBar } from '../gameplay/hpBar';
 import { MAX_HP } from '@osu-idle/shared/sim/scoring';
 import { SETTINGS } from '../db/settings';
@@ -55,7 +96,7 @@ const COLUMN_WIDTH = 74;
 const NOTE_HEIGHT = 24;
 const RECEPTOR_HEIGHT = 30;
 const JUDGE_LINE_FROM_BOTTOM = 100;
-/** approach time at base speed (ms a note is visible) - lower = faster scroll */
+/** approach time at base speed (ms a note is visible) lower = faster scroll */
 /** how far ahead hitsounds are queued onto the audio clock. Must exceed the
  *  background timer-throttle floor (~1s) so a blurred tab still queues the next
  *  chunk before the previous one runs out - that's what keeps sound going. */
@@ -67,17 +108,40 @@ const HITSOUND_TICK_MS = 250;
 // skills whose live strain is meaningful to watch - the rest are hidden from
 // the strain HUD (accuracy is a level constant; memory has no press strain of
 // its own - it only reduces SpeedJam's)
-const STRAIN_HUD_HIDDEN = new Set<SkillName>([SKILL.accuracy, SKILL.memory, SKILL.consistency]);
+const STRAIN_HUD_HIDDEN = new Set<SkillName>([
+	SKILL.accuracy, 
+	SKILL.memory, 
+	SKILL.consistency,
+]);
 const STRAIN_HUD_SKILLS = Skills.filter(s => !STRAIN_HUD_HIDDEN.has(s));
 
-function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: InnerProps) {
+function GameplayInner({ 
+	beatmapInfo, 
+	beatmap, 
+	play,
+	timesPlayed, 
+	transition, 
+}: InnerProps) {
 	music.mode.set(PLAYER_MODE.SINGLE);
 
+	const [skin] = useSynced(currentSkin);
 	const [scrollSpeed] = useSynced(SETTINGS.scrollspeed);
 	const SCROLL_MS = scrollSpeedToMs(scrollSpeed);
 	const [debug] = useSynced(debugMode);
 	const { i18n } = useLingui();
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	// background, storyboard video and the dim overlay are stacked DOM layers
+	// behind the (transparent) playfield canvas: bg → video → dim → canvas. This
+	// lets a native <video> play between the background and the playfield without
+	// drawing it frame-by-frame, and mirrors osu's layer model.
+	const bgRef = useRef<HTMLDivElement>(null);
+	const videoRef = useRef<HTMLVideoElement>(null);
+	const dimRef = useRef<HTMLDivElement>(null);
+	// keysound + storyboard-sample schedulers (effects channel), and the set of
+	// note times that carry a keysound (so the default hitsound is suppressed for
+	// them). Built once the map's assets are decoded and preloaded.
+	const sampleSchedRef = useRef<SampleSchedule | null>(null);
+	const videoInfoRef = useRef<{ time: number } | null>(null);
 	const [done, setDone] = useState(false);
 	// live grade for the HUD badge - a DOM <img> overlaid on the canvas, so it is
 	// React state pushed from the render loop only when the grade actually changes
@@ -94,7 +158,9 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		Object.fromEntries(Skills.map(s => [s, 0])) as Record<SkillName, number>,
 	);
 	const skillLabels = useMemo(
-		() => Object.fromEntries(Skills.map(s => [s, skillName(s)])) as Record<SkillName, string>,
+		() => Object.fromEntries(Skills.map(s => 
+			[s, skillName(s)],
+		)) as Record<SkillName, string>,
 		[i18n],
 	);
 	// clock state lives in a ref so it survives HMR effect re-runs: the lead-in
@@ -102,9 +168,15 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 	// clock continuous with the (single, still-playing) audio.
 	// `paused` holds the clock at the very start of the lead-in until the transition
 	// has revealed the playfield - so gameplay doesn't begin behind the cover.
-	// `pauseAt` (debug only) holds the song clock frozen at a song position while paused.
-	const clockRef = useRef<{ leadStart: number; audioStarted: boolean; noAudio?: boolean; paused: boolean; pauseAt?: number } | null>(null);
-	// index into game.hitTimes of the next hitsound still to be queued. Persisted
+	// `pauseAt` holds the song clock frozen at a song position while paused
+	const clockRef = useRef<{
+		leadStart: number; 
+		audioStarted: boolean;
+		noAudio?: boolean;
+		paused: boolean; 
+		pauseAt?: number
+	} | null>(null);
+	// index into game.headHits of the next hitsound still to be queued. Persisted
 	// across HMR re-runs so the scheduler resumes instead of re-queueing.
 	const hitsoundPtr = useRef(0);
 	// latest rendered song position (ms), so the debug transport controls (which
@@ -122,7 +194,9 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 	// character cache after each play, so loops show the climbing fatigue.
 	const [autopilot] = useSynced(Autopilot.session);
 	const nextUp = autopilot ? Autopilot.next() : null;
-	const online = useAsync(async () => character.id > 1 ? getCharacter(character.id) : undefined, [character]);
+	const online = useAsync(async () => 
+		character.id > 1 ? getCharacter(character.id) : undefined
+	, [character]);
 
 	// build the game once; a freshly-built game starts a fresh clock so the two
 	// always stay in lock-step (HMR preserves both refs → seamless resume)
@@ -138,7 +212,10 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		botRef.current = play.mode === 'ranked'
 			? new ReplayBot(play.offsets)
 			: play.mode === 'debug'
-				? new CharacterBot(makeOrderedSkills(DEBUG_BOT_LEVEL), beatmap.difficulty.overallDifficulty)
+				? new CharacterBot(
+					makeOrderedSkills(DEBUG_BOT_LEVEL),
+					beatmap.difficulty.overallDifficulty,
+				)
 				: new CharacterBot(character.skills, beatmap.difficulty.overallDifficulty);
 		// scroll speed is a purely visual preference (applied below via pxPerUnit);
 		// the bot's reading window must stay scroll-speed-independent so the same map
@@ -151,7 +228,10 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		if (botRef.current instanceof CharacterBot) {
 			strainBotRef.current = botRef.current;
 		} else {
-			strainBotRef.current = new CharacterBot(character.skills, beatmap.difficulty.overallDifficulty);
+			strainBotRef.current = new CharacterBot(
+				character.skills, 
+				beatmap.difficulty.overallDifficulty,
+			);
 			new ManiaGame(beatmap, strainBotRef.current);
 		}
 		clockRef.current = null;
@@ -206,18 +286,20 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 	};
 
 	Controls.skip.usePress(() => {
-		if ((game?.now() ?? Infinity) < ((game?.songStartMs ?? Infinity) - 2000)) skipToStart();
+		if ((game?.now() ?? Infinity) < ((game?.songStartMs ?? Infinity) - 2000))
+			skipToStart();
 	});
 
 	// --- debug transport: pause/unpause + 10s seeks ---
 	// re-queue hitsounds from song position `t`, dropping anything already scheduled
-	// ahead on the audio clock (it would otherwise fire while paused / after a seek).
+	// ahead on the audio clock
 	const resyncHitsounds = (t: number) => {
 		if (!game) return;
 		stopScheduledHitsounds();
 		let i = 0;
-		while (i < game.hitTimes.length && game.hitTimes[i] < t) i++;
+		while (i < game.headHits.length && game.headHits[i].time < t) i++;
 		hitsoundPtr.current = i;
+		sampleSchedRef.current?.resync(t);
 	};
 	// re-anchor a running clock so it reads song position `t` and resume audio there.
 	const resumeAt = (clock: NonNullable<typeof clockRef.current>, t: number) => {
@@ -249,7 +331,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		if (!debug || !clock || !game) return;
 		const cur = clock.pauseAt ?? nowRef.current;
 		const t = Math.max(0, Math.min(cur + delta, game.songEndMs));
-		game.seek(t); // forward seek judges the notes skipped over; backward rewinds and replays, so they reappear
+		game.seek(t);
 		if (clock.pauseAt !== undefined) {
 			clock.pauseAt = t;
 			resyncHitsounds(t);
@@ -261,7 +343,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 	Controls.seekBack.usePress(() => seekBy(-10000));
 
 	// finalise the play once it's over - the path depends on how it was scored:
-	//  - ranked:   the server is authoritative; signal completion and show its result
+	//  - ranked:   the server is authoritative signal completion and show its result
 	//  - guest:    save locally and award XP from the local simulation
 	//  - unranked: save locally only (no XP)
 	useEffect(() => {
@@ -298,7 +380,13 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				// `local` already reproduces the server's exact score - show it whenever
 				// the authoritative result can't be fetched (gone server-side, or the
 				// server unreachable) so the player still reaches their result screen.
-				const showLocal = () => SceneManager.set(SCENE.RESULT, local, game, undefined, failed);
+				const showLocal = () => SceneManager.set(
+					SCENE.RESULT, 
+					local, 
+					game, 
+					undefined, 
+					failed,
+				);
 
 				const handleRanked = async (tries = 0) => {
 					try {
@@ -359,7 +447,10 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 					// only guest play awards local XP; unranked play does not
 					let progression;
 					if (play.mode === 'guest' && botRef.current instanceof CharacterBot) {
-						progression = botRef.current.applyProgression(beatmapInfo.metadata.total_length, saved);
+						progression = botRef.current.applyProgression(
+							beatmapInfo.metadata.total_length, 
+							saved,
+						);
 						void Entities.character.get().persistSkills();
 					}
 					SceneManager.set(SCENE.RESULT, saved, game, progression, false);
@@ -387,10 +478,42 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		return () => clearInterval(watch);
 	}, []);
 
+	// decode + preload the map's keysounds and storyboard samples (effects channel)
+	// and its storyboard video, then build the schedulers. Runs behind the lead-in
+	// cover; until it resolves notes just play the default hitsound.
+	useEffect(() => {
+		let alive = true;
+		let videoUrl: string | undefined;
+		const setId = beatmapInfo.set.metadata.id;
+		void (async () => {
+			const assets = await loadStoryboardAssets(beatmapInfo, beatmap);
+			if (!alive) return;
+			sampleSchedRef.current = new SampleSchedule(assets.samples);
+			// keysounds are played per note at press time (see queueHitsounds); only
+			// the blobs need preloading here so they trigger with no latency.
+			void preloadSamples(setId, [...assets.keysounds, ...assets.samples]);
+			if (!assets.video) return;
+			videoUrl = await BeatmapStore.getFileUrl(setId, assets.video.file);
+			if (!alive || !videoUrl) {
+				if (videoUrl) URL.revokeObjectURL(videoUrl);
+				return;
+			}
+			if (videoRef.current) {
+				videoInfoRef.current = { time: assets.video.time };
+				videoRef.current.src = videoUrl;
+			}
+		})();
+		return () => {
+			alive = false;
+			if (videoUrl) URL.revokeObjectURL(videoUrl);
+		};
+	}, [beatmap, beatmapInfo]);
+
 	useEffect(() => {
 		if (!game) return;
 		const canvas = canvasRef.current!;
 		const ctx = canvas.getContext('2d')!;
+		const setId = beatmapInfo.set.metadata.id;
 		const keys = game.keyCount;
 		const fieldWidth = keys * COLUMN_WIDTH;
 		const mobile = window.innerWidth < 850;
@@ -415,14 +538,43 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		resize();
 		window.addEventListener('resize', resize);
 
-		// optional dimmed background (resolved from the map's stored files)
-		let bg: HTMLImageElement | null = null;
-		void BeatmapStore.getBeatmapBackground(beatmap).then((bgUrl) => {
-			if (!bgUrl) return;
-			const img = new Image();
-			img.onload = () => (bg = img);
-			img.src = bgUrl;
+		// background + storyboard video are DOM layers behind the transparent canvas.
+		// Resolve the background image into its layer (cover-fit via CSS).
+		let bgUrl: string | undefined;
+		void BeatmapStore.getBeatmapBackground(beatmap).then((url) => {
+			if (!url) return;
+			bgUrl = url;
+			if (bgRef.current) bgRef.current.style.backgroundImage = `url("${url}")`;
 		});
+
+		// keep the native storyboard video tracking the song clock. Plays natively;
+		// only nudged when it drifts, when paused, or outside its time range - never
+		// drawn per-frame. Hidden until its start and after it ends.
+		let lastVideoNow = -Infinity;
+		const syncVideo = (now: number) => {
+			const video = videoRef.current;
+			const info = videoInfoRef.current;
+			if (!video || !info || !video.src) return;
+			const target = (now - info.time) / 1000;
+			const advancing = now > lastVideoNow;
+			lastVideoNow = now;
+			if (target < 0 || (video.duration && target > video.duration)) {
+				video.style.display = 'none';
+				if (!video.paused) video.pause();
+				return;
+			}
+			video.style.display = '';
+			if (!advancing) {
+				if (!video.paused) video.pause();
+				return;
+			}
+			if (video.paused) {
+				video.currentTime = target;
+				void video.play().catch(() => {});
+			} else if (Math.abs(video.currentTime - target) > 0.25) {
+				video.currentTime = target;
+			}
+		};
 
 		const fieldX = () => (w - fieldWidth) / 2;
 
@@ -430,7 +582,11 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		// persisted in a ref so an HMR effect re-run resumes the same clock
 		// instead of restarting the lead-in (which would desync from the audio)
 		if (!clockRef.current) {
-			clockRef.current = { leadStart: performance.now(), audioStarted: false, paused: true };
+			clockRef.current = { 
+				leadStart: performance.now(), 
+				audioStarted: false, 
+				paused: true,
+			};
 			// keep the player's "current beatmap" set (results / menu read it) but stop
 			// the streaming preview - gameplay plays a decoded buffer through the shared
 			// audio context so the music stays sample-locked to the hitsounds.
@@ -452,7 +608,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 					if (t >= 0) {
 						// already into the song - seek to the live position and start audio there
 						const seekTo = Math.min(t, game.songEndMs + 1);
-						game.seek(seekTo); // judges the notes already played (the replay is deterministic)
+						game.seek(seekTo);
 						resumeAt(c0, seekTo);
 					} else {
 						// still within the lead-in: anchor the countdown to wall-clock; audio
@@ -490,7 +646,10 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		};
 
 		const noteY = (time: number, now: number) =>
-			lineY - (game.scroll.positionAt(time) - game.scroll.positionAt(now)) * pxPerUnit;
+			lineY 
+			- (game.scroll.positionAt(time) 
+			- game.scroll.positionAt(now)) * pxPerUnit
+		;
 
 		// Queue hitsounds onto the audio clock up to LOOKAHEAD ahead of the song
 		// position. Because they're scheduled (not played reactively), they fire on
@@ -500,10 +659,23 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 		const queueHitsounds = () => {
 			if (finished) return;
 			const now = songTime();
-			const times = game.hitTimes;
-			while (hitsoundPtr.current < times.length && times[hitsoundPtr.current] <= now + HITSOUND_LOOKAHEAD_MS) {
-				scheduleHitsound(times[hitsoundPtr.current++], now);
+			const heads = game.headHits;
+			while (
+				hitsoundPtr.current < heads.length 
+				&& heads[hitsoundPtr.current].time <= now + HITSOUND_LOOKAHEAD_MS
+			) {
+				const { time, note } = heads[hitsoundPtr.current++];
+				if (time < now) continue; // already past - drop, don't fire late
+				if (note.samples.length) {
+					// a keysounded note plays its own sample(s) instead of the default
+					for (const file of note.samples) {
+						effects.play(assetKey(setId, file), { atMs: effects.now() + (time - now) });
+					}
+				} else {
+					scheduleHitsound(time, now);
+				}
 			}
+			sampleSchedRef.current?.queue(now, HITSOUND_LOOKAHEAD_MS);
 		};
 		// a timer (not rAF) so it keeps queueing while the tab is hidden
 		const hitsoundTimer = setInterval(queueHitsounds, HITSOUND_TICK_MS);
@@ -520,17 +692,15 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 
 		// background fill, then the dimmed cover image. Dim is read live each
 		// frame so the slider updates without needing a replay.
+		// the canvas is transparent now (background + video are DOM layers below it);
+		// just clear it and keep the dim overlay in sync with the live setting.
+		let lastDim = -1;
 		const drawBackground = () => {
 			ctx.clearRect(0, 0, w, h);
-			ctx.fillStyle = '#05040a';
-			ctx.fillRect(0, 0, w, h);
-			if (bg) {
-				const scale = Math.max(w / bg.width, h / bg.height);
-				const bw = bg.width * scale;
-				const bh = bg.height * scale;
-				ctx.globalAlpha = Math.max(0, 1 - SETTINGS.backgroundDim.get());
-				ctx.drawImage(bg, (w - bw) / 2, (h - bh) / 2, bw, bh);
-				ctx.globalAlpha = 1;
+			const dim = SETTINGS.backgroundDim.get();
+			if (dim !== lastDim && dimRef.current) {
+				lastDim = dim;
+				dimRef.current.style.opacity = String(Math.max(0, Math.min(1, dim)));
 			}
 		};
 
@@ -562,7 +732,12 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 
 		type RenderNote = ManiaGame['notes'][number];
 
-		const drawHoldNote = (note: RenderNote, cx: number, color: string, now: number) => {
+		const drawHoldNote = (
+			note: RenderNote, 
+			cx: number, 
+			color: string, 
+			now: number,
+		) => {
 			if (note.tailJudged) {
 				const broke = note.tailMissedAt;
 				if (broke !== undefined) {
@@ -589,7 +764,12 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				if (now >= note.endTime) return;
 				const yTail = noteY(note.endTime, now);
 				ctx.fillStyle = hexA(color, 0.85);
-				ctx.fillRect(cx + 6, Math.min(lineY, yTail), COLUMN_WIDTH - 12, Math.abs(lineY - yTail));
+				ctx.fillRect(
+					cx + 6, 
+					Math.min(lineY, yTail), 
+					COLUMN_WIDTH - 12, 
+					Math.abs(lineY - yTail),
+				);
 				ctx.fillStyle = color;
 				ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
 				ctx.fillRect(cx + 4, lineY - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
@@ -612,7 +792,12 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			ctx.fillRect(cx + 4, yHead - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
 		};
 
-		const drawTapNote = (note: RenderNote, cx: number, color: string, now: number) => {
+		const drawTapNote = (
+			note: RenderNote, 
+			cx: number,
+			color: string, 
+			now: number,
+		) => {
 			if (note.headJudged) return;
 			const y = noteY(note.time, now);
 			if (y < -NOTE_HEIGHT || y > h + NOTE_HEIGHT) return;
@@ -625,14 +810,21 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				ctx.textAlign = 'center';
 				ctx.fillStyle = 'black';
 				ctx.fillText(`1/${note.snap}`, cx + 4 + (COLUMN_WIDTH - 8) / 2, y);
-				ctx.fillText(Reading.countTransitions(new Map(), game.visibleNotesAt(note.time)).toString(), cx + 4 + (COLUMN_WIDTH - 8) / 2, y + 9);
+				ctx.fillText(
+					Reading.countTransitions(
+						new Map(), 
+						game.visibleNotesAt(note.time),
+					).toString(), 
+					cx + 4 + (COLUMN_WIDTH - 8) / 2,
+					y + 9,
+				);
 			}
 		};
 
 		const drawNotes = (x0: number, now: number) => {
 			for (const note of game.notes) {
 				const cx = x0 + note.column * COLUMN_WIDTH;
-				const color = Skin.hitObjectColor(note.column);
+				const color = skin.data.hitObjects[note.column].color;
 				if (note.hold) drawHoldNote(note, cx, color, now);
 				else drawTapNote(note, cx, color, now);
 			}
@@ -644,10 +836,20 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				const glow = Math.max(0, 1 - (now - game.columnFlash[c]) / 140);
 				ctx.strokeStyle = 'rgba(255,255,255,0.4)';
 				ctx.lineWidth = 2;
-				ctx.strokeRect(cx + 4, lineY - RECEPTOR_HEIGHT, COLUMN_WIDTH - 8, RECEPTOR_HEIGHT);
+				ctx.strokeRect(
+					cx + 4, 
+					lineY - RECEPTOR_HEIGHT, 
+					COLUMN_WIDTH - 8, 
+					RECEPTOR_HEIGHT,
+				);
 				if (glow > 0) {
-					ctx.fillStyle = hexA(Skin.hitObjectColor(c), 0.35 * glow);
-					ctx.fillRect(cx + 4, lineY - RECEPTOR_HEIGHT, COLUMN_WIDTH - 8, RECEPTOR_HEIGHT);
+					ctx.fillStyle = hexA(skin.data.hitObjects[c].color, 0.35 * glow);
+					ctx.fillRect(
+						cx + 4, 
+						lineY - RECEPTOR_HEIGHT, 
+						COLUMN_WIDTH - 8, 
+						RECEPTOR_HEIGHT,
+					);
 				}
 			}
 			// judgement line
@@ -672,7 +874,8 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				ctx.font = '600 11px "Exo 2", sans-serif';
 				STRAIN_HUD_SKILLS.forEach((skill, i) => {
 					// ease toward the live value so per-note jumps read as motion
-					const v = strainDisplay.current[skill] += (strains[skill] - strainDisplay.current[skill]) * 0.2;
+					const added = (strains[skill] - strainDisplay.current[skill]) * 0.2;
+					const v = strainDisplay.current[skill] += added;
 					const by = by0 + i * step;
 					// calm green → stressed red
 					const color = `hsl(${120 - v * 120}, 85%, 55%)`;
@@ -712,7 +915,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				const age = now - flash.time;
 				if (age >= 0 && age < 400) {
 					ctx.globalAlpha = 1 - age / 400;
-					ctx.fillStyle = Skin.judgeColor(flash.judgement);
+					ctx.fillStyle = skin.data.judgements[flash.judgement];
 					ctx.font = '700 26px "Exo 2", sans-serif';
 					ctx.textAlign = 'center';
 					ctx.fillText(flash.judgement, cxField, lineY - 90);
@@ -733,10 +936,26 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				ctx.textAlign = 'center';
 				ctx.fillText(`${game.npsAt(now)}nps`, cxField, h * 0.32);
 				ctx.fillText(`${game.visibleNotesAt(now).length}v`, cxField, h * 0.28);
-				ctx.fillText(`${Reading.countTransitions(new Map(), game.visibleNotesAt(now))}t`, cxField, h * 0.36);
-				ctx.fillText(`${num(Speed.weightedGroups(new Map(), game.recentNotes(now)), 2)}g`, cxField, h * 0.39);
+				ctx.fillText(`${Reading.countTransitions(
+					new Map(), 
+					game.visibleNotesAt(now))}t`,
+				cxField,
+				h * 0.36,
+				);
+				ctx.fillText(
+					`${num(Speed.weightedGroups(
+						new Map(), 
+						game.recentNotes(now),
+					), 2)}g`,
+					cxField, 
+					h * 0.39,
+				);
 				ctx.textAlign = 'left';
-				ctx.fillText(`x${Math.round(game.scroll.getSpeedAt(now) * 100) / 100}`, 15, h * 0.1);
+				ctx.fillText(
+					`x${Math.round(game.scroll.getSpeedAt(now) * 100) / 100}`, 
+					15, 
+					h * 0.1,
+				);
 			}
 
 			drawStrainMeters(now);
@@ -769,7 +988,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				ctx.textAlign = 'center';
 				ctx.fillText(`Debug bot - no fail`, cxField, h * 0.66);
 			}
-			// current grade badge (DOM <img>, top right) - only re-render React when it flips
+			// current grade badge (DOM <img>, top right)
 			if (game.score.grade !== gradeRef.current) {
 				gradeRef.current = game.score.grade;
 				setGrade(game.score.grade);
@@ -778,10 +997,18 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			ctx.fillStyle = '#fff';
 			ctx.textAlign = 'right';
 			ctx.font = '700 30px "Exo 2", sans-serif';
-			ctx.fillText(`${(game.score.accuracy * 100).toFixed(2)}%`, w - 28, mobile? 90 : 48);
+			ctx.fillText(
+				`${(game.score.accuracy * 100).toFixed(2)}%`,
+				w - 28,
+				mobile? 90 : 48,
+			);
 			ctx.font = '500 18px "Exo 2", sans-serif';
 			ctx.fillStyle = 'rgba(255,255,255,0.75)';
-			ctx.fillText(Math.round(game.score.score).toLocaleString(), w - 28, mobile? 120 : 76);
+			ctx.fillText(
+				Math.round(game.score.score).toLocaleString(),
+				w - 28, 
+				mobile? 120 : 76,
+			);
 
 			// progress bar
 			const prog = Math.max(0, Math.min(1, now / game.songEndMs));
@@ -793,12 +1020,17 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			// HP bar (right of the playfield) - eased toward the live value, drawn
 			// before the hit-error bar so that bar stays on top of it
 			const tNow = performance.now();
-			hpEased += (game.score.hp / MAX_HP - hpEased) * (1 - Math.exp(-(tNow - hpLast) / Skin.hpBar.transitionMs));
+			const transition = (1 - Math.exp(-(tNow - hpLast) / skin.data.hpBar.transitionMs));
+			hpEased += (game.score.hp / MAX_HP - hpEased) * transition;
 			hpLast = tNow;
-			drawHpBar(ctx, { hp: hpEased, x: x0 + fieldWidth + Skin.hpBar.gap, bottom: h - Skin.hpBar.fromBottom });
+			drawHpBar(skin, ctx, { 
+				hp: hpEased, 
+				x: x0 + fieldWidth + skin.data.hpBar.gap, 
+				bottom: h - skin.data.hpBar.fromBottom, 
+			});
 
 			// hit-error bar (below the receptors)
-			drawHitErrorBar(ctx, {
+			drawHitErrorBar(skin, ctx, {
 				windows: game.windows,
 				hits: game.hits,
 				now,
@@ -819,6 +1051,7 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			const x0 = fieldX();
 
 			drawBackground();
+			syncVideo(now);
 			drawPlayfield(x0);
 			drawBarlines(x0, now);
 			drawNotes(x0, now);
@@ -826,7 +1059,11 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			drawHud(x0, now);
 
 			// end of map
-			if (!finished && (game.finished || (now > game.songEndMs && (play.mode !== 'ranked' || (now > play.endsAt))))) {
+			if (!finished 
+				&& (game.finished 
+					|| (now > game.songEndMs && (play.mode !== 'ranked' || (now > play.endsAt)))
+				)
+			) {
 				finished = true;
 				// hand the outro clock the live song position so the playfield keeps
 				// scrolling seamlessly while the result screen loads
@@ -880,7 +1117,8 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			const py = e.clientY - rect.top;
 			const cxField = fieldX() + fieldWidth / 2;
 			// bounding box around the SKIP / >>>> text (drawn at h*0.62–0.64)
-			if (Math.abs(px - cxField) < 90 && py > h * 0.56 && py < h * 0.68) skipToStart();
+			if (Math.abs(px - cxField) < 90 && py > h * 0.56 && py < h * 0.68) 
+				skipToStart();
 		};
 		canvas.addEventListener('pointerdown', onPointerDown);
 
@@ -893,6 +1131,8 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 			window.removeEventListener('resize', resize);
 			window.removeEventListener('keydown', onKey);
 			canvas.removeEventListener('pointerdown', onPointerDown);
+			videoRef.current?.pause();
+			if (bgUrl) URL.revokeObjectURL(bgUrl);
 		};
 	}, [game, debug, transition]);
 
@@ -900,8 +1140,11 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 
 	return (
 		<div className="play">
+			<div ref={bgRef} className="play__bg" />
+			<video ref={videoRef} className="play__video" muted playsInline />
+			<div ref={dimRef} className="play__dim" />
 			<canvas ref={canvasRef} className="play__canvas" />
-			{!done && Skin.grade(grade, 'play__grade')}
+			{!done && skin.grade(grade, 'play__grade')}
 			{done && play.mode === 'ranked' && (
 				<div className="play__loading">
 					<div className="play__loading-spinner" />
@@ -912,18 +1155,24 @@ function GameplayInner({ beatmapInfo, beatmap, play, timesPlayed, transition }: 
 				<span className="game__back-arrow">‹</span> <Trans>quit</Trans>
 			</button>
 			<div className="play__title">
-				{beatmap.metadata.artist} - {beatmap.metadata.title} <span>[{beatmap.metadata.version}]</span>
+				{beatmap.metadata.artist} - {beatmap.metadata.title}
+				<span>[{beatmap.metadata.version}]</span>
 			</div>
 
 			{autopilot && (
 				<div className="play__autopilot">
 					<div className="play__autopilot-next">
 						<Trans>Next up:</Trans> {nextUp
-							? <>{nextUp.set.metadata.artist} - {nextUp.set.metadata.title} <span>[{nextUp.metadata.version}]</span></>
+							? <>
+								{nextUp.set.metadata.artist} - {nextUp.set.metadata.title}
+								<span>[{nextUp.metadata.version}]</span>
+							</>
 							: '-'}
 					</div>
 					{online && (
-						<div className="play__autopilot-fatigue"><Trans>Current Fatigue</Trans>: {accuracy(online.fatiguePercent)}</div>
+						<div className="play__autopilot-fatigue">
+							<Trans>Current Fatigue</Trans>: {accuracy(online.fatiguePercent)}
+						</div>
 					)}
 				</div>
 			)}
@@ -945,7 +1194,7 @@ type Props = {
 };
 
 /**
- * Loads a play behind the transition cover, then hands off to {@link GameplayInner}.
+ * Loads a play behind the transition cover, then hands off to GameplayInner
  *
  * Runs the slow work - parse the beatmap, resolve the play session - while the
  * cover hides it, and routes the failure cases into the cover as dialogs (the
@@ -956,8 +1205,16 @@ type Props = {
  * On success it mounts GameplayInner, which builds the game, paints a frozen
  * first frame, then reveals the cover and starts the clock.
  */
-export default function Gameplay({ beatmapInfo, transition, debugPlay }: Props) {
-	const [boot, setBoot] = useState<{ beatmap: Beatmap; play: PlayContext; timesPlayed: number } | null>(null);
+export default function Gameplay({ 
+	beatmapInfo,
+	transition,
+	debugPlay, 
+}: Props) {
+	const [boot, setBoot] = useState<{ 
+		beatmap: Beatmap;
+		play: PlayContext;
+		timesPlayed: number 
+	} | null>(null);
 	// run the boot once; the ref survives HMR effect re-runs so a hot reload never
 	// re-loads (and never mints a second server play session).
 	const booted = useRef(false);
@@ -972,8 +1229,12 @@ export default function Gameplay({ beatmapInfo, transition, debugPlay }: Props) 
 		booted.current = true;
 
 		// show interactive content over the fully-covered screen and await a choice
-		const dialog = <T,>(render: (resolve: (v: T) => void) => ReactNode): Promise<T> =>
-			transition.covered.then(() => new Promise<T>(resolve => transition.setContent(render(resolve))));
+		const dialog = <T,>(
+			render: (resolve: (v: T) => void) => ReactNode,
+		): Promise<T> =>
+			transition.covered.then(() => new Promise<T>(resolve => 
+				transition.setContent(render(resolve)),
+			));
 
 		// swap back to song select behind the cover, then fade it out to reveal it
 		const backToSelect = async () => {
@@ -983,7 +1244,13 @@ export default function Gameplay({ beatmapInfo, transition, debugPlay }: Props) 
 
 		const fail = async (message: string) => {
 			await dialog<void>(resolve => (
-				<DialogPanel title={t`Couldn't start play`} message={message} actions={[{ label: t`Back`, onClick: () => resolve() }]} />
+				<DialogPanel 
+					title={t`Couldn't start play`} 
+					message={message} 
+					actions={[{ 
+						label: t`Back`, 
+						onClick: () => resolve(), 
+					}]} />
 			));
 			await backToSelect();
 		};
@@ -1004,7 +1271,9 @@ export default function Gameplay({ beatmapInfo, transition, debugPlay }: Props) 
 
 			// debug play is purely local: no character validation, no server session.
 			if (debugPlay) {
-				setBoot({ beatmap: live, play: { mode: 'debug' }, timesPlayed: 0 });
+				setBoot({
+					beatmap: live, play: { mode: 'debug' }, timesPlayed: 0, 
+				});
 				return;
 			}
 
@@ -1012,17 +1281,27 @@ export default function Gameplay({ beatmapInfo, transition, debugPlay }: Props) 
 			// not be mis-scored. During server downtime this waits rather than guessing.
 			await Account.ready();
 			const character = Entities.character.get();
-			const session = await startPlaySession(character, live.metadata.beatmapId, live.metadata.beatmapSetId);
+			const session = await startPlaySession(
+				character, 
+				live.metadata.beatmapId, 
+				live.metadata.beatmapSetId,
+			);
 
 			let play: PlayContext;
 			if (session.mode === 'refused') {
 				const choice = await dialog<'local' | 'cancel'>(resolve => (
 					<DialogPanel
 						title={t`Play unranked ?`}
-						message={t`A game is already in progress. Play locally instead? It won't be submitted.`}
+						message={
+							t`A game is already in progress. Play locally instead? It won't be submitted.`
+						}
 						actions={[
-							{ label: t`Play unranked`, primary: true, onClick: () => resolve('local') },
-							{ label: t`Cancel`, onClick: () => resolve('cancel') },
+							{
+								label: t`Play unranked`, primary: true, onClick: () => resolve('local'), 
+							},
+							{
+								label: t`Cancel`, onClick: () => resolve('cancel'), 
+							},
 						]}
 					/>
 				));
@@ -1035,18 +1314,36 @@ export default function Gameplay({ beatmapInfo, transition, debugPlay }: Props) 
 				play = session;
 			}
 
-			const timesPlayed = await Score.countPlays(character.id, live.metadata.beatmapId);
-			setBoot({ beatmap: live, play, timesPlayed });
+			const timesPlayed = await Score.countPlays(
+				character.id, 
+				live.metadata.beatmapId,
+			);
+			setBoot({
+				beatmap: live, play, timesPlayed, 
+			});
 		})();
 	}, [beatmapInfo, transition, debugPlay, t]);
 
 	// nothing to show until the play is resolved - the cover is hiding this anyway
 	if (!boot) return <div className="play" />;
-	return <GameplayInner beatmapInfo={beatmapInfo} beatmap={boot.beatmap} play={boot.play} timesPlayed={boot.timesPlayed} transition={transition} />;
+	return <GameplayInner 
+		beatmapInfo={beatmapInfo} 
+		beatmap={boot.beatmap}
+		play={boot.play} 
+		timesPlayed={boot.timesPlayed} 
+		transition={transition} 
+	/>;
 }
 
 // ---- tiny canvas helpers ----
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function roundRect(
+	ctx: CanvasRenderingContext2D, 
+	x: number, 
+	y: number,
+	w: number, 
+	h: number, 
+	r: number,
+) {
 	ctx.beginPath();
 	ctx.moveTo(x + r, y);
 	ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -1057,7 +1354,23 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 }
 
 /** apply alpha to a #rrggbb colour */
-function hexA(hex: string, a: number): string {
-	const n = parseInt(hex.slice(1), 16);
-	return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+function hexA(hex: string, alpha: number): string {
+	let h = hex.replace(/^#/, '');
+
+	if (h.length === 3 || h.length === 4) {
+		h = h
+			.split('')
+			.map(c => c + c)
+			.join('');
+	}
+
+	if (h.length !== 6 && h.length !== 8) {
+		throw new Error(`Invalid hex colour: ${hex}`);
+	}
+
+	const r = parseInt(h.slice(0, 2), 16);
+	const g = parseInt(h.slice(2, 4), 16);
+	const b = parseInt(h.slice(4, 6), 16);
+
+	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }

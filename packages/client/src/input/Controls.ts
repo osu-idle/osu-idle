@@ -2,7 +2,11 @@ import Listener from '@osu-idle/shared/helpers/listener';
 import Synced from '@osu-idle/shared/helpers/synced';
 import SceneManager, { SCENE } from '../scenes/SceneManager';
 import { SETTINGS } from '../db/settings';
-import { isOptionsOpen, isStandalone, message } from '../globals';
+import {
+	isOptionsOpen,
+	isStandalone,
+	message,
+} from '../globals';
 
 type KeyCallback = (press: boolean, release: boolean) => void;
 
@@ -24,7 +28,6 @@ class KeyListener extends Listener<KeyCallback> {
 		return () => this.off(press);
 	}
 
-	/** React hook variants of {@link onPress}/{@link onRelease}: see {@link Listener.use}. */
 	public usePress(callback: () => void): void {
 		this.use((press: boolean) => { if (press) callback(); });
 	}
@@ -144,7 +147,9 @@ export default class Controls {
 		// back/skip aren't held actions, a repeat that lands after a scene swap would
 		// re-trigger on the freshly-mounted scene (e.g. result → select → menu on one
 		// long Escape press). The genuine press/release pair still fires.
-		window.addEventListener('keydown', (e) => { if (!e.repeat) handle(e, true, false); });
+		window.addEventListener('keydown', (e) => { 
+			if (!e.repeat) handle(e, true, false);
+		});
 		window.addEventListener('keyup', (e) => handle(e, false, true));
 
 		window.addEventListener('wheel', syncModifiers, { capture: true });
@@ -157,7 +162,9 @@ export default class Controls {
 		window.addEventListener('contextmenu', (e) => e.preventDefault());
 
 		window.addEventListener('wheel', (e) => {
-			if (this.mode_Alt.get() || (SceneManager.current.get() === SCENE.MENU && !isOptionsOpen.get())) {
+			if (this.mode_Alt.get() 
+				|| (SceneManager.current.get() === SCENE.MENU && !isOptionsOpen.get())
+			) {
 				if (e.deltaY > 0) {
 					this.volumeDown.trigger(false, false);
 				} else {

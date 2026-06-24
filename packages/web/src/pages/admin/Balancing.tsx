@@ -3,12 +3,20 @@ import './Balancing.css';
 import { useAdmin } from '../../hooks/useAdmin';
 import { xpForLevel } from '@osu-idle/shared/sim/skills/xp';
 import OsuPlot, { precise4 } from '../../components/OsuPlot';
-import { accBasedScoreFactor, factorXP, getRecoveryTime, lowDensityBasedNotesFactor, mapXP, speedBasedScoreFactor } from '@osu-idle/shared/sim/bots/character';
+import {
+	accBasedScoreFactor,
+	factorXP,
+	getRecoveryTime,
+	lowDensityBasedNotesFactor,
+	mapXP,
+	speedBasedScoreFactor,
+} from '@osu-idle/shared/sim/bots/character';
 import { SKILL } from '@osu-idle/shared/skills';
 import Reading from '@osu-idle/shared/sim/skills/reading';
 import Speed from '@osu-idle/shared/sim/skills/speed';
 import Stamina from '@osu-idle/shared/sim/skills/stamina';
 import JackSpeed from '@osu-idle/shared/sim/skills/jackspeed';
+import Accuracy, { MIN_MAX_BAD_MS } from '@osu-idle/shared/sim/skills/accuracy';
 import { smoothNormalize } from '@osu-idle/shared/math/normalize';
 
 export default function BalancingPage() {
@@ -16,7 +24,12 @@ export default function BalancingPage() {
 
 	if (!admin) return <main>Unauthorized</main>;
 
-	const getProgression = (processor: (level: number, previous?: number) => number, from = 0, to = 110, step = 1) => {
+	const getProgression = (
+		processor: (level: number, previous?: number) => number, 
+		from = 0, 
+		to = 110, 
+		step = 1,
+	) => {
 		const x: number[] = [];
 		const y: number[] = [];
 		let prev: number | undefined = undefined;
@@ -25,7 +38,9 @@ export default function BalancingPage() {
 			x.push(i);
 			y.push(prev);
 		}
-		return { x, y };
+		return {
+			x, y, 
+		};
 	};
 
 	const totalXP = getProgression((n, m) => xpForLevel(n) + (m ?? 0));
@@ -36,6 +51,10 @@ export default function BalancingPage() {
 		accuracy: n / 100,
 		MISS: 0,
 	}, 1000, 100, 120), 90, 100, 0.1);
+
+	const accBad = getProgression(n => Accuracy.computeForLevel(n).bad);
+	const accMin = getProgression(n => Accuracy.computeForLevel(n).minMs);
+	const accMax = getProgression(n => Accuracy.computeForLevel(n).maxMs + MIN_MAX_BAD_MS);
 	
 	const accXPFactorSS = getProgression(n => accBasedScoreFactor(n, {
 		accuracy: 1,
@@ -84,7 +103,9 @@ export default function BalancingPage() {
 					title="Test"
 					xTitle="X"
 					yTitle="Y"
-					series={[{ name: 'Y', x: test.x, y: test.y }]}
+					series={[{
+						name: 'Y', x: test.x, y: test.y, 
+					}]}
 				/>
 
 				<OsuPlot
@@ -92,28 +113,57 @@ export default function BalancingPage() {
 					xTitle="Level"
 					yTitle="Cumulative XP"
 					layout={{ yaxis: { type: 'log' } }}
-					series={[{ name: 'Total XP', x: totalXP.x, y: totalXP.y }]}
+					series={[{
+						name: 'Total XP', x: totalXP.x, y: totalXP.y, 
+					}]}
 				/>
 				<OsuPlot
 					title="XP conversion"
 					xTitle="Note XP"
 					yTitle="Gained XP"
 					series={[
-						{ name: 'Gained XP', x: xpConversion.x, y: xpConversion.y },
-						{ name: 'Baseline XP', x: xpBaseline.x, y: xpBaseline.y, color: '#d67a8e28' },
+						{
+							name: 'Gained XP', x: xpConversion.x, y: xpConversion.y, 
+						},
+						{
+							name: 'Baseline XP', x: xpBaseline.x, y: xpBaseline.y, color: '#d67a8e28', 
+						},
 					]}
-					layout={{
-						yaxis: {
-							dtick: 100,
-						}
-					}}
+					layout={{ yaxis: { dtick: 100 } }}
 				/>
 				<OsuPlot
 					title="Skill XP"
 					xTitle="Accuracy"
 					yTitle="XP"
 					series={[
-						{ name: 'XP', x: scoreXP.x, y: scoreXP.y },
+						{
+							name: 'XP', x: scoreXP.x, y: scoreXP.y, 
+						},
+					]}
+				/>
+				<OsuPlot
+					title="Acc bad"
+					xTitle="Accuracy"
+					yTitle="Bad"
+					yHoverFormat={precise4}
+					series={[
+						{
+							name: 'Bad', x: accBad.x, y: accBad.y,
+						},
+					]}
+				/>
+				<OsuPlot
+					title="Acc range"
+					xTitle="Accuracy"
+					yTitle="Bad"
+					yHoverFormat={precise4}
+					series={[
+						{
+							name: 'Min', x: accMin.x, y: accMin.y,
+						},
+						{
+							name: 'Max', x: accMax.x, y: accMax.y,
+						},
 					]}
 				/>
 				<OsuPlot
@@ -122,7 +172,9 @@ export default function BalancingPage() {
 					yTitle="Factor"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'Level', x: accXPFactorSS.x, y: accXPFactorSS.y },
+						{
+							name: 'Level', x: accXPFactorSS.x, y: accXPFactorSS.y, 
+						},
 					]}
 				/>
 				<OsuPlot
@@ -131,7 +183,9 @@ export default function BalancingPage() {
 					yTitle="Factor"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'Level', x: accXPFactorS.x, y: accXPFactorS.y },
+						{
+							name: 'Level', x: accXPFactorS.x, y: accXPFactorS.y, 
+						},
 					]}
 				/>
 				<OsuPlot
@@ -140,7 +194,9 @@ export default function BalancingPage() {
 					yTitle="Factor"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'Level', x: speedXPFactorS.x, y: speedXPFactorS.y },
+						{
+							name: 'Level', x: speedXPFactorS.x, y: speedXPFactorS.y, 
+						},
 					]}
 				/>
 				<OsuPlot
@@ -149,7 +205,9 @@ export default function BalancingPage() {
 					yTitle="Level"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'Level', x: speedXPFactorA.x, y: speedXPFactorA.y },
+						{
+							name: 'Level', x: speedXPFactorA.x, y: speedXPFactorA.y, 
+						},
 					]}
 				/>
 				<OsuPlot
@@ -158,7 +216,9 @@ export default function BalancingPage() {
 					yTitle="Accuracy"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'Accuracy', x: transposed.x, y: transposed.y },
+						{
+							name: 'Accuracy', x: transposed.x, y: transposed.y, 
+						},
 					]}
 				/>
 
@@ -168,8 +228,12 @@ export default function BalancingPage() {
 					xTitle="Seconds"
 					yTitle="Seconds Recovered"
 					series={[
-						{ name: 'Base', x: recoveryBase.x, y: recoveryBase.y, color: '#c0437d28' },
-						{ name: 'Tweaked', x: recovery.x, y: recovery.y },
+						{
+							name: 'Base', x: recoveryBase.x, y: recoveryBase.y, color: '#c0437d28', 
+						},
+						{
+							name: 'Tweaked', x: recovery.x, y: recovery.y, 
+						},
 					]}
 				/>
 
@@ -180,8 +244,12 @@ export default function BalancingPage() {
 					yTitle="Transitions"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'Transitions', x: skillReadingNotes.x, y: skillReadingNotes.y },
-						{ name: 'Above Transitions', x: skillReadingAbove.x, y: skillReadingAbove.y },
+						{
+							name: 'Transitions', x: skillReadingNotes.x, y: skillReadingNotes.y, 
+						},
+						{
+							name: 'Above Transitions', x: skillReadingAbove.x, y: skillReadingAbove.y, 
+						},
 					]}
 				/>
 
@@ -192,8 +260,12 @@ export default function BalancingPage() {
 					yTitle="Weighted NPS"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'Weighted NPS Comfort', x: skillSpeedComfort.x, y: skillSpeedComfort.y },
-						{ name: 'Weighted NPS MAX', x: skillSpeedNps.x, y: skillSpeedNps.y },
+						{
+							name: 'Weighted NPS Comfort', x: skillSpeedComfort.x, y: skillSpeedComfort.y, 
+						},
+						{
+							name: 'Weighted NPS MAX', x: skillSpeedNps.x, y: skillSpeedNps.y, 
+						},
 					]}
 				/>
 
@@ -204,7 +276,9 @@ export default function BalancingPage() {
 					yTitle="NPS"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'NPS', x: skillStaminaNps.x, y: skillStaminaNps.y },
+						{
+							name: 'NPS', x: skillStaminaNps.x, y: skillStaminaNps.y, 
+						},
 					]}
 				/>
 				<OsuPlot
@@ -213,8 +287,12 @@ export default function BalancingPage() {
 					yTitle="Fatigue"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'Fatigue rate', x: skillStaminaFatigue.x, y: skillStaminaFatigue.y },
-						{ name: 'Recovery rate', x: skillStaminaRecovery.x, y: skillStaminaRecovery.y },
+						{
+							name: 'Fatigue rate', x: skillStaminaFatigue.x, y: skillStaminaFatigue.y, 
+						},
+						{
+							name: 'Recovery rate', x: skillStaminaRecovery.x, y: skillStaminaRecovery.y, 
+						},
 					]}
 				/>
 
@@ -225,9 +303,15 @@ export default function BalancingPage() {
 					yTitle="NPS"
 					yHoverFormat={precise4}
 					series={[
-						{ name: 'Comfort', x: skillJackComfort.x, y: skillJackComfort.y },
-						{ name: 'NPS', x: skillJackNps.x, y: skillJackNps.y, color: 'rgba(169, 122, 214, 0.3)' },
-						{ name: 'Max', x: skillJackMax.x, y: skillJackMax.y, color: '#c0434328' },
+						{
+							name: 'Comfort', x: skillJackComfort.x, y: skillJackComfort.y, 
+						},
+						{
+							name: 'NPS', x: skillJackNps.x, y: skillJackNps.y, color: 'rgba(169, 122, 214, 0.3)', 
+						},
+						{
+							name: 'Max', x: skillJackMax.x, y: skillJackMax.y, color: '#c0434328', 
+						},
 					]}
 				/>
 			</div>

@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import initSqlJs, { type Database, type SqlValue } from 'sql.js';
+import initSqlJs, {
+	type Database,
+	type SqlValue,
+} from 'sql.js';
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 import { migrate } from './migrations';
 // import { debugMode } from '../globals';
@@ -75,7 +78,10 @@ export class Column<V, Opt extends boolean = false> {
 		readonly decode: (v: SqlValue) => V = v => v as V,
 	) {}
 
-	/** Allow NULL. Columns are NOT NULL by default; this makes the field `| null` and optional on the row. */
+	/** Allow NULL.
+	 * Columns are NOT NULL by default;
+	 * this makes the field `| null` and optional on the row.
+	 */
 	nullable(): Column<V | null, true> {
 		this.isNullable = true;
 		this.optional = true;
@@ -131,19 +137,27 @@ export class Column<V, Opt extends boolean = false> {
 export const integer = () => new Column<number>('INTEGER');
 export const real = () => new Column<number>('REAL');
 export const text = <T extends string = string>() => new Column<T>('TEXT');
-export const boolean = () => new Column<boolean>('INTEGER', v => (v ? 1 : 0), v => !!v);
+export const boolean = () => new Column<boolean>(
+	'INTEGER', 
+	v => (v ? 1 : 0),
+	v => !!v,
+);
 
 type Columns = Record<string, Column<any, boolean>>;
 
 type Prettify<T> = { [K in keyof T]: T[K] } & {};
-type OptionalKeys<C extends Columns> = { [K in keyof C]: C[K] extends Column<any, true> ? K : never }[keyof C];
+type OptionalKeys<C extends Columns> = {
+	[K in keyof C]: C[K] extends Column<any, true> ? K : never 
+}[keyof C];
 
 /** The stored shape of a row - every column present. This is the instance / read type. */
-export type Row<C extends Columns> = Prettify<{ [K in keyof C]: C[K]['_value'] }>;
+export type Row<C extends Columns> = Prettify<{
+	[K in keyof C]: C[K]['_value']
+}>;
 
 /**
  * The shape accepted when creating/inserting a row. Columns that the DB can fill
- * in itself - autoincrement keys, `.default(...)`, `.nullable()` - are optional;
+ * in itself - autoincrement keys, `.default(...)`, `.nullable()` - are optional
  * everything else is required.
  */
 export type Insert<C extends Columns> = Prettify<
@@ -179,9 +193,12 @@ export class Table<C extends Columns> {
 			const notNull = c.isNullable || c.isPrimaryKey ? '' : ' NOT NULL';
 			return `  ${name} ${c.sqlType}${notNull}${c.modifiers}`;
 		});
-		if (this.options.primaryKey?.length) lines.push(`  PRIMARY KEY (${this.options.primaryKey.join(', ')})`);
+		if (this.options.primaryKey?.length)
+			lines.push(`  PRIMARY KEY (${this.options.primaryKey.join(', ')})`);
 
-		const statements = [`CREATE TABLE IF NOT EXISTS ${this.name} (\n${lines.join(',\n')}\n);`];
+		const statements = [
+			`CREATE TABLE IF NOT EXISTS ${this.name} (\n${lines.join(',\n')}\n);`,
+		];
 		for (const [name, expr] of Object.entries(this.options.indexes ?? {})) {
 			statements.push(`CREATE INDEX IF NOT EXISTS ${name} ON ${this.name}(${expr});`);
 		}
@@ -201,11 +218,10 @@ export class Table<C extends Columns> {
 			`INSERT OR REPLACE INTO ${this.name} (${keys.join(', ')}) VALUES (${keys.map(() => '?').join(', ')})`,
 			keys.map(k => this.columns[k].encode(row[k])),
 		);
-		console.log(`INSERT OR REPLACE INTO ${this.name} (${keys.join(', ')}) VALUES (${keys.map(() => '?').join(', ')})`, keys.map(k => this.columns[k].encode(row[k])));
 		return db.exec('SELECT last_insert_rowid() AS id')[0].values[0][0] as number;
 	}
 
-	/** Decode a raw sql.js row object into a typed row (applies per-column codecs). */
+	/** Decode a raw sql.js row object into a typed row. */
 	decode(raw: Record<string, SqlValue>): Row<C> {
 		const out: Record<string, unknown> = {};
 		for (const k in this.columns) out[k] = this.columns[k].decode(raw[k]);
@@ -239,7 +255,11 @@ export class Table<C extends Columns> {
 const registry: Table<any>[] = [];
 
 /** Declare a table. Registers its schema so the managed connection creates it on boot. */
-export const table = <C extends Columns>(name: string, columns: C, options?: TableOptions): Table<C> => {
+export const table = <C extends Columns>(
+	name: string,
+	columns: C, 
+	options?: TableOptions,
+): Table<C> => {
 	const t = new Table(name, columns, options);
 	registry.push(t);
 	return t;
@@ -266,7 +286,10 @@ function idb(): Promise<IDBDatabase> {
 
 async function idbLoad(): Promise<Uint8Array | null> {
 	try {
-		const store = (await idb()).transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE);
+		const store = (await idb())
+			.transaction(IDB_STORE, 'readonly')
+			.objectStore(IDB_STORE);
+
 		return await new Promise((resolve, reject) => {
 			const req = store.get(DB_KEY);
 			req.onsuccess = () => resolve((req.result as Uint8Array) ?? null);
@@ -278,7 +301,10 @@ async function idbLoad(): Promise<Uint8Array | null> {
 }
 
 async function idbSave(bytes: Uint8Array): Promise<void> {
-	const store = (await idb()).transaction(IDB_STORE, 'readwrite').objectStore(IDB_STORE);
+	const store = (await idb())
+		.transaction(IDB_STORE, 'readwrite')
+		.objectStore(IDB_STORE);
+	
 	await new Promise<void>((resolve, reject) => {
 		const req = store.put(bytes, DB_KEY);
 		req.onsuccess = () => resolve();
@@ -289,10 +315,9 @@ async function idbSave(bytes: Uint8Array): Promise<void> {
 const getDatabaseSchema = (db: Database) => {
 	const schema: any = {
 		tables: [],
-		views: []
+		views: [],
 	};
 
-	// Helper to map sql.js raw execution results [{ columns: [], values: [[]] }] to an array of objects
 	const queryToObjects = (sqlString: string) => {
 		try {
 			const res = db.exec(sqlString);
@@ -322,7 +347,7 @@ const getDatabaseSchema = (db: Database) => {
 		if (item.type === 'view') {
 			schema.views.push({
 				name: item.name,
-				sql: item.sql
+				sql: item.sql,
 			});
 			continue;
 		}
@@ -337,7 +362,7 @@ const getDatabaseSchema = (db: Database) => {
 			notNull: col.notnull === 1,
 			defaultValue: col.dflt_value,
 			isPrimaryKey: col.pk > 0,
-			primaryKeyOrder: col.pk // Handles composite primary keys (1, 2, etc.)
+			primaryKeyOrder: col.pk, // Handles composite primary keys (1, 2, etc.)
 		}));
 
 		// 3. Fetch foreign keys for the table
@@ -349,7 +374,7 @@ const getDatabaseSchema = (db: Database) => {
 			from: fk.from,
 			to: fk.to,
 			onUpdate: fk.on_update,
-			onDelete: fk.on_delete
+			onDelete: fk.on_delete,
 		}));
 
 		// 4. Fetch indexes for the table
@@ -365,7 +390,7 @@ const getDatabaseSchema = (db: Database) => {
 				name: idx.name,
 				unique: idx.unique === 1,
 				origin: idx.origin, // 'c' for CREATE INDEX, 'u' for UNIQUE constraint
-				columns: indexedColumns
+				columns: indexedColumns,
 			});
 		}
 		
@@ -416,13 +441,23 @@ const handle = (): Promise<Database> => (connection ??= connect());
  */
 export const DB = {
 	/** Typed select against a table. */
-	async select<C extends Columns>(t: Table<C>, sql: string, params: SqlValue[] = []): Promise<Row<C>[]> {
+	async select<C extends Columns>(
+		t: Table<C>, 
+		sql: string, 
+		params: SqlValue[] = [],
+	): Promise<Row<C>[]> {
 		return t.select(await handle(), sql, params);
 	},
+
 	/** Typed select returning the first row, or undefined. */
-	async first<C extends Columns>(t: Table<C>, sql: string, params: SqlValue[] = []): Promise<Row<C> | undefined> {
+	async first<C extends Columns>(
+		t: Table<C>, 
+		sql: string, 
+		params: SqlValue[] = [],
+	): Promise<Row<C> | undefined> {
 		return (await this.select(t, sql, params))[0] ?? undefined;
 	},
+
 	/** Run a raw write statement and persist. */
 	async run(sql: string, params: SqlValue[] = []): Promise<void> {
 		await this.write(db => db.run(sql, params));
@@ -449,7 +484,7 @@ export const DB = {
 interface DaoInstance<C extends Columns> {
 	/** Insert this row, replacing any existing row with the same key. Fills in the autoincrement key, then returns itself. */
 	add(): Promise<this>;
-	/** Persist the instance's current field values to its row (optionally patch first). */
+	/** Persist the instance's current field values to its row. */
 	update(patch?: Partial<Row<C>>): Promise<this>;
 	/** Delete this row by primary key. */
 	delete(): Promise<void>;
@@ -461,10 +496,24 @@ export interface DaoStatic<C extends Columns> {
 	new (row: Insert<C>): Record_<C>;
 	readonly table: Table<C>;
 
-	get<T extends DaoStatic<C>>(this: T, key: SqlValue | Partial<Row<C>>): Promise<InstanceType<T> | undefined>;
+	get<T extends DaoStatic<C>>(
+		this: T, 
+		key: SqlValue | Partial<Row<C>>
+	): Promise<InstanceType<T> | undefined>;
+
 	getAll<T extends DaoStatic<C>>(this: T): Promise<InstanceType<T>[]>;
-	query<T extends DaoStatic<C>>(this: T, sql: string, params?: SqlValue[]): Promise<InstanceType<T>[]>;
-	first<T extends DaoStatic<C>>(this: T, sql: string, params?: SqlValue[]): Promise<InstanceType<T> | undefined>;
+
+	query<T extends DaoStatic<C>>(
+		this: T, 
+		sql: string, 
+		params?: SqlValue[]
+	): Promise<InstanceType<T>[]>;
+
+	first<T extends DaoStatic<C>>(
+		this: T, 
+		sql: string, 
+		params?: SqlValue[]
+	): Promise<InstanceType<T> | undefined>;
 }
 
 /**
@@ -483,7 +532,8 @@ export function DAO<C extends Columns>(t: Table<C>): DaoStatic<C> {
 			// instance matches what the DB would store.
 			for (const k in t.columns) {
 				const col = t.columns[k];
-				if (col.hasDefault && (this as any)[k] === undefined) (this as any)[k] = col.defaultValue;
+				if (col.hasDefault && (this as any)[k] === undefined)
+					(this as any)[k] = col.defaultValue;
 			}
 		}
 
@@ -507,13 +557,17 @@ export function DAO<C extends Columns>(t: Table<C>): DaoStatic<C> {
 		}
 
 		async delete(): Promise<void> {
-			await DB.run(`DELETE FROM ${t.name} WHERE ${t.keyWhere()}`, t.keyParams(this as any));
+			await DB.run(
+				`DELETE FROM ${t.name} WHERE ${t.keyWhere()}`
+				, t.keyParams(this as any));
 		}
 
 		static table = t;
 
 		static async get(key: SqlValue | Partial<Row<C>>) {
-			const row = await DB.first(t, `SELECT * FROM ${t.name} WHERE ${t.keyWhere()}`, t.keyParams(key));
+			const row = await DB.first(t, 
+				`SELECT * FROM ${t.name} WHERE ${t.keyWhere()}`
+				, t.keyParams(key));
 			return row ? new this(row) : undefined;
 		}
 

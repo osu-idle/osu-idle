@@ -7,26 +7,21 @@ const publish = async () => {
 
 	const r = await fetch(env.MAP_FEED_WEBHOOK, {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
+		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({
 			"content": null,
 			"embeds": [
 				{
 					"title": "${artist} - $(title)",
+					// eslint-disable-next-line @stylistic/max-len
 					"description": "`${difficulty}☆` `${version}`\n`${difficulty}☆` `${version}`\n`${difficulty}☆` `${version}`\n`${difficulty}☆` `${version}`",
 					"color": 5814783,
-					"author": {
-						"name": "New ranked map by {creator}"
-					},
-					"image": {
-						"url": "https://assets.ppy.sh/beatmaps/2555008/covers/cover.jpg"
-					}
-				}
+					"author": { "name": "New ranked map by {creator}" },
+					"image": { "url": "https://assets.ppy.sh/beatmaps/2555008/covers/cover.jpg" },
+				},
 			],
-			"attachments": []
-		})
+			"attachments": [],
+		}),
 	});
 
 	console.log(await r.json());

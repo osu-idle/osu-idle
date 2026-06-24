@@ -1,6 +1,12 @@
 import { CarouselItem } from '../../components/BeatmapCarousel';
-import { Metadata, VersionMetadata } from './beatmap_api';
-import { RuntimeMetadata, RuntimeVersionMetadata } from './beatmap_store';
+import {
+	Metadata,
+	VersionMetadata,
+} from './beatmap_api';
+import {
+	RuntimeMetadata,
+	RuntimeVersionMetadata,
+} from './beatmap_store';
 import LightBeatmap from './LightBeatmap';
 
 export default class LightBeatmapSet {
@@ -12,7 +18,9 @@ export default class LightBeatmapSet {
 		beatmaps: LightBeatmap[] | (RuntimeVersionMetadata | VersionMetadata)[],
 	) {
 		if (beatmaps.length && !(beatmaps[0] instanceof LightBeatmap)) {
-			this.beatmaps = beatmaps.map(m => new LightBeatmap(this, m as RuntimeVersionMetadata | VersionMetadata));
+			this.beatmaps = beatmaps.map(m => 
+				new LightBeatmap(this, m as RuntimeVersionMetadata | VersionMetadata),
+			);
 		} else {
 			this.beatmaps = beatmaps as LightBeatmap[];
 		}
@@ -28,7 +36,9 @@ export default class LightBeatmapSet {
 
 	
 	public getCarouselItems(): CarouselItem[] {
-		return this.getPlayableBeatmaps().map(beatmap => ({set: this, beatmap}));
+		return this.getPlayableBeatmaps().map(beatmap => ({
+			set: this, beatmap, 
+		}));
 	};
 
 	public is(set?: LightBeatmapSet | number): boolean {

@@ -2,6 +2,14 @@ import { rpc } from './client';
 import type Character from '../db/schema/character';
 import { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
 
+export type RankedPlayContext = { 
+	mode: 'ranked'; 
+	token: string; 
+	offsets: ReplayOffset[]; 
+	startedAt: number; 
+	endsAt: number 
+};
+
 /**
  * How a launched play is scored:
  *  - `guest`    - not signed in: simulated + scored locally, awards local XP.
@@ -11,19 +19,19 @@ import { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
  *                 authoritative. The client replays the offsets seeked to the
  *                 play's live position (`startedAt`) and fetches the result on
  *                 finish; the server finalises on its own clock regardless.
- *  - `debug`    - dev only: played by the debug bot (`makeOrderedSkills`), no-fail, never
+ *  - `debug`    - dev only: played by the debug bot, no-fail, never
  *                 saved or submitted. Launched from the strain debug view.
  */
 export type PlayContext =
 	| { mode: 'guest' }
 	| { mode: 'unranked' }
 	| { mode: 'debug' }
-	| { mode: 'ranked'; token: string; offsets: ReplayOffset[]; startedAt: number; endsAt: number };
+	| RankedPlayContext;
 
-/** A resolved {@link PlayContext}, or `refused` - the server declined to rank an
- *  otherwise-rankable play (anti-cheat lock / server error). `refused` isn't a way
- *  to score a play; the caller turns it into a dialog and, if the player accepts,
- *  retries as an `unranked` local play. */
+/** A resolved {@link PlayContext}, or `refused`, the server declined to rank an
+ *  otherwise-rankable play (anti-cheat lock / server error).
+ * `refused` isn't a way to start a play; the caller turns it into a dialog and,
+ * if the player accepts, retries as an `unranked` local play. */
 export type PlaySession = PlayContext | { mode: 'refused' };
 
 /** Decide (and, when ranked, start or join) how a play should be scored. */
@@ -35,7 +43,11 @@ export async function startPlaySession(
 	if (character.isGuest()) return { mode: 'guest' };
 	try {
 		const sentAt = Date.now();
-		const res = await rpc.v1.play.start.$post({ json: { beatmapId, setId } });
+		const res = await rpc.v1.play.start.$post({
+			json: {
+				beatmapId, setId, 
+			}, 
+		});
 		// a transport/HTTP failure loses a ranked play silently if we fall back to
 		// local - surface it so the player can retry instead of unknowingly playing unranked
 		if (!res.ok) return { mode: 'refused' };
@@ -45,7 +57,13 @@ export async function startPlaySession(
 			// seconds. Estimate the server clock at round-trip midpoint and shift the
 			// timestamps into our own clock, so anchoring with our Date.now() is exact.
 			const skew = (sentAt + Date.now()) / 2 - data.serverNow;
-			return { mode: 'ranked', token: data.token, offsets: data.offsets, startedAt: data.startedAt + skew, endsAt: data.endsAt + skew };
+			return {
+				mode: 'ranked', 
+				token: data.token, 
+				offsets: data.offsets, 
+				startedAt: data.startedAt + skew, 
+				endsAt: data.endsAt + skew, 
+			};
 		}
 		return data.status === 'refused' ? { mode: 'refused' } : { mode: 'unranked' };
 	} catch {
@@ -53,7 +71,7 @@ export async function startPlaySession(
 	}
 }
 
-/** What this character is currently playing (for resume / cross-tab spectating),
+/** What this character is currently playing (for resume / cross-tab spectating)
  *  or null if the server can't be reached. */
 export async function getActivePlay() {
 	try {
@@ -75,8 +93,16 @@ export class PlayResultError extends Error {
 }
 
 /** Try to get an already finalized play if not already read */
-export async function fetchPlayResult(token: string, forceSee: boolean = false) {
-	const res = await rpc.v1.play[':token'].result[':forceSee'].$get({ param: { token, forceSee: forceSee ? 'true' : 'false' } });
+export async function fetchPlayResult(
+	token: string, 
+	forceSee: boolean = false,
+) {
+	const res = await rpc.v1.play[':token'].result[':forceSee']
+		.$get({
+			param: {
+				token, forceSee: forceSee ? 'true' : 'false', 
+			}, 
+		});
 	if (!res.ok) {
 		throw new PlayResultError(res.status);
 	}
@@ -106,7 +132,8 @@ export async function abortPlaySession(token: string) {
 /** Quit: tell the server to drop the play without submitting. */
 export async function playSessionHeartbeat(token: string) {
 	try {
-		return (await rpc.v1.play[':token'].heartbeat.$get({ param: { token } })).json();
+		return (await rpc.v1.play[':token'].heartbeat
+			.$get({ param: { token } })).json();
 	} catch (e) {
 		console.warn('[play] heartbeat failed', e);
 	}

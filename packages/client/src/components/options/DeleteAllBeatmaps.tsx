@@ -1,5 +1,11 @@
-import { useRef, useState } from 'react';
-import { Trans, useLingui } from '@lingui/react/macro';
+import {
+	useRef,
+	useState,
+} from 'react';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
 import Log from '@osu-idle/shared/helpers/log';
 import Button from './controls/Button';
 import BeatmapStore from '../../osu/beatmap/beatmap_store';
@@ -29,7 +35,10 @@ export default function DeleteAllBeatmaps() {
 		<Button
 			accent="#d64045"
 			onClick={click}
-			label={armed ? <Trans>Click again to confirm</Trans> : <Trans>Delete all beatmaps</Trans>}
+			label={armed ?
+				<Trans>Click again to confirm</Trans>
+				: <Trans>Delete all beatmaps</Trans>
+			}
 		/>
 	);
 }

@@ -1,19 +1,32 @@
-import { useCallback, useState } from 'react';
+import {
+	useCallback,
+	useState,
+} from 'react';
 import OsuLogo from '../components/OsuLogo';
 import LogoVisualizer from '../components/LogoVisualizer';
 import NowPlaying from '../components/NowPlaying';
-import { music, PLAYER_MODE } from '../audio/MusicPlayer';
+import {
+	music,
+	PLAYER_MODE,
+} from '../audio/MusicPlayer';
 import './MainMenu.css';
 import Background from './Background';
 import SceneManager, { SCENE } from './SceneManager';
 import Device from '../responsive/Device';
 import { useParallax } from '@osu-idle/shared/hooks/useParallax';
 import Announce from '../components/Announce';
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import {
+	mapped,
+	ValueIn,
+} from '@osu-idle/shared/helpers/mapped';
 import { useLingui } from '@lingui/react/macro';
 import Controls from '../input/Controls';
 import normalize from '@osu-idle/shared/math/normalize';
-import { isOptionsOpen, isWebOpen, webUrl } from '../globals';
+import {
+	isOptionsOpen,
+	isWebOpen,
+	webUrl,
+} from '../globals';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import Entities from '../entity/entities';
 import { SETTINGS } from '../db/settings';
@@ -31,7 +44,15 @@ interface Props {
 const MENU = mapped(['CLOSED', 'OPEN', 'PLAY']);
 type Menu = ValueIn<typeof MENU>;
 
-const OPTION = mapped(['PLAY', 'WEBSITE', 'OPTIONS', 'EXIT', 'SOLO', 'MULTI', 'BACK']);
+const OPTION = mapped([
+	'PLAY',
+	'WEBSITE', 
+	'OPTIONS', 
+	'EXIT', 
+	'SOLO',
+	'MULTI',
+	'BACK',
+]);
 type Option = ValueIn<typeof OPTION>;
 
 type OptionDisplay = {
@@ -55,7 +76,9 @@ export default function MainMenu({ flash = false }: Props) {
 	const parallax = useParallax(0.08, parallaxOn);
 	const [character] = useSynced(Entities.character);
 
-	const getLogoSize = () => Math.min(window.innerHeight * 0.5, window.innerWidth * 0.75);
+	const maxHeight = window.innerHeight * 0.5;
+	const maxWidth = window.innerWidth * 0.75;
+	const getLogoSize = () => Math.min(maxHeight, maxWidth);
 
 	const [logoSize, setLogoSize] = useState(getLogoSize());
 	Device.resize.on(() => setLogoSize(getLogoSize()));
@@ -195,7 +218,7 @@ export default function MainMenu({ flash = false }: Props) {
 				<div className='menu__logo-options' style={{
 					height: `${logoSize}px`,
 					width: `${logoSize}px`,
-					transform: `translate(${menu === MENU.CLOSED ? 'calc(-50%)' : `calc(-50% + ${Math.floor(logoSize / 2) - (mobileShift * logoSize / 2)}px)`}, -50%)`
+					transform: `translate(${menu === MENU.CLOSED ? 'calc(-50%)' : `calc(-50% + ${Math.floor(logoSize / 2) - (mobileShift * logoSize / 2)}px)`}, -50%)`,
 				}}>
 					{Object.entries(Object.values(OPTION_DISPLAY)
 						.sort((a, b) => a.order - b.order)
@@ -208,21 +231,27 @@ export default function MainMenu({ flash = false }: Props) {
 							<div
 								key={currentMenu}
 								className={`menu__option_group ${menu === currentMenu ? 'visible' : ''}`}
-								style={{
-									width: `${logoSize * 1.2}px`
-								}}
+								style={{ width: `${logoSize * 1.2}px` }}
 							>
 								{group.map(option => <div
 									key={option.title}
-									className={`menu__option ${option.band} ${menu === option.menu ? 'visible' : ''} ${option.flip ? 'flip' : ''} ${option.disabled ? 'disabled' : ''}`}
+									className={
+										`menu__option ${option.band} ${menu === option.menu ? 'visible' : ''} ${option.flip ? 'flip' : ''} ${option.disabled ? 'disabled' : ''}`
+									}
 									onClick={option.onSelect}
 								>
 									<div className='menu__option_bg_safe'>
-										<div className='menu__option_bg' style={{ backgroundImage: `url('/band_${option.band}.png')`}}>
+										<div 
+											className='menu__option_bg' 
+											style={{ backgroundImage: `url('/band_${option.band}.png')` }}
+										>
 										</div>
 									</div>
 									<div className='menu__option_bg_safe on'>
-										<div className='menu__option_bg' style={{ backgroundImage: `url('/band_${option.band}_on.png')`}}>
+										<div 
+											className='menu__option_bg' 
+											style={{ backgroundImage: `url('/band_${option.band}_on.png')` }}
+										>
 										</div>
 									</div>
 									<div className='menu_option_contents'>
@@ -232,7 +261,14 @@ export default function MainMenu({ flash = false }: Props) {
 							</div>
 						))}
 				</div>
-				<div className="menu__logo-menu" style={{ transform: `translateX(${menu === MENU.CLOSED ? '0px' : `-${(logoSize / 2) + (mobileShift * logoSize / 2)}px`})`}}>
+				<div 
+					className="menu__logo-menu" 
+					style={{
+						transform: `translateX(${menu === MENU.CLOSED ? 
+							'0px' 
+							: `-${(logoSize / 2) + (mobileShift * logoSize / 2)}px`})`,
+					}}
+				>
 					<div className="menu__logo-enter">
 						<LogoVisualizer size={logoSize} />
 						<OsuLogo size={logoSize} onClick={mainClick} />
@@ -250,8 +286,12 @@ export default function MainMenu({ flash = false }: Props) {
 					sub={t`Are you sure you want to quit?`}
 					onClose={() => setExitConfirm(false)}
 					options={[
-						{ label: t`Exit`, color: '#e93100', onClick: exit },
-						{ label: t`Cancel`, color: '#6b6b6b', onClick: () => setExitConfirm(false) },
+						{
+							label: t`Exit`, color: '#e93100', onClick: exit, 
+						},
+						{
+							label: t`Cancel`, color: '#6b6b6b', onClick: () => setExitConfirm(false), 
+						},
 					]}
 				/>
 			)}

@@ -13,8 +13,17 @@
 // Expects the installers already built (packages/desktop: build + dist:linuxwin).
 // Public URL is configured in packages/desktop/electron-builder.yml.
 
-import { readdir, copyFile, writeFile, mkdir, readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import {
+	readdir,
+	copyFile,
+	writeFile,
+	mkdir,
+	readFile,
+} from 'node:fs/promises';
+import {
+	dirname,
+	join,
+} from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -67,5 +76,7 @@ for (const dest of dests) {
 		await copyFile(join(RELEASE, file), join(dest, file));
 	}
 	await writeFile(join(dest, 'manifest.json'), manifest);
-	console.log(`[publish-desktop] published ${artifacts.length} artifact(s) + manifest (v${version}) to ${dest}`);
+	console.log(
+		`[publish-desktop] published ${artifacts.length} artifact(s) + manifest (v${version}) to ${dest}`,
+	);
 }

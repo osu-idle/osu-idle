@@ -12,11 +12,11 @@
 
 .nav__list::before {
 	background-color: hsl(var(--hsl-h1));
-    bottom: 0;
-    content: "";
-    height: 1px;
-    position: absolute;
-    width: 100%;
+	bottom: 0;
+	content: "";
+	height: 1px;
+	position: absolute;
+	width: 100%;
 }
 
 .nav__item {

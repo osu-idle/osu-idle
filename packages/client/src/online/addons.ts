@@ -1,6 +1,13 @@
 import type { InferResponseType } from 'hono/client';
-import type { AddonCreateBody, AddonUpdateBody } from '@osu-idle/shared/addon';
-import { BASE_URL, rpc, withAuth } from './client';
+import type {
+	AddonCreateBody,
+	AddonUpdateBody,
+} from '@osu-idle/shared/addon';
+import {
+	BASE_URL,
+	rpc,
+	withAuth,
+} from './client';
 
 /** One catalog/own add-on as it crosses the wire, inferred from the route. */
 export type Addon = InferResponseType<typeof rpc.v1.addons[':id']['$get']>;
@@ -17,11 +24,17 @@ const unwrap = async <T>(p: Promise<Resp>): Promise<T> => {
 	return res.json() as Promise<T>;
 };
 
-/** Resolve a stored icon path (e.g. /uploads/x.png) to a full URL for an <img>. */
-export const addonIconUrl = (icon: string | null | undefined): string | undefined =>
+export const addonIconUrl = (
+	icon: string | null | undefined,
+): string | undefined =>
 	icon ? (/^https?:\/\//.test(icon) ? icon : `${BASE_URL}${icon}`) : undefined;
 
-type BrowseQuery = { q?: string; tag?: string; sort?: 'created' | 'updated'; dir?: 'asc' | 'desc' };
+type BrowseQuery = { 
+	q?: string,
+	tag?: string, 
+	sort?: 'created' | 'updated', 
+	dir?: 'asc' | 'desc',
+};
 
 /** Public: browse the published catalog. */
 export const browseAddons = (query: BrowseQuery = {}) =>
@@ -41,7 +54,9 @@ export const createAddon = (json: Partial<AddonCreateBody>) =>
 
 /** Auth+owner: edit an add-on. */
 export const updateAddon = (id: number, json: AddonUpdateBody) =>
-	unwrap<Addon>(rpc.v1.addons[':id'].$patch({ param: { id: String(id) }, json }));
+	unwrap<Addon>(rpc.v1.addons[':id'].$patch({
+		param: { id: String(id) }, json, 
+	}));
 
 /** Auth+owner: submit a draft/denied add-on for review. */
 export const submitAddon = (id: number) =>
@@ -49,12 +64,17 @@ export const submitAddon = (id: number) =>
 
 /** Auth+owner: delete an add-on. */
 export const deleteAddon = (id: number) =>
-	unwrap<{ ok: boolean }>(rpc.v1.addons[':id'].$delete({ param: { id: String(id) } }));
+	unwrap<{ ok: boolean }>(rpc.v1.addons[':id']
+		.$delete({ param: { id: String(id) } }));
 
 /** Auth: upload an icon image, returning its stored public path. */
 export const uploadAddonIcon = async (file: File): Promise<string> => {
 	const form = new FormData();
 	form.append('file', file);
-	const res = fetch(`${BASE_URL}/v1/addons/icon`, withAuth({ method: 'POST', body: form }));
+	const res = fetch(`${BASE_URL}/v1/addons/icon`,
+		withAuth({
+			method: 'POST', body: form, 
+		}),
+	);
 	return (await unwrap<{ url: string }>(res)).url;
 };

@@ -33,7 +33,7 @@
 	border-color: white;
 }
 
-.popup[data-leaving='true'] {
+.popup[data-leaving="true"] {
 	opacity: 0;
 	transform: translateX(120%);
 }

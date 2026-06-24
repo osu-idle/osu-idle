@@ -1,5 +1,8 @@
 import type { BotContext } from '../bot.js';
-import type { Strain, SkillStrain } from '../bots/character.js';
+import type {
+	Strain,
+	SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import Skill from './skill.js';
@@ -80,7 +83,12 @@ export default class Concentration extends Skill {
 		});
 	}
 
-	analyze(note: RuntimeNote, _context: BotContext, mapStrain: Strain, colStrain: Strain): SkillStrain {
+	analyze(
+		note: RuntimeNote,
+		_context: BotContext,
+		mapStrain: Strain,
+		colStrain: Strain,
+	): SkillStrain {
 		const wobblePhase = note.time / (Math.max(1, this.level.get()) * Concentration.WOBBLE_MS_PER_LEVEL);
 		const driftPhase = (note.time / Concentration.DRIFT_PERIOD_MS) * 2 * Math.PI;
 

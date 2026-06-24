@@ -26,7 +26,9 @@
 	height: 16px;
 	border-radius: 100px;
 	border: 2px solid var(--osu-pink-dark);
-	transition: border-color 120ms ease, background 120ms ease;
+	transition:
+		border-color 120ms ease,
+		background 120ms ease;
 }
 .opt-checkbox.is-on .opt-checkbox__box {
 	background: var(--osu-pink-dark);

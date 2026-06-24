@@ -1,8 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { defineConfig, type Plugin } from 'vite';
+import {
+	defineConfig,
+	type Plugin,
+} from 'vite';
 import react from '@vitejs/plugin-react';
 import { lingui } from '@lingui/vite-plugin';
+import { tanstackRouter } from '@tanstack/router-plugin/vite';
 
 const require = createRequire(import.meta.url);
 
@@ -15,7 +19,9 @@ function plotlyAsset(): Plugin {
 		name: 'plotly-static-asset',
 		generateBundle() {
 			const source = readFileSync(require.resolve('plotly.js-dist-min/plotly.min.js'));
-			this.emitFile({ type: 'asset', fileName: 'assets/plotly.min.js', source });
+			this.emitFile({
+				type: 'asset', fileName: 'assets/plotly.min.js', source, 
+			});
 		},
 	};
 }
@@ -29,6 +35,10 @@ export default defineConfig({
 	// through its babel plugin here - no separate SWC/Babel toolchain. The lingui
 	// plugin compiles the `.po` catalogs imported in src/i18n.ts.
 	plugins: [
+		// Must run before the React plugin so the generated route tree is in place.
+		tanstackRouter({
+			target: 'react', autoCodeSplitting: true, 
+		}),
 		react({ babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] } }),
 		lingui(),
 		plotlyAsset(),

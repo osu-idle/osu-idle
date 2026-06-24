@@ -1,4 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import { Trans } from '@lingui/react/macro';
 import BeatmapAPI from '../osu/beatmap/beatmap_api';
 import BeatmapStore from '../osu/beatmap/beatmap_store';
@@ -7,9 +11,12 @@ import { DownloadState } from './BeatmapCarousel';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import LightBeatmapSet from '../osu/beatmap/LightBeatmapSet';
 import { music } from '../audio/MusicPlayer';
-import { Score, scoresVersion } from '../db/schema/score';
+import {
+	Score,
+	scoresVersion,
+} from '../db/schema/score';
 import Entities from '../entity/entities';
-import Skin from '../osu/skin/Skin';
+import { currentSkin } from '../osu/skin/Skin';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { SETTINGS } from '../db/settings';
@@ -18,7 +25,11 @@ import { SETTINGS } from '../db/settings';
 const DOUBLE_CLICK_MS = 300;
 
 /** Build the card's state classes (active / sibling / download status). */
-function cardClassName(active: boolean, sibling: boolean, downloaded: boolean): string {
+function cardClassName(
+	active: boolean, 
+	sibling: boolean,
+	downloaded: boolean,
+): string {
 	return `bm-card ${active ? 'is-active' : ''} ${
 		sibling ? 'is-sibling' : ''
 	} ${downloaded ? 'is-downloaded' : 'is-remote'}`;
@@ -40,14 +51,18 @@ export default function BeatmapCard({
 	onCardClick, onCardDoubleClick, hasDownloaded,
 	downloads,
 }: Props) {
+	const [skin] = useSynced(currentSkin);
+
 	const stars = beatmap.metadata.difficulty;
 
 	const [bg, setBg] = useState<string | undefined>(
-		beatmap.metadata.runtime ? undefined : BeatmapAPI.assetUrl(beatmap.metadata.background),
+		beatmap.metadata.runtime ? undefined 
+			: BeatmapAPI.assetUrl(beatmap.metadata.background),
 	);
 	useEffect(() => {
 		let cancelled = false;
-		BeatmapStore.getBeatmapBackground(beatmap).then((b) => { if (!cancelled) setBg(b); });
+		BeatmapStore.getBeatmapBackground(beatmap)
+			.then((b) => { if (!cancelled) setBg(b); });
 		return () => { cancelled = true; };
 	}, [beatmap]);
 
@@ -59,7 +74,9 @@ export default function BeatmapCard({
 	// scoresVersion bumps on any score write, so an imported leaderboard score for
 	// the live character refreshes the grade without a reselect.
 	const [scoresV] = useSynced(scoresVersion);
-	const grade = useAsync(async () => (await Score.best(character.id, beatmap.metadata.id))?.grade, [beatmap, character.id, scoresV]);
+	const grade = useAsync(async () => 
+		(await Score.best(character.id, beatmap.metadata.id))?.grade
+	, [beatmap, character.id, scoresV]);
 
 	const version = beatmap.metadata.version;
 	const artist = set.metadata.artist;
@@ -99,9 +116,12 @@ export default function BeatmapCard({
 		>
 			<div className="bm-card__scrim" />
 			<div className="bm-card__inner">
-				{grade && Skin.grade(grade)}
+				{grade && skin.grade(grade)}
 				<div className="bm-card__body">
-					<div className="bm-card__title">{title}{!hasDownloaded && (<div className='bm-card__dl'>- <Trans>Double click to download</Trans></div>)}</div>
+					<div className="bm-card__title">
+						{title}{!hasDownloaded && (<div className='bm-card__dl'>
+							- <Trans>Double click to download</Trans>
+						</div>)}</div>
 					<div className="bm-card__artist">{artist}</div>
 					<div className="bm-card__meta">
 						<span className="bm-card__stars" style={{ color }}>

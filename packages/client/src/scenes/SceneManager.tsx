@@ -9,9 +9,13 @@ import { Score } from '../db/schema/score';
 import Result from './Result';
 import type { SkillProgress } from '@osu-idle/shared/sim/bots/character';
 import type { Transition } from './Transition';
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import {
+	mapped,
+	ValueIn,
+} from '@osu-idle/shared/helpers/mapped';
 import Synced from '@osu-idle/shared/helpers/synced';
 import { ScoreDTO } from '@osu-idle/shared/score';
+import Skins, { SkinsView } from './Skins';
 
 export const SCENE = mapped([
 	'INTRO',
@@ -20,6 +24,7 @@ export const SCENE = mapped([
 	'GAME',
 	'RESULT',
 	'ADDONS',
+	'SKINS',
 ]);
 export type Scene = ValueIn<typeof SCENE>;
 
@@ -36,8 +41,27 @@ export default class SceneManager {
 		[SCENE.INTRO]: () => <IntroScreen />,
 		[SCENE.MENU]: (flash: boolean = false) => <MainMenu flash={flash} />,
 		[SCENE.SELECT]: () =>  <SongSelect />,
-		[SCENE.GAME]: (beatmapInfo: LightBeatmap, transition: Transition, debug = false) => <Gameplay beatmapInfo={beatmapInfo} transition={transition} debugPlay={debug} />,
-		[SCENE.RESULT]: (score: Score | ScoreDTO, game?: ManiaGame, progression?: SkillProgress[], failed?: boolean) => <Result game={game} score={score} progression={progression} failed={failed} />,
+		[SCENE.GAME]: (
+			beatmapInfo: LightBeatmap, 
+			transition: Transition, 
+			debug = false,
+		) => <Gameplay 
+			beatmapInfo={beatmapInfo}
+			transition={transition} 
+			debugPlay={debug} 
+		/>,
+		[SCENE.RESULT]: (
+			score: Score | ScoreDTO, 
+			game?: ManiaGame,
+			progression?: SkillProgress[], 
+			failed?: boolean,
+		) => <Result 
+			game={game}
+			score={score}
+			progression={progression} 
+			failed={failed} 
+		/>,
+		[SCENE.SKINS]: (view: SkinsView = 'manage') => <Skins view={view} />,
 		[SCENE.ADDONS]: (view: AddonsView = 'manage') => <Addons view={view} />,
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,7 +71,10 @@ export default class SceneManager {
 	public static scene = (persisted.scene ??= new Synced<JSX.Element>(<></>));
 	public static displayAlpha = (persisted.displayAlpha ??= new Synced(false));
 
-	public static set<S extends Scene>(scene: S, ...args: Parameters<typeof SceneManager['get'][S]>) {
+	public static set<S extends Scene>(
+		scene: S, 
+		...args: Parameters<typeof SceneManager['get'][S]>
+	) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		this.scene.set((this.get[scene] as any)(...args));
 		this.current.set(scene);
@@ -58,6 +85,7 @@ export default class SceneManager {
 			case SCENE.RESULT:
 			case SCENE.SELECT:
 			case SCENE.ADDONS:
+			case SCENE.SKINS:
 				this.displayAlpha.set(false);
 				return;
 			default:

@@ -9,6 +9,10 @@ export default function Grade({
 	grade: GradeName
 }) {
 	return (<div className='grade__container'>
-		<div className='grade__img' style={{ backgroundImage: `url('${Asset(`/img/grade/grade-${grade}.svg`)}')` }}></div>
+		<div 
+			className='grade__img' 
+			style={{ backgroundImage: `url('${Asset(`/img/grade/grade-${grade}.svg`)}')` }}
+		>
+		</div>
 	</div>);
 }

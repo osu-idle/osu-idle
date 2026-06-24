@@ -1,11 +1,21 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { HTTPException } from 'hono/http-exception';
-import { and, desc, eq } from 'drizzle-orm';
+import {
+	and,
+	desc,
+	eq,
+} from 'drizzle-orm';
 import { z } from 'zod';
-import { newsCreateBody, newsUpdateBody } from '@osu-idle/shared/news';
+import {
+	newsCreateBody,
+	newsUpdateBody,
+} from '@osu-idle/shared/news';
 import { db } from '../db/client';
-import { news, toNewsDTO } from '../db/schema/news';
+import {
+	news,
+	toNewsDTO,
+} from '../db/schema/news';
 import { users } from '../db/schema/user';
 import { requireAdmin } from '../auth/admin';
 import { saveUploadedImage } from '../uploads';
@@ -106,7 +116,9 @@ export const newsRoutes = new Hono()
 				? (existing.publishedAt ?? new Date()) // first publish stamps the date
 				: null;
 
-		await db.update(news).set({ ...body, publishedAt }).where(eq(news.id, id));
+		await db.update(news).set({
+			...body, publishedAt, 
+		}).where(eq(news.id, id));
 		const [row] = await db.select().from(news).where(eq(news.id, id)).limit(1);
 		return c.json(await withAuthor(row!));
 	})

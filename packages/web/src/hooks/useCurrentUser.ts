@@ -1,7 +1,10 @@
 import { useSyncExternalStore } from 'react';
 import type { UserDTO } from '@osu-idle/shared/user';
 import { desktop } from '@osu-idle/shared/desktop';
-import { apiUrl, withAuth } from '../api/client';
+import {
+	apiUrl,
+	withAuth,
+} from '../api/client';
 
 // Module-level cache shared by every consumer: the session is fetched once and
 // the result fanned out to all hook instances, rather than each mount firing

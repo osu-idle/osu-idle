@@ -1,19 +1,38 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Trans, Plural, useLingui } from '@lingui/react/macro';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
+import {
+	Trans,
+	Plural,
+	useLingui,
+} from '@lingui/react/macro';
 import Triangles from '../components/Triangles';
 import BeatmapCarousel, {
 	type CarouselItem,
 	type CarouselRow,
 	type DownloadState,
 } from '../components/BeatmapCarousel';
-import { groupsOf, EMPTY_HISTORY, EMPTY_PLAYLISTS, type Group, type PlaylistsByBeatmap } from '../osu/beatmap/grouping';
+import {
+	groupsOf,
+	EMPTY_HISTORY,
+	EMPTY_PLAYLISTS,
+	type Group,
+	type PlaylistsByBeatmap,
+} from '../osu/beatmap/grouping';
 import TopBar from '../components/songselect/TopBar';
 import UserCard from '../components/songselect/UserCard';
 import CardContextMenu from '../components/songselect/CardContextMenu';
 import StrainDebug from './StrainDebug';
 import { matchesSearch } from '../osu/beatmap/beatmapSearch';
 import Entities from '../entity/entities';
-import { music, PLAYER_MODE } from '../audio/MusicPlayer';
+import {
+	music,
+	PLAYER_MODE,
+} from '../audio/MusicPlayer';
 import BeatmapAPI, { Metadata } from '../osu/beatmap/beatmap_api';
 import LightBeatmapSet from '../osu/beatmap/LightBeatmapSet';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
@@ -26,12 +45,22 @@ import { debugMode } from '../globals';
 import { useParallax } from '@osu-idle/shared/hooks/useParallax';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
-import { getCharacter, getCharacterStats } from '../online/services/characters';
+import {
+	getCharacter,
+	getCharacterStats,
+} from '../online/services/characters';
 import { Grades } from '@osu-idle/shared/judgement';
 import { Score } from '../db/schema/score';
-import { SETTINGS, type GroupOption, type SortOption } from '../db/settings';
+import {
+	SETTINGS,
+	type GroupOption,
+	type SortOption,
+} from '../db/settings';
 import Character from '../db/schema/character';
-import { getPlaylistIndex, playlistsVersion } from '../db/schema/playlist';
+import {
+	getPlaylistIndex,
+	playlistsVersion,
+} from '../db/schema/playlist';
 import PlaylistOverlay from '../components/PlaylistOverlay';
 import Autopilot, { AUTOPILOT_MODE } from '../gameplay/autopilot';
 import Spectate from '../online/spectate';
@@ -48,40 +77,62 @@ export const STRAIN_DEBUG_KEY = 'strain-debug-diff';
 let lastLaunchedGroupKey: string | null = null;
 
 const getHistory = async (character: Character) => {
-	const scores = await Score.query('SELECT * FROM score WHERE characterId = ?', [character.id]);
-	const bestRank = new Map<number, number>();   // beatmapId -> best Grades index (lower = better)
-	const lastPlayed = new Map<number, number>(); // beatmapId -> most recent playedAt
+	const scores = await Score.query(
+		'SELECT * FROM score WHERE characterId = ?'
+		, [character.id]);
+	const bestRank = new Map<number, number>();
+	const lastPlayed = new Map<number, number>();
 	for (const s of scores) {
-		bestRank.set(s.beatmapId, Math.min(bestRank.get(s.beatmapId) ?? Infinity, Grades.indexOf(s.grade)));
-		lastPlayed.set(s.beatmapId, Math.max(lastPlayed.get(s.beatmapId) ?? 0, s.playedAt));
+		bestRank.set(
+			s.beatmapId, 
+			Math.min(bestRank.get(s.beatmapId) ?? Infinity, Grades.indexOf(s.grade)),
+		);
+		lastPlayed.set(
+			s.beatmapId, 
+			Math.max(lastPlayed.get(s.beatmapId) ?? 0,
+				s.playedAt,
+			));
 	}
-	return { bestRank, lastPlayed };
+	return {
+		bestRank, lastPlayed, 
+	};
 };
 type History = Awaited<ReturnType<typeof getHistory>>;
 
-/** Carousel comparators per sort option. Ties keep the prior (difficulty)
- *  order - Array.sort is stable and `items` loads difficulty-sorted. Options
- *  missing here (Rank Achieved, Recently Played) need play history we don't have
- *  in the carousel yet, so they leave the order untouched. */
-const SORT_COMPARATORS: Record<SortOption, (a: CarouselItem, b: CarouselItem, h: History) => number> = {
-	'By Artist': (a, b) => a.set.metadata.artist.localeCompare(b.set.metadata.artist),
-	'By BPM': (a, b) => a.beatmap.metadata.bpm - b.beatmap.metadata.bpm,
-	'By Creator': (a, b) => a.set.metadata.creator.localeCompare(b.set.metadata.creator),
-	'By Difficulty': (a, b) => a.beatmap.metadata.difficulty - b.beatmap.metadata.difficulty,
-	'By Length': (a, b) => a.beatmap.metadata.total_length - b.beatmap.metadata.total_length,
-	'By Title': (a, b) => a.set.metadata.title.localeCompare(b.set.metadata.title),
-	"By Rank Achieved": (a, b, h) => (h.bestRank.get(b.beatmap.metadata.id) ?? Infinity) - (h.bestRank.get(a.beatmap.metadata.id) ?? Infinity),
-	"Recently Played": (a, b, h) => (h.lastPlayed.get(b.beatmap.metadata.id) ?? 0) - (h.lastPlayed.get(a.beatmap.metadata.id) ?? 0)
+const SORT_COMPARATORS: Record<SortOption, (
+	a: CarouselItem, 
+	b: CarouselItem, 
+	h: History
+) => number> = {
+	'By Artist': (a, b) => 
+		a.set.metadata.artist.localeCompare(b.set.metadata.artist),
+	'By BPM': (a, b) => 
+		a.beatmap.metadata.bpm - b.beatmap.metadata.bpm,
+	'By Creator': (a, b) => 
+		a.set.metadata.creator.localeCompare(b.set.metadata.creator),
+	'By Difficulty': (a, b) => 
+		a.beatmap.metadata.difficulty - b.beatmap.metadata.difficulty,
+	'By Length': (a, b) => 
+		a.beatmap.metadata.total_length - b.beatmap.metadata.total_length,
+	'By Title': (a, b) => 
+		a.set.metadata.title.localeCompare(b.set.metadata.title),
+	"By Rank Achieved": (a, b, h) => 
+		(h.bestRank.get(b.beatmap.metadata.id) ?? Infinity) 
+		- (h.bestRank.get(a.beatmap.metadata.id) ?? Infinity),
+	"Recently Played": (a, b, h) => 
+		(h.lastPlayed.get(b.beatmap.metadata.id) ?? 0) 
+		- (h.lastPlayed.get(a.beatmap.metadata.id) ?? 0),
 };
 
-/** Reconcile the download-status map against what's actually stored: mark stored
- *  sets 'done', and drop a stale 'done' for any set no longer present (e.g. just
- *  deleted) so its card restyles back to remote. In-flight 'downloading' entries
- *  are left untouched. */
-function reconcileDownloads(prev: Record<number, DownloadState>, stored: Set<number>): Record<number, DownloadState> {
+function reconcileDownloads(
+	prev: Record<number, DownloadState>,
+	stored: Set<number>,
+): Record<number, DownloadState> {
 	const next = { ...prev };
 	for (const id of stored) {
-		if (next[id]?.status !== 'done') next[id] = { status: 'done', progress: 1 };
+		if (next[id]?.status !== 'done') next[id] = {
+			status: 'done', progress: 1, 
+		};
 	}
 	for (const key of Object.keys(next)) {
 		const id = Number(key);
@@ -90,14 +141,12 @@ function reconcileDownloads(prev: Record<number, DownloadState>, stored: Set<num
 	return next;
 }
 
-type CarouselRows = { rows: CarouselRow[]; orderedItems: CarouselItem[]; expanded: { group: Group; items: CarouselItem[] } | undefined };
+type CarouselRows = { 
+	rows: CarouselRow[]; 
+	orderedItems: CarouselItem[]; 
+	expanded: { group: Group; items: CarouselItem[] } | undefined 
+};
 
-/** Fold the sorted, filtered list into grouped carousel rows. `orderedItems` is
- *  every card in display order (ignoring collapse) so arrow-key navigation can
- *  step into a collapsed group, which then auto-opens as it becomes active. An
- *  item can land in several buckets (playlists); only one group is ever open
- *  (accordion), so duplicate cards never render together. `expanded` is the open
- *  group's bucket - the playlist autopilot launches from it. */
 function buildCarouselRows(
 	filteredItems: CarouselItem[], group: GroupOption, history: History | undefined,
 	expandedKey: string | null, playlistsByBeatmap: PlaylistsByBeatmap,
@@ -105,7 +154,9 @@ function buildCarouselRows(
 ): CarouselRows {
 	if (group === 'No Grouping') {
 		return {
-			rows: filteredItems.map((item): CarouselRow => ({ type: 'card', item })),
+			rows: filteredItems.map((item): CarouselRow => ({
+				type: 'card', item, 
+			})),
 			orderedItems: filteredItems,
 			expanded: undefined,
 		};
@@ -114,35 +165,50 @@ function buildCarouselRows(
 	const now = Date.now();
 	const buckets = new Map<string, { group: Group; items: CarouselItem[] }>();
 	for (const item of filteredItems) {
-		for (const g of groupsOf(item, group, hist, now, playlistsByBeatmap, downloaded)) {
+		for (const g of groupsOf(
+			item, 
+			group, 
+			hist, 
+			now, 
+			playlistsByBeatmap, 
+			downloaded,
+		)) {
 			let bucket = buckets.get(g.key);
-			if (!bucket) buckets.set(g.key, bucket = { group: g, items: [] });
+			if (!bucket) buckets.set(g.key, bucket = {
+				group: g, items: [], 
+			});
 			bucket.items.push(item);
 		}
 	}
 	const ordered = [...buckets.values()].sort(
-		(a, b) => a.group.order - b.group.order || a.group.label.localeCompare(b.group.label),
+		(a, b) => 
+			a.group.order - b.group.order || a.group.label.localeCompare(b.group.label),
 	);
 	const rows: CarouselRow[] = [];
 	const orderedItems: CarouselItem[] = [];
 	for (const { group: g, items: its } of ordered) {
 		const open = expandedKey === g.key;
-		rows.push({ type: 'header', key: g.key, label: g.label, count: its.length, collapsed: !open });
+		rows.push({ 
+			type: 'header', 
+			key: g.key,
+			label: g.label, 
+			count: its.length, 
+			collapsed: !open, 
+		});
 		for (const item of its) {
 			orderedItems.push(item);
-			if (open) rows.push({ type: 'card', item });
+			if (open) rows.push({
+				type: 'card', item, 
+			});
 		}
 	}
-	return { rows, orderedItems, expanded: expandedKey ? buckets.get(expandedKey) : undefined };
+	return { 
+		rows, 
+		orderedItems, 
+		expanded: expandedKey ? buckets.get(expandedKey) : undefined,
+	};
 }
 
-/**
- * The game interface: an osu!-style song-select screen. The carousel on the
- * right lists every playable difficulty sorted by star rating; the leaderboard
- * on the left shows scores for the selected difficulty. Single-click a card to
- * select (and preview), click an already-selected (downloaded) card to play, and
- * double-click a remote card to download it.
- */
 export default function SongSelect() {
 	music.mode.set(PLAYER_MODE.LOOP);
 	
@@ -177,8 +243,14 @@ export default function SongSelect() {
 	const [scrollSpeed] = useSynced(SETTINGS.scrollspeed);
 	const [library] = useSynced(beatmapsVersion);
 	const [character] = useSynced(Entities.character);
-	const online_character = useAsync(async () => character.id > 1 ? getCharacter(character.id) : undefined, [character]);
-	const online_stats = useAsync(async () => character.id > 1 ? getCharacterStats(character.id) : undefined, [character]);
+	const online_character = useAsync(async () => character.id > 1 ? 
+		getCharacter(character.id) 
+		: undefined
+	, [character]);
+	const online_stats = useAsync(async () => character.id > 1 ? 
+		getCharacterStats(character.id) 
+		: undefined
+	, [character]);
 	const [debug] = useSynced(debugMode);
 	const { t } = useLingui(); // for strings outside JSX text (attrs, toasts, menu)
 
@@ -201,17 +273,30 @@ export default function SongSelect() {
 		try {
 			const manifest = await BeatmapAPI.getManifest();
 			const runtime = await BeatmapStore.getAllSets();
-			const remoteMaps = await Promise.all(manifest.beatmaps.flatMap(m => LightBeatmapSet.fromMetadata(m).getCarouselItems()));
+			const remoteMaps = await Promise.all(manifest.beatmaps
+				.flatMap(m => LightBeatmapSet
+					.fromMetadata(m)
+					.getCarouselItems(),
+				),
+			);
 			const localMaps = runtime.flatMap(r => r.getCarouselItems());
 			setHasDownloaded(localMaps.length > 0);
 			const sets = new Map<number, CarouselItem>();
 			remoteMaps.forEach(m => sets.set(m.beatmap.metadata.id, m));
 			localMaps.forEach(m => sets.set(m.beatmap.metadata.id, m));
-			const all = Array.from(sets.values()).sort((a, b) => a.beatmap.metadata.difficulty - b.beatmap.metadata.difficulty);
+			const all = Array.from(sets
+				.values())
+				.sort((a, b) => 
+					a.beatmap.metadata.difficulty - b.beatmap.metadata.difficulty,
+				);
 			setItems(all);
 			// reconcile downloaded status (drives card styling) against what's actually
 			// stored (see reconcileDownloads)
-			const stored = new Set(all.filter(i => i.beatmap.metadata.runtime).map(i => i.set.metadata.id));
+			const stored = new Set(all
+				.filter(i => i.beatmap.metadata.runtime)
+				.map(i => i.set.metadata.id),
+			
+			);
 			setDownloads((d) => reconcileDownloads(d, stored));
 			return all;
 		} catch (e) {
@@ -271,8 +356,12 @@ export default function SongSelect() {
 	// keeps using the full `items` so a search never loses the current selection
 	const filteredItems = useMemo(() => {
 		if (!history) return [];
-		const filtered = search.trim() ? items.filter(({ beatmap, set }) => matchesSearch(beatmap, set, search)) : items;
-		return comparator ? [...filtered].sort((a, b) => comparator(a, b, history)) : filtered;
+		const filtered = search.trim() ? 
+			items.filter(({ beatmap, set }) => matchesSearch(beatmap, set, search)) 
+			: items;
+		return comparator ? 
+			[...filtered].sort((a, b) => comparator(a, b, history)) 
+			: filtered;
 	}, [items, search, history, comparator]);
 
 	// accordion: at most one group open at a time (null = all collapsed). A fresh
@@ -289,15 +378,18 @@ export default function SongSelect() {
 	// frozen downloaded set for the "By Download Status" group mode: captured once
 	// per entry into the mode so a map downloaded mid-session stays under "Available"
 	// rather than jumping to "Downloaded" and dragging the selection with it. Cleared
-	// when leaving the mode; (re)captured from the freshest items once they're loaded.
+	// when leaving the mode; captured from the freshest items once they're loaded
 	const [downloadSnapshot, setDownloadSnapshot] = useState<ReadonlySet<number>>();
 	useEffect(() => {
 		if (group !== 'By Download Status') { setDownloadSnapshot(undefined); return; }
 		if (downloadSnapshot || !items.length) return;
-		setDownloadSnapshot(new Set(items.filter((i) => i.beatmap.metadata.runtime).map((i) => i.beatmap.metadata.id)));
+		setDownloadSnapshot(new Set(items
+			.filter((i) => i.beatmap.metadata.runtime)
+			.map((i) => i.beatmap.metadata.id),
+		));
 	}, [group, items, downloadSnapshot]);
 
-	// opening a group closes the previously open one; clicking the open one collapses it
+	// opening a group closes the previously open one clicking the open one collapses it
 	const toggleGroup = useCallback((key: string) => {
 		setExpandedKey((prev) => (prev === key ? null : key));
 	}, []);
@@ -309,7 +401,14 @@ export default function SongSelect() {
 		if (group === 'No Grouping' || !version) return '';
 		const item = items.find((i) => i.beatmap.is(version));
 		if (!item) return '';
-		return groupsOf(item, group, history ?? EMPTY_HISTORY, Date.now(), playlistsByBeatmap, downloadSnapshot)
+		return groupsOf(
+			item, 
+			group, 
+			history ?? EMPTY_HISTORY, 
+			Date.now(), 
+			playlistsByBeatmap, 
+			downloadSnapshot,
+		)
 			.map((g) => g.key).join('\n');
 	}, [group, version, items, history, playlistsByBeatmap, downloadSnapshot]);
 
@@ -328,9 +427,16 @@ export default function SongSelect() {
 		});
 	}, [activeGroupKeys]);
 
-	// grouped carousel rows folded from the sorted, filtered list (see buildCarouselRows)
+	// grouped carousel rows folded from the sorted, filtered list
 	const { rows, orderedItems, expanded } = useMemo(
-		() => buildCarouselRows(filteredItems, group, history, expandedKey, playlistsByBeatmap, downloadSnapshot),
+		() => buildCarouselRows(
+			filteredItems, 
+			group, 
+			history, 
+			expandedKey,
+			playlistsByBeatmap, 
+			downloadSnapshot,
+		),
 		[filteredItems, group, history, expandedKey, playlistsByBeatmap, downloadSnapshot],
 	);
 
@@ -350,7 +456,8 @@ export default function SongSelect() {
 	}, []);
 
 	const move = useCallback((step: number) => {
-		const current = orderedItems.findIndex((i) => i.beatmap.is(music.beatmap.get()));
+		const current = orderedItems
+			.findIndex((i) => i.beatmap.is(music.beatmap.get()));
 		// when nothing is selected, next lands on the first card, previous the last
 		const next = current === -1
 			? (step === 1 ? 0 : orderedItems.length - 1)
@@ -380,7 +487,7 @@ export default function SongSelect() {
 	 * Launch gameplay for a downloaded difficulty (see {@link launchPlay}) and
 	 * arm the autopilot per the selected mode (debug launches never chain):
 	 *   LOOP     - replay this one map forever
-	 *   PLAYLIST - chain the launched playlist group (only when grouped by playlist)
+	 *   PLAYLIST - chain the launched playlist group if playlist mode
 	 *   NEXT     - chain in song-select order: the open group when grouped,
 	 *              otherwise the whole search-filtered list
 	 */
@@ -393,7 +500,8 @@ export default function SongSelect() {
 			} else if (mode !== AUTOPILOT_MODE.PLAYLIST || group === 'By Playlist') {
 				const pool = expanded ? expanded.items : orderedItems;
 				const index = pool.findIndex((i) => i.beatmap.is(beatmap));
-				if (index >= 0) Autopilot.start(expanded?.group.label ?? '', pool.map((i) => i.beatmap), index);
+				if (index >= 0) 
+					Autopilot.start(expanded?.group.label ?? '', pool.map((i) => i.beatmap), index);
 			}
 		}
 		launchPlay(beatmap, debug);
@@ -404,24 +512,43 @@ export default function SongSelect() {
 		console.log('Clicked on download', meta.title);
 		const status = downloads[meta.id]?.status;
 		if (status === 'downloading' || status === 'done') return;
-		setDownloads((d) => ({ ...d, [meta.id]: { status: 'downloading', progress: 0 } }));
+		setDownloads((d) => ({
+			...d, [meta.id]: { 
+				status: 'downloading',
+				progress: 0, 
+			}, 
+		}));
 		try {
 			await BeatmapAPI.downloadOsz(meta, (progress) =>
-				setDownloads((d) => ({ ...d, [meta.id]: { status: 'downloading', progress } })),
+				setDownloads((d) => ({
+					...d, [meta.id]: {
+						status: 'downloading', progress, 
+					}, 
+				})),
 			);
-			setDownloads((d) => ({ ...d, [meta.id]: { status: 'done', progress: 1 } }));
+			setDownloads((d) => ({
+				...d, [meta.id]: {
+					status: 'done', progress: 1, 
+				}, 
+			}));
 			
 			const all = await loadLibrary();
 			const item = all.find((i) => i.beatmap.isPlaying());
 			if (item) void selectItem(item.beatmap);
 		} catch (e) {
 			console.error('[download] failed', e);
-			setDownloads((d) => ({ ...d, [meta.id]: { status: 'idle', progress: 0 } }));
+			setDownloads((d) => ({
+				...d, [meta.id]: {
+					status: 'idle', progress: 0, 
+				}, 
+			}));
 		}
 	}, [downloads, loadLibrary, selectItem]);
 
-	// single click: select + preview; clicking the already-selected downloaded card plays it
-	const handleCardClick = useCallback((beatmap: LightBeatmap, pointer: boolean = true) => {
+	const handleCardClick = useCallback((
+		beatmap: LightBeatmap, 
+		pointer: boolean = true,
+	) => {
 		if (scoreView) return false;
 		console.log('Clicked on card', beatmap.metadata.version);
 		if (beatmap.metadata.runtime && beatmap.isPlaying()) {
@@ -503,12 +630,19 @@ export default function SongSelect() {
 			</div>
 			<div className="game__scrim" />
 
-			<TopBar version={version} scrollSpeed={scrollSpeed} scoreView={scoreView} setScoreView={setScoreView} />
+			<TopBar 
+				version={version} 
+				scrollSpeed={scrollSpeed} 
+				scoreView={scoreView} 
+				setScoreView={setScoreView} 
+			/>
 
 			<main className="game__body">
 
 				{error ? (
-					<div className="game__library-error"><Trans>Couldn't load beatmaps: {error}</Trans></div>
+					<div className="game__library-error">
+						<Trans>Couldn't load beatmaps: {error}</Trans>
+					</div>
 				) : (
 					<BeatmapCarousel
 						rows={rows}
@@ -556,19 +690,31 @@ export default function SongSelect() {
 				<button className="game__exit" onClick={onBack}>
 					<Trans>BACK</Trans>
 				</button>
-				<UserCard character={character} online_character={online_character} online_stats={online_stats} />
+				<UserCard
+					character={character} 
+					online_character={online_character} 
+					online_stats={online_stats}
+				/>
 			</div>
 
 			{toast && <div className="game__toast">{toast}</div>}
 
 			{debug && (
-				<button className="game__debug-btn" onClick={handleDebug} title={t`Strain debug`}>
+				<button 
+					className="game__debug-btn"
+					onClick={handleDebug} 
+					title={t`Strain debug`}
+				>
 					⛛
 				</button>
 			)}
 
 			{debugBeatmap && (
-				<StrainDebug beatmapInfo={debugBeatmap} onClose={closeDebug} onPlay={() => play(debugBeatmap, true)} />
+				<StrainDebug 
+					beatmapInfo={debugBeatmap} 
+					onClose={closeDebug} 
+					onPlay={() => play(debugBeatmap, true)} 
+				/>
 			)}
 
 			{menuItem && (
@@ -577,12 +723,18 @@ export default function SongSelect() {
 					onClose={() => setMenuItem(null)}
 					onManagePlaylists={() => { setPlaylistItem(menuItem); setMenuItem(null); }}
 					onDelete={() => deleteSet(menuItem)}
-					onClearScores={() => { setMenuItem(null); flashToast(t`Clearing local scores is not available yet`); }}
+					onClearScores={() => { 
+						setMenuItem(null); 
+						flashToast(t`Clearing local scores is not available yet`);
+					}}
 				/>
 			)}
 
 			{playlistItem && (
-				<PlaylistOverlay beatmap={playlistItem.beatmap} onClose={() => setPlaylistItem(null)} />
+				<PlaylistOverlay 
+					beatmap={playlistItem.beatmap} 
+					onClose={() => setPlaylistItem(null)}
+				/>
 			)}
 		</div>
 	);

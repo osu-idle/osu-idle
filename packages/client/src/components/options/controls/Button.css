@@ -11,7 +11,9 @@
 	font-size: 16px;
 	font-weight: 600;
 	text-align: center;
-	transition: filter 120ms ease, transform 80ms ease;
+	transition:
+		filter 120ms ease,
+		transform 80ms ease;
 }
 .opt-button:hover {
 	filter: brightness(1.12);

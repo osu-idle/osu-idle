@@ -1,12 +1,25 @@
-import { bigint, int, mysqlTable } from 'drizzle-orm/mysql-core';
+import {
+	bigint,
+	int,
+	mysqlTable,
+} from 'drizzle-orm/mysql-core';
 import { characters } from './character';
-import { Grades, JUDGEMENT, Judgements, type Grade, type Judgement } from '@osu-idle/shared/judgement';
+import {
+	Grades,
+	JUDGEMENT,
+	Judgements,
+	type Grade,
+	type Judgement,
+} from '@osu-idle/shared/judgement';
 import { db } from '../client';
 import { eq } from 'drizzle-orm';
 import type { BestScoreRow } from './best';
 import { getBeatmapById } from './beatmap';
 import { getAllCharacterScores } from './score';
-import { onSubmitScore, recomputePP } from '../../scores';
+import {
+	onSubmitScore,
+	recomputePP,
+} from '../../scores';
 
 const totalColumn = () => bigint({ mode: 'number' }).notNull().default(0);
 
@@ -45,9 +58,7 @@ export const getCharacterTotals = async (characterId: number) => {
 		.limit(1);
 
 	if (!row) {
-		const newTotals : NewCharacterTotalsRow = {
-			id: characterId,
-		};
+		const newTotals : NewCharacterTotalsRow = { id: characterId };
 
 		await db.insert(character_totals).values(newTotals);
 		

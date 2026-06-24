@@ -1,20 +1,31 @@
+import { useNavigate } from '@tanstack/react-router';
 import CountryFilter from '../../components/leaderboard/CountryFilter';
+// eslint-disable-next-line @stylistic/max-len
 import PlayerSkillLeaderboard, { SkillSort } from '../../components/leaderboard/PlayerSkillLeaderboard';
-import { countrySkillRankPath, globalSkillRankPath, navigate } from '../../router';
+import type { getSkillRanking } from '../../api/rankings';
 import RankingsNav from './RankingsNav';
 
-export default function SkillsRankings({  params: { skill, country, page }}: {
-	params: { skill?: string, country?: string, page?: number }
+type Players = Awaited<ReturnType<typeof getSkillRanking>>;
+
+export default function SkillsRankings({ skill, page, country, players }: {
+	skill: SkillSort,
+	page: number,
+	country?: string,
+	players: Players,
 }) {
-	page = page ?? 1;
-	return (<>
+	const navigate = useNavigate();
+	return (
 		<main>
 			<RankingsNav current={'skills'} />
-			<CountryFilter selected={country} onSelect={value => navigate(value ? countrySkillRankPath((skill ?? 'overall') as SkillSort, value, 1) : globalSkillRankPath((skill ?? 'overall') as SkillSort, 1))} />
+			<CountryFilter selected={country} onSelect={value => navigate({
+				to: '/rankings/skills/$skill', params: { skill }, search: {
+					country: value || undefined, page: 1, 
+				}, 
+			})} />
 
 			<div className='page-contents'>
-				<PlayerSkillLeaderboard sort={skill as SkillSort} country={country} page={page} />
+				<PlayerSkillLeaderboard sort={skill} country={country} page={page} players={players} />
 			</div>
 		</main>
-	</>);
+	);
 }

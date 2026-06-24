@@ -1,7 +1,15 @@
 import { mysqlTable } from 'drizzle-orm/mysql-core';
-import { bestConstraints, bestTableDefinition, type ScoreRow } from './score';
+import {
+	bestConstraints,
+	bestTableDefinition,
+	type ScoreRow,
+} from './score';
 import { db } from '../client';
-import { eq, and, desc } from 'drizzle-orm';
+import {
+	eq,
+	and,
+	desc,
+} from 'drizzle-orm';
 import { beatmaps } from './beatmap';
 import { beatmapset } from './beatmapset';
 
@@ -17,7 +25,7 @@ export const getBestPPPlay = async (characterId: number, beatmapId: number) => {
 		.where(
 			and(
 				eq(bestPP.characterId, characterId),
-				eq(bestPP.beatmapId, beatmapId)
+				eq(bestPP.beatmapId, beatmapId),
 			))
 		.limit(1);
 	return row;

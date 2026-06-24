@@ -1,7 +1,11 @@
 import './PlayOsuIdle.css';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
-import Link from '../components/Link';
-import { detectPlatform, fetchManifest, PLATFORM_LABEL, resolveDownload } from '../download';
+import {
+	detectPlatform,
+	fetchManifest,
+	PLATFORM_LABEL,
+	resolveDownload,
+} from '../download';
 import { Trans } from '@lingui/react/macro';
 
 /**
@@ -23,7 +27,7 @@ export default function PlayOsuIdle() {
 				<section className="playosu__card">
 					<h3 className="playosu__card-title"><Trans>Play in the browser</Trans></h3>
 					<p className="playosu__card-text"><Trans>Simplest, nothing to install.</Trans></p>
-					<Link to=":play" className="cta-button playosu__cta"><span><Trans>Play now</Trans></span></Link>
+					<a href="/" className="cta-button playosu__cta"><span><Trans>Play now</Trans></span></a>
 				</section>
 
 				<section className="playosu__card playosu__card--featured">

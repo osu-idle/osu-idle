@@ -1,4 +1,9 @@
-import { and, eq, lte, sql } from 'drizzle-orm';
+import {
+	and,
+	eq,
+	lte,
+	sql,
+} from 'drizzle-orm';
 import { INTRO_SET_ID } from '@osu-idle/shared/beatmap';
 import { db } from '../db/client';
 import { beatmaps } from '../db/schema/beatmap';
@@ -8,7 +13,10 @@ import { beatmapset } from '../db/schema/beatmapset';
  *  its scheduled rank time has passed. Pending (null rankedAt) and future-dated
  *  sets are excluded (null <= now() is null, so they drop out). Reused by the
  *  public listing routes so the whole site shares one definition of "live". */
-export const liveCondition = and(eq(beatmapset.status, 'ranked'), lte(beatmapset.rankedAt, sql`now()`));
+export const liveCondition = and(
+	eq(beatmapset.status, 'ranked'), 
+	lte(beatmapset.rankedAt, sql`now()`),
+);
 
 const previewUrl = (setId: number, file: string | null) =>
 	file ? `/v1/beatmap/preview/${setId}/${file}` : undefined;
@@ -110,5 +118,7 @@ export const buildCatalog = async (): Promise<Catalog> => {
 		set.background ??= background;
 	}
 
-	return { intro: sets.get(INTRO_SET_ID), beatmaps: [...sets.values()] };
+	return {
+		intro: sets.get(INTRO_SET_ID), beatmaps: [...sets.values()], 
+	};
 };

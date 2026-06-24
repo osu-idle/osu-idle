@@ -1,6 +1,9 @@
 import { defineConfig } from '@lingui/conf';
 import { formatter } from '@lingui/format-po';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@osu-idle/shared/i18n/locales';
+import {
+	SUPPORTED_LOCALES,
+	DEFAULT_LOCALE,
+} from '@osu-idle/shared/i18n/locales';
 import runtimeExtractor from '../../tools/lingui/runtime-extractor.mjs';
 
 // The server runs under tsx (no macro transform), so it localises through the

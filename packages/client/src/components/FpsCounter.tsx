@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import {
+	useEffect,
+	useState,
+} from 'react';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { SETTINGS } from '../db/settings';
 import './FpsCounter.css';

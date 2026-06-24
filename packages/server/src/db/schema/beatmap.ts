@@ -1,11 +1,19 @@
-import { decimal, int, longtext, mysqlTable, text } from 'drizzle-orm/mysql-core';
+import {
+	decimal,
+	int,
+	longtext,
+	mysqlTable,
+	text,
+} from 'drizzle-orm/mysql-core';
 import { db } from '../client';
 import { eq } from 'drizzle-orm';
 
 export const beatmaps = mysqlTable('beatmap', {
 	id: int().primaryKey(),
 	setId: int().notNull(),
-	sr: decimal({ precision: 10, scale: 3}).notNull(),
+	sr: decimal({
+		precision: 10, scale: 3, 
+	}).notNull(),
 	artist: text().notNull(),
 	title: text().notNull(),
 	version: text().notNull(),

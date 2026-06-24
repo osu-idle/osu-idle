@@ -18,7 +18,11 @@ export default function SignIn() {
 				<span className="opt-signin__who">
 					<Trans>Signed in as {user.username}</Trans>
 				</span>
-				<Button label={<Trans>Sign out</Trans>} accent="#6b7178" onClick={() => void Auth.signOut()} />
+				<Button 
+					label={<Trans>Sign out</Trans>} 
+					accent="#6b7178" 
+					onClick={() => void Auth.signOut()} 
+				/>
 			</div>
 		);
 	}

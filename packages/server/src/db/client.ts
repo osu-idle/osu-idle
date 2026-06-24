@@ -1,6 +1,15 @@
-import { drizzle, type MySql2Database } from 'drizzle-orm/mysql2';
-import { createPool, type Pool } from 'mysql2';
-import { dbName, env } from '../env';
+import {
+	drizzle,
+	type MySql2Database,
+} from 'drizzle-orm/mysql2';
+import {
+	createPool,
+	type Pool,
+} from 'mysql2';
+import {
+	dbName,
+	env,
+} from '../env';
 
 // Shared connection settings. `timezone: 'Z'` pins the driver to UTC so
 // DATETIME/TIMESTAMP columns convert to/from JS `Date` as UTC instants -
@@ -19,11 +28,17 @@ const connection = {
 // Explicit type annotations (rather than inferred) so the package can emit
 // portable .d.ts for its app type - inferred mysql2/drizzle types reference
 // deep internal paths that aren't nameable across packages.
-export const pool: Pool = createPool({ ...connection, database: dbName });
+export const pool: Pool = createPool({
+	...connection, database: dbName, 
+});
 
-export const statsPool: Pool = createPool({ ...connection, database: 'stats' });
+export const statsPool: Pool = createPool({
+	...connection, database: 'stats', 
+});
 
-export const farmPool: Pool = createPool({ ...connection, database: 'farm' });
+export const farmPool: Pool = createPool({
+	...connection, database: 'farm', 
+});
 
 // No relational `schema` is passed: the codebase uses the query-builder API
 // (`db.select().from(...)`) exclusively, and importing the schema modules here

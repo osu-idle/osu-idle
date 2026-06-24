@@ -1,8 +1,17 @@
 import './EditableProfilePicture.css';
-import { useRef, useState } from 'react';
+import {
+	useRef,
+	useState,
+} from 'react';
 import ProfilePicture from './ProfilePicture';
-import { resetAvatar, uploadAvatar } from '../api/users';
-import { Trans, useLingui } from '@lingui/react/macro';
+import {
+	resetAvatar,
+	uploadAvatar,
+} from '../api/users';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
 
 type Props = {
 	avatarUrl?: string | null;

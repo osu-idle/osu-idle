@@ -1,6 +1,9 @@
 import { defineConfig } from '@lingui/conf';
 import { formatter } from '@lingui/format-po';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from './src/i18n/locales.js';
+import {
+	SUPPORTED_LOCALES,
+	DEFAULT_LOCALE,
+} from './src/i18n/locales.js';
 import runtimeExtractor from '../../tools/lingui/runtime-extractor.mjs';
 
 // shared builds with tsc (no macro transform), so it can't use the `t`/`<Trans>`

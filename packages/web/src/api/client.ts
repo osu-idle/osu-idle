@@ -18,10 +18,14 @@ export const apiUrl = (path: string): string =>
  */
 export function withAuth(init?: RequestInit): RequestInit {
 	const token = desktop()?.getToken();
-	if (!token) return { ...init, credentials: 'include' };
+	if (!token) return {
+		...init, credentials: 'include', 
+	};
 	const headers = new Headers(init?.headers);
 	headers.set('Authorization', `Bearer ${token}`);
-	return { ...init, headers, credentials: 'omit' };
+	return {
+		...init, headers, credentials: 'omit', 
+	};
 }
 
 /** Parse a JSON response, throwing the server's error message on failure. */

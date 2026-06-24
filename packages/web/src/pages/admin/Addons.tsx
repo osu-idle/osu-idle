@@ -1,14 +1,24 @@
 import './Addons.css';
 
-import { useEffect, useMemo, useState } from 'react';
+import {
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 import type { AddonStatus } from '@osu-idle/shared/addon';
-import { type AdminAddon, listAddonsAdmin, moderateAddon } from '../../api/addons';
+import {
+	type AdminAddon,
+	listAddonsAdmin,
+	moderateAddon,
+} from '../../api/addons';
 import AddonRow from './AddonRow';
 
 type SortKey = 'status' | 'submitted' | 'published';
 const time = (iso: string | null): number => iso ? new Date(iso).getTime() : 0;
 // Pending first in the queue, then on-hold, then published.
-const STATUS_ORDER: Record<string, number> = { pending: 0, onHold: 1, published: 2, denied: 3, unpublished: 4 };
+const STATUS_ORDER: Record<string, number> = {
+	pending: 0, onHold: 1, published: 2, denied: 3, unpublished: 4, 
+};
 
 export default function AddonsAdmin() {
 	const [list, setList] = useState<AdminAddon[] | null>(null);
@@ -49,13 +59,20 @@ export default function AddonsAdmin() {
 	};
 	const caret = (key: SortKey) => sort === key ? (asc ? ' ▲' : ' ▼') : '';
 	const sortBtn = (key: SortKey, label: string) => (
-		<button className={`addons-admin__sort-btn ${sort === key ? 'current' : ''}`} onClick={() => toggleSort(key)}>
+		<button 
+			className={`addons-admin__sort-btn ${sort === key ? 'current' : ''}`}
+			onClick={() => toggleSort(key)}
+		>
 			{label}{caret(key)}
 		</button>
 	);
 
-	if (authorized === false) return <main className='addons-admin'><p className='addons-admin__error'>{error ?? 'Admins only.'}</p></main>;
-	if (!list) return <main className='addons-admin'><p className='addons-admin__muted'>Loading…</p></main>;
+	if (authorized === false) return <main className='addons-admin'>
+		<p className='addons-admin__error'>{error ?? 'Admins only.'}</p>
+	</main>;
+	if (!list) return <main className='addons-admin'>
+		<p className='addons-admin__muted'>Loading…</p>
+	</main>;
 
 	return (
 		<main className='addons-admin'>

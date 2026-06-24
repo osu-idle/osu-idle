@@ -1,30 +1,30 @@
 .score_entry__row {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.05rem 0.4rem;
-  padding-left: 0;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.068);
-  height: 56px;
-  opacity: 0;
-  transform: translateX(-20px);
-  width: 100%;
-  min-width: 400px;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.05rem 0.4rem;
+	padding-left: 0;
+	border-radius: 2px;
+	background: rgba(255, 255, 255, 0.068);
+	height: 56px;
+	opacity: 0;
+	transform: translateX(-20px);
+	width: 100%;
+	min-width: 400px;
 
-  transition: all 400ms ease;
+	transition: all 400ms ease;
 }
 .score_entry__row.loaded {
-  opacity: 1;
-  transform: translateX(0px);
+	opacity: 1;
+	transform: translateX(0px);
 }
 .score_entry__avatar {
 	position: relative;
 	height: 56px;
 	width: 56px;
 
-    background-repeat: no-repeat;
-    background-size: contain;
+	background-repeat: no-repeat;
+	background-size: contain;
 }
 .score_entry__rank {
 	position: absolute;
@@ -46,11 +46,11 @@
 	opacity: 1;
 }
 .score_entry__row:hover {
-  background: rgba(0, 0, 0, 0.09);
+	background: rgba(0, 0, 0, 0.09);
 }
 .score_entry__row.is-pfc {
-  border-color: rgba(255, 210, 74, 0.4);
-  box-shadow: inset 0 0 12px rgba(255, 210, 74, 0.08);
+	border-color: rgba(255, 210, 74, 0.4);
+	box-shadow: inset 0 0 12px rgba(255, 210, 74, 0.08);
 }
 .score_entry__grade {
 	display: flex;
@@ -58,59 +58,59 @@
 	height: 56px;
 }
 .score_entry__grade img {
-  width: 50px;
-  height: 50px;
+	width: 50px;
+	height: 50px;
 }
 .score_entry__main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
 }
 .score_entry__name {
-  font-size: 1.2rem;
-  letter-spacing: 0.065rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	font-size: 1.2rem;
+	letter-spacing: 0.065rem;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 .score_entry__name.score_self {
-  color: #84fcff;
+	color: #84fcff;
 }
 .score_entry__score {
-  font-size: 1rem;
-  letter-spacing: 0.065rem;
+	font-size: 1rem;
+	letter-spacing: 0.065rem;
 }
 .score_entry__stats {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.1rem;
-  flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.1rem;
+	flex-shrink: 0;
 }
 .score_entry__acc,
 .score_entry__diff {
-  font-size: 0.75rem;
+	font-size: 0.75rem;
 }
 .score_entry__time img {
 	width: 30px;
 	height: 30px;
 }
 .score_entry__time {
-  position: absolute;
-  right: 0;
-  transform: translateX(calc(100% + 5px));
-  flex-shrink: 0;
-  min-width: 2.4rem;
-  text-align: right;
-  font-size: 0.75rem;
-  letter-spacing: 0.04rem;
-  color: white;
-  text-shadow: 0 0 2px black;
+	position: absolute;
+	right: 0;
+	transform: translateX(calc(100% + 5px));
+	flex-shrink: 0;
+	min-width: 2.4rem;
+	text-align: right;
+	font-size: 0.75rem;
+	letter-spacing: 0.04rem;
+	color: white;
+	text-shadow: 0 0 2px black;
 
-  display: flex;
-  align-items: center;
-  gap: 3px;
+	display: flex;
+	align-items: center;
+	gap: 3px;
 }

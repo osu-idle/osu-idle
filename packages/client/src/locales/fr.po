@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-22 21:24\n"
+"PO-Revision-Date: 2026-06-24 22:26\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -123,6 +123,11 @@ msgstr "Add-ons"
 msgid "ADD-ONS"
 msgstr "ADD-ONS"
 
+#. placeholder {0}: dto.name
+#: src/components/addons/BrowseAddonsView.tsx
+msgid "Add-ons run with full access to the game. Only install add-ons you trust. Install \"{0}\"?"
+msgstr "Les add-ons ont un accès complet au jeu. N'installez que des add-ons de confiance. Installer \"{0}\" ?"
+
 #: src/scenes/Options.tsx
 msgid "addon|addons|add-on|mod|mods|browse|catalog|install"
 msgstr "addon|addons|add-on|mod|mods|recherche|catalogue|installer"
@@ -163,6 +168,9 @@ msgstr "pilote|auto|automatique|mode|playlist|boucle|suivant|musique"
 msgid "Available"
 msgstr "Disponible"
 
+#: src/components/addons/AddonView.tsx
+#: src/components/page/Page.tsx
+#: src/components/skins/SkinView.tsx
 #: src/components/songselect/TopBar.tsx
 #: src/components/Tutorial.tsx
 #: src/components/WebBrowser.tsx
@@ -177,6 +185,7 @@ msgid "BACK"
 msgstr "RETOUR"
 
 #: src/scenes/Addons.tsx
+#: src/scenes/Skins.tsx
 msgid "Back to Menu"
 msgstr "Retour au Menu"
 
@@ -198,6 +207,7 @@ msgid "Beatmap deleted"
 msgstr "Map supprimée"
 
 #: src/scenes/Addons.tsx
+#: src/scenes/Skins.tsx
 msgid "Browse"
 msgstr "Rechercher"
 
@@ -205,7 +215,12 @@ msgstr "Rechercher"
 msgid "Browse add-ons"
 msgstr "Rechercher des add-ons"
 
+#: src/components/options/BrowseSkins.tsx
+msgid "Browse skins"
+msgstr "Rechercher des skins"
+
 #: src/scenes/Addons.tsx
+#: src/scenes/Skins.tsx
 msgid "Browse the community catalogue"
 msgstr "Rechercher dans le catalogue de la communauté"
 
@@ -218,9 +233,22 @@ msgid "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to
 msgstr "Des maps sont disponibles par défaut dans <0>l'écran de sélection</0>:<1> double-tappez</1> sur une map pour la télécharger, puis <2>tapez</2> dessus pour démarrer."
 
 #: src/components/addons/BrowseAddonsView.tsx
-#: src/components/addons/ManageAddonsView.tsx
+#: src/components/addons/InstalledAddonRow.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+#: src/components/skins/InstalledSkinRow.tsx
 msgid "by"
 msgstr "par"
+
+#. placeholder {0}: skin.authorName
+#: src/components/skins/SkinReadMeta.tsx
+msgid "by {0}"
+msgstr "par {0}"
+
+#. placeholder {0}: detail.authorName
+#. placeholder {1}: detail.gameVersion
+#: src/components/addons/AddonReadMeta.tsx
+msgid "by {0} for game version {1}"
+msgstr "par {0} pour la version du jeu {1}"
 
 #: src/components/songselect/TopBar.tsx
 msgid "By Artist"
@@ -258,7 +286,9 @@ msgstr "Par note obtenue"
 msgid "By Title"
 msgstr "Par titre"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
+#: src/components/ConfirmMenu.tsx
+#: src/components/skins/SkinView.tsx
 #: src/scenes/Gameplay.tsx
 #: src/scenes/MainMenu.tsx
 msgid "Cancel"
@@ -272,6 +302,10 @@ msgstr "Changer"
 msgid "Change the way osu!idle behaves"
 msgstr "Changez la façon dont osu!idle se comporte"
 
+#: src/components/addons/AddonCodePane.tsx
+msgid "Changes"
+msgstr "Changements"
+
 #: src/components/Onboarding.tsx
 msgid "Character name"
 msgstr "Nom du personnage"
@@ -283,10 +317,6 @@ msgstr "La suppression des scores locaux n'est pas encore disponible"
 #: src/components/options/DeleteAllBeatmaps.tsx
 msgid "Click again to confirm"
 msgstr "Cliquez encore pour confirmer"
-
-#: src/components/addons/BrowseAddonsView.tsx
-msgid "Click again to confirm install"
-msgstr "Cliquez à nouveau pour confirmer"
 
 #: src/components/songselect/UserCard.tsx
 msgid "Click here to login!"
@@ -304,7 +334,9 @@ msgstr "Fermer"
 msgid "Close (Esc)"
 msgstr "Fermer (Échap)"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonCodePane.tsx
+#: src/components/addons/AddonCodePane.tsx
+#: src/components/skins/SkinCodePane.tsx
 msgid "Code"
 msgstr "Code"
 
@@ -312,14 +344,10 @@ msgstr "Code"
 msgid "Combo"
 msgstr "Combo"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
+#: src/components/skins/SkinView.tsx
 msgid "comma, separated, tags"
 msgstr "tags, séparés, par, virgules"
-
-#: src/components/addons/ManageAddonsView.tsx
-#: src/components/addons/ManageAddonsView.tsx
-msgid "Confirm ?"
-msgstr "Confirmer ?"
 
 #: src/scenes/Options.tsx
 msgid "CONTROLS"
@@ -341,9 +369,13 @@ msgstr "Impossible de démarrer la partie"
 msgid "Create character"
 msgstr "Créer le personnage"
 
-#: src/scenes/Addons.tsx
+#: src/components/addons/ManageAddonsView.tsx
 msgid "Create new add-on"
 msgstr "Créer un nouvel add-on"
+
+#: src/components/skins/ManageSkinsView.tsx
+msgid "Create new skin"
+msgstr "Créer un nouveau skin"
 
 #: src/components/Onboarding.tsx
 msgid "Create your character to finish setting up your account."
@@ -354,8 +386,14 @@ msgid "Current Fatigue"
 msgstr "Fatigue actuelle"
 
 #: src/components/addons/ManageAddonsView.tsx
+#: src/components/addons/MyAddonRow.tsx
+#: src/components/skins/MySkinRow.tsx
 msgid "Delete"
 msgstr "Supprimer"
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Delete add-on"
+msgstr "Supprimer l'add-on"
 
 #: src/components/options/DeleteAllBeatmaps.tsx
 msgid "Delete all beatmaps"
@@ -369,9 +407,17 @@ msgstr "Supprimer la playlist"
 msgid "delete|beatmap|beatmaps"
 msgstr "supprimer|beatmap|beatmaps"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
+#: src/components/skins/SkinView.tsx
 msgid "Description"
 msgstr "Description"
+
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/addons/InstalledAddonRow.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+#: src/components/skins/InstalledSkinRow.tsx
+msgid "Details"
+msgstr "Détails"
 
 #: src/components/Announce.tsx
 msgid "Dismiss"
@@ -401,19 +447,17 @@ msgstr "Chaque partie complétée octroie de <0>l'XP</0> et <1>des niveaux</1> �
 msgid "Early alpha"
 msgstr "Début d'alpha"
 
-#: src/components/addons/ManageAddonsView.tsx
+#: src/components/addons/MyAddonRow.tsx
+#: src/components/skins/MySkinRow.tsx
 msgid "Edit"
 msgstr "Modifier"
-
-#: src/components/addons/AddonEditor.tsx
-msgid "Edit add-on"
-msgstr "Modifier l'add-on"
 
 #: src/components/options/EffectVolume.tsx
 msgid "Effect"
 msgstr "Effet"
 
-#: src/components/addons/ManageAddonsView.tsx
+#: src/components/addons/InstalledAddonRow.tsx
+#: src/components/skins/InstalledSkinRow.tsx
 msgid "Enabled"
 msgstr "Activé"
 
@@ -446,7 +490,7 @@ msgstr "plein|écran|ecran"
 msgid "Fullscreen mode"
 msgstr "Mode plein écran"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
 msgid "Game version"
 msgstr "Version du jeu"
 
@@ -481,6 +525,7 @@ msgid "Hit deviance · {ur} UR"
 msgstr "Déviation · {ur} UR"
 
 #: src/components/addons/AddonIconField.tsx
+#: src/components/skins/SkinIconField.tsx
 msgid "Icon"
 msgstr "Icône"
 
@@ -489,12 +534,25 @@ msgid "In the menus"
 msgstr "Dans les menus"
 
 #: src/components/addons/BrowseAddonsView.tsx
-#: src/components/addons/ManageAddonsView.tsx
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/addons/MyAddonRow.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+#: src/components/skins/MySkinRow.tsx
 msgid "Install"
 msgstr "Installer"
 
 #: src/components/addons/BrowseAddonsView.tsx
+msgid "Install add-on"
+msgstr "Installer l'add-on"
+
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/addons/BrowseAddonsView.tsx
 #: src/components/addons/ManageAddonsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+#: src/components/skins/ManageSkinsView.tsx
 msgid "Installed"
 msgstr "Installé"
 
@@ -529,6 +587,7 @@ msgstr "chargement de la bibliothèque…"
 
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/leaderboard/Leaderboard.tsx
+#: src/components/skins/BrowseSkinsView.tsx
 msgid "Loading…"
 msgstr "Chargement…"
 
@@ -549,6 +608,7 @@ msgid "MAINTENANCE"
 msgstr "MAINTENANCE"
 
 #: src/scenes/Addons.tsx
+#: src/scenes/Skins.tsx
 msgid "Manage"
 msgstr "Gérer"
 
@@ -556,9 +616,17 @@ msgstr "Gérer"
 msgid "Manage add-ons"
 msgstr "Gérer les add-ons"
 
+#: src/components/options/ManageSkins.tsx
+msgid "Manage skins"
+msgstr "Gérer mes skins"
+
 #: src/scenes/Addons.tsx
 msgid "Manage your installed and created add-ons"
 msgstr "Gérez les add-ons que vous avez installés et créés"
+
+#: src/scenes/Skins.tsx
+msgid "Manage your installed and created skins"
+msgstr "Gérer vos skins installés et créés"
 
 #. placeholder {0}: version.set.metadata.creator
 #: src/components/songselect/TopBar.tsx
@@ -573,7 +641,7 @@ msgstr "créé par {creator}"
 msgid "Master"
 msgstr "Principal"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
 msgid "Moderator feedback"
 msgstr "Retours de la modération"
 
@@ -585,11 +653,13 @@ msgstr "Multi"
 msgid "Music"
 msgstr "Musique"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
+#: src/components/skins/SkinView.tsx
 msgid "Name"
 msgstr "Nom"
 
 #: src/components/addons/BrowseAddonsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
 msgid "name, author or tag"
 msgstr "nom, auteur ou tag"
 
@@ -597,11 +667,8 @@ msgstr "nom, auteur ou tag"
 msgid "Never"
 msgstr "Jamais"
 
-#: src/components/addons/AddonEditor.tsx
-msgid "New add-on"
-msgstr "Nouvel add-on"
-
 #: src/components/addons/BrowseAddonsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
 msgid "Newest"
 msgstr "Récents"
 
@@ -661,6 +728,14 @@ msgstr "Pas de score pour le moment, envoyez le premier !"
 msgid "No skill gains"
 msgstr "Aucun gain de compétence"
 
+#: src/components/skins/BrowseSkinsView.tsx
+msgid "No skins found."
+msgstr "Aucun skin trouvé."
+
+#: src/components/skins/ManageSkinsView.tsx
+msgid "No skins installed. Browse the catalog to find some."
+msgstr "Aucun skin installé. Vous en trouverez dans le catalogue."
+
 #: src/components/songselect/UserCard.tsx
 msgid "Open osu! web"
 msgstr "Ouvrir osu! web"
@@ -710,6 +785,11 @@ msgstr "Performance"
 msgid "Performance: {pp}pp"
 msgstr "Performance : {pp}pp"
 
+#. placeholder {0}: a.name
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Permanently delete \"{0}\"? This cannot be undone."
+msgstr "Supprimer {0} définitivement ? Cette action ne peut être annulée."
+
 #: src/components/leaderboard/PersonalBest.tsx
 msgid "Personal best"
 msgstr "Record personnel"
@@ -755,7 +835,7 @@ msgstr "Playlists"
 msgid "Profile picture<0/>Defaults to your osu! avatar"
 msgstr "Avatar<0/>Votre avatar osu! est utilisé par défaut"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
 msgid "Published add-on code must be licensed under the AGPLv3 (or a compatible licence), regardless of its source code's license."
 msgstr "Les add-ons publiés doivent l'être sous une licence AGPLv3 (ou licence compatible), indépendamment de la licence de son code source."
 
@@ -779,6 +859,11 @@ msgstr "Joué récemment"
 #: src/components/WebBrowser.tsx
 msgid "Reload"
 msgstr "Recharger"
+
+#. placeholder {0}: a.name
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Remove \"{0}\" ?"
+msgstr "Supprimer \"{0}\" ?"
 
 #: src/components/PlaylistOverlay.tsx
 msgid "Remove this difficulty"
@@ -807,15 +892,18 @@ msgstr "Rice : {0} LN : {1}"
 msgid "right|click|hold|time"
 msgstr "droit|clique|appui|duree|durée"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
+#: src/components/skins/SkinView.tsx
 msgid "Save"
 msgstr "Sauvegarder"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
+#: src/components/skins/SkinView.tsx
 msgid "Saving…"
 msgstr "Sauvegarde…"
 
 #: src/components/addons/BrowseAddonsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
 #: src/scenes/SongSelect.tsx
 msgid "Search:"
 msgstr "Recherche :"
@@ -858,6 +946,10 @@ msgstr "Se connecter"
 msgid "Sign in to create and publish add-ons."
 msgstr "Connectez-vous pour créer et publier des add-ons."
 
+#: src/components/skins/ManageSkinsView.tsx
+msgid "Sign in to create and publish skins."
+msgstr "Connectez-vous pour créer et publier des skins."
+
 #: src/components/options/SignIn.tsx
 msgid "Sign out"
 msgstr "Déconnexion"
@@ -870,6 +962,26 @@ msgstr "connexion|connecter"
 #: src/components/options/SignIn.tsx
 msgid "Signed in as {0}"
 msgstr "Connecté en tant que {0}"
+
+#: src/scenes/Options.tsx
+msgid "Skin"
+msgstr "Skin"
+
+#: src/scenes/Options.tsx
+msgid "skin|skins|browse|catalog|install"
+msgstr "skin|skins|chercher|catalogue|installer"
+
+#: src/scenes/Options.tsx
+msgid "skin|skins|manage|installed"
+msgstr "skin|skins|gerer|gérer|installer|installé"
+
+#: src/scenes/Options.tsx
+msgid "Skinning"
+msgstr "Skinnning"
+
+#: src/scenes/Skins.tsx
+msgid "Skins"
+msgstr "Skins"
 
 #: src/components/Tutorial.tsx
 msgid "Skip"
@@ -897,14 +1009,21 @@ msgid "Strain debug"
 msgstr "Strain debug"
 
 #: src/components/addons/ManageAddonsView.tsx
+#: src/components/addons/MyAddonRow.tsx
+#: src/components/skins/MySkinRow.tsx
 msgid "Submit"
 msgstr "Soumettre"
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Submit add-on"
+msgstr "Soumettre l'add-on"
 
 #: src/scenes/Gameplay.tsx
 msgid "Submitting score…"
 msgstr "Envoi du score…"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
+#: src/components/skins/SkinView.tsx
 msgid "Tags"
 msgstr "Tags"
 
@@ -941,15 +1060,28 @@ msgstr "Aujourd'hui"
 msgid "Type to search!"
 msgstr "Tapez pour rechercher !"
 
+#. placeholder {0}: this.name
+#: src/db/schema/skin.ts
+msgid "Unable to load \"{0}\": Malformed definition"
+msgstr "Impossible de charger \"{0}\" : Définition malformée"
+
+#: src/components/addons/InstalledAddonRow.tsx
 #: src/components/addons/ManageAddonsView.tsx
+#: src/components/skins/InstalledSkinRow.tsx
 msgid "Uninstall"
 msgstr "Désinstaller"
+
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Uninstall add-on"
+msgstr "Désinstaller l'add-on"
 
 #: src/osu/beatmap/grouping.ts
 msgid "Unplayed"
 msgstr "Non joué"
 
+#: src/components/addons/InstalledAddonRow.tsx
 #: src/components/addons/ManageAddonsView.tsx
+#: src/components/skins/InstalledSkinRow.tsx
 msgid "Update"
 msgstr "Mettre à jour"
 
@@ -959,6 +1091,7 @@ msgid "Update failed ({0}). Please restart the game."
 msgstr "Échec ({0}). Merci de redémarrer le jeu."
 
 #: src/components/addons/BrowseAddonsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
 msgid "Updated"
 msgstr "Mis à jour"
 
@@ -967,6 +1100,7 @@ msgid "Upload a profile picture"
 msgstr "Envoyer un avatar"
 
 #: src/components/addons/AddonIconField.tsx
+#: src/components/skins/SkinIconField.tsx
 msgid "Upload image"
 msgstr "Envoyer une image"
 
@@ -974,7 +1108,8 @@ msgstr "Envoyer une image"
 msgid "Uploading…"
 msgstr "Envoi…"
 
-#: src/components/addons/AddonEditor.tsx
+#: src/components/addons/AddonView.tsx
+#: src/components/skins/SkinView.tsx
 msgid "Version"
 msgstr "Version"
 
@@ -1026,6 +1161,10 @@ msgstr "Hier"
 msgid "You haven't created any add-ons yet."
 msgstr "Vous n'avez créé aucun add-on pour le moment."
 
+#: src/components/skins/ManageSkinsView.tsx
+msgid "You haven't created any skins yet."
+msgstr "Vous n'avez pas encore créé de skins."
+
 #: src/components/addons/ManageAddonsView.tsx
 msgid "Your add-ons"
 msgstr "Vos add-ons"
@@ -1037,4 +1176,13 @@ msgstr "Votre personnage peut jouer <0>en boucle</0>, automatiquement, sur des p
 #: src/components/Tutorial.tsx
 msgid "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1> Righ-click</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."
 msgstr "Votre personnage peut jouer <0>en boucle</0>, automatiquement, sur des playlists que vous avez conçu. Faites un <1>clique droit</1> sur une map pour l'ajouter et <2>groupez par playlist</2>, puis lancez la map pour utiliser le mode playlist."
+
+#. placeholder {0}: a.name
+#: src/components/addons/ManageAddonsView.tsx
+msgid "Your published code must be licensed under the AGPLv3 (or a compatible licence). This does not necessarily affect its source's license. Submit \"{0}\" for review?"
+msgstr "Le code publié doit l'être sous la licence AGPLv3 (ou licence compatible). Cela n'affecte pas nécessairement la licence de son code source. Soumettre \"{0}\" pour une revue de code ?"
+
+#: src/components/skins/ManageSkinsView.tsx
+msgid "Your skins"
+msgstr "Vos skins"
 

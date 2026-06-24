@@ -32,13 +32,12 @@ export function difficultyColor(stars: number): string {
 }
 
 const calculateSR = async (beatmap: Beatmap): Promise<number> => {
-	const osu = await BeatmapStore.getOsu(beatmap.metadata.beatmapSetId, beatmap.metadata.beatmapId);
+	const osu = await BeatmapStore
+		.getOsu(beatmap.metadata.beatmapSetId, beatmap.metadata.beatmapId);
 	if (!osu) return 0;
 
 	await rosuReady();
-	return new ppjs.Difficulty({
-		lazer: false,
-	}).calculate(new ppjs.Beatmap(osu)).stars;
+	return new ppjs.Difficulty({ lazer: false }).calculate(new ppjs.Beatmap(osu)).stars;
 };
 
 export default calculateSR;

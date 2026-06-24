@@ -6,7 +6,13 @@ import { type CarouselItem } from '../BeatmapCarousel';
 /** The card's osu!-style right-click menu. `deleteArmed` lives here (not in the
  *  parent) so it resets to unarmed every time the menu reopens - the menu only
  *  mounts while a card is targeted. */
-export default function CardContextMenu({ item, onClose, onManagePlaylists, onDelete, onClearScores }: {
+export default function CardContextMenu({ 
+	item, 
+	onClose, 
+	onManagePlaylists, 
+	onDelete, 
+	onClearScores, 
+}: {
 	item: CarouselItem;
 	onClose: () => void;
 	onManagePlaylists: () => void;
@@ -22,10 +28,30 @@ export default function CardContextMenu({ item, onClose, onManagePlaylists, onDe
 			sub={t`What do you want to do with this beatmap?`}
 			onClose={onClose}
 			options={[
-				{ label: t`1. Manage Playlists`, color: '#85b81e', onClick: onManagePlaylists },
-				{ label: deleteArmed ? t`2. Click again to delete` : t`2. Delete...`, color: '#e93100', onClick: () => { if (deleteArmed) onDelete(); else setDeleteArmed(true); } },
-				{ label: t`3. Clear local scores`, color: '#ce7dd6', onClick: onClearScores },
-				{ label: t`4. Cancel`, color: '#6b6b6b', onClick: onClose },
+				{ 
+					label: t`1. Manage Playlists`, 
+					color: '#85b81e', 
+					onClick: onManagePlaylists, 
+				},
+				{ 
+					label: deleteArmed ? 
+						t`2. Click again to delete` : t`2. Delete...`, 
+					color: '#e93100', 
+					onClick: () => {
+						if (deleteArmed) onDelete();
+						else setDeleteArmed(true);
+					},
+				},
+				{ 
+					label: t`3. Clear local scores`, 
+					color: '#ce7dd6', 
+					onClick: onClearScores, 
+				},
+				{ 
+					label: t`4. Cancel`,
+					color: '#6b6b6b', 
+					onClick: onClose, 
+				},
 			]}
 		/>
 	);

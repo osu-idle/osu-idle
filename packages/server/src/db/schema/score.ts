@@ -1,9 +1,27 @@
-import { Grades, type Judgement, Judgements } from '@osu-idle/shared/judgement';
-import { type AnyMySqlColumn, boolean, decimal, index, int, mysqlEnum, mysqlTable, primaryKey, timestamp } from 'drizzle-orm/mysql-core';
+import {
+	Grades,
+	type Judgement,
+	Judgements,
+} from '@osu-idle/shared/judgement';
+import {
+	type AnyMySqlColumn,
+	boolean,
+	decimal,
+	index,
+	int,
+	mysqlEnum,
+	mysqlTable,
+	primaryKey,
+	timestamp,
+} from 'drizzle-orm/mysql-core';
 import { characters } from './character';
 import type { ScoreDTO } from '@osu-idle/shared/score';
 import { db } from '../client';
-import { eq, and, desc } from 'drizzle-orm';
+import {
+	eq,
+	and,
+	desc,
+} from 'drizzle-orm';
 import { beatmaps } from './beatmap';
 import { beatmapset } from './beatmapset';
 
@@ -23,12 +41,18 @@ export const scoreTableDefinition = {
 	// server `beatmap` table.
 	beatmapId: int().notNull(),
 	score: int().notNull(),
-	accuracy: decimal({ precision: 10, scale: 5}).notNull(),
+	accuracy: decimal({
+		precision: 10, scale: 5, 
+	}).notNull(),
 	maxCombo: int().notNull(),
 	...judgeColumns,
 	grade: mysqlEnum(Grades).notNull(),
-	pp: decimal({ precision: 10, scale: 3}).notNull(),
-	ur: decimal({ precision: 10, scale: 3}).notNull(),
+	pp: decimal({
+		precision: 10, scale: 3, 
+	}).notNull(),
+	ur: decimal({
+		precision: 10, scale: 3, 
+	}).notNull(),
 	pfc: boolean().notNull(),
 	playedAt: timestamp().defaultNow(),
 };
@@ -100,7 +124,7 @@ export const getCharacterScores = (characterId: number, beatmapId: number) => db
 	.where(
 		and(
 			eq(scores.characterId, characterId),
-			eq(scores.beatmapId, beatmapId)
+			eq(scores.beatmapId, beatmapId),
 		));
 
 export const getAllCharacterScores = (characterId: number) => db

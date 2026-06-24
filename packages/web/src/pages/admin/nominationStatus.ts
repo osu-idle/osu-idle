@@ -13,4 +13,6 @@ export const phaseOf = (row: Nomination): Phase => {
 /** A live map is already public: its date is fixed and most actions are closed. */
 export const isLive = (row: Nomination): boolean => phaseOf(row) === 'live';
 
-export const PHASE_ORDER: Record<Phase, number> = { pending: 0, scheduled: 1, live: 2, rejected: 3 };
+export const PHASE_ORDER: Record<Phase, number> = {
+	pending: 0, scheduled: 1, live: 2, rejected: 3, 
+};

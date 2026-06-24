@@ -1,4 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import {
+	describe,
+	it,
+	expect,
+} from 'vitest';
 import Memory from '@osu-idle/shared/sim/skills/memory';
 import SpeedJam from '@osu-idle/shared/sim/skills/speedjam';
 import { newStrain } from '@osu-idle/shared/sim/bots/character';
@@ -48,11 +52,15 @@ describe('SpeedJam consumes the memory reduction', () => {
 		const col = newStrain();
 		const n = note(1000);
 		// stand in for memory's deposit for this note
-		map.memory.push({ note: n, strain: 0, min: 0, max: 0, type: 'both', memoryReduction: reduction, memoryTrain: train });
+		map.memory.push({
+			note: n, strain: 0, min: 0, max: 0, type: 'both', memoryReduction: reduction, memoryTrain: train, 
+		});
 		col.memory.push(map.memory[0]);
 		const speedjam = new SpeedJam(50);
 		const s = speedjam.analyze(n, ctx(0.5), map, col); // speed != 1 -> a real jam
-		return { s, memEntry: map.memory[0] };
+		return {
+			s, memEntry: map.memory[0], 
+		};
 	};
 
 	it('leaves the jam untouched when there is nothing remembered', () => {

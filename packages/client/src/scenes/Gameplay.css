@@ -1,142 +1,176 @@
 .play {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: #05040a;
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	background: #05040a;
+}
+
+/* stacked layers behind the playfield: background → video → dim → canvas */
+.play__bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	background-size: cover;
+	background-position: center;
+}
+
+.play__video {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: none;
+}
+
+.play__dim {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	background: #05040a;
+	opacity: 0;
+	pointer-events: none;
 }
 
 .play__canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	width: 100%;
+	height: 100%;
 }
 
 .play__back {
-  position: absolute;
-  top: 1rem;
-  left: 1.2rem;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.45rem 1rem;
-  border-radius: 999px;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(255, 102, 171, 0.16);
-  border: 1px solid rgba(255, 102, 171, 0.35);
-  transition: background 0.2s ease;
+	position: absolute;
+	top: 1rem;
+	left: 1.2rem;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding: 0.45rem 1rem;
+	border-radius: 999px;
+	font-weight: 700;
+	color: #fff;
+	background: rgba(255, 102, 171, 0.16);
+	border: 1px solid rgba(255, 102, 171, 0.35);
+	transition: background 0.2s ease;
 }
 .play__back:hover {
-  background: rgba(255, 102, 171, 0.3);
+	background: rgba(255, 102, 171, 0.3);
 }
 
 .play__title {
-  position: absolute;
-  top: 1.1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-  pointer-events: none;
+	position: absolute;
+	top: 1.1rem;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: rgba(255, 255, 255, 0.85);
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+	pointer-events: none;
 }
 .play__title span {
-  color: var(--osu-pink-light);
+	color: var(--osu-pink-light);
 }
 
 /* playlist autopilot HUD: next map + live fatigue, under the back button */
 .play__autopilot {
-  position: absolute;
-  top: 4rem;
-  left: 1.2rem;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-  pointer-events: none;
+	position: absolute;
+	top: 4rem;
+	left: 1.2rem;
+	z-index: 10;
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: rgba(255, 255, 255, 0.8);
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+	pointer-events: none;
 }
 .play__autopilot-next span {
-  color: var(--osu-pink-light);
+	color: var(--osu-pink-light);
 }
 .play__autopilot-fatigue {
-  color: #ffc46b;
+	color: #ffc46b;
 }
 
 /* grade badge: overlaid to the left of the canvas-drawn accuracy (top right) */
 .play__grade {
-  position: absolute;
-  top: 16px;
-  right: 160px;
-  height: 40px;
-  width: auto;
-  z-index: 10;
-  pointer-events: none;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+	position: absolute;
+	top: 16px;
+	right: 160px;
+	height: 40px;
+	width: auto;
+	z-index: 10;
+	pointer-events: none;
+	filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
 }
 
 /* result-loading overlay: shown while a finished ranked play waits for its
    server result, over the still-scrolling playfield */
 .play__loading {
-  position: absolute;
-  bottom: 2.2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 1.1rem;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(0, 0, 0, 0.45);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-  pointer-events: none;
-  animation: play__loading-in 0.6s ease both;
+	position: absolute;
+	bottom: 2.2rem;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.5rem 1.1rem;
+	border-radius: 999px;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: rgba(255, 255, 255, 0.9);
+	background: rgba(0, 0, 0, 0.45);
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+	pointer-events: none;
+	animation: play__loading-in 0.6s ease both;
 }
 @keyframes play__loading-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 .play__loading-spinner {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  border-top-color: var(--osu-pink-light);
-  animation: play__spin 0.7s linear infinite;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	border: 2px solid rgba(255, 255, 255, 0.25);
+	border-top-color: var(--osu-pink-light);
+	animation: play__spin 0.7s linear infinite;
 }
 @keyframes play__spin {
-  to { transform: rotate(360deg); }
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .play__skip {
-  position: absolute;
-  bottom: 1rem;
-  right: 1.2rem;
-  z-index: 10;
-  padding: 0.45rem 1rem;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px dashed rgba(255, 255, 255, 0.4);
-  transition: background 0.15s ease;
+	position: absolute;
+	bottom: 1rem;
+	right: 1.2rem;
+	z-index: 10;
+	padding: 0.45rem 1rem;
+	border-radius: 999px;
+	font-weight: 700;
+	font-size: 0.85rem;
+	color: #fff;
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px dashed rgba(255, 255, 255, 0.4);
+	transition: background 0.15s ease;
 }
 .play__skip:hover {
-  background: rgba(255, 255, 255, 0.2);
+	background: rgba(255, 255, 255, 0.2);
 }
-
 
 @media (max-width: 850px) {
 	.play__title {

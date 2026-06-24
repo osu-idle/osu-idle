@@ -1,9 +1,22 @@
 import { ScoreDTO } from '@osu-idle/shared/score';
 import Synced from '@osu-idle/shared/helpers/synced';
-import { boolean, Column, DAO, DB, integer, real, table, text } from '../dao';
+import {
+	boolean,
+	Column,
+	DAO,
+	DB,
+	integer,
+	real,
+	table,
+	text,
+} from '../dao';
 import { ScoreBest } from './score_best';
 import { ScoreBestPP } from './score_best_pp';
-import { Grade, Judgement, Judgements } from '@osu-idle/shared/judgement';
+import {
+	Grade,
+	Judgement,
+	Judgements,
+} from '@osu-idle/shared/judgement';
 
 const judgementColumns = Object.fromEntries(
 	Judgements.map(j => [j, integer()]),
@@ -33,7 +46,7 @@ const t = table('score', {
 	},
 });
 
-/** Bumped on every score write so live views (the carousel card grades) re-query
+/** Bumped on every score write so live views re-query
  *  instead of holding a stale best - e.g. a global leaderboard load that imports
  *  one of the live character's scores. */
 export const scoresVersion = new Synced(0);
@@ -70,21 +83,27 @@ export class Score extends DAO(t) {
 
 	static fromDTO(dto: ScoreDTO): Score {
 		const { judgements, ...rest } = dto;
-		return new Score({ ...rest, ...judgements, onlineId: dto.id, id: undefined });
+		return new Score({
+			...rest, ...judgements, onlineId: dto.id, id: undefined, 
+		});
 	}
 
-	/** Serialise this row to the shared wire DTO (e.g. to submit to the API).
-	 *  Values are sanitised - old local rows can carry NaN pp/ur or fractional
-	 *  scores, which the strict wire schema (ints, finite, 0..1 accuracy) rejects. */
 	toDTO(): ScoreDTO {
-		const int = (n: number) => (Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0);
+		const int = (n: number) => (Number.isFinite(n) ? 
+			Math.max(0, Math.round(n)) 
+			: 0
+		);
+
 		const nonNeg = (n: number) => (Number.isFinite(n) && n > 0 ? n : 0);
+
 		return {
 			id:          int(-1),
 			characterId: Math.max(1, int(this.characterId)),
 			beatmapId:   int(this.beatmapId),
 			score:       int(this.score),
-			accuracy:    Math.min(1, Number.isFinite(this.accuracy) ? Math.max(0, this.accuracy) : 0),
+			accuracy:    Math.min(1,
+				Number.isFinite(this.accuracy) ? Math.max(0, this.accuracy) : 0,
+			),
 			maxCombo:    int(this.maxCombo),
 			judgements:  Object.fromEntries(
 				Judgements.map(j => [j, int(this[j])]),
@@ -104,7 +123,10 @@ export class Score extends DAO(t) {
 		);
 	}
 
-	static best(characterId: number, beatmapId: number): Promise<Score | undefined> {
+	static best(
+		characterId: number, 
+		beatmapId: number,
+	): Promise<Score | undefined> {
 		return this.first(
 			`SELECT s.* FROM score s
 				JOIN score_best b ON b.scoreId = s.id
@@ -113,7 +135,10 @@ export class Score extends DAO(t) {
 		);
 	}
 
-	static bestPP(characterId: number, beatmapId: number): Promise<Score | undefined> {
+	static bestPP(
+		characterId: number, 
+		beatmapId: number,
+	): Promise<Score | undefined> {
 		return this.first(
 			`SELECT s.* FROM score s
 				JOIN score_best_pp b ON b.scoreId = s.id

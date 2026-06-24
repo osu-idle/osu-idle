@@ -1,10 +1,16 @@
 import type { BotContext } from '../bot.js';
-import { type Strain, type SkillStrain } from '../bots/character.js';
+import {
+	type Strain,
+	type SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import lerp from '../../math/lerp.js';
 import Skill from './skill.js';
-import { PRESSURE_SKILLS, SKILL } from '../../skills.js';
+import {
+	PRESSURE_SKILLS,
+	SKILL,
+} from '../../skills.js';
 
 /**
  * Consistency is the anti-choke skill. With a small, level-shrinking chance,
@@ -52,12 +58,25 @@ export default class Consistency extends Skill {
 				- Consistency.fn(level / 110) * (Consistency.BASE_CHOKE_CHANCE - Consistency.MIN_CHOKE_CHANCE);
 
 			const chokeLevel = Consistency.fnMiss(level / 110);
-			this.chokeMin = lerp(Consistency.MISS_CHOKE_SHARE_MIN_MIN, Consistency.MISS_CHOKE_SHARE_MIN_MAX, chokeLevel);
-			this.chokeMax = lerp(Consistency.MISS_CHOKE_SHARE_MAX_MIN, Consistency.MISS_CHOKE_SHARE_MAX_MAX, chokeLevel);
+			this.chokeMin = lerp(
+				Consistency.MISS_CHOKE_SHARE_MIN_MIN,
+				Consistency.MISS_CHOKE_SHARE_MIN_MAX, 
+				chokeLevel,
+			);
+			this.chokeMax = lerp(
+				Consistency.MISS_CHOKE_SHARE_MAX_MIN, 
+				Consistency.MISS_CHOKE_SHARE_MAX_MAX, 
+				chokeLevel,
+			);
 		});
 	}
 
-	analyze(note: RuntimeNote, _context: BotContext, mapStrain: Strain, colStrain: Strain): SkillStrain {
+	analyze(
+		note: RuntimeNote,
+		_context: BotContext,
+		mapStrain: Strain, 
+		colStrain: Strain,
+	): SkillStrain {
 		const pressure = Consistency.pressureAt(mapStrain);
 		const choke = Math.random() < this.randomness;
 		const miss = choke && (Math.random() < lerp(

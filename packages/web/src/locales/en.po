@@ -29,13 +29,18 @@ msgstr "{skill} Ranking"
 msgid "Accuracy"
 msgstr "Accuracy"
 
-#: src/App.tsx
+#: src/Header.tsx
+#: src/routes/admin/addons.tsx
 msgid "add-ons"
 msgstr "add-ons"
 
 #: src/Header.tsx
-msgid "Add-ons"
-msgstr "Add-ons"
+msgid "admin"
+msgstr "admin"
+
+#: src/routes/admin/index.tsx
+msgid "admin dashboard"
+msgstr "admin dashboard"
 
 #: src/components/leaderboard/CountryFilter.tsx
 msgid "All"
@@ -49,20 +54,17 @@ msgstr "An error occurred when communicating with osu! ... if your osu! account 
 msgid "Back in osu!idle already? You can close this tab."
 msgstr "Back in osu!idle already? You can close this tab."
 
-#: src/App.tsx
+#: src/Header.tsx
+#: src/routes/admin/balancing.tsx
 msgid "balancing"
 msgstr "balancing"
 
 #: src/Header.tsx
-msgid "Balancing"
-msgstr "Balancing"
-
-#: src/App.tsx
-#: src/Header.tsx
+#: src/routes/maps.tsx
 msgid "beatmap listing"
 msgstr "beatmap listing"
 
-#: src/App.tsx
+#: src/routes/admin/nomination.tsx
 msgid "beatmap nomination"
 msgstr "beatmap nomination"
 
@@ -85,7 +87,7 @@ msgstr "Best Performance"
 msgid "by {0}"
 msgstr "by {0}"
 
-#: src/App.tsx
+#: src/routes/c/$id.tsx
 msgid "character info"
 msgstr "character info"
 
@@ -115,9 +117,7 @@ msgstr "Country Ranking"
 msgid "Create your own osu! character and watch it grow to become a<0/><1>legendary mania player</1>."
 msgstr "Create your own osu! character and watch it grow to become a<0/><1>legendary mania player</1>."
 
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
+#: src/routes/__root.tsx
 msgid "dashboard"
 msgstr "dashboard"
 
@@ -138,7 +138,7 @@ msgstr "Error"
 msgid "faq"
 msgstr "faq"
 
-#: src/App.tsx
+#: src/routes/help/faq.tsx
 msgid "FAQ"
 msgstr "FAQ"
 
@@ -169,7 +169,7 @@ msgstr "Hello {0}!"
 msgid "help"
 msgstr "help"
 
-#: src/App.tsx
+#: src/routes/auth/callback.tsx
 msgid "hi !"
 msgstr "hi !"
 
@@ -201,17 +201,21 @@ msgstr "Latest news"
 msgid "Loading…"
 msgstr "Loading…"
 
-#: src/App.tsx
+#: src/routes/logout.tsx
 msgid "logging out..."
 msgstr "logging out..."
 
-#: src/App.tsx
+#: src/routes/login.tsx
 msgid "login"
 msgstr "login"
 
-#: src/App.tsx
+#: src/routes/news/admin.tsx
 msgid "manage news"
 msgstr "manage news"
+
+#: src/Header.tsx
+msgid "map nomination"
+msgstr "map nomination"
 
 #. placeholder {0}: mapset.creator
 #: src/pages/beatmaps/RankedMaps.tsx
@@ -235,9 +239,9 @@ msgstr "My Profile"
 msgid "New Ranked Beatmaps"
 msgstr "New Ranked Beatmaps"
 
-#: src/App.tsx
-#: src/App.tsx
 #: src/Header.tsx
+#: src/routes/news/$slug.tsx
+#: src/routes/news/index.tsx
 msgid "news"
 msgstr "news"
 
@@ -250,16 +254,12 @@ msgstr "News"
 msgid "No news yet. Check back soon!"
 msgstr "No news yet. Check back soon!"
 
-#: src/Header.tsx
-msgid "Nomination"
-msgstr "Nomination"
-
 #. placeholder {0}: PLATFORM_LABEL[platform]
 #: src/pages/PlayOsuIdle.tsx
 msgid "Not yet available for {0}"
 msgstr "Not yet available for {0}"
 
-#: src/App.tsx
+#: src/routes/auth/error.tsx
 msgid "oh no!"
 msgstr "oh no!"
 
@@ -299,8 +299,8 @@ msgstr "Play now"
 msgid "play osu!"
 msgstr "play osu!"
 
-#: src/App.tsx
 #: src/Header.tsx
+#: src/routes/download.tsx
 msgid "play osu!idle"
 msgstr "play osu!idle"
 
@@ -332,17 +332,13 @@ msgstr "Ranked"
 msgid "Ranked Score"
 msgstr "Ranked Score"
 
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
 #: src/Header.tsx
+#: src/routes/rankings/country.tsx
+#: src/routes/rankings/global.tsx
+#: src/routes/rankings/grades/$grade.tsx
+#: src/routes/rankings/plays.tsx
+#: src/routes/rankings/score.tsx
+#: src/routes/rankings/skills/$skill.tsx
 msgid "rankings"
 msgstr "rankings"
 
@@ -397,7 +393,7 @@ msgstr "Sign in with osu!"
 msgid "Sign out"
 msgstr "Sign out"
 
-#: src/App.tsx
+#: src/routes/auth/desktop.tsx
 msgid "signed in"
 msgstr "signed in"
 
@@ -417,6 +413,11 @@ msgstr "skills"
 #: src/pages/characters/CharacterPage.tsx
 msgid "Skills"
 msgstr "Skills"
+
+#: src/Header.tsx
+#: src/routes/admin/skins.tsx
+msgid "skins"
+msgstr "skins"
 
 #: src/components/leaderboard/PlayerGradesLeaderboard.tsx
 #: src/components/leaderboard/PlayerLeaderboard.tsx

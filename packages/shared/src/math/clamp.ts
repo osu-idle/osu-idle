@@ -1,3 +1,4 @@
-const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+const clamp = (n: number, min: number, max: number) => 
+	Math.max(min, Math.min(max, n));
 
 export default clamp;

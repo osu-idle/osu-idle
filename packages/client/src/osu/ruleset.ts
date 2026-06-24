@@ -1,4 +1,7 @@
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import {
+	mapped,
+	ValueIn,
+} from '@osu-idle/shared/helpers/mapped';
 
 export const RULESET = mapped(['OSU', 'TAIKO', 'CATCH', 'MANIA']);
 export type Ruleset = ValueIn<typeof RULESET>;

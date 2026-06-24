@@ -1,22 +1,31 @@
+import { useNavigate } from '@tanstack/react-router';
 import { GoodGrade } from '@osu-idle/shared/judgement';
 import CountryFilter from '../../components/leaderboard/CountryFilter';
-import { countryGradesRankPath, globalGradesRankPath, navigate } from '../../router';
-import RankingsNav from './RankingsNav';
 import PlayerGradesLeaderboard from '../../components/leaderboard/PlayerGradesLeaderboard';
+import type { getGradesRanking } from '../../api/rankings';
+import RankingsNav from './RankingsNav';
 
-export default function GradesRankings({ params: { country, grade, page }}: {
-	params: { country?: string, grade?: GoodGrade | 'all', page?: number }
+type Players = Awaited<ReturnType<typeof getGradesRanking>>;
+
+export default function GradesRankings({ grade, page, country, players }: {
+	grade: GoodGrade | 'all',
+	page: number,
+	country?: string,
+	players: Players,
 }) {
-	grade = grade ?? 'all';
-	page = page ?? 1;
-	return (<>
+	const navigate = useNavigate();
+	return (
 		<main>
 			<RankingsNav current={'grades'} />
-			<CountryFilter selected={country} onSelect={country => navigate(country ? countryGradesRankPath(grade, country, page) : globalGradesRankPath(grade, page))} />
+			<CountryFilter selected={country} onSelect={value => navigate({
+				to: '/rankings/grades/$grade', params: { grade }, search: {
+					country: value || undefined, page: 1, 
+				}, 
+			})} />
 
 			<div className='page-contents'>
-				<PlayerGradesLeaderboard sort={grade} country={country} page={page} />
+				<PlayerGradesLeaderboard sort={grade} country={country} page={page} players={players} />
 			</div>
 		</main>
-	</>);
+	);
 }

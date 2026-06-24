@@ -2,7 +2,14 @@ import { Beatmap } from 'osu-classes';
 import BeatmapStore from '../osu/beatmap/beatmap_store';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import { audioContext } from './audioContext';
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import { effects } from './EffectPlayer';
+import { SampleSchedule } from './SampleSchedule';
+import { preloadSamples } from './hitsounds';
+import { loadStoryboardAssets } from '../osu/beatmap/storyboard';
+import {
+	mapped,
+	ValueIn,
+} from '@osu-idle/shared/helpers/mapped';
 import Synced from '@osu-idle/shared/helpers/synced';
 import Listener from '@osu-idle/shared/helpers/listener';
 import { SETTINGS } from '../db/settings';
@@ -10,11 +17,16 @@ import { SETTINGS } from '../db/settings';
 export const PLAYER_MODE = mapped(['PLAYLIST', 'LOOP', 'SINGLE']);
 export type PlayerMode = ValueIn<typeof PLAYER_MODE>;
 
+/** how far ahead storyboard samples are queued onto the audio clock (ms). Must
+ *  exceed the background timer-throttle floor so a hidden tab still queues. */
+const SAMPLE_LOOKAHEAD_MS = 1200;
+const SAMPLE_TICK_MS = 120;
+/** silence kept after the last sound before a track is considered finished. */
+const END_PAD_MS = 800;
+
 export class MusicPlayer {
 
-	public listeners = {
-		beat: new Listener<(beat: number, time: number) => void>(),
-	};
+	public listeners = { beat: new Listener<(beat: number, time: number) => void>() };
 
 	public readonly beatmap = new Synced<LightBeatmap | undefined>(undefined);
 	public readonly playing = new Synced(false);
@@ -30,8 +42,10 @@ export class MusicPlayer {
 		if (!this._audio) {
 			this._audio = new Audio();
 			this._audio.preload = 'auto';
+			// preview clips stream from the API origin; without CORS the element feeds
+			// the (cross-origin) audio graph silence. Must be set before any src.
+			this._audio.crossOrigin = 'anonymous';
 			this._audio.volume = 1; // real volume is handled by the gain node
-			this._audio.addEventListener('ended', () => this.handleEnded());
 		}
 		return this._audio;
 	}
@@ -41,13 +55,18 @@ export class MusicPlayer {
 
 		this.beatmap.sync(async beatmap => {
 			await this.audioSource.set(await this.getAudioSource(beatmap));
+			void this.loadTimeline(beatmap);
 		});
 
 		this.audioSource.sync(async src => {
 			delete this.lastBeat;
 
 			if (!src) {
+				// no backing track (virtual map): clear the element so syncAudio won't
+				// replay the previous map's audio. The samples drive playback instead.
 				this.audio.pause();
+				this.audio.removeAttribute('src');
+				this.audio.load();
 				return;
 			}
 
@@ -64,6 +83,99 @@ export class MusicPlayer {
 
 		this.initBeatDetection();
 		this.initRaf();
+		this.initSampleScheduler();
+	}
+
+	// ---- virtual timeline (menus / preview) ----
+	// The song position is a virtual clock spanning the whole beatmap, not just
+	// the audio file: it runs through blanks before/after the audio and works for
+	// no-audio ("virtual") maps whose sound is entirely storyboard samples. The
+	// <audio> element is a slave - started when the position enters its range,
+	// left to end on its own - while the position keeps advancing on the shared
+	// AudioContext clock. Storyboard samples are scheduled on the effects channel.
+	private anchorPos = 0; // song position (ms) at anchorCtx
+	private anchorCtx = 0; // AudioContext time (s) the anchor was taken
+	private pausePos?: number; // frozen position while paused
+	private advancing = false; // guards against re-firing next/loop at the end
+	private sampleStart = 0;
+	private sampleEnd = 0;
+	private samples?: SampleSchedule;
+
+	private songStart(): number {
+		return Math.min(0, this.sampleStart);
+	}
+
+	/** Decode the map's storyboard samples, preload them, and record the timeline
+	 *  bounds. Runtime (downloaded) maps only - others have no bundled samples. */
+	private async loadTimeline(map: LightBeatmap | undefined): Promise<void> {
+		this.samples = undefined;
+		this.sampleStart = 0;
+		this.sampleEnd = 0;
+		if (!map || !map.metadata.runtime) return;
+		try {
+			const beatmap = await map.load();
+			if (!this.beatmap.get()?.is(map)) return; // a newer track was selected
+			const assets = await loadStoryboardAssets(map, beatmap);
+			if (!this.beatmap.get()?.is(map)) return;
+			// a virtual (no-audio) map's song is its keysounds + storyboard samples, so
+			// play both in the menu. A normal map's keysounds are gameplay-only.
+			const menu = this.audioSource.get()
+				? assets.samples
+				: [...assets.samples, ...assets.keysounds].sort((a, b) => a.time - b.time);
+			this.samples = new SampleSchedule(menu);
+			this.sampleStart = menu.length ? menu[0].time : 0;
+			this.sampleEnd = menu.reduce((m, s) => Math.max(m, s.time), 0);
+			await preloadSamples(map.set.metadata.id, menu);
+		} catch (e) {
+			console.warn('[music] storyboard load failed', e);
+		}
+	}
+
+	/** Start, seek or stop the slave <audio> element to track the virtual position.
+	 *  Once the track ends it stays ended (the clock continues past it). */
+	private syncAudio(pos: number): void {
+		if (!this.audio.src) return; // no backing track (virtual map)
+		if (pos < 0) {
+			if (!this.audio.paused) this.audio.pause();
+			return;
+		}
+		if (this.audio.paused && !this.audio.ended) {
+			if (Math.abs(this.audio.currentTime * 1000 - pos) > 250) 
+				this.audio.currentTime = pos / 1000;
+			void this.audio.play().catch(() => {});
+		}
+	}
+
+	/**
+	 * Whether the virtual position has passed the end of every sound (audio +
+	 * samples). While the audio is still loading or playing the song never ends.
+	 */
+	private atEnd(pos: number): boolean {
+		const hasAudio = !!this.audio.src;
+		const audioMs = isFinite(this.audio.duration) ?
+			this.audio.duration * 1000 
+			: undefined;
+		if (hasAudio && (audioMs === undefined || (!this.audio.ended && pos < audioMs)))
+			return false;
+		return pos >= Math.max(audioMs ?? 0, this.sampleEnd) + END_PAD_MS;
+	}
+
+	/** Drive the slave audio, queue storyboard samples, and advance at the end.
+	 *  A timer (not rAF) so it keeps running while the tab is hidden. Idle during
+	 *  gameplay, which owns its own buffer clock (see playGameplay / gameTime). */
+	private initSampleScheduler(): void {
+		setInterval(() => {
+			if (this.gameStartCtx != null) return; // gameplay buffer owns the clock
+			if (!this._playing) return;
+			if (!this.beatmap.get()) return;
+			const pos = this.time();
+			this.syncAudio(pos);
+			this.samples?.queue(pos, SAMPLE_LOOKAHEAD_MS);
+			if (this.atEnd(pos) && !this.advancing) {
+				this.advancing = true;
+				this.handleEnded();
+			}
+		}, SAMPLE_TICK_MS);
 	}
 
 	private _gain?: GainNode;
@@ -87,7 +199,9 @@ export class MusicPlayer {
 		return ctx;
 	}
 	
-	private async getAudioSource(map: LightBeatmap | undefined): Promise<string | undefined> {
+	private async getAudioSource(
+		map: LightBeatmap | undefined,
+	): Promise<string | undefined> {
 		if (!map) return;
 		return BeatmapStore.getBeatmapAudio(map);
 	}
@@ -127,7 +241,9 @@ export class MusicPlayer {
 			if (!timingPoint) return;
 
 			const beat = Math.floor((ms - timingPoint.startTime) / timingPoint.beatLength);
-			if (beat < 0) return; // before the first timing point (the "drop") - no beats yet
+
+			// before the first timing point (the "drop") - no beats yet
+			if (beat < 0) return; 
 			if (this.lastBeat === beat) return;
 
 			this.lastBeat = beat;
@@ -145,7 +261,10 @@ export class MusicPlayer {
 		if (!audio.src) return;
 		const ready = (state: number, event: string) => audio.readyState >= state
 			? Promise.resolve()
-			: new Promise<void>(resolve => audio.addEventListener(event, () => resolve(), { once: true }));
+			: new Promise<void>(resolve => audio.addEventListener(event, 
+				() => resolve(), 
+				{ once: true },
+			));
 		await ready(1 /* HAVE_METADATA */, 'loadedmetadata');
 		if (atMs > 0) audio.currentTime = atMs / 1000;
 		await ready(3 /* HAVE_FUTURE_DATA */, 'canplay');
@@ -153,19 +272,25 @@ export class MusicPlayer {
 
 	async play(atMs?: number) {
 		if (this.gameRiding) this.stopRiding();
-		this._playing = true;
-		if (atMs !== undefined) {
-			this.audio.currentTime = atMs / 1000;
-		}
 		if (this.context.state === 'suspended') await this.context.resume();
-		await this.audio.play().catch(() => {});
+		const pos = atMs ?? this.pausePos ?? this.songStart();
+		this.anchorPos = pos;
+		this.anchorCtx = this.context.currentTime;
+		this.pausePos = undefined;
+		this.advancing = false;
+		this._playing = true;
+		this.samples?.resync(pos);
+		effects.stopAll();
+		this.syncAudio(pos);
 		await this.playing.set(true);
 	}
 
 	pause() {
 		if (this.gameRiding) this.stopRiding();
+		this.pausePos = this.time();
 		this._playing = false;
 		this.audio.pause();
+		effects.stopAll();
 		this.playing.set(false);
 	}
 
@@ -173,8 +298,10 @@ export class MusicPlayer {
 		if (this.gameRiding) this.stopRiding();
 		this._playing = false;
 		this.audio.pause();
+		this.audio.currentTime = 0;
+		this.pausePos = this.songStart();
+		effects.stopAll();
 		this.playing.set(false);
-		this.seek(0);
 	}
 
 	async next() {
@@ -185,7 +312,23 @@ export class MusicPlayer {
 	}
 
 	time() {
-		return !this._playing ? 0 : this.audio.currentTime * 1000;
+		// during gameplay the buffer clock is authoritative
+		if (this.gameStartCtx != null) return this.gameTime();
+		if (!this._playing) return this.pausePos ?? this.songStart();
+		// while the slave audio is actively playing, trust it and re-anchor the
+		// virtual clock to it - so the audio region is drift-free and the blanks
+		// before/after it continue smoothly from the same position.
+		if (
+			this.audio.src 
+			&& !this.audio.paused 
+			&& !this.audio.ended 
+			&& this.audio.currentTime > 0
+		) {
+			this.anchorPos = this.audio.currentTime * 1000;
+			this.anchorCtx = this.context.currentTime;
+			return this.anchorPos;
+		}
+		return this.anchorPos + (this.context.currentTime - this.anchorCtx) * 1000;
 	}
 
 	/** true once the underlying audio element has played past its end */
@@ -194,7 +337,17 @@ export class MusicPlayer {
 	}
 
 	seek(ms: number) {
-		this.audio.currentTime = ms / 1000;
+		this.anchorPos = ms;
+		this.anchorCtx = this.context.currentTime;
+		if (!this._playing) this.pausePos = ms;
+		this.samples?.resync(ms);
+		effects.stopAll();
+		if (!this.audio.src) return;
+		if (ms < 0) {
+			if (!this.audio.paused) this.audio.pause();
+		} else {
+			this.audio.currentTime = ms / 1000;
+		}
 	}
 
 	// ---- gameplay buffer playback ----
@@ -211,8 +364,10 @@ export class MusicPlayer {
 	 *  natural end (see endGameplay) instead of being cut at the result screen */
 	private gameRiding = false;
 
-	/** Decode the gameplay track up front (during the silent lead-in) so it can be
-	 *  started sample-accurately. Resolves to false for keysound maps (no track). */
+	/**
+	 * Decode the gameplay track up front (during the silent lead-in) so it can be
+	 * started sample-accurately. Resolves to false for keysound maps (no track).
+	 */
 	async prepareGameplay(map: LightBeatmap): Promise<boolean> {
 		this.stopGameplay();
 		const url = await this.getAudioSource(map);
@@ -239,13 +394,16 @@ export class MusicPlayer {
 		if (offset >= this.gameBuffer.duration) return; // past the end: clock only
 		const src = this.context.createBufferSource();
 		src.buffer = this.gameBuffer;
-		src.connect(this._analyser!); // → music gain → destination (volume + visualiser)
+
+		// → music gain → destination (volume + visualiser)
+		src.connect(this._analyser!);
 		src.start(when, offset);
 		this.gameSource = src;
 	}
 
 	/** Silence the playing gameplay track but keep the decoded buffer so it can be
-	 *  restarted from a given position (debug pause / seek). Resume with playGameplay. */
+	 * restarted from a given position (debug pause / seek) Resume with playGameplay
+	 */
 	pauseGameplay(): void {
 		this.disposeGameSource();
 	}
@@ -253,7 +411,8 @@ export class MusicPlayer {
 	/** Gameplay song position (ms) from the shared audio clock. Advances smoothly
 	 *  forever - even past the track end - so the final notes always resolve. */
 	gameTime(): number {
-		return this.gameStartCtx == null ? 0 : (this.context.currentTime - this.gameStartCtx) * 1000;
+		return this.gameStartCtx == null ? 0 
+			: (this.context.currentTime - this.gameStartCtx) * 1000;
 	}
 
 	/** End the play but let the decoded track keep playing to its natural end -
@@ -266,7 +425,9 @@ export class MusicPlayer {
 		// - its onended has fired and won't fire again. Only ride it out while it's
 		// genuinely still playing; otherwise (or for keysound maps with no source)
 		// behave as before: release and hand straight back to the streamer.
-		const stillPlaying = this.gameSource && this.gameBuffer && this.gameStartCtx != null
+		const stillPlaying = this.gameSource 
+			&& this.gameBuffer
+			&& this.gameStartCtx != null
 			&& this.gameTime() < this.gameBuffer.duration * 1000;
 		if (!stillPlaying) {
 			this.stopGameplay();
@@ -303,7 +464,8 @@ export class MusicPlayer {
 
 	private disposeGameSource(): void {
 		if (!this.gameSource) return;
-		this.gameSource.onended = null; // we're stopping it deliberately, don't hand back
+		// we're stopping it deliberately, don't hand back
+		this.gameSource.onended = null;
 		try { this.gameSource.stop(); } catch { /* already stopped/ended */ }
 		this.gameSource.disconnect();
 		this.gameSource = undefined;
@@ -356,5 +518,6 @@ export class MusicPlayer {
 
 // HMR Reuse instance
 const globalStore = globalThis as unknown as { __osuIdleMusic?: MusicPlayer };
+ 
 export const music: MusicPlayer = globalStore.__osuIdleMusic ?? new MusicPlayer();
 globalStore.__osuIdleMusic = music;

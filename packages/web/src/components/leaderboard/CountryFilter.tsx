@@ -16,8 +16,12 @@ export default function CountryFilter({ selected, onSelect }: {
 	const countries = useAsync(() => getCountries(), []);
 
 	const items = [
-		{ label: t`All`, value: '' },
-		...(countries ?? []).map(c => ({ label: countryName(c.country, i18n.locale), value: c.country })),
+		{
+			label: t`All`, value: '', 
+		},
+		...(countries ?? []).map(c => ({
+			label: countryName(c.country, i18n.locale), value: c.country, 
+		})),
 	];
 
 	return <LeaderboardFilters filters={[{

@@ -1,8 +1,15 @@
 import './WebBrowser.css';
 
-import { useEffect, useRef, useState } from 'react';
+import {
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import Controls from '../input/Controls';
-import { isWebOpen, webUrl } from '../globals';
+import {
+	isWebOpen,
+	webUrl,
+} from '../globals';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { useLingui } from '@lingui/react/macro';
 
@@ -57,11 +64,35 @@ export default function WebBrowser() {
 		<div className={`web ${open ? 'is-open' : ''}`} aria-hidden={!open}>
 			<div className={`web-inner ${loaded ? 'is-loaded' : ''}`} aria-hidden={!open}>
 				<div className="web__chrome">
-					<button className="web__btn" title={t`Back`} onClick={() => frameWindow()?.history.back()}>‹</button>
-					<button className="web__btn" title={t`Forward`} onClick={() => frameWindow()?.history.forward()}>›</button>
-					<button className="web__btn" title={t`Reload`} onClick={() => frameWindow()?.location.reload()}>⟳</button>
+					<button 
+						className="web__btn" 
+						title={t`Back`} 
+						onClick={() => frameWindow()?.history.back()}
+					>
+						‹
+					</button>
+					<button
+						className="web__btn" 
+						title={t`Forward`} 
+						onClick={() => frameWindow()?.history.forward()}
+					>
+						›
+					</button>
+					<button
+						className="web__btn" 
+						title={t`Reload`} 
+						onClick={() => frameWindow()?.location.reload()}
+					>
+						⟳
+					</button>
 					<div className="web__spacer" />
-					<button className="web__btn web__close" title={t`Close (Esc)`} onClick={close}>✕</button>
+					<button 
+						className="web__btn web__close"
+						title={t`Close (Esc)`}
+						onClick={close}
+					>
+						✕
+					</button>
 				</div>
 				<div className="web__viewport">
 					<div className="web__loader" aria-hidden={loaded}>

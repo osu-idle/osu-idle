@@ -1,12 +1,21 @@
 
 import '@osu-idle/shared/osu/controlPointPatch'; // O(1) groupAt - SV-heavy maps decode in ms, not seconds
 import type { Beatmap } from 'osu-classes';
-import { ManiaGame, type HitRecord } from '@osu-idle/shared/sim/maniaGame';
-import CharacterBot, { type NoteStrain } from '@osu-idle/shared/sim/bots/character';
-import type RuntimeNote from '@osu-idle/shared/sim/runtimeNote';
-import { ScoreState, judge, maniaWindows } from '@osu-idle/shared/sim/scoring';
+import {
+	ManiaGame,
+	type HitRecord,
+} from '@osu-idle/shared/sim/maniaGame';
+import CharacterBot, { Strains } from '@osu-idle/shared/sim/bots/character';
+import {
+	ScoreState,
+	judge,
+	maniaWindows,
+} from '@osu-idle/shared/sim/scoring';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
-import { Skills, type SkillName } from '@osu-idle/shared/skills';
+import {
+	Skills,
+	type SkillName,
+} from '@osu-idle/shared/skills';
 
 /**
  * Load a hand-picked `.osu` chart and run the authoritative simulation against a
@@ -47,8 +56,8 @@ function build(spec: SkillSpec, od: number): CharacterBot {
 }
 
 /** A ScoreState rebuilt from a sequence of hit records (in resolution order). */
-function scoreFromHits(od: number, hits: HitRecord[]): ScoreState {
-	const score = new ScoreState(od, hits.length);
+function scoreFromHits(hp: number, od: number, hits: HitRecord[]): ScoreState {
+	const score = new ScoreState(hp, od, hits.length);
 	for (const h of hits) score.add(h.judgement);
 	return score;
 }
@@ -58,6 +67,30 @@ export function simulate(beatmap: Beatmap, spec: SkillSpec): ManiaGame {
 	const game = new ManiaGame(beatmap, build(spec, beatmap.difficulty.overallDifficulty));
 	game.update(game.songEndMs + 1000); // advance past the end so every note resolves
 	return game;
+}
+
+export interface XPResult {
+	/** the play's final score */
+	score: ScoreState;
+	/** XP earned per skill from this play, the same value the server submits */
+	xp: Record<SkillName, number>;
+	/** the played game (notes, hits, score) */
+	game: ManiaGame;
+}
+
+/**
+ * Run one full play and read back the per-skill XP it earns - the exact value
+ * the server submits (`bot.getSkillsXP`, see server/play.ts). `fatigue` is the
+ * session fatigue multiplier (1 = fresh).
+ */
+export function simulateXP(beatmap: Beatmap, spec: SkillSpec, fatigue = 1): XPResult {
+	const bot = build(spec, beatmap.difficulty.overallDifficulty);
+	const game = new ManiaGame(beatmap, bot);
+	game.update(game.songEndMs + 1000); // advance past the end so every note resolves
+	const xp = bot.getSkillsXP(beatmap.totalLength, game.score, fatigue);
+	return {
+		score: game.score, xp, game, 
+	};
 }
 
 export interface SkillResult {
@@ -79,7 +112,7 @@ export function analyzeSkill(beatmap: Beatmap, skill: SkillName, level: number):
 	// shared .d.ts, so re-assert the shape (same as strainDebug.ts does).
 	new ManiaGame(beatmap, bot);
 	const windows = maniaWindows(beatmap.difficulty.overallDifficulty);
-	const noteStrains = bot['noteStrains'] as Map<string, [RuntimeNote, [NoteStrain, number, number][]]>;
+	const noteStrains = bot['noteStrains'] as Map<string, Strains>;
 
 	const hits: HitRecord[] = [];
 	for (const [, [note, strains]] of noteStrains) {
@@ -87,11 +120,18 @@ export function analyzeSkill(beatmap: Beatmap, skill: SkillName, level: number):
 		if (!entry) continue;
 		const [, pressOffset, releaseOffset] = entry;
 		if (skill !== 'release') {
-			hits.push({ time: note.time, offset: pressOffset, judgement: judge(Math.abs(pressOffset), windows) });
+			hits.push({
+				time: note.time, offset: pressOffset, judgement: judge(Math.abs(pressOffset), windows), 
+			});
 		} else if (note.hold) {
 			// the release skill only judges long-note tails
-			hits.push({ time: note.endTime, offset: releaseOffset, judgement: judge(Math.abs(releaseOffset), windows) });
+			hits.push({
+				time: note.endTime, offset: releaseOffset, judgement: judge(Math.abs(releaseOffset), windows), 
+			});
 		}
 	}
-	return { score: scoreFromHits(beatmap.difficulty.overallDifficulty, hits), hits };
+	return {
+		score: scoreFromHits(beatmap.difficulty.drainRate, beatmap.difficulty.overallDifficulty, hits), 
+		hits, 
+	};
 }

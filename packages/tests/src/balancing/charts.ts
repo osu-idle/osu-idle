@@ -1,4 +1,9 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import {
+	readFileSync,
+	writeFileSync,
+	existsSync,
+	mkdirSync,
+} from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { BeatmapDecoder } from 'osu-parsers';
 import type { Beatmap } from 'osu-classes';
@@ -70,9 +75,18 @@ export const CHARTS = {
 	's-singularity': 1073952,
 	'slow-stress': 1802667,
 	'vital vitriol 1.0': 2066504,
+	'cyanine beginner': 1522933,
+	'first 1.13*': 1124739,
+	'wing of zero 3.14*': 319283,
+	'blue army 3.15*': 239327,
+	'she sings in the morning 3.18*': 1139501,
 } as const;
 
-export const EZ = [CHARTS['1-eternal-white'], CHARTS['1-refresh'], CHARTS['1-this-will-be-the-day']];
+export const EZ = [
+	CHARTS['1-eternal-white'], 
+	CHARTS['1-refresh'], 
+	CHARTS['1-this-will-be-the-day'],
+];
 export const HD = [CHARTS['3-baku'], CHARTS['3-haru']];
 export const IX = [CHARTS['4-blu'], CHARTS['4-dream'], CHARTS['4-soul']];
 

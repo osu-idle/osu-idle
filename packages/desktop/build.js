@@ -10,7 +10,9 @@ const pkg = require(packagePath);
 const original = pkg.version;
 const parts = pkg.version.split('.');
 
-pkg.version = `${parts[0]}.${parts[1]}.${parts[2]}${parts[3] ? `-build${parts[3].padStart(4, '0')}` : ''}`;
+pkg.version = 
+	`${parts[0]}.${parts[1]}.${parts[2]}${parts[3] ? `-build${parts[3].padStart(4, '0')}` : ''}`
+;
 
 fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 2));
 
@@ -30,8 +32,12 @@ let failed = false;
 try {
 	// Clear prior outputs so a failed build can't leave stale installers for
 	// publish-desktop to pick up.
-	fs.rmSync(join(__dirname, 'out'), { recursive: true, force: true });
-	fs.rmSync(join(__dirname, 'release'), { recursive: true, force: true });
+	fs.rmSync(join(__dirname, 'out'), {
+		recursive: true, force: true, 
+	});
+	fs.rmSync(join(__dirname, 'release'), {
+		recursive: true, force: true, 
+	});
 	execSync('npm run build', { stdio: 'inherit' });
 	execSync('npm run dist:linuxwin', { stdio: 'inherit' });
 } catch(e) {

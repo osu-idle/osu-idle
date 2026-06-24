@@ -1,4 +1,8 @@
-import { Bot, type BotContext, type InputEvent } from '@osu-idle/shared/sim/bot';
+import {
+	Bot,
+	type BotContext,
+	type InputEvent,
+} from '@osu-idle/shared/sim/bot';
 import { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
 
 /**
@@ -27,11 +31,25 @@ export default class ReplayBot extends Bot {
 		for (const note of ctx.notes) {
 			const h = this.head.get(note.getId());
 			const ho = h == null ? Infinity : h;
-			events.push({ time: note.time + ho, column: note.column, action: 'press', note, tail: false, ignore: !isFinite(ho) });
+			events.push({ 
+				time: note.time + ho, 
+				column: note.column, 
+				action: 'press', 
+				note, 
+				tail: false, 
+				ignore: !isFinite(ho), 
+			});
 			if (note.hold) {
 				const t = this.tail.get(note.getId());
 				const to = t == null ? Infinity : t;
-				events.push({ time: note.endTime + to, column: note.column, action: 'release', note, tail: true, ignore: !isFinite(to) });
+				events.push({ 
+					time: note.endTime + to, 
+					column: note.column, 
+					action: 'release', 
+					note, 
+					tail: true, 
+					ignore: !isFinite(to), 
+				});
 			}
 		}
 		events.sort((a, b) => a.time - b.time);

@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-22 21:06\n"
+"PO-Revision-Date: 2026-06-24 22:22\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -383,6 +383,7 @@ msgid "Post-it pattern drawings"
 msgstr "Dessins de patterns sur Post-its"
 
 #: src/display/addon.ts
+#: src/display/skin.ts
 msgid "Published"
 msgstr "Publié"
 
@@ -483,8 +484,9 @@ msgid "Unbranded membrane keyboard"
 msgstr "Clavier à membrane premier prix"
 
 #: src/display/addon.ts
+#: src/display/skin.ts
 msgid "Unpublished"
-msgstr "Dépublié"
+msgstr "Non publié"
 
 #: src/skills.ts
 msgid "Used earbuds"

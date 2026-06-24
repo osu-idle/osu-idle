@@ -1,11 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from 'react';
+import {
+	useEffect,
+	useState,
+} from 'react';
 import Listener from './listener.js';
 import Log from './log.js';
 
 type SyncedCallback<T> = (value: T, previous?: T) => unknown | Promise<void>;
 type ForceSyncedCallback<T> = (value: T, previous?: T) => unknown;
-type SyncedValues<T extends readonly Synced<any>[]> = { [K in keyof T]: T[K] extends { get(): infer V } ? V : never };
+type SyncedValues<T extends readonly Synced<any>[]> = { 
+	[K in keyof T]: T[K] extends { get(): infer V } ? V : never 
+};
 
 export default class Synced<T> {
 
@@ -46,7 +51,9 @@ export default class Synced<T> {
 	 * dropped so out-of-order resolutions can't clobber a newer value. Returns
 	 * `undefined` until the first mapped result lands.
 	 */
-	public use<R>(mapper: (value: T, previous?: T) => R | Promise<R>): R | undefined {
+	public use<R>(
+		mapper: (value: T, previous?: T) => R | Promise<R>,
+	): R | undefined {
 		const [mapped, setMapped] = useState<R>();
 		useEffect(() => {
 			let token = 0;
@@ -69,7 +76,10 @@ export default class Synced<T> {
 
 	static async all<const T extends Synced<any>[]>(
 		synced: [...T],
-		callback: (values: SyncedValues<T>, previous: SyncedValues<T>) => unknown | Promise<void>
+		callback: (
+			values: SyncedValues<T>, 
+			previous: SyncedValues<T>
+		) => unknown | Promise<void>,
 	) {
 		let previous = synced.map(() => undefined) as SyncedValues<T>;
 		const getValues = () => synced.map(b => b.get()) as SyncedValues<T>;

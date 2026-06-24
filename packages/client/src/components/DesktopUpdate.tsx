@@ -1,14 +1,23 @@
 import './DesktopUpdate.css';
-import { useEffect, useState, type ReactNode } from 'react';
+import {
+	useEffect,
+	useState,
+	type ReactNode,
+} from 'react';
 import { Trans } from '@lingui/react/macro';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
-import { checkForDesktopUpdate, downloadDesktopUpdate, updateStatus } from '../online/desktopUpdate';
+import {
+	checkForDesktopUpdate,
+	downloadDesktopUpdate,
+	updateStatus,
+} from '../online/desktopUpdate';
 
 /**
- * Desktop-only banner that surfaces an available app update and walks the player
- * through it: download, then restart into the new version. Mounted once from App;
- * renders nothing in the browser (the status never leaves `idle` there) or while
- * there's nothing to act on.
+ * Desktop-only banner that surfaces an available app update and walks
+ * the player through it: download, then restart into the new version.
+ *
+ * Mounted once from App  renders nothing in the browser
+ * (the status never leaves `idle` there) or while there's nothing to act on.
  */
 export default function DesktopUpdate() {
 	const [status] = useSynced(updateStatus);
@@ -25,7 +34,9 @@ export default function DesktopUpdate() {
 
 	switch (status.state) {
 		case 'available':
-			body = <span><Trans>A new update is available. Click here to download it !</Trans></span>;
+			body = <span>
+				<Trans>A new update is available. Click here to download it !</Trans>
+			</span>;
 			onClick = downloadDesktopUpdate;
 			break;
 		case 'downloading':
@@ -35,7 +46,9 @@ export default function DesktopUpdate() {
 			</>;
 			break;
 		case 'error':
-			body = <span className="dupdate__error"><Trans>Update failed ({status.message}). Please restart the game.</Trans></span>;
+			body = <span className="dupdate__error">
+				<Trans>Update failed ({status.message}). Please restart the game.</Trans>
+			</span>;
 			onClick = checkForDesktopUpdate;
 			break;
 	}

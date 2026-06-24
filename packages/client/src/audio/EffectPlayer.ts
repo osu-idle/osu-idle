@@ -41,7 +41,8 @@ export class EffectPlayer {
 	constructor() {
 		this.context = audioContext;
 		this.master = this.context.createGain();
-		this.master.gain.value = SETTINGS.effectVolume.get() * SETTINGS.mainVolume.get();
+		this.master.gain.value = 
+			SETTINGS.effectVolume.get() * SETTINGS.mainVolume.get();
 		this.master.connect(this.context.destination);
 
 		Synced.all([
@@ -94,7 +95,10 @@ export class EffectPlayer {
 
 	/** Decode and cache a batch of samples keyed by name. */
 	public async preload(samples: Record<string, string>): Promise<void> {
-		await Promise.all(Object.entries(samples).map(([key, url]) => this.load(key, url)));
+		await Promise.all(
+			Object.entries(samples)
+				.map(([key, url]) => this.load(key, url)),
+		);
 	}
 
 	/**
@@ -153,6 +157,8 @@ export class EffectPlayer {
 }
 
 // HMR reuse instance (mirrors MusicPlayer) so hot reloads don't leak contexts
+ 
 const globalStore = globalThis as unknown as { __osuIdleEffects?: EffectPlayer };
+ 
 export const effects: EffectPlayer = globalStore.__osuIdleEffects ?? new EffectPlayer();
 globalStore.__osuIdleEffects = effects;

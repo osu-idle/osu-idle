@@ -1,4 +1,8 @@
-import { useEffect, useState, type DependencyList } from 'react';
+import {
+	useEffect,
+	useState,
+	type DependencyList,
+} from 'react';
 
 /**
  * Derives a value from an async computation, re-running whenever `deps` change.

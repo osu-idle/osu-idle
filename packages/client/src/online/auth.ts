@@ -1,8 +1,15 @@
 import type { UserDTO } from '@osu-idle/shared/user';
-import { BASE_URL, rpc, withAuth } from './client';
+import {
+	BASE_URL,
+	rpc,
+	withAuth,
+} from './client';
 import Synced from '@osu-idle/shared/helpers/synced';
 import { desktop } from '@osu-idle/shared/desktop';
-import { isWebOpen, webUrl } from '../globals';
+import {
+	isWebOpen,
+	webUrl,
+} from '../globals';
 
 /**
  * Client auth state. The session lives in an HttpOnly cookie set by the API, so
@@ -44,7 +51,10 @@ export default class Auth {
 	public static async uploadAvatar(file: File): Promise<void> {
 		const form = new FormData();
 		form.append('file', file);
-		const res = await fetch(`${BASE_URL}/v1/me/avatar`, withAuth({ method: 'POST', body: form }));
+		const res = await fetch(`${BASE_URL}/v1/me/avatar`, withAuth({ 
+			method: 'POST',
+			body: form, 
+		}));
 		if (!res.ok) {
 			const detail = await res.text().catch(() => '');
 			throw new Error(`avatar upload failed (${res.status})${detail ? `: ${detail}` : ''}`);

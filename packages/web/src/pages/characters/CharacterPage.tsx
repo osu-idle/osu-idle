@@ -1,12 +1,23 @@
 import './CharacterPage.css';
 
-import { getCharacter, getCharacterBestPP, getCharacterCountPlayed, getCharacterFirstPlaces, getCharacterMostPlayed, getCharacterNbFirstPlaces, getCharacterRecent, getCharacterStats } from '../../api/characters';
+import {
+	getCharacter,
+	getCharacterBestPP,
+	getCharacterCountPlayed,
+	getCharacterFirstPlaces,
+	getCharacterMostPlayed,
+	getCharacterNbFirstPlaces,
+	getCharacterRecent,
+	getCharacterStats,
+} from '../../api/characters';
 import { getUser } from '../../api/users';
-import { PageProps } from '../../router';
 import Flag from '../../components/Flag';
 import ProfilePicture from '../../components/ProfilePicture';
 import EditableProfilePicture from '../../components/EditableProfilePicture';
-import { refreshCurrentUser, useCurrentUser } from '../../hooks/useCurrentUser';
+import {
+	refreshCurrentUser,
+	useCurrentUser,
+} from '../../hooks/useCurrentUser';
 import { useState } from 'react';
 import { Judgements } from '@osu-idle/shared/judgement';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
@@ -28,27 +39,32 @@ import { i18n } from '../../i18n';
 /** Headline grades shown in the totals block (best play per beatmap). */
 const GRADE_DISPLAY = ['X', 'SS', 'S', 'A'] as const;
 
-export default function CharacterPage({ params }: PageProps) {
-	const character = useAsync(() => getCharacter(params.id), [params]);
-	const stats = useAsync(() => getCharacterStats(params.id), [params]);
-	const user = useAsync(() => character && getUser(character.userId), [character]);
+type Character = Awaited<ReturnType<typeof getCharacter>>;
+type Stats = Awaited<ReturnType<typeof getCharacterStats>>;
+
+export default function CharacterPage({ id, character, stats }: {
+	id: string;
+	character: Character;
+	stats: Stats;
+}) {
+	const user = useAsync(() => getUser(character.userId), [character]);
 
 	const me = useCurrentUser();
-	const isSelf = !!me && !!character && me.id === character.userId;
+	const isSelf = !!me && me.id === character.userId;
 	// Once the player changes their own avatar, show the new one without a refetch.
 	const [avatarOverride, setAvatarOverride] = useState<string | null>();
-	
-	const countplayed = useAsync(() => getCharacterCountPlayed(params.id), [params]);
-	const mostplayed = useAsync(() => getCharacterMostPlayed(params.id, 1), [params]);
-	
-	const bestpp = useAsync(() => getCharacterBestPP(params.id, 1), [params]);
-	
-	const countfirstplaces = useAsync(() => getCharacterNbFirstPlaces(params.id), [params]);
-	const firstplaces = useAsync(() => getCharacterFirstPlaces(params.id, 1), [params]);
-	
-	const recentscores = useAsync(() => getCharacterRecent(params.id, 1), [params]);
 
-	if (!character || !user || !stats) return <main><Trans>Loading…</Trans></main>;
+	const countplayed = useAsync(() => getCharacterCountPlayed(id), [id]);
+	const mostplayed = useAsync(() => getCharacterMostPlayed(id, 1), [id]);
+
+	const bestpp = useAsync(() => getCharacterBestPP(id, 1), [id]);
+
+	const countfirstplaces = useAsync(() => getCharacterNbFirstPlaces(id), [id]);
+	const firstplaces = useAsync(() => getCharacterFirstPlaces(id, 1), [id]);
+
+	const recentscores = useAsync(() => getCharacterRecent(id, 1), [id]);
+
+	if (!user) return <main><Trans>Loading…</Trans></main>;
 
 	return (
 		<main>
@@ -130,27 +146,48 @@ export default function CharacterPage({ params }: PageProps) {
 			<div className='character__blocks'>
 				<div className='character__block character__block-skills'>
 					<div className='character__block-title'><Trans>Skills</Trans></div>
-					<div className='main-skill'><SkillBar skill={`overall` as SkillName} progress={{ level: character.overallLevel, xp: character.overallXp }} /></div>
+					<div className='main-skill'><SkillBar skill={`overall` as SkillName} progress={{
+						level: character.overallLevel, xp: character.overallXp, 
+					}} /></div>
 					<ul className='skills'>
-						{Object.entries(extractSkills(character)).map(([skill, progress]) => <SkillBar skill={skill as SkillName} progress={progress} />)}
+						{Object.entries(extractSkills(character))
+							.map(([skill, progress]) => <SkillBar 
+								skill={skill as SkillName}
+								progress={progress} 
+							/>)}
 					</ul>
 				</div>
 				<div className='character__block character__block-skills'>
 					<div className='character__block-title'><Trans>Ranks</Trans></div>
 					<div className='character__block-section'>
-						<div className='character__block-section-title'><Trans>Best Performance</Trans><div className='character__block-section-title-count'>{num(Math.min(200, countplayed ?? 0))}</div></div>
+						<div className='character__block-section-title'>
+							<Trans>Best Performance</Trans>
+							<div className='character__block-section-title-count'>
+								{num(Math.min(200, countplayed ?? 0))}
+							</div>
+						</div>
 						<div className='character__best_pp'>
 							{bestpp?.map(score => <ScoreRow score={score.best_pp} beatmap={score.beatmap} />)}
 						</div>
 					</div>
 					<div className='character__block-section'>
-						<div className='character__block-section-title'><Trans>First Place Ranks</Trans><div className='character__block-section-title-count'>{num(countfirstplaces)}</div></div>
+						<div className='character__block-section-title'>
+							<Trans>First Place Ranks</Trans>
+							<div className='character__block-section-title-count'
+							>{num(countfirstplaces)}
+							</div>
+						</div>
 						<div className='character__first_places'>
 							{firstplaces?.map(score => <ScoreRow score={score.first_place} beatmap={score.beatmap} />)}
 						</div>
 					</div>
 					<div className='character__block-section'>
-						<div className='character__block-section-title'><Trans>Recent scores</Trans><div className='character__block-section-title-count'>{num(recentscores?.length)}</div></div>
+						<div className='character__block-section-title'>
+							<Trans>Recent scores</Trans>
+							<div className='character__block-section-title-count'>
+								{num(recentscores?.length)}
+							</div>
+						</div>
 						<div className='character__first_places'>
 							{recentscores?.map(score => <ScoreRow score={score.score} beatmap={score.beatmap} />)}
 						</div>
@@ -159,7 +196,11 @@ export default function CharacterPage({ params }: PageProps) {
 				<div className='character__block character__block-skills'>
 					<div className='character__block-title'><Trans>Historical</Trans></div>
 					<div className='character__block-section'>
-						<div className='character__block-section-title'><Trans>Most Played Beatmaps</Trans><div className='character__block-section-title-count'>{num(countplayed)}</div></div>
+						<div className='character__block-section-title'>
+							<Trans>Most Played Beatmaps</Trans>
+							<div className='character__block-section-title-count'>{num(countplayed)}
+							</div>
+						</div>
 						<div className='character__mostplayed'>
 							{mostplayed?.map(mp => <div className='mostplayed__container'>
 								<div className='mostplayed__bg' style={{ backgroundImage: `url('https://assets.ppy.sh/beatmaps/${mp.beatmapset.id}/covers/list.jpg')` }}></div>

@@ -1,4 +1,9 @@
-import { and, desc, eq, gte } from 'drizzle-orm';
+import {
+	and,
+	desc,
+	eq,
+	gte,
+} from 'drizzle-orm';
 import cubic_bezier from '@osu-idle/shared/math/cubic_bezier';
 import lerp from '@osu-idle/shared/math/lerp';
 import { db } from './db/client';

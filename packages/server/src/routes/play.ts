@@ -6,7 +6,14 @@ import { Hono } from 'hono';
 import { requireAuth } from '../auth/middleware';
 import { playRequest } from '@osu-idle/shared/play';
 import { HTTPException } from 'hono/http-exception';
-import { abortPlay, fetchResult, getActivePlay, playStatus, skipPlay, startPlay } from '../play';
+import {
+	abortPlay,
+	fetchResult,
+	getActivePlay,
+	playStatus,
+	skipPlay,
+	startPlay,
+} from '../play';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
 /** The signed-in user's active character row, or undefined if not onboarded. */
@@ -36,7 +43,7 @@ export const playRoutes = new Hono()
 			? {
 				...result,
 				ranked: true,
-				serverNow: Date.now()
+				serverNow: Date.now(),
 			}
 			: {
 				...result,
@@ -57,7 +64,11 @@ export const playRoutes = new Hono()
 		const character = await currentCharacter(c.get('userId'));
 		if (!character) throw new HTTPException(409, { message: 'No character' });
 
-		const result = await fetchResult(character.id, c.req.param('token'), c.req.param('forceSee') === 'true');
+		const result = await fetchResult(
+			character.id, 
+			c.req.param('token'), 
+			c.req.param('forceSee') === 'true',
+		);
 		if (!result.ok) {
 			throw new HTTPException(result.code as ContentfulStatusCode, { message: result.reason });
 		}

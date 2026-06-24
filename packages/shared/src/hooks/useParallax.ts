@@ -1,4 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 
 export interface Parallax {
 	/** -1 .. 1, where 0 is centred */
@@ -12,16 +16,28 @@ export interface Parallax {
  * the same easing osu! uses for its parallax menu background.
  */
 export function useParallax(smoothing = 0.08, enabled = true): Parallax {
-	const [value, setValue] = useState<Parallax>({ x: 0, y: 0 });
-	const target = useRef<Parallax>({ x: 0, y: 0 });
-	const currentRef = useRef<Parallax>({ x: 0, y: 0 });
+	const [value, setValue] = useState<Parallax>({
+		x: 0, y: 0, 
+	});
+	const target = useRef<Parallax>({
+		x: 0, y: 0, 
+	});
+	const currentRef = useRef<Parallax>({
+		x: 0, y: 0, 
+	});
 
 	useEffect(() => {
 		// Disabled (player turned parallax off): snap to centre and run nothing.
 		if (!enabled) {
-			target.current = { x: 0, y: 0 };
-			currentRef.current = { x: 0, y: 0 };
-			setValue({ x: 0, y: 0 });
+			target.current = {
+				x: 0, y: 0, 
+			};
+			currentRef.current = {
+				x: 0, y: 0, 
+			};
+			setValue({
+				x: 0, y: 0, 
+			});
 			return;
 		}
 

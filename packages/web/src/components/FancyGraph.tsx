@@ -1,7 +1,10 @@
 import './FancyGraph.css';
 
 import { useMemo } from 'react';
-import { curveMonotoneX, line } from 'd3-shape';
+import {
+	curveMonotoneX,
+	line,
+} from 'd3-shape';
 
 type Point = { x: number; y: number };
 
@@ -28,9 +31,13 @@ export default function FancyGraph({
 	className,
 }: Props) {
 	const { path, last } = useMemo(() => {
-		if (data.length === 0) return { path: null, last: null };
+		if (data.length === 0) return {
+			path: null, last: null, 
+		};
 
-		const points: Point[] = data.map((y, x) => ({ x, y }));
+		const points: Point[] = data.map((y, x) => ({
+			x, y, 
+		}));
 
 		// A flat series would collapse the domain to a single value; pad it so the
 		// line renders along the vertical centre instead of dividing by zero.
@@ -53,7 +60,9 @@ export default function FancyGraph({
 		const lastPoint = points[points.length - 1];
 		return {
 			path: generate(points),
-			last: { x: scaleX(lastPoint.x), y: scaleY(lastPoint.y) },
+			last: {
+				x: scaleX(lastPoint.x), y: scaleY(lastPoint.y), 
+			},
 		};
 	}, [data, width, height, margin]);
 

@@ -1,4 +1,7 @@
-import { rpc, unwrap } from './client';
+import {
+	rpc,
+	unwrap,
+} from './client';
 
 /** Public: live general stats (online/playing counts, totals). */
 export const getGeneralStats = () =>

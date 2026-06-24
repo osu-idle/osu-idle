@@ -7,8 +7,8 @@ import type { Locale } from './locales.js';
  * English) loads this alongside its own catalog so strings owned by `shared`
  * - e.g. skill names from `display/skills.ts` - resolve on its i18n instance.
  *
- * Each entry is a dynamic import so bundlers emit one chunk per locale; only the
- * active language is downloaded. Keep it in sync with {@link Locale}.
+ * Each entry is a dynamic import so bundlers emit one chunk per locale
+ * only the active language is downloaded. Keep it in sync with {@link Locale}.
  */
 export const sharedCatalog: Record<Locale, () => Promise<Messages>> = {
 	en: () => import('../locales/en.js').then(m => m.messages),

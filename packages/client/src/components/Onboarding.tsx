@@ -1,10 +1,17 @@
 import './Onboarding.css';
-import { useEffect, useRef, useState } from 'react';
+import {
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import Auth from '../online/auth';
 import Account from '../online/account';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
-import { Trans, useLingui } from '@lingui/react/macro';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
 
 /**
  * First-login onboarding. Shown once when signed in but the account has no
@@ -55,7 +62,9 @@ export default function Onboarding() {
 		<div className="onboard">
 			<div className="onboard__card">
 				<h1 className="onboard__title"><Trans>Welcome, {user.username}!</Trans></h1>
-				<p className="onboard__sub"><Trans>Create your character to finish setting up your account.</Trans></p>
+				<p className="onboard__sub">
+					<Trans>Create your character to finish setting up your account.</Trans>
+				</p>
 
 				<div className="onboard__avatar-field">
 					<button
@@ -65,10 +74,17 @@ export default function Onboarding() {
 						disabled={uploading}
 						title={t`Upload a profile picture`}
 					>
-						<img className="onboard__avatar-img" src={user.avatarUrl ?? GUEST_AVATAR_URL} alt="" />
-						<span className="onboard__avatar-overlay">{uploading ? t`Uploading…` : t`Change`}</span>
+						<img 
+							className="onboard__avatar-img" 
+							src={user.avatarUrl ?? GUEST_AVATAR_URL} 
+							alt="" />
+						<span className="onboard__avatar-overlay">
+							{uploading ? t`Uploading…` : t`Change`}
+						</span>
 					</button>
-					<span className="onboard__avatar-hint"><Trans>Profile picture<br />Defaults to your osu! avatar</Trans></span>
+					<span className="onboard__avatar-hint">
+						<Trans>Profile picture<br />Defaults to your osu! avatar</Trans>
+					</span>
 					<input
 						ref={fileInput}
 						type="file"

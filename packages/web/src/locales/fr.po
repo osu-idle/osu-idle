@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-22 21:06\n"
+"PO-Revision-Date: 2026-06-24 22:26\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -34,13 +34,18 @@ msgstr "Rang en {skill}"
 msgid "Accuracy"
 msgstr "Précision"
 
-#: src/App.tsx
+#: src/Header.tsx
+#: src/routes/admin/addons.tsx
 msgid "add-ons"
 msgstr "add-ons"
 
 #: src/Header.tsx
-msgid "Add-ons"
-msgstr "Add-ons"
+msgid "admin"
+msgstr "admin"
+
+#: src/routes/admin/index.tsx
+msgid "admin dashboard"
+msgstr "tableau de bord d'administration"
 
 #: src/components/leaderboard/CountryFilter.tsx
 msgid "All"
@@ -54,20 +59,17 @@ msgstr "Une erreur est survenue lors de la communication avec osu!... Si votre c
 msgid "Back in osu!idle already? You can close this tab."
 msgstr "Déjà de retour sur osu!idle ? Vous pouvez fermer cet onglet."
 
-#: src/App.tsx
+#: src/Header.tsx
+#: src/routes/admin/balancing.tsx
 msgid "balancing"
 msgstr "équilibrage"
 
 #: src/Header.tsx
-msgid "Balancing"
-msgstr "Équilibrage"
-
-#: src/App.tsx
-#: src/Header.tsx
+#: src/routes/maps.tsx
 msgid "beatmap listing"
 msgstr "liste des maps"
 
-#: src/App.tsx
+#: src/routes/admin/nomination.tsx
 msgid "beatmap nomination"
 msgstr "nomination de map"
 
@@ -90,7 +92,7 @@ msgstr "Meilleure performance"
 msgid "by {0}"
 msgstr "par {0}"
 
-#: src/App.tsx
+#: src/routes/c/$id.tsx
 msgid "character info"
 msgstr "infos du personnnage"
 
@@ -120,9 +122,7 @@ msgstr "Rang pays"
 msgid "Create your own osu! character and watch it grow to become a<0/><1>legendary mania player</1>."
 msgstr "Créez votre joueur osu! et regardez-le s'améliorer jusqu'à devenir un <0/><1>joueur légendaire d'osu!mania</1>."
 
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
+#: src/routes/__root.tsx
 msgid "dashboard"
 msgstr "tableau de bord"
 
@@ -143,7 +143,7 @@ msgstr "Erreur"
 msgid "faq"
 msgstr "faq"
 
-#: src/App.tsx
+#: src/routes/help/faq.tsx
 msgid "FAQ"
 msgstr "FAQ"
 
@@ -174,7 +174,7 @@ msgstr "Bonjour {0} !"
 msgid "help"
 msgstr "aide"
 
-#: src/App.tsx
+#: src/routes/auth/callback.tsx
 msgid "hi !"
 msgstr "salut !"
 
@@ -206,17 +206,21 @@ msgstr "Derniers articles"
 msgid "Loading…"
 msgstr "Chargement…"
 
-#: src/App.tsx
+#: src/routes/logout.tsx
 msgid "logging out..."
 msgstr "déconnexion..."
 
-#: src/App.tsx
+#: src/routes/login.tsx
 msgid "login"
 msgstr "connexion"
 
-#: src/App.tsx
+#: src/routes/news/admin.tsx
 msgid "manage news"
 msgstr "gérer les articles"
+
+#: src/Header.tsx
+msgid "map nomination"
+msgstr "nomination de maps"
 
 #. placeholder {0}: mapset.creator
 #: src/pages/beatmaps/RankedMaps.tsx
@@ -240,9 +244,9 @@ msgstr "Mon Profil"
 msgid "New Ranked Beatmaps"
 msgstr "Nouvelles maps classées"
 
-#: src/App.tsx
-#: src/App.tsx
 #: src/Header.tsx
+#: src/routes/news/$slug.tsx
+#: src/routes/news/index.tsx
 msgid "news"
 msgstr "articles"
 
@@ -255,16 +259,12 @@ msgstr "Articles"
 msgid "No news yet. Check back soon!"
 msgstr "Pas encore d'articles. Revenez bientôt !"
 
-#: src/Header.tsx
-msgid "Nomination"
-msgstr "Nomination"
-
 #. placeholder {0}: PLATFORM_LABEL[platform]
 #: src/pages/PlayOsuIdle.tsx
 msgid "Not yet available for {0}"
 msgstr "Pas encore disponible pour {0}"
 
-#: src/App.tsx
+#: src/routes/auth/error.tsx
 msgid "oh no!"
 msgstr "oh non!"
 
@@ -304,8 +304,8 @@ msgstr "Jouer maintenant"
 msgid "play osu!"
 msgstr "jouer à osu!"
 
-#: src/App.tsx
 #: src/Header.tsx
+#: src/routes/download.tsx
 msgid "play osu!idle"
 msgstr "jouer à osu!idle"
 
@@ -337,17 +337,13 @@ msgstr "Classé"
 msgid "Ranked Score"
 msgstr "Score classé"
 
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
-#: src/App.tsx
 #: src/Header.tsx
+#: src/routes/rankings/country.tsx
+#: src/routes/rankings/global.tsx
+#: src/routes/rankings/grades/$grade.tsx
+#: src/routes/rankings/plays.tsx
+#: src/routes/rankings/score.tsx
+#: src/routes/rankings/skills/$skill.tsx
 msgid "rankings"
 msgstr "classements"
 
@@ -402,7 +398,7 @@ msgstr "Se connecter avec osu!"
 msgid "Sign out"
 msgstr "Déconnexion"
 
-#: src/App.tsx
+#: src/routes/auth/desktop.tsx
 msgid "signed in"
 msgstr "connecté"
 
@@ -422,6 +418,11 @@ msgstr "compétences"
 #: src/pages/characters/CharacterPage.tsx
 msgid "Skills"
 msgstr "Compétences"
+
+#: src/Header.tsx
+#: src/routes/admin/skins.tsx
+msgid "skins"
+msgstr "skins"
 
 #: src/components/leaderboard/PlayerGradesLeaderboard.tsx
 #: src/components/leaderboard/PlayerLeaderboard.tsx

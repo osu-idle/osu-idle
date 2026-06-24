@@ -1,10 +1,23 @@
 import './Nomination.css';
 
-import { useEffect, useMemo, useState } from 'react';
+import {
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 import type { BeatmapStatus } from '@osu-idle/shared/beatmap';
-import { type Nomination, deleteNomination, listNominations, updateNomination, uploadBeatmap } from '../../api/maps';
+import {
+	type Nomination,
+	deleteNomination,
+	listNominations,
+	updateNomination,
+	uploadBeatmap,
+} from '../../api/maps';
 import NominationRow from './NominationRow';
-import { PHASE_ORDER, phaseOf } from './nominationStatus';
+import {
+	PHASE_ORDER,
+	phaseOf,
+} from './nominationStatus';
 
 type SortKey = 'status' | 'submitted' | 'ranked';
 const PAGE_SIZE = 20;
@@ -17,6 +30,7 @@ export default function NominationPage() {
 	const [authorized, setAuthorized] = useState<boolean | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
+	const [progress, setProgress] = useState<string | null>(null);
 	const [sort, setSort] = useState<SortKey>('submitted');
 	const [asc, setAsc] = useState(false);
 	const [page, setPage] = useState(0);
@@ -42,10 +56,27 @@ export default function NominationPage() {
 		}
 	};
 
-	const onUpload = (file: File | undefined) => file && run(() => uploadBeatmap(file));
+	const onUpload = (files: FileList | null) => {
+		const list = files ? [...files] : [];
+		if (!list.length) return;
+		return run(async () => {
+			const failed: string[] = [];
+			for (let i = 0; i < list.length; i++) {
+				setProgress(`${i + 1}/${list.length}`);
+				try {
+					await uploadBeatmap(list[i]);
+				} catch (e) {
+					failed.push(`${list[i].name}: ${String((e as Error).message ?? e)}`);
+				}
+			}
+			setProgress(null);
+			if (failed.length) throw new Error(failed.join('\n'));
+		});
+	};
 	const patch = (setId: number, body: { rankedAt?: string | null; status?: BeatmapStatus }) =>
 		run(() => updateNomination(setId, body));
-	const remove = (setId: number) => confirm('Delete this set and its files?') && run(() => deleteNomination(setId));
+	const remove = (setId: number) => confirm('Delete this set and its files?') 
+		&& run(() => deleteNomination(setId));
 
 	const sorted = useMemo(() => {
 		const dir = asc ? 1 : -1;
@@ -66,20 +97,31 @@ export default function NominationPage() {
 
 	const caret = (key: SortKey) => sort === key ? (asc ? ' ▲' : ' ▼') : '';
 	const sortBtn = (key: SortKey, label: string) => (
-		<button className={`nomination__sort-btn ${sort === key ? 'current' : ''}`} onClick={() => toggleSort(key)}>
+		<button 
+			className={`nomination__sort-btn ${sort === key ? 'current' : ''}`}
+			onClick={() => toggleSort(key)}
+		>
 			{label}{caret(key)}
 		</button>
 	);
 
-	if (authorized === false) return <main className='nomination'><p className='nomination__error'>{error ?? 'Admins only.'}</p></main>;
+	if (authorized === false) return <main className='nomination'>
+		<p className='nomination__error'>{error ?? 'Admins only.'}</p>
+	</main>;
 	if (!list) return <main className='nomination'><p className='nomination__muted'>Loading…</p></main>;
 
 	return (
 		<main className='nomination'>
 			<div className='nomination__toolbar'>
 				<label className={`nomination__btn nomination__btn--primary ${busy ? 'is-disabled' : ''}`}>
-					{busy ? 'Working…' : 'Upload .osz'}
-					<input type='file' accept='.osz' hidden disabled={busy} onChange={e => onUpload(e.target.files?.[0])} />
+					{busy ? `Working… ${progress ?? ''}` : 'Upload .osz'}
+					<input
+						type='file'
+						accept='.osz'
+						multiple
+						hidden disabled={busy}
+						onChange={e => onUpload(e.target.files)}
+					/>
 				</label>
 				<div className='nomination__sort'>
 					<span className='nomination__muted'>Sort by</span>
@@ -100,9 +142,21 @@ export default function NominationPage() {
 
 			{pageCount > 1 && (
 				<div className='nomination__pager'>
-					<button className='nomination__btn' disabled={current === 0} onClick={() => setPage(current - 1)}>Prev</button>
+					<button 
+						className='nomination__btn' 
+						disabled={current === 0}
+						onClick={() => setPage(current - 1)}
+					>
+						Prev
+					</button>
 					<span className='nomination__muted'>Page {current + 1} of {pageCount}</span>
-					<button className='nomination__btn' disabled={current >= pageCount - 1} onClick={() => setPage(current + 1)}>Next</button>
+					<button
+						className='nomination__btn' 
+						disabled={current >= pageCount - 1} 
+						onClick={() => setPage(current + 1)}
+					>
+						Next
+					</button>
 				</div>
 			)}
 		</main>

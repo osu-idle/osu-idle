@@ -4,29 +4,6 @@ import sleep from '@osu-idle/shared/helpers/sleep';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import './Transition.css';
 
-/**
- * A reusable full-screen transition between scenes. The lifecycle:
- *
- *   begin(content)  → fade IN over FADE_MS, then hold fully covering the screen
- *   …work happens behind the cover; either scene may swap the content…
- *   reveal()        → once covered AND the caller is ready, fade OUT, then resolve
- *
- * The screen is fully hidden between the end of the fade-in and the start of the
- * fade-out, so the outgoing scene can unmount and the incoming one mount (and do
- * slow work - load a beatmap, await the server) without any of it being visible.
- *
- * The handshake is two promises:
- *   - `covered` resolves when the fade-in completes (the screen is fully hidden).
- *     The incoming scene awaits this before showing dialogs / committing visuals.
- *   - `reveal()` is called by the incoming scene when it's ready to be seen; it
- *     waits for `covered` (so the cover is always shown at least one full FADE_MS)
- *     then fades out and resolves once the screen is clear - the caller resumes
- *     its real behaviour (e.g. starting gameplay) only after that.
- *
- * The overlay content is arbitrary ReactNode set by whichever scene owns the
- * moment, so the same primitive drives a plain black fade, a loading screen, or
- * an interactive error dialog.
- */
 const FADE_MS = 300;
 
 type Phase = 'in' | 'covered' | 'out';
@@ -48,9 +25,14 @@ export class Transition {
 	private readonly id = ++counter;
 
 	private constructor(content: ReactNode) {
-		void state.set({ id: this.id, content, phase: 'in' });
+		void state.set({
+			id: this.id, content, phase: 'in', 
+		});
 		this.covered = sleep(FADE_MS).then(() => {
-			if (this.active()) void state.set({ id: this.id, content: this.content(), phase: 'covered' });
+			if (this.active()) 
+				void state.set({
+					id: this.id, content: this.content(), phase: 'covered', 
+				});
 		});
 	}
 
@@ -67,11 +49,12 @@ export class Transition {
 		return state.get()?.content ?? null;
 	}
 
-	/** Replace the overlay content (loading → error dialog, etc.). No-op once superseded. */
 	setContent(content: ReactNode): void {
 		if (!this.active()) return;
 		const s = state.get()!;
-		void state.set({ ...s, content });
+		void state.set({
+			...s, content, 
+		});
 	}
 
 	/**
@@ -83,7 +66,9 @@ export class Transition {
 		return (this.revealing ??= (async () => {
 			await this.covered;
 			if (!this.active()) return;
-			void state.set({ ...state.get()!, phase: 'out' });
+			void state.set({
+				...state.get()!, phase: 'out', 
+			});
 			await sleep(FADE_MS);
 			if (this.active()) void state.set(null);
 		})());
@@ -114,10 +99,22 @@ export function LoadingPanel({ title, sub }: { title: string; sub?: string }) {
 	);
 }
 
-export type DialogAction = { label: string; onClick: () => void; primary?: boolean };
+export type DialogAction = { 
+	label: string; 
+	onClick: () => void; 
+	primary?: boolean 
+};
 
 /** An interactive panel: a message plus one or more action buttons. */
-export function DialogPanel({ title, message, actions }: { title: string; message?: string; actions: DialogAction[] }) {
+export function DialogPanel({ 
+	title,
+	message,
+	actions,
+}: { 
+	title: string;
+	message?: string; 
+	actions: DialogAction[] 
+}) {
 	return (
 		<div className="transition__panel">
 			<div className="transition__title">{title}</div>

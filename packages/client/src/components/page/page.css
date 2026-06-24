@@ -1,0 +1,173 @@
+/* Reusable osu!stable-flavoured scene chrome: a flat dark screen with skewed
+   tabs (white when active, pink when not), a large thin title, a scrolling
+   body, and the signature full-width bottom action bar with a thin blue→green
+   gradient edge. No rounded "pill" shapes. */
+.page {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	background: radial-gradient(circle at 60% 22%, #1a1420 0%, #07060a 85%);
+	color: var(--text);
+	font-weight: 300;
+	animation: page-in 0.35s ease both;
+}
+@keyframes page-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* ---- skewed osu! tabs ---- */
+.page__tabs {
+	flex: none;
+	display: flex;
+	gap: 5px;
+	padding: 12px 18px 0;
+}
+.page__tab {
+	padding: 9px 40px;
+	transform: skewX(-12deg);
+	background: rgba(255, 64, 137, 0.5);
+	color: #fff;
+	font-size: 1.1rem;
+	font-weight: 400;
+	letter-spacing: 0.01em;
+	transition:
+		background 0.15s ease,
+		color 0.15s ease;
+}
+.page__tab > span {
+	display: block;
+	transform: skewX(12deg);
+}
+.page__tab:hover {
+	background: rgba(255, 64, 137, 0.7);
+}
+.page__tab.is-active {
+	background: var(--text);
+	color: #1a1018;
+}
+
+/* ---- header: large thin title + dim subtitle ---- */
+.page__header {
+	flex: none;
+	display: flex;
+	align-items: baseline;
+	gap: 14px;
+	flex-wrap: wrap;
+	padding: 16px 34px 4px;
+}
+.page__title {
+	font-size: 2.6rem;
+	font-weight: 200;
+	color: #fff;
+	letter-spacing: 0.01em;
+}
+.page__subtitle {
+	font-size: 1.05rem;
+	font-weight: 300;
+	color: var(--text-dim);
+}
+
+/* ---- scrolling content ---- */
+.page__body {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 10px 34px 28px;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 64, 137, 0.5) transparent;
+}
+.page__body::-webkit-scrollbar {
+	width: 8px;
+}
+.page__body::-webkit-scrollbar-thumb {
+	background: rgba(255, 64, 137, 0.45);
+}
+
+/* ---- section label ---- */
+.page__section {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin: 18px 0 10px;
+	font-size: 1.5rem;
+	font-weight: 200;
+	color: var(--osu-pink-light);
+}
+
+/* ---- flat list ---- */
+.page__list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 18px;
+}
+
+.page__muted {
+	color: var(--text-dim);
+	font-size: 0.95rem;
+	padding: 0.6rem 0.2rem;
+}
+.page__error {
+	color: #ef8888;
+	background: rgba(140, 47, 47, 0.18);
+	padding: 0.7rem 1rem;
+	margin: 0.6rem 0;
+	font-size: 0.9rem;
+}
+
+/* ---- bottom action bar (osu! signature) ---- */
+.page__bottombar {
+	position: relative;
+	flex: none;
+	height: 74px;
+	display: flex;
+	background: rgba(0, 0, 0, 0.55);
+}
+.page__bottombar::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: linear-gradient(90deg, #3c5dd1, #79d68b 50%, #3c5dd1);
+}
+/* the slot generates no box; portaled bar buttons become flex children */
+.page__barslot {
+	display: contents;
+}
+.page__baraction {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.6rem;
+	font-weight: 300;
+	color: var(--text);
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+.page__baraction:hover {
+	background: rgba(255, 255, 255, 0.06);
+}
+.page__baraction:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+.page__baraction:disabled:hover {
+	background: none;
+}
+.page__baraction--static {
+	cursor: default;
+	color: #6ee29a;
+}
+.page__baraction--static:hover {
+	background: none;
+}

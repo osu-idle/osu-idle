@@ -4,7 +4,7 @@ import { Unzipped } from 'fflate';
 import { Metadata } from './beatmap_api';
 import { Beatmap } from 'osu-classes';
 import { BeatmapDecoder } from 'osu-parsers';
-import LightBeatmap from './LightBeatmap';
+import type LightBeatmap from './LightBeatmap';
 import LightBeatmapSet from './LightBeatmapSet';
 
 const DB_NAME = 'beatmaps';
@@ -17,15 +17,31 @@ const MIME: Record<string, string> = {
 	jpg: 'image/jpeg',
 	jpeg: 'image/jpeg',
 	png: 'image/png',
+	mp4: 'video/mp4',
+	webm: 'video/webm',
+	m4v: 'video/mp4',
+	avi: 'video/x-msvideo',
+	flv: 'video/x-flv',
 };
 
 function mime(name: string): string {
 	return MIME[name.split('.').pop()!.toLowerCase()] ?? 'application/octet-stream';
 }
 
+// osu references assets case-insensitively and treats \ and / as the same
+// separator, while zip entries use /. Normalize both when storing and reading so
+// a reference resolves regardless of separator/case - this only matches keys, it
+// never alters the stored bytes or the path inside the chart.
 function fileKey(setId: number, name: string): string {
-	return `${setId}/${name.toLowerCase()}`;
+	return `${setId}/${name.toLowerCase().replace(/\\/g, '/')}`;
 }
+
+// Discriminate a LightBeatmap from a decoded Beatmap structurally rather than
+// with `instanceof`, which is fragile across dev HMR / circular imports: a stale
+// class identity makes instanceof falsely return false. A decoded Beatmap has a
+// `general` section; LightBeatmap does not.
+const isLightBeatmap = (b: Beatmap | LightBeatmap): b is LightBeatmap => 
+	!('general' in b);
 
 export type RuntimeMetadata = {
 	id: number,
@@ -76,7 +92,7 @@ const db = (): Promise<IDBDatabase> => {
 			return d;
 		}).catch((err) => {
 			console.error('[beatmaps] db() failed', err);
-			dbPromise = undefined; // let the next caller retry instead of caching the failure
+			dbPromise = undefined;
 			throw err;
 		});
 	})();
@@ -95,7 +111,9 @@ const open = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
 	const req = indexedDB.open(DB_NAME, DB_VERSION);
 	req.onupgradeneeded = (event) => {
 		const d = req.result;
-		console.log(`[beatmaps] onupgradeneeded ${event.oldVersion} -> ${event.newVersion}; stores: [${Array.from(d.objectStoreNames)}]`);
+		console.log(
+			`[beatmaps] onupgradeneeded ${event.oldVersion} -> ${event.newVersion}; stores: [${Array.from(d.objectStoreNames)}]`,
+		);
 		// Pre-v2 layouts are incompatible - drop and rebuild. v2→v3 added no
 		// stores (total_length is data, backfilled below), so nothing to do there.
 		if (event.oldVersion < 2) {
@@ -107,7 +125,9 @@ const open = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
 		}
 	};
 	req.onsuccess = () => {
-		console.log(`[beatmaps] open onsuccess, version ${req.result.version}, stores: [${Array.from(req.result.objectStoreNames)}]`);
+		console.log(
+			`[beatmaps] open onsuccess, version ${req.result.version}, stores: [${Array.from(req.result.objectStoreNames)}]`,
+		);
 		resolve(req.result);
 	};
 	req.onerror = () => {
@@ -117,7 +137,9 @@ const open = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
 	// A connection still open at the old version (e.g. another tab) stalls the
 	// upgrade indefinitely - fail loudly instead of hanging the whole game.
 	req.onblocked = () => {
-		console.error('[beatmaps] open onblocked - another tab/connection holds an older version');
+		console.error(
+			'[beatmaps] open onblocked - another tab/connection holds an older version',
+		);
 		reject(new Error('beatmaps DB upgrade blocked by another open tab'));
 	};
 });
@@ -142,9 +164,11 @@ async function runDataMigrations(d: IDBDatabase): Promise<void> {
 	let version = 0;
 	try {
 		version = Number(localStorage.getItem(DATA_VERSION_KEY)) || 0;
-	} catch { /* localStorage unavailable: re-run from 0, migrations are idempotent */ }
+	} catch { /* localStorage unavailable: re-run from 0 */ }
 
-	console.log(`[beatmaps] data migrations at v${version}, target v${dataMigrations.length}`);
+	console.log(
+		`[beatmaps] data migrations at v${version}, target v${dataMigrations.length}`,
+	);
 	for (let v = version; v < dataMigrations.length; v++) {
 		console.log(`[beatmaps] running data migration ${v} -> ${v + 1}`);
 		await dataMigrations[v](d);
@@ -155,7 +179,12 @@ async function runDataMigrations(d: IDBDatabase): Promise<void> {
 	}
 }
 
-const withStore = <T>(d: IDBDatabase, store: string, mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T>): Promise<T> =>
+const withStore = <T>(
+	d: IDBDatabase, 
+	store: string, 
+	mode: IDBTransactionMode, 
+	fn: (s: IDBObjectStore) => IDBRequest<T>,
+): Promise<T> =>
 	new Promise<T>((resolve, reject) => {
 		const r = fn(d.transaction(store, mode).objectStore(store));
 		r.onsuccess = () => resolve(r.result);
@@ -169,13 +198,17 @@ const withStore = <T>(d: IDBDatabase, store: string, mode: IDBTransactionMode, f
  * instead of aborting the run.
  */
 async function backfillTotalLength(d: IDBDatabase): Promise<void> {
-	const metas = await withStore(d, 'meta', 'readonly', (s) => s.getAll()) as RuntimeMetadata[];
+	const metas = await withStore(d, 'meta', 'readonly', 
+		(s) => s.getAll(),
+	) as RuntimeMetadata[];
 	const decoder = new BeatmapDecoder();
 	console.log(`[beatmaps] backfillTotalLength: ${metas.length} sets`);
 
 	let updated = 0;
 	for (const meta of metas) {
-		const osu = await withStore(d, 'charts', 'readonly', (s) => s.get(meta.id)) as Record<number, string> | undefined;
+		const osu = await withStore(d, 'charts', 'readonly', 
+			(s) => s.get(meta.id),
+		) as Record<number, string> | undefined;
 		if (!osu) {
 			console.warn(`[beatmaps] no charts for set ${meta.id}, skipping`);
 			continue;
@@ -190,7 +223,9 @@ async function backfillTotalLength(d: IDBDatabase): Promise<void> {
 				version.total_length = decoder.decodeFromString(text).totalLength;
 				changed = true;
 			} catch (err) {
-				console.error(`[beatmaps] total_length backfill failed for ${meta.id}/${version.id}`, err);
+				console.error(
+					`[beatmaps] total_length backfill failed for ${meta.id}/${version.id}`
+					, err);
 			}
 		}
 		if (changed) {
@@ -202,13 +237,17 @@ async function backfillTotalLength(d: IDBDatabase): Promise<void> {
 }
 
 async function backfillTopMetadata(d: IDBDatabase): Promise<void> {
-	const metas = await withStore(d, 'meta', 'readonly', (s) => s.getAll()) as RuntimeMetadata[];
+	const metas = await withStore(d, 'meta', 'readonly', 
+		(s) => s.getAll(),
+	) as RuntimeMetadata[];
 	const decoder = new BeatmapDecoder();
 	console.log(`[beatmaps] backfillTopMetadata: ${metas.length} sets`);
 
 	let updated = 0;
 	for (const meta of metas) {
-		const osu = await withStore(d, 'charts', 'readonly', (s) => s.get(meta.id)) as Record<number, string> | undefined;
+		const osu = await withStore(d, 'charts', 'readonly', 
+			(s) => s.get(meta.id),
+		) as Record<number, string> | undefined;
 		if (!osu) {
 			console.warn(`[beatmaps] no charts for set ${meta.id}, skipping`);
 			continue;
@@ -227,7 +266,9 @@ async function backfillTopMetadata(d: IDBDatabase): Promise<void> {
 				version.ln = beatmap.hitObjects.filter(h => h.hitType === 128).length;
 				changed = true;
 			} catch (err) {
-				console.error(`[beatmaps] top metadata backfill failed for ${meta.id}/${version.id}`, err);
+				console.error(
+					`[beatmaps] top metadata backfill failed for ${meta.id}/${version.id}`
+					, err);
 			}
 		}
 		if (changed) {
@@ -238,7 +279,11 @@ async function backfillTopMetadata(d: IDBDatabase): Promise<void> {
 	console.log(`[beatmaps] backfillTopMetadata: updated ${updated} sets`);
 }
 
-const request = async <T>(store: string, mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T>): Promise<T> => {
+const request = async <T>(
+	store: string, 
+	mode: IDBTransactionMode, 
+	fn: (s: IDBObjectStore) => IDBRequest<T>,
+): Promise<T> => {
 	console.log(`[beatmaps] request ${mode} on '${store}'`);
 	return db().then((d) => new Promise<T>((resolve, reject) => {
 		const r = fn(d.transaction(store, mode).objectStore(store));
@@ -252,8 +297,10 @@ const request = async <T>(store: string, mode: IDBTransactionMode, fn: (s: IDBOb
 
 export default class BeatmapStore {
 
-	public static async storeOsz(metadata: Metadata, files: Unzipped): Promise<SetRecord> {
-		const lookup = new Map(Object.keys(files).map((n) => [n.toLowerCase(), n]));
+	public static async storeOsz(
+		metadata: Metadata, 
+		files: Unzipped,
+	): Promise<SetRecord> {
 		const decoder = new TextDecoder();
 		
 		const runtimeMetadata: RuntimeMetadata = {
@@ -269,20 +316,23 @@ export default class BeatmapStore {
 			background: metadata.background ?? '',
 		};
 
-		const media = new Set<string>();
 		const osu = Object.keys(files)
 			.filter(file => file.toLowerCase().endsWith('.osu'))
 			.reduce((set, file) => {
 				const text = decoder.decode(files[file]);
 				const beatmap = (new BeatmapDecoder()).decodeFromString(text);
-				const meta = metadata.versions.find(v => v.id === beatmap.metadata.beatmapId)!;
+				const meta = metadata.versions.find(v => v.id === beatmap.metadata.beatmapId);
+
+				if (!meta) {
+					return set;
+				}
 
 				set[beatmap.metadata.beatmapId] = text;
-				if (beatmap.general.audioFilename) media.add(beatmap.general.audioFilename);
-				if (beatmap.events.backgroundPath) media.add(beatmap.events.backgroundPath);
 
 				runtimeMetadata.audio = beatmap.general.audioFilename;
-				if (beatmap.events.backgroundPath) runtimeMetadata.background = beatmap.events.backgroundPath;
+				if (beatmap.events.backgroundPath) {
+					runtimeMetadata.background = beatmap.events.backgroundPath;
+				}
 
 				runtimeMetadata.versions.push({
 					id: beatmap.metadata.beatmapId,
@@ -312,19 +362,28 @@ export default class BeatmapStore {
 			tx.objectStore('meta').put(runtimeMetadata);
 			tx.objectStore('charts').put(osu, metadata.id);
 
+			// store every bundled asset (keysounds, storyboard samples, video, .osb)
+			// except the charts, which live in `charts`. Paths are kept verbatim so
+			// references resolve against the original archive structure.
 			const fs = tx.objectStore('files');
-			for (const name of media) {
-				const real = lookup.get(name?.toLowerCase());
-				if (!real) continue;
-				fs.put(new Blob([files[real]], { type: mime(real) }), fileKey(metadata.id, name));
+			for (const name of Object.keys(files)) {
+				if (name.toLowerCase().endsWith('.osu')) continue;
+				fs.put(
+					new Blob([files[name]], { type: mime(name) }),
+					fileKey(metadata.id, name),
+				);
 			}
 		});
 
-		return { setId: metadata.id, metadata: runtimeMetadata, osu };
+		return {
+			setId: metadata.id, metadata: runtimeMetadata, osu, 
+		};
 	}
 
 	public static async has(setId: number): Promise<boolean> {
-		return (await request('meta', 'readonly', (s) => s.getKey(setId))) !== undefined;
+		return (await request('meta', 'readonly', 
+			(s) => s.getKey(setId),
+		)) !== undefined;
 	}
 
 	/** Wipe every downloaded set (metadata, charts and media) and notify views. */
@@ -342,7 +401,7 @@ export default class BeatmapStore {
 	}
 
 	/** Delete one downloaded set (its metadata, charts and media) and notify
-	 *  views. Files are keyed `${setId}/<name>`, so a prefix range drops them all. */
+	 *  views. Files are key `${setId}/<name>`, so a prefix range drops them all. */
 	public static async deleteSet(setId: number): Promise<void> {
 		const d = await db();
 		await new Promise<void>((resolve, reject) => {
@@ -352,7 +411,11 @@ export default class BeatmapStore {
 			tx.objectStore('meta').delete(setId);
 			tx.objectStore('charts').delete(setId);
 			const files = tx.objectStore('files');
-			const cursor = files.openKeyCursor(IDBKeyRange.bound(`${setId}/`, `${setId}/\uffff`));
+			const cursor = files.openKeyCursor(
+				IDBKeyRange.bound(`${setId}/`, 
+					`${setId}/\uffff`,
+				),
+			);
 			cursor.onsuccess = () => {
 				const c = cursor.result;
 				if (!c) return;
@@ -363,46 +426,131 @@ export default class BeatmapStore {
 		void beatmapsVersion.set(beatmapsVersion.get() + 1);
 	}
 
-	public static async getBeatmapSet(setId: number): Promise<LightBeatmapSet | undefined> {
-		const meta = await request('meta', 'readonly', (s) => s.get(setId)) as RuntimeMetadata | undefined;
+	public static async getBeatmapSet(
+		setId: number,
+	): Promise<LightBeatmapSet | undefined> {
+		const meta = await request('meta', 'readonly', 
+			(s) => s.get(setId),
+		) as RuntimeMetadata | undefined;
 		if (!meta) return;
 		return LightBeatmapSet.fromMetadata(meta);
 	}
 
 	public static async getAllSets(): Promise<LightBeatmapSet[]> {
-		const metas = (await request('meta', 'readonly', (s) => s.getAll())) as RuntimeMetadata[];
+		const metas = (await request('meta', 'readonly', 
+			(s) => s.getAll(),
+		)) as RuntimeMetadata[];
 		return metas.map(meta => LightBeatmapSet.fromMetadata(meta));
 	}
 
 	public static async getSet(setId: number): Promise<SetRecord | undefined> {
 		const mapset = await this.getBeatmapSet(setId);
 		if (!mapset || !mapset.metadata.runtime) return undefined;
-		const osu = await request<Record<number, string>>('charts', 'readonly', (s) => s.get(setId));
-		return { setId, metadata: mapset.metadata, osu };
+		const osu = await request<Record<number, string>>('charts', 'readonly', 
+			(s) => s.get(setId),
+		);
+		return {
+			setId, metadata: mapset.metadata, osu, 
+		};
 	}
 
-	public static async getOsu(setId: number, beatmapId: number): Promise<string | undefined> {
-		const osu = await request<Record<number, string> | undefined>('charts', 'readonly', (s) => s.get(setId));
+	public static async getOsu(
+		setId: number, 
+		beatmapId: number,
+	): Promise<string | undefined> {
+		const osu = await request<Record<number, string> | undefined>(
+			'charts', 
+			'readonly',
+			(s) => s.get(setId),
+		);
 		return osu?.[beatmapId];
 	}
 
-	public static async getFileUrl(setId: number, name: string): Promise<string | undefined> {
-		const blob = await request<Blob | undefined>('files', 'readonly', (s) => s.get(fileKey(setId, name)));
+	public static async getFileUrl(
+		setId: number, 
+		name: string,
+	): Promise<string | undefined> {
+		const blob = await request<Blob | undefined>('files', 'readonly', 
+			(s) => s.get(fileKey(setId, name)),
+		);
 		return blob && URL.createObjectURL(blob);
 	}
 
-	public static getBeatmapAudio(beatmap: Beatmap | LightBeatmap): Promise<string | undefined> {
-		if (beatmap instanceof LightBeatmap && !beatmap.metadata.runtime) return beatmap.getAudioUri();
-		const audio = beatmap instanceof LightBeatmap ? beatmap.metadata.audio : beatmap.general.audioFilename;
-		const set = beatmap instanceof LightBeatmap ? beatmap.set.metadata.id : beatmap.metadata.beatmapSetId;
-		return audio ? this.getFileUrl(set, audio) : Promise.resolve(undefined);
+	/** Resolve a sound sample blob URL. osu looks up samples extension-insensitively
+	 *  (a map referencing `kick.wav` plays as `kick.ogg`), so fall back to the
+	 *  basename with each known audio extension when the exact path isn't stored. */
+	public static async getSampleUrl(
+		setId: number,
+		name: string,
+	): Promise<string | undefined> {
+		const direct = await this.getFileUrl(setId, name);
+		if (direct) return direct;
+		const dot = name.lastIndexOf('.');
+		const base = dot >= 0 ? name.slice(0, dot) : name;
+		for (const ext of ['wav', 'ogg', 'mp3']) {
+			const url = await this.getFileUrl(setId, `${base}.${ext}`);
+			if (url) return url;
+		}
+		return undefined;
 	}
 
-	public static getBeatmapBackground(beatmap: Beatmap | LightBeatmap): Promise<string | undefined> {
-		if (beatmap instanceof LightBeatmap && !beatmap.metadata.runtime) return beatmap.getBackgroundUri();
-		const bg = beatmap instanceof LightBeatmap ? beatmap.metadata.background : beatmap.events.backgroundPath;
-		const set = beatmap instanceof LightBeatmap ? beatmap.set.metadata.id : beatmap.metadata.beatmapSetId;
-		return bg ? this.getFileUrl(set, bg) : Promise.resolve(undefined);
+	/** Decode a stored text asset (e.g. a `.osb` storyboard) to a string. */
+	public static async getFileText(
+		setId: number, 
+		name: string,
+	): Promise<string | undefined> {
+		const blob = await request<Blob | undefined>('files', 'readonly', 
+			(s) => s.get(fileKey(setId, name)),
+		);
+		return blob && blob.text();
+	}
+
+	/** The set's `.osb` storyboard text, if it bundled one. */
+	public static async getOsbText(setId: number): Promise<string | undefined> {
+		const d = await db();
+		const name = await new Promise<string | undefined>((resolve, reject) => {
+			const cursor = d.transaction('files', 'readonly').objectStore('files')
+				.openKeyCursor(IDBKeyRange.bound(`${setId}/`, `${setId}/\uffff`));
+			cursor.onerror = () => reject(cursor.error);
+			cursor.onsuccess = () => {
+				const c = cursor.result;
+				if (!c) return resolve(undefined);
+				if (String(c.key).endsWith('.osb')) 
+					return resolve(String(c.key).slice(`${setId}/`.length));
+				c.continue();
+			};
+		});
+		return name ? this.getFileText(setId, name) : undefined;
+	}
+
+	public static getBeatmapAudio(
+		beatmap: Beatmap | LightBeatmap,
+	): Promise<string | undefined> {
+		if (isLightBeatmap(beatmap)) {
+			if (!beatmap.metadata.runtime) return beatmap.getAudioUri();
+			return beatmap.metadata.audio ? 
+				this.getFileUrl(beatmap.set.metadata.id, beatmap.metadata.audio) : 
+				Promise.resolve(undefined);
+		}
+		const audio = beatmap.general.audioFilename;
+		return audio ? 
+			this.getFileUrl(beatmap.metadata.beatmapSetId, audio) : 
+			Promise.resolve(undefined);
+	}
+
+	public static getBeatmapBackground(
+		beatmap: Beatmap | LightBeatmap,
+	): Promise<string | undefined> {
+		if (isLightBeatmap(beatmap)) {
+			if (!beatmap.metadata.runtime) return beatmap.getBackgroundUri();
+			return beatmap.metadata.background ? 
+				this.getFileUrl(beatmap.set.metadata.id, beatmap.metadata.background) :
+				Promise.resolve(undefined);
+		}
+		const bg = beatmap.events.backgroundPath;
+		return bg ? 
+			this.getFileUrl(beatmap.metadata.beatmapSetId, bg) : 
+			Promise.resolve(undefined);
 	}
 
 }

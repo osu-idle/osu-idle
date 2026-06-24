@@ -4,8 +4,12 @@ import BeatmapStore from './beatmap/beatmap_store';
 import rosuReady from './rosu';
 import { ScoreState } from '@osu-idle/shared/sim/scoring';
 
-const calculatePP = async (score: ScoreState, beatmap: Beatmap): Promise<number> => {
-	const osu = await BeatmapStore.getOsu(beatmap.metadata.beatmapSetId, beatmap.metadata.beatmapId);
+const calculatePP = async (
+	score: ScoreState,
+	beatmap: Beatmap,
+): Promise<number> => {
+	const osu = await BeatmapStore
+		.getOsu(beatmap.metadata.beatmapSetId, beatmap.metadata.beatmapId);
 	if (!osu) return 0;
 
 	await rosuReady();

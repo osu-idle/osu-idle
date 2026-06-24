@@ -1,5 +1,8 @@
 import type { BotContext } from '../bot.js';
-import type { Strain, SkillStrain } from '../bots/character.js';
+import type {
+	Strain,
+	SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import max from '../../helpers/max.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
@@ -64,7 +67,9 @@ export default class Stamina extends Skill {
 	}
 
 	analyze(note: RuntimeNote, context: BotContext, mapStrain: Strain, strain: Strain): SkillStrain {
-		const latest = mapStrain.stamina.length > 0 ? mapStrain.stamina[mapStrain.stamina.length - 1] : undefined;
+		const latest = mapStrain.stamina.length > 0 ? 
+			mapStrain.stamina[mapStrain.stamina.length - 1] 
+			: undefined;
 
 		const currentStrain: SkillStrain = {
 			note,
@@ -81,7 +86,9 @@ export default class Stamina extends Skill {
 		const elapsed = latest ? note.time - latest.note.time : 0;
 		if (!elapsed) return currentStrain;
 		
-		const previous = mapStrain.stamina.length > 0 ? mapStrain.stamina[mapStrain.stamina.length - 1] : undefined;
+		const previous = mapStrain.stamina.length > 0 ? 
+			mapStrain.stamina[mapStrain.stamina.length - 1] 
+			: undefined;
 		currentStrain.unpure = (previous?.unpure ?? 0) / 2;
 
 		const nps = max([0, 1, 2, 3].map(k => context.npsAt(note.time, undefined, k)));
@@ -104,8 +111,8 @@ export default class Stamina extends Skill {
 		currentStrain.unpure += currentStrain.strain / 10;
 
 		if (currentStrain.strain > 0.9) {
-			currentStrain.miss = currentStrain.strain === 1 ? Math.random() > 0.5 : Math.random() > 0.9;
-			currentStrain.unpure += currentStrain.strain / 10;
+			currentStrain.miss = currentStrain.strain === 1 ? Math.random() > 0.75 : Math.random() > 0.95;
+			currentStrain.unpure += currentStrain.strain / 20;
 		}
 
 		return currentStrain;

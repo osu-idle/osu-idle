@@ -1,4 +1,7 @@
-import { useRef, useState } from 'react';
+import {
+	useRef,
+	useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
@@ -54,7 +57,10 @@ const Select = ({ filter }: {
 			}}>
 				{trigger}
 				<div className='lb_select_dropdown'>
-					{filter.items.map(item => <div key={item.value} className='lb_select_dropdown_item' onClick={() => select(item)}>
+					{filter.items.map(item => <div key={item.value}
+						className='lb_select_dropdown_item' 
+						onClick={() => select(item)}
+					>
 						{item.label}
 					</div>)}
 				</div>

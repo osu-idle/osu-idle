@@ -1,4 +1,7 @@
-import { env, OSU_REDIRECT_URI } from '../env';
+import {
+	env,
+	OSU_REDIRECT_URI,
+} from '../env';
 
 const AUTHORIZE = 'https://osu.ppy.sh/oauth/authorize';
 const TOKEN = 'https://osu.ppy.sh/oauth/token';
@@ -27,7 +30,9 @@ export function authorizeUrl(state: string): string {
 export async function exchangeCode(code: string): Promise<string> {
 	const res = await fetch(TOKEN, {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+		headers: {
+			'Content-Type': 'application/json', Accept: 'application/json', 
+		},
 		body: JSON.stringify({
 			client_id: env.OSU_CLIENT_ID,
 			client_secret: env.OSU_CLIENT_SECRET,
@@ -44,7 +49,9 @@ export async function exchangeCode(code: string): Promise<string> {
 /** Fetch the authenticated osu! user (scope: identify). Token is used here only. */
 export async function fetchOsuUser(accessToken: string): Promise<OsuUser> {
 	const res = await fetch(ME, {
-		headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' },
+		headers: {
+			Authorization: `Bearer ${accessToken}`, Accept: 'application/json', 
+		}, 
 	});
 	if (!res.ok) throw new Error(`osu! /me failed: ${res.status}`);
 	return await res.json() as OsuUser;

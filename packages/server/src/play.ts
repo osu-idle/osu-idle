@@ -1,22 +1,54 @@
 import { randomUUID } from 'node:crypto';
 import '@osu-idle/shared/osu/controlPointPatch';
 import { BeatmapDecoder } from 'osu-parsers';
-import { LEAD_IN_MS, ManiaGame, unstableRate, type ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
-import CharacterBot, { fatigueXPFactor, getRecoveryTime } from '@osu-idle/shared/sim/bots/character';
+import {
+	LEAD_IN_MS,
+	ManiaGame,
+	unstableRate,
+	type ReplayOffset,
+} from '@osu-idle/shared/sim/maniaGame';
+import CharacterBot, {
+	fatigueXPFactor,
+	getRecoveryTime,
+} from '@osu-idle/shared/sim/bots/character';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
-import { MINDBLOCK_SKILLS, type SkillName } from '@osu-idle/shared/skills';
-import { compareGradeGT, compareGradeGTE, GRADE, Judgements, type Judgement } from '@osu-idle/shared/judgement';
+import {
+	MINDBLOCK_SKILLS,
+	type SkillName,
+} from '@osu-idle/shared/skills';
+import {
+	compareGradeGT,
+	compareGradeGTE,
+	GRADE,
+	Judgements,
+	type Judgement,
+} from '@osu-idle/shared/judgement';
 import type { ScoreDTO } from '@osu-idle/shared/score';
 import type { CharacterRow } from './db/schema/character';
-import type { NewScoreRow, ScoreRow } from './db/schema/score';
+import type {
+	NewScoreRow,
+	ScoreRow,
+} from './db/schema/score';
 import Memory from '@osu-idle/shared/sim/skills/memory';
 import { calculatePP } from './pp';
 import { getBeatmap } from './beatmaps';
 import { getPlays } from './db/schema/beatmaps_played';
-import { mindblockFactor, recentMapPlays } from './mindblock';
-import { applySkillXp, submitScore } from './scores';
-import { reindexBeatmap, reindexCharacter } from './rankings';
-import { isProd, redisKeyPrefix } from './env';
+import {
+	mindblockFactor,
+	recentMapPlays,
+} from './mindblock';
+import {
+	applySkillXp,
+	submitScore,
+} from './scores';
+import {
+	reindexBeatmap,
+	reindexCharacter,
+} from './rankings';
+import {
+	isProd,
+	redisKeyPrefix,
+} from './env';
 import { redis } from './redis';
 import { getBestPlay } from './db/schema/best';
 import type { Beatmap } from 'osu-classes';
@@ -244,13 +276,25 @@ export async function startPlay(
 	// Provisional 60s lock so a near-simultaneous cold start is held off while
 	// this one simulates. Atomic across workers (see ACQUIRE_PLAY).
 	const now = Date.now();
-	const acquired = await redis.eval(ACQUIRE_PLAY, 1, PLAYING_KEY, String(character.id), String(now), String(now + 60000)) as number;
+	const acquired = await redis.eval(
+		ACQUIRE_PLAY, 
+		1, 
+		PLAYING_KEY, 
+		String(character.id), 
+		String(now),
+		String(now + 60000),
+	) as number;
 	if (acquired !== 1) {
 		// Someone else is mid-simulation; if their record has landed, join it.
 		const raced = await readPlay(character.id);
 		if (raced) return joinResult(raced);
 		const held = Number(await redis.zscore(PLAYING_KEY, String(character.id)));
-		console.log(character.id, character.name, 'tried playing at once. remaining cooldown: ', held - now);
+		console.log(
+			character.id, 
+			character.name,
+			'tried playing at once. remaining cooldown: ',
+			held - now,
+		);
 		return { status: 'refused' };
 	}
 	const beatmap = await getBeatmap(beatmapId);
@@ -282,7 +326,8 @@ const getServerXP = async (
 		for (const name of MINDBLOCK_SKILLS) skillXp[name] = Math.floor(skillXp[name] * block);
 	}
 
-	if (compareGradeGTE(score.grade, GRADE.X) && (!currentBest || compareGradeGT(score.grade, currentBest.grade))) {
+	if (compareGradeGTE(score.grade, GRADE.X) 
+		&& (!currentBest || compareGradeGT(score.grade, currentBest.grade))) {
 		skillXp.accuracy += Math.floor(1000 * Number(beatmap.sr));
 	}
 
@@ -310,7 +355,9 @@ async function simulateAndStore(
 		currentMapTime: 0,
 	} satisfies PlayTime;
 
-	session.currentStrainTime = Math.max(0, session.currentStrainTime - getRecoveryTime(session.lastEnd, Date.now()));
+	session.currentStrainTime = Math.max(0,
+		session.currentStrainTime - getRecoveryTime(session.lastEnd, Date.now()),
+	);
 	session.currentMapTime = chart.totalLength;
 
 	await setPlayTime(session);
@@ -374,7 +421,7 @@ async function simulateAndStore(
 		offsets: entry.offsets,
 		...(failedAt ? { failedAt } : undefined),
 		startedAt,
-		endsAt
+		endsAt,
 	};
 }
 
@@ -382,7 +429,12 @@ async function simulateAndStore(
  * Obtain play data by deleting it so we can consume it without duplication
  */
 const getAndDeletePlay = async(characterId: number): Promise<Pending | undefined> => {
-	const result = await redis.eval(TAKE_PLAY, 1, playKey(characterId), String(characterId)) as string | undefined;
+	const result = await redis.eval(
+		TAKE_PLAY,
+		1, 
+		playKey(characterId),
+		String(characterId),
+	) as string | undefined;
 	if (!result) return;
 	return JSON.parse(result) as Pending;
 };
@@ -394,7 +446,7 @@ const parsePlayResult = async (play: Pending, notify: boolean): Promise<StoredRe
 		return {
 			token: play.token,
 			failed: true,
-			notify
+			notify,
 		};
 	}
 
@@ -421,7 +473,7 @@ const parsePlayResult = async (play: Pending, notify: boolean): Promise<StoredRe
 		failed: false,
 		score: scoreRowToDTO(row),
 		gains,
-		notify
+		notify,
 	};
 };
 
@@ -431,7 +483,10 @@ const parsePlayResult = async (play: Pending, notify: boolean): Promise<StoredRe
  *   not by a client reading its result. Only these are notifiable: a result a
  *   client already saw on its result screen must not re-surface from idle polls.
  */
-export async function finalizePlay(characterId: number, serverSide: boolean = false): Promise<StoredResult | undefined> {
+export async function finalizePlay(
+	characterId: number, 
+	serverSide: boolean = false,
+): Promise<StoredResult | undefined> {
 	const play = await getAndDeletePlay(characterId);
 	if (!play) return;
 
@@ -446,15 +501,23 @@ export async function finalizePlay(characterId: number, serverSide: boolean = fa
 	return result;
 }
 
-const UnknownResult = { ok: false, reason: 'unknown', code: 404 } as const;
-const CacheMissResult = { ok: false, reason: 'cache-miss', code: 410 } as const;
-const UnfinalizedResult = { ok: false, reason: 'unfinalized', code: 432 } as const;
-const TooSoonResult = { ok: false, reason: 'tooSoon', code: 425 } as const;
+const UnknownResult = {
+	ok: false, reason: 'unknown', code: 404, 
+} as const;
+const CacheMissResult = {
+	ok: false, reason: 'cache-miss', code: 410, 
+} as const;
+const UnfinalizedResult = {
+	ok: false, reason: 'unfinalized', code: 432, 
+} as const;
+const TooSoonResult = {
+	ok: false, reason: 'tooSoon', code: 425, 
+} as const;
 const ScoreResult = (result: StoredResult) => ({
 	ok: true,
 	failed: result.failed,
 	score: result.failed ? undefined : result.score,
-	gains: result.failed ? undefined : result.gains
+	gains: result.failed ? undefined : result.gains,
 } as const);
 
 export type FetchResultOutcome =
@@ -464,14 +527,20 @@ export type FetchResultOutcome =
 	| typeof TooSoonResult
 	| ReturnType<typeof ScoreResult>;
 
-export async function fetchResult(characterId: number, token: string, forceSee: boolean = false): Promise<FetchResultOutcome> {
+export async function fetchResult(
+	characterId: number,
+	token: string, 
+	forceSee: boolean = false,
+): Promise<FetchResultOutcome> {
 
 	const cached = await redis.get(resultKey(characterId));
 	if (cached) {
 		const result = JSON.parse(cached) as StoredResult;
 		if (!result.notify && !forceSee) return CacheMissResult;
 		else if (result.notify) {
-			redis.set(resultKey(characterId), JSON.stringify({...result, notify: false }), 'KEEPTTL');
+			redis.set(resultKey(characterId), JSON.stringify({
+				...result, notify: false, 
+			}), 'KEEPTTL');
 		}
 		if (result.token === token) {
 			return ScoreResult(result);
@@ -489,7 +558,13 @@ export async function fetchResult(characterId: number, token: string, forceSee: 
 
 /** Player quit: drop the play without submitting (token must match). */
 export async function abortPlay(characterId: number, token: string): Promise<{ ok: boolean }> {
-	const raw = await redis.eval(ABORT_PLAY, 1, playKey(characterId), String(characterId), token) as string | null;
+	const raw = await redis.eval(
+		ABORT_PLAY,
+		1,
+		playKey(characterId),
+		String(characterId), 
+		token,
+	) as string | null;
 	if (raw) await redis.zrem(PLAYING_KEY, String(characterId));
 	return { ok: raw !== null };
 }
@@ -506,11 +581,16 @@ export async function skipPlay(characterId: number, token: string): Promise<{ ok
 
 /** Player skipped the lead-in: shift the play's timeline so it finalises earlier
  *  (token must match). */
-export async function playStatus(characterId: number, token: string): Promise<{ ok: true } | { aborted: true } | { ok: true, startedAt: number, endsAt: number }> {
+export async function playStatus(
+	characterId: number, 
+	token: string,
+): Promise<{ ok: true } | { aborted: true } | { ok: true, startedAt: number, endsAt: number }> {
 	const play = await readPlay(characterId);
 	if (!play || play.token !== token) return { aborted: true };
 
-	if (play.skipped) return { ok: true, startedAt: play.startedAt, endsAt: play.endsAt };
+	if (play.skipped) return {
+		ok: true, startedAt: play.startedAt, endsAt: play.endsAt, 
+	};
 	return { ok: true };
 }
 
@@ -524,14 +604,20 @@ export async function getActivePlay(characterId: number) {
 	// the finishing client itself via fetchResult.
 	// primitives only - never spread the whole Pending (heavy offsets/draft/xp)
 	if (play) {
-		return { active: true, token: play.token, beatmapId: play.beatmapId };
+		return {
+			active: true, token: play.token, beatmapId: play.beatmapId, 
+		};
 	}
 	const result = await redis.get(resultKey(characterId));
 	if (result) {
 		const stored = JSON.parse(result) as StoredResult;
-		return { active: false, finished: true, token: stored.token, notify: stored.notify } as const;
+		return {
+			active: false, finished: true, token: stored.token, notify: stored.notify, 
+		} as const;
 	}
-	return { active: false, finished: false } as const;
+	return {
+		active: false, finished: false, 
+	} as const;
 }
 
 /** Finalise every play whose end time has passed, so abandoned plays still

@@ -1,4 +1,8 @@
-import type { HitObject, IHasColumn, IHoldableObject } from 'osu-classes';
+import type {
+	HitObject,
+	IHasColumn,
+	IHoldableObject,
+} from 'osu-classes';
 
 export default class RuntimeNote {
 
@@ -12,6 +16,9 @@ export default class RuntimeNote {
 		public holding: boolean,
 		/** beat-snap divisor (1 = on-beat, 4 = 1/4, …; 0 = unsnapped) */
 		public snap: number = 0,
+		/** custom sample filenames carried from the beatmap (keysounds), if any.
+		 *  Resolved to actual sounds by the client; the sim never reads them. */
+		public samples: string[] = [],
 	) {}
 
 	/** song time (ms) at which the tail resolved as a MISS (a dropped/fumbled
@@ -32,7 +39,13 @@ export default class RuntimeNote {
 		return `${this.column}-${this.time}`;
 	}
 
-	public static fromHitObject(hitObject: HitObject | IHoldableObject | IHasColumn, snap: number): RuntimeNote {
+	public static fromHitObject(
+		hitObject: HitObject | IHoldableObject | IHasColumn,
+		snap: number,
+	): RuntimeNote {
+		const samples = 'samples' in hitObject
+			? hitObject.samples.map(s => s.filename).filter((f): f is string => !!f)
+			: [];
 		return new RuntimeNote(
 			'startTime' in hitObject ? hitObject.startTime : 0,
 			'endTime' in hitObject ? hitObject.endTime : 0,
@@ -42,6 +55,7 @@ export default class RuntimeNote {
 			false,
 			false,
 			snap,
+			samples,
 		);
 	}
 

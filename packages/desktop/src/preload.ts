@@ -1,8 +1,16 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import {
+	contextBridge,
+	ipcRenderer,
+} from 'electron';
 // shared is ESM and this preload compiles to CommonJS; the resolution-mode hint
 // lets the type-only import resolve without making the whole package ESM (an
 // ESM preload has extra Electron caveats we don't need on the auth path).
-import type { DesktopPresence, DesktopUpdateStatus, OsuIdleDesktop } from '@osu-idle/shared/desktop' with { 'resolution-mode': 'import' };
+// eslint-disable-next-line object-curly-newline -- false positive from the import attribute
+import type {
+	DesktopPresence,
+	DesktopUpdateStatus,
+	OsuIdleDesktop,
+} from '@osu-idle/shared/desktop' with { 'resolution-mode': 'import' };
 
 /**
  * Runs in every frame (top window + the same-origin /web iframe). Exposes the
@@ -11,7 +19,10 @@ import type { DesktopPresence, DesktopUpdateStatus, OsuIdleDesktop } from '@osu-
  * very first API call already carries it, then kept live via a push from main.
  */
 
-const boot = ipcRenderer.sendSync('osu-idle:bootstrap') as { token: string | null; version: string };
+const boot = ipcRenderer.sendSync('osu-idle:bootstrap') as { 
+	token: string | null; 
+	version: string
+};
 
 let token: string | null = boot.token;
 const listeners = new Set<(token: string | null) => void>();

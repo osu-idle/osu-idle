@@ -1,7 +1,12 @@
-import { useEffect, useRef } from 'react';
+import {
+	useEffect,
+	useRef,
+} from 'react';
 import type { HitRecord } from '@osu-idle/shared/sim/maniaGame';
 import { drawDevianceGraph } from './hitError';
 import { HitWindows } from '@osu-idle/shared/sim/scoring';
+import useSynced from '@osu-idle/shared/hooks/useSynced';
+import { currentSkin } from '../osu/skin/Skin';
 
 interface Props {
 	hits: HitRecord[]
@@ -14,7 +19,16 @@ interface Props {
 }
 
 /** A standalone deviance graph for an arbitrary set of hit records. */
-export default function StrainGraph({ hits, windows, songEndMs, failMs, overlay, width = 320, height = 130 }: Props) {
+export default function StrainGraph({ 
+	hits, 
+	windows, 
+	songEndMs, 
+	failMs, 
+	overlay,
+	width = 320, 
+	height = 130, 
+}: Props) {
+	const [skin] = useSynced(currentSkin);
 	const ref = useRef<HTMLCanvasElement>(null);
 	useEffect(() => {
 		const canvas = ref.current!;
@@ -25,7 +39,15 @@ export default function StrainGraph({ hits, windows, songEndMs, failMs, overlay,
 		canvas.style.width = `${width}px`;
 		canvas.style.height = `${height}px`;
 		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-		drawDevianceGraph(ctx, { hits, windows, songEndMs, failMs, overlay, width, height });
+		drawDevianceGraph(skin, ctx, {
+			hits, 
+			windows,
+			songEndMs, 
+			failMs,
+			overlay, 
+			width, 
+			height, 
+		});
 	}, [hits, windows, songEndMs, failMs, overlay, width, height]);
 	return <canvas ref={ref} className="strain__canvas" />;
 }

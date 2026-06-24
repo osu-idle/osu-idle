@@ -11,8 +11,14 @@
 }
 
 @keyframes tutorial-in {
-	0% { opacity: 0; transform: translateY(14px); }
-	100% { opacity: 1; transform: translateY(0); }
+	0% {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .tutorial__card {
@@ -59,7 +65,9 @@
 	height: 7px;
 	border-radius: 50%;
 	background: rgba(255, 255, 255, 0.18);
-	transition: background 0.15s ease, transform 0.15s ease;
+	transition:
+		background 0.15s ease,
+		transform 0.15s ease;
 }
 .tutorial__dot--active {
 	background: #ff66aa;

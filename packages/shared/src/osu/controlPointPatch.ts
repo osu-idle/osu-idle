@@ -1,4 +1,7 @@
-import { ControlPointInfo, ControlPointGroup } from 'osu-classes';
+import {
+	ControlPointInfo,
+	ControlPointGroup,
+} from 'osu-classes';
 
 /**
  * osu-classes' `ControlPointInfo.groupAt` does a linear `.find` *and a full
@@ -18,9 +21,13 @@ import { ControlPointInfo, ControlPointGroup } from 'osu-classes';
  * (e.g. after `clear()` empties the list).
  */
 
+ 
 type Patchable = ControlPointInfo & { __groupMap?: Map<number, ControlPointGroup> };
 
-ControlPointInfo.prototype.groupAt = function (this: Patchable, time: number): ControlPointGroup {
+ControlPointInfo.prototype.groupAt = function (
+	this: Patchable, 
+	time: number,
+): ControlPointGroup {
 	let map = this.__groupMap;
 	if (!map || map.size !== this.groups.length) {
 		map = this.__groupMap = new Map(this.groups.map((g) => [g.startTime, g]));

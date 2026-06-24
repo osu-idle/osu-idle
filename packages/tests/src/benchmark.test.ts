@@ -1,6 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import {
+	describe,
+	it,
+	expect,
+} from 'vitest';
 import { skillProfiler } from '@osu-idle/shared/sim/profiler';
-import { CHARTS, loadBeatmap, simulate, uniform } from './sim';
+import {
+	simulate,
+	uniform,
+} from './sim';
+import {
+	CHARTS,
+	loadBeatmap,
+} from './balancing/charts';
 
 /**
  * Score-generation benchmark - its own suite, excluded from `npm test` (run with
@@ -103,9 +114,13 @@ describe('score generation benchmark', () => {
 
 		const cell = (n: number) => padl(ms(n) + 'ms', 12);
 		const head = `   ${pad('chart', 26)}${padl('notes', 8)}${padl('mean', 12)}${padl('median', 12)}${padl('min', 12)}${padl('p95', 12)}${padl('knotes/s', 11)}`;
-		const lines = [`\n━━  score generation · ${RUNS} runs/chart · uniform lvl${LEVEL} · ${charts.length} charts`, head];
+		const lines = [
+			`\n━━  score generation · ${RUNS} runs/chart · uniform lvl${LEVEL} · ${charts.length} charts`
+			, head];
 		for (const r of rows) {
-			lines.push(`   ${pad(r.chart, 26)}${padl(int(r.notes), 8)}${cell(r.meanMs)}${cell(r.medianMs)}${cell(r.minMs)}${cell(r.p95Ms)}${padl((r.notesPerSec / 1000).toFixed(1), 11)}`);
+			lines.push(
+				`   ${pad(r.chart, 26)}${padl(int(r.notes), 8)}${cell(r.meanMs)}${cell(r.medianMs)}${cell(r.minMs)}${cell(r.p95Ms)}${padl((r.notesPerSec / 1000).toFixed(1), 11)}`,
+			);
 		}
 
 		const totalNotes = rows.reduce((s, r) => s + r.notes, 0);
@@ -130,7 +145,9 @@ describe('score generation benchmark', () => {
 			`   ${pad('skill', 16)}${padl('total', 12)}${padl('share', 9)}${padl('µs/note', 11)}`,
 		);
 		for (const t of timings) {
-			lines.push(`   ${pad(t.skill, 16)}${cell(t.totalMs)}${padl(((t.totalMs / skillTotal) * 100).toFixed(1) + '%', 9)}${us((t.totalMs / t.calls) * 1000)}`);
+			lines.push(
+				`   ${pad(t.skill, 16)}${cell(t.totalMs)}${padl(((t.totalMs / skillTotal) * 100).toFixed(1) + '%', 9)}${us((t.totalMs / t.calls) * 1000)}`,
+			);
 		}
 		lines.push(
 			`   ${'─'.repeat(48)}`,

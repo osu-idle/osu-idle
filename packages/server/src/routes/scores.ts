@@ -1,14 +1,24 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { eq, and, inArray } from 'drizzle-orm';
+import {
+	eq,
+	and,
+	inArray,
+} from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client';
-import { scores, toScoreDTO } from '../db/schema/score';
+import {
+	scores,
+	toScoreDTO,
+} from '../db/schema/score';
 import { best } from '../db/schema/best';
 import { characters } from '../db/schema/character';
 import { users } from '../db/schema/user';
 import { requireAuth } from '../auth/middleware';
-import { beatmapPageIds, beatmapRank } from '../rankings';
+import {
+	beatmapPageIds,
+	beatmapRank,
+} from '../rankings';
 
 const idParam = z.coerce.number().int().positive();
 
@@ -49,7 +59,9 @@ async function myBeatmapScore(userId: number, beatmapId: number, country?: strin
 	if (!row) return null;
 
 	const rank = await beatmapRank(beatmapId, character.id, country);
-	return { score: toScoreDTO(row), rank };
+	return {
+		score: toScoreDTO(row), rank, 
+	};
 }
 
 export const scoresRoutes = new Hono()
@@ -62,7 +74,25 @@ export const scoresRoutes = new Hono()
 
 		return c.json(row);
 	})
-	.get('/beatmap/:beatmap', async c => c.json((await beatmapLeaderboard(idParam.parse(c.req.param('beatmap')), 1)).map(toScoreDTO)))
-	.get('/beatmap/:beatmap/country/:country', async c => c.json((await beatmapLeaderboard(idParam.parse(c.req.param('beatmap')), 1, c.req.param('country'))).map(toScoreDTO)))
-	.get('/beatmap/:beatmap/me', requireAuth, async c => c.json(await myBeatmapScore(c.get('userId'), idParam.parse(c.req.param('beatmap')))))
-	.get('/beatmap/:beatmap/country/:country/me', requireAuth, async c => c.json(await myBeatmapScore(c.get('userId'), idParam.parse(c.req.param('beatmap')), c.req.param('country'))));
+	.get('/beatmap/:beatmap', async c => c.json((
+		await beatmapLeaderboard(
+			idParam.parse(c.req.param('beatmap')),
+			1,
+		)).map(toScoreDTO)))
+	.get('/beatmap/:beatmap/country/:country', async c => c.json((
+		await beatmapLeaderboard(
+			idParam.parse(c.req.param('beatmap')), 
+			1,
+			c.req.param('country'),
+		)).map(toScoreDTO)))
+	.get('/beatmap/:beatmap/me', requireAuth, async c => c.json(
+		await myBeatmapScore(
+			c.get('userId'),
+			idParam.parse(c.req.param('beatmap')),
+		)))
+	.get('/beatmap/:beatmap/country/:country/me', requireAuth, async c => c.json(
+		await myBeatmapScore(
+			c.get('userId'), 
+			idParam.parse(c.req.param('beatmap')),
+			c.req.param('country'),
+		)));

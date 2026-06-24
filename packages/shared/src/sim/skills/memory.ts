@@ -1,6 +1,9 @@
 import { SKILL } from '../../skills.js';
 import type { BotContext } from '../bot.js';
-import type { Strain, SkillStrain } from '../bots/character.js';
+import type {
+	Strain,
+	SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import Synced from '../../helpers/synced.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
@@ -72,14 +75,22 @@ export default class Memory extends Skill {
 			this.maxImprove = lerp(
 				lerp(Memory.IMPROVE_MIN_MIN, Memory.IMPROVE_MIN_MAX, i),
 				lerp(Memory.IMPROVE_MAX_MIN, Memory.IMPROVE_MAX_MAX, i),
-				p
+				p,
 			);
 			this.boost = lerp(1, Memory.BOOST_MAX, Memory.BOOST_CB(p));
 		});
 	}
 
-	analyze(note: RuntimeNote, _context: BotContext, mapStrain: Strain, strain: Strain): SkillStrain {
-		const progress = Math.min(1, normalize(this.timesPlayed.get(), [this.minPlays, this.maxPlays]) * this.boost);
+	analyze(
+		note: RuntimeNote, 
+		_context: BotContext,
+		mapStrain: Strain, 
+		strain: Strain,
+	): SkillStrain {
+		const progress = Math.min(1,
+			normalize(this.timesPlayed.get(), [this.minPlays, this.maxPlays])
+			* this.boost,
+		);
 		const memorized = Memory.LEARN_CB(progress); // 0 = fresh map, 1 = fully recalled
 		const reduction = memorized * this.maxImprove;
 

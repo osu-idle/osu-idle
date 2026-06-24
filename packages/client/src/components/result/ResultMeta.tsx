@@ -3,7 +3,10 @@ import { music } from '../../audio/MusicPlayer';
 
 /** Title bar: beatmap title/version/creator (read from the live track) plus the
  *  played-by line. Falls back to a generic header when no track is loaded. */
-export default function ResultMeta({ playerName, playedAt }: { playerName: string; playedAt: string }) {
+export default function ResultMeta({ 
+	playerName, 
+	playedAt, 
+}: { playerName: string; playedAt: string }) {
 	const track = music.beatmap.use((b) => b && ({
 		title: b.set.metadata.title,
 		artist: b.set.metadata.artist,
@@ -16,8 +19,12 @@ export default function ResultMeta({ playerName, playedAt }: { playerName: strin
 				{track ? `${track.artist} - ${track.title} ` : <Trans>Result</Trans>}
 				{track && <span className="result__version">[{track.version}]</span>}
 			</div>
-			{track && <div className="result__creator"><Trans>Beatmap by {track.creator}</Trans></div>}
-			<div className="result__played"><Trans>Played by {playerName} on {playedAt}</Trans></div>
+			{track && <div className="result__creator">
+				<Trans>Beatmap by {track.creator}</Trans>
+			</div>}
+			<div className="result__played">
+				<Trans>Played by {playerName} on {playedAt}</Trans>
+			</div>
 		</div>
 	);
 }

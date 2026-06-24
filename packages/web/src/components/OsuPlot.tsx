@@ -1,6 +1,10 @@
 import './OsuPlot.css';
 
-import { useEffect, useMemo, useState } from 'react';
+import {
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 import createPlotlyComponent from 'react-plotly.js/factory';
 // Type-only: plotly stays out of the module graph (vite externalizes it) and is
 // loaded at runtime by the <script> below, so only the namespace types remain.
@@ -23,7 +27,9 @@ function loadPlotly(): Promise<object> {
 		const script = document.createElement('script');
 		script.src = 'https://osu.idle.rhythmgamers.net/web/assets/plotly.min.js';
 		script.async = true;
-		script.onload = () => window.Plotly ? resolve(window.Plotly) : reject(new Error('plotly failed to load'));
+		script.onload = () => window.Plotly ? 
+			resolve(window.Plotly) 
+			: reject(new Error('plotly failed to load'));
 		script.onerror = () => reject(new Error('plotly failed to load'));
 		document.head.appendChild(script);
 	});
@@ -68,7 +74,17 @@ export interface OsuPlotProps {
 /** osu!-web styled line chart: dark transparent panel, smooth lines with a
  *  soft area gradient, minimal gridlines, unified hover. Every computed trace,
  *  layout, and config field can be overridden via the matching prop. */
-export default function OsuPlot({ title, series, height = 320, xTitle, yTitle, yHoverFormat = ',.0f', layout: layoutOverride, config: configOverride }: OsuPlotProps) {
+export default function OsuPlot({ 
+	title, 
+	series, 
+	height = 320, 
+	xTitle, 
+	yTitle,
+	yHoverFormat = ',.0f', 
+	layout: layoutOverride,
+	config: configOverride, 
+}: OsuPlotProps,
+) {
 	const [Plot, setPlot] = useState<PlotComponent | null>(null);
 	useEffect(() => {
 		let alive = true;
@@ -89,13 +105,17 @@ export default function OsuPlot({ title, series, height = 320, xTitle, yTitle, y
 			y: s.y,
 			type: 'scatter',
 			mode: 'lines',
-			line: { color, width: 2.5, shape: 'spline', smoothing: 0.6 },
+			line: {
+				color, width: 2.5, shape: 'spline', smoothing: 0.6, 
+			},
 			fill: 'tozeroy',
 			fillcolor: toAlpha(color, 0.12),
 			// d3 format strings live in the template; a JS formatter is applied
 			// per-point and surfaced through `text`.
 			...(typeof yHoverFormat === 'function'
-				? { text: s.y.map(yHoverFormat), hovertemplate: '%{text}<extra></extra>' }
+				? {
+					text: s.y.map(yHoverFormat), hovertemplate: '%{text}<extra></extra>', 
+				}
 				: { hovertemplate: `%{y:${yHoverFormat}}<extra></extra>` }),
 		};
 		return deepMerge(base, s.trace);
@@ -104,35 +124,59 @@ export default function OsuPlot({ title, series, height = 320, xTitle, yTitle, y
 	const layout = useMemo((): Partial<Plotly.Layout> => {
 		const base: Partial<Plotly.Layout> = {
 			height,
-			margin: { l: 56, r: 24, t: title ? 44 : 16, b: 40 },
+			margin: {
+				l: 56, r: 24, t: title ? 44 : 16, b: 40, 
+			},
 			paper_bgcolor: 'transparent',
 			plot_bgcolor: 'transparent',
-			font: { family: 'Torus, "Segoe UI", sans-serif', color: muted, size: 12 },
+			font: {
+				family: 'Torus, "Segoe UI", sans-serif', color: muted, size: 12, 
+			},
 			showlegend: series.length > 1,
-			legend: { orientation: 'h', y: 1.08, x: 0, font: { color: muted } },
+			legend: {
+				orientation: 'h', y: 1.08, x: 0, font: { color: muted }, 
+			},
 			hovermode: 'x unified',
-			hoverlabel: { bgcolor: cssVar('--bg-2', '#2a2227'), bordercolor: pink, font: { color: text } },
+			hoverlabel: {
+				bgcolor: cssVar('--bg-2', '#2a2227'), bordercolor: pink, font: { color: text }, 
+			},
 			xaxis: {
 				gridcolor: grid,
 				zeroline: false,
 				tickfont: { color: muted },
 				showline: false,
-				...(xTitle && { title: { text: xTitle, font: { color: muted } } }),
+				...(xTitle && {
+					title: {
+						text: xTitle, font: { color: muted }, 
+					}, 
+				}),
 			},
 			yaxis: {
 				gridcolor: grid,
 				zeroline: false,
 				tickfont: { color: muted },
 				showline: false,
-				...(yTitle && { title: { text: yTitle, font: { color: muted } } }),
+				...(yTitle && {
+					title: {
+						text: yTitle, font: { color: muted }, 
+					}, 
+				}),
 			},
-			...(title && { title: { text: title, font: { color: text, size: 15 }, x: 0, xanchor: 'left' } }),
+			...(title && {
+				title: {
+					text: title, font: {
+						color: text, size: 15, 
+					}, x: 0, xanchor: 'left', 
+				}, 
+			}),
 		};
 		return deepMerge(base, layoutOverride);
 	}, [title, height, text, muted, pink, grid, series.length, xTitle, yTitle, layoutOverride]);
 
 	const config = useMemo((): Partial<Plotly.Config> =>
-		deepMerge<Partial<Plotly.Config>>({ displayModeBar: false, responsive: true }, configOverride),
+		deepMerge<Partial<Plotly.Config>>({
+			displayModeBar: false, responsive: true, 
+		}, configOverride),
 	[configOverride]);
 
 	// Reserve the chart's height while plotly streams in so layout doesn't jump.
@@ -145,7 +189,9 @@ export default function OsuPlot({ title, series, height = 320, xTitle, yTitle, y
 				layout={layout}
 				config={config}
 				useResizeHandler
-				style={{ width: '100%', height: `${height}px` }}
+				style={{
+					width: '100%', height: `${height}px`, 
+				}}
 			/>
 		</div>
 	);

@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import './PlaylistOverlay.css';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
-import { getPlaylistIndex, Playlist, playlistsVersion } from '../db/schema/playlist';
+import {
+	getPlaylistIndex,
+	Playlist,
+	playlistsVersion,
+} from '../db/schema/playlist';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
-import { Trans, useLingui } from '@lingui/react/macro';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
 
 type Props = {
 	/** the right-clicked difficulty the +/- buttons act on */
@@ -83,10 +90,14 @@ export default function PlaylistOverlay({ beatmap, onClose }: Props) {
 
 				<div className="plmgr__list">
 					{index?.playlists.length === 0 && (
-						<div className="plmgr__empty"><Trans>No playlists yet. Type a name above and press Enter.</Trans></div>
+						<div className="plmgr__empty">
+							<Trans>No playlists yet. Type a name above and press Enter.</Trans>
+						</div>
 					)}
 					{index?.playlists.map((p) => {
-						const contains = index.byBeatmap.get(beatmapId)?.some((x) => x.id === p.id) ?? false;
+						const contains = index.byBeatmap
+							.get(beatmapId)
+							?.some((x) => x.id === p.id) ?? false;
 						const nbMaps = index.counts.get(p.id) ?? 0;
 						return (
 							<div
@@ -118,7 +129,11 @@ export default function PlaylistOverlay({ beatmap, onClose }: Props) {
 										type="button"
 										className="plmgr__btn"
 										title={t`Rename`}
-										onClick={(e) => { e.stopPropagation(); setRenamingId(p.id); setRenameText(p.name); }}
+										onClick={(e) => { 
+											e.stopPropagation(); 
+											setRenamingId(p.id); 
+											setRenameText(p.name); 
+										}}
 									>
 										<Trans>Rename</Trans>
 									</button>
@@ -153,7 +168,10 @@ export default function PlaylistOverlay({ beatmap, onClose }: Props) {
 						disabled={!selected}
 						onClick={() => void deleteSelected()}
 					>
-						{confirmingDelete ? t`Really delete "${selected?.name}"?` : t`Delete the playlist`}
+						{confirmingDelete ? 
+							t`Really delete "${selected?.name}"?` 
+							: t`Delete the playlist`
+						}
 					</button>
 					<button type="button" className="plmgr__action" onClick={onClose}>
 						<Trans>Close</Trans>

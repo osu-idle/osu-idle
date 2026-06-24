@@ -1,7 +1,7 @@
 .dashboard {
 	display: flex;
 	background: hsl(var(--hsl-b5));
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 	padding: 0 50px;
 }
 
@@ -12,11 +12,11 @@
 }
 
 .dashboard__right {
-    background-color: hsl(var(--hsl-b4));
-    margin: 0;
-    padding: 20px;
+	background-color: hsl(var(--hsl-b4));
+	margin: 0;
+	padding: 20px;
 
-	box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 	margin-bottom: 10px;
 	margin-left: 10px;
 	padding-bottom: 10px;
@@ -33,12 +33,12 @@
 
 .dashboard__title {
 	align-items: flex-end;
-    color: hsl(var(--hsl-l1));
+	color: hsl(var(--hsl-l1));
 	display: flex;
-    font-size: 20px;
-    font-weight: 700;
-    margin: 0;
-    padding: 20px 0 0px 0px;
+	font-size: 20px;
+	font-weight: 700;
+	margin: 0;
+	padding: 20px 0 0px 0px;
 }
 
 .dashboard__all {
@@ -47,13 +47,22 @@
 	font-weight: 600;
 	white-space: nowrap;
 }
-.dashboard__all:hover { color: hsl(var(--hsl-h1)); }
+.dashboard__all:hover {
+	color: hsl(var(--hsl-h1));
+}
 
-.dashboard__msg { color: hsl(var(--hsl-l1)); padding: 14px 0; }
-.dashboard__msg--error { color: #ff8095; }
+.dashboard__msg {
+	color: hsl(var(--hsl-l1));
+	padding: 14px 0;
+}
+.dashboard__msg--error {
+	color: #ff8095;
+}
 
 @media (max-width: 760px) {
-	.dashboard { padding: 24px 20px 48px; }
+	.dashboard {
+		padding: 24px 20px 48px;
+	}
 }
 
 .dashboard__stats_n {
@@ -68,38 +77,38 @@
 
 .dashboard__stats_g-title {
 	font-size: 10px;
-    font-weight: 400;
+	font-weight: 400;
 }
 
 .dashboard__stats_g-num {
 	color: hsl(var(--hsl-l1));
-    font-size: 15px;
+	font-size: 15px;
 }
 
 .dashboard__ranked_title {
 	color: hsl(var(--hsl-l1));
-    font-size: 16px;
-    font-weight: 700;
-    margin: 0;
-    padding: 20px 0 10px;
+	font-size: 16px;
+	font-weight: 700;
+	margin: 0;
+	padding: 20px 0 10px;
 }
 
 .dashboard__ranked_list {
 	display: grid;
-    font-size: 12px;
-    gap: 10px;
+	font-size: 12px;
+	gap: 10px;
 }
 
 .dashboard__ranked_list_map {
 	color: hsl(var(--hsl-f1));
-    display: grid;
-    gap: 10px;
-    grid-template-columns: auto 1fr auto;
-    margin: 0 calc(10px * -1);
-    padding: 0 10px;
-    text-decoration: none;
-    transform: translateZ(0);
-    transition: .1s;
+	display: grid;
+	gap: 10px;
+	grid-template-columns: auto 1fr auto;
+	margin: 0 calc(10px * -1);
+	padding: 0 10px;
+	text-decoration: none;
+	transform: translateZ(0);
+	transition: 0.1s;
 }
 .dashboard__ranked_list_map:hover {
 	text-decoration: none;
@@ -107,58 +116,58 @@
 }
 .dashboard__ranked_list_map-bg {
 	align-items: center;
-    display: inline-flex;
-    justify-content: center;
-    background-position: 50%;
-    background-size: cover;
-    flex: none;
-    position: relative;
-    vertical-align: middle;
+	display: inline-flex;
+	justify-content: center;
+	background-position: 50%;
+	background-size: cover;
+	flex: none;
+	position: relative;
+	vertical-align: middle;
 	border-radius: 6px;
 
 	height: 60px;
-    width: 70px;
+	width: 70px;
 }
 .dashboard__ranked_list_map-bg::before {
 	background-position: 50%;
-    background-size: cover;
-    border-radius: inherit;
-    content: "";
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
+	background-size: cover;
+	border-radius: inherit;
+	content: "";
+	height: 100%;
+	left: 0;
+	position: absolute;
+	top: 0;
+	width: 100%;
 }
 
 .dashboard__ranked_list_map-md {
 	color: #fff;
-    display: flex;
-    flex-direction: column;
-    font-weight: 400;
-    justify-content: center;
-    min-width: 0;
+	display: flex;
+	flex-direction: column;
+	font-weight: 400;
+	justify-content: center;
+	min-width: 0;
 }
 .dashboard__ranked_list_map-md-title {
-    font-size: 16px;
-    margin-top: -2px;
+	font-size: 16px;
+	margin-top: -2px;
 	overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+	text-overflow: ellipsis !important;
+	white-space: nowrap !important;
 }
 .dashboard__ranked_list_map-md-artist {
 	overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    font-size: 12px;
-    margin-top: -3px;
+	text-overflow: ellipsis !important;
+	white-space: nowrap !important;
+	font-size: 12px;
+	margin-top: -3px;
 }
 .dashboard__ranked_list_map-md-info {
 	overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    font-size: 10px;
-    margin-top: 2px;
+	text-overflow: ellipsis !important;
+	white-space: nowrap !important;
+	font-size: 10px;
+	margin-top: 2px;
 	display: inline-flex;
 	gap: 4px;
 }

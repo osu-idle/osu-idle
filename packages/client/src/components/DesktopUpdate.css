@@ -13,7 +13,7 @@
 	backdrop-filter: blur(6px);
 	overflow: hidden;
 
-	transition: all .2s ease;
+	transition: all 0.2s ease;
 }
 .dupdate.downloading {
 	background: #00000021;

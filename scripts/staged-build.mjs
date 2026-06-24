@@ -10,9 +10,15 @@
 // nothing is persisted.
 
 import { spawn } from 'node:child_process';
-import { rm, rename } from 'node:fs/promises';
+import {
+	rm,
+	rename,
+} from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import {
+	dirname,
+	join,
+} from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const STAGING = 'dist.next';
@@ -20,22 +26,34 @@ const STAGING = 'dist.next';
 // The trees Apache serves: client is the DocumentRoot, web is the `/web` alias.
 // Each builds into STAGING and is swapped into `dist` only after a clean build.
 const SERVED = [
-	{ pkg: 'packages/client', live: 'dist' },
-	{ pkg: 'packages/web', live: 'dist' },
+	{
+		pkg: 'packages/client', live: 'dist', 
+	},
+	{
+		pkg: 'packages/web', live: 'dist', 
+	},
 ];
 
 const abs = (...p) => join(ROOT, ...p);
 
 function run(command, env) {
 	return new Promise((resolve, reject) => {
-		const child = spawn(command, { cwd: ROOT, stdio: 'inherit', shell: true, env: { ...process.env, ...env } });
-		child.on('close', code => code === 0 ? resolve() : reject(new Error(`\`${command}\` exited ${code}`)));
+		const child = spawn(command, {
+			cwd: ROOT, stdio: 'inherit', shell: true, env: {
+				...process.env, ...env, 
+			}, 
+		});
+		child.on('close', code => code === 0 ?
+			resolve() 
+			: reject(new Error(`\`${command}\` exited ${code}`)));
 		child.on('error', reject);
 	});
 }
 
 async function cleanStaging() {
-	for (const { pkg } of SERVED) await rm(abs(pkg, STAGING), { recursive: true, force: true });
+	for (const { pkg } of SERVED) await rm(abs(pkg, STAGING), {
+		recursive: true, force: true, 
+	});
 }
 
 async function build() {
@@ -65,10 +83,14 @@ async function build() {
 async function swap() {
 	for (const { pkg, live } of SERVED) {
 		const old = `${live}.old`;
-		await rm(abs(pkg, old), { recursive: true, force: true });
+		await rm(abs(pkg, old), {
+			recursive: true, force: true, 
+		});
 		await rename(abs(pkg, live), abs(pkg, old));
 		await rename(abs(pkg, STAGING), abs(pkg, live));
-		await rm(abs(pkg, old), { recursive: true, force: true });
+		await rm(abs(pkg, old), {
+			recursive: true, force: true, 
+		});
 	}
 }
 
@@ -78,7 +100,9 @@ async function swap() {
 try {
 	await build();
 } catch (err) {
-	console.error(`\n[staged-build] build failed - live site untouched, version not persisted.\n  ${err.message}`);
+	console.error(
+		`\n[staged-build] build failed - live site untouched, version not persisted.\n  ${err.message}`,
+	);
 	await cleanStaging();
 	process.exit(1);
 }

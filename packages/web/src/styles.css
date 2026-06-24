@@ -8,126 +8,162 @@
 	--muted: #b3a6ad;
 
 	--nav-logo: url(/idle-white.png);
-    --nav-logo-bg: url(/idle-back.png);
+	--nav-logo-bg: url(/idle-back.png);
 
 	--base-hue-default: 333;
-    --base-hue-override: 274;
+	--base-hue-override: 274;
 
 	--base-hue: var(--base-hue-override, var(--base-hue-default));
-    --base-hue-deg: calc(var(--base-hue) * 1deg);
+	--base-hue-deg: calc(var(--base-hue) * 1deg);
 
 	--hsl-p: var(--base-hue), 100%, 50%;
-    --hsl-h1: var(--base-hue), 100%, 70%;
-    --hsl-h2: var(--base-hue), 50%, 45%;
-    --hsl-c1: var(--base-hue), 40%, 100%;
-    --hsl-c2: var(--base-hue), 40%, 90%;
-    --hsl-l1: var(--base-hue), 40%, 80%;
-    --hsl-l2: var(--base-hue), 40%, 75%;
-    --hsl-l3: var(--base-hue), 40%, 70%;
-    --hsl-l4: var(--base-hue), 40%, 50%;
-    --hsl-d1: var(--base-hue), 20%, 35%;
-    --hsl-d2: var(--base-hue), 20%, 30%;
-    --hsl-d3: var(--base-hue), 20%, 25%;
-    --hsl-d4: var(--base-hue), 20%, 20%;
-    --hsl-d5: var(--base-hue), 20%, 15%;
-    --hsl-d6: var(--base-hue), 20%, 10%;
-    --hsl-f1: var(--base-hue), 10%, 60%;
-    --hsl-b1: var(--base-hue), 10%, 40%;
-    --hsl-b2: var(--base-hue), 10%, 30%;
-    --hsl-b3: var(--base-hue), 10%, 25%;
-    --hsl-b4: var(--base-hue), 10%, 20%;
-    --hsl-b5: var(--base-hue), 10%, 15%;
-    --hsl-b6: var(--base-hue), 10%, 10%;
-    --c-saturation-1: 100%;
-    --c-saturation-2: 80%;
-    --c-saturation-3: 60%;
-    --c-saturation-4: 40%;
-    --c-lightness-1: 70%;
-    --c-lightness-2: 60%;
-    --c-lightness-3: 50%;
-    --c-lightness-4: 30%;
-    --colour-pink-hue: 333;
-    --hsl-pink-1: var(--colour-pink-hue), var(--c-saturation-1), var(--c-lightness-1);
-    --hsl-pink-2: var(--colour-pink-hue), var(--c-saturation-2), var(--c-lightness-2);
-    --hsl-pink-3: var(--colour-pink-hue), var(--c-saturation-3), var(--c-lightness-3);
-    --hsl-pink-4: var(--colour-pink-hue), var(--c-saturation-4), var(--c-lightness-4);
-    --colour-purple-hue: 255;
-    --hsl-purple-1: var(--colour-purple-hue), var(--c-saturation-1), var(--c-lightness-1);
-    --hsl-purple-2: var(--colour-purple-hue), var(--c-saturation-2), var(--c-lightness-2);
-    --hsl-purple-3: var(--colour-purple-hue), var(--c-saturation-3), var(--c-lightness-3);
-    --hsl-purple-4: var(--colour-purple-hue), var(--c-saturation-4), var(--c-lightness-4);
-    --colour-blue-hue: 200;
-    --hsl-blue-1: var(--colour-blue-hue), var(--c-saturation-1), var(--c-lightness-1);
-    --hsl-blue-2: var(--colour-blue-hue), var(--c-saturation-2), var(--c-lightness-2);
-    --hsl-blue-3: var(--colour-blue-hue), var(--c-saturation-3), var(--c-lightness-3);
-    --hsl-blue-4: var(--colour-blue-hue), var(--c-saturation-4), var(--c-lightness-4);
-    --colour-green-hue: 125;
-    --hsl-green-1: var(--colour-green-hue), var(--c-saturation-1), var(--c-lightness-1);
-    --hsl-green-2: var(--colour-green-hue), var(--c-saturation-2), var(--c-lightness-2);
-    --hsl-green-3: var(--colour-green-hue), var(--c-saturation-3), var(--c-lightness-3);
-    --hsl-green-4: var(--colour-green-hue), var(--c-saturation-4), var(--c-lightness-4);
-    --colour-lime-hue: 90;
-    --hsl-lime-1: var(--colour-lime-hue), var(--c-saturation-1), var(--c-lightness-1);
-    --hsl-lime-2: var(--colour-lime-hue), var(--c-saturation-2), var(--c-lightness-2);
-    --hsl-lime-3: var(--colour-lime-hue), var(--c-saturation-3), var(--c-lightness-3);
-    --hsl-lime-4: var(--colour-lime-hue), var(--c-saturation-4), var(--c-lightness-4);
-    --colour-orange-hue: 45;
-    --hsl-orange-1: var(--colour-orange-hue), var(--c-saturation-1), var(--c-lightness-1);
-    --hsl-orange-2: var(--colour-orange-hue), var(--c-saturation-2), var(--c-lightness-2);
-    --hsl-orange-3: var(--colour-orange-hue), var(--c-saturation-3), var(--c-lightness-3);
-    --hsl-orange-4: var(--colour-orange-hue), var(--c-saturation-4), var(--c-lightness-4);
-    --colour-red-hue: 360;
-    --hsl-red-1: var(--colour-red-hue), var(--c-saturation-1), var(--c-lightness-1);
-    --hsl-red-2: var(--colour-red-hue), var(--c-saturation-2), var(--c-lightness-2);
-    --hsl-red-3: var(--colour-red-hue), var(--c-saturation-3), var(--c-lightness-3);
-    --hsl-red-4: var(--colour-red-hue), var(--c-saturation-4), var(--c-lightness-4);
-    --colour-darkorange-hue: 20;
-    --hsl-darkorange-1: var(--colour-darkorange-hue), var(--c-saturation-1), var(--c-lightness-1);
-    --hsl-darkorange-2: var(--colour-darkorange-hue), var(--c-saturation-2), var(--c-lightness-2);
-    --hsl-darkorange-3: var(--colour-darkorange-hue), var(--c-saturation-3), var(--c-lightness-3);
-    --hsl-darkorange-4: var(--colour-darkorange-hue), var(--c-saturation-4), var(--c-lightness-4);
-	
-    --header-pinned-animation-duration: 0ms;
-    --beatmapset-status-colour-default: var(--hsl-b3);
-    --beatmapset-graveyard-bg-hsl: 0, 0%, 0%;
-    --beatmapset-graveyard-colour: hsl(var(--hsl-b1));
-    --beatmapset-wip-bg-hsl: var(--hsl-darkorange-1);
-    --beatmapset-wip-colour: hsl(var(--beatmapset-status-colour-default));
-    --beatmapset-pending-bg-hsl: var(--hsl-orange-1);
-    --beatmapset-pending-colour: hsl(var(--beatmapset-status-colour-default));
-    --beatmapset-qualified-bg-hsl: var(--hsl-blue-1);
-    --beatmapset-qualified-colour: hsl(var(--beatmapset-status-colour-default));
-    --beatmapset-approved-bg-hsl: var(--hsl-lime-1);
-    --beatmapset-approved-colour: hsl(var(--beatmapset-status-colour-default));
-    --beatmapset-ranked-bg-hsl: var(--hsl-lime-1);
-    --beatmapset-ranked-colour: hsl(var(--beatmapset-status-colour-default));
-    --beatmapset-loved-bg-hsl: var(--hsl-pink-1);
-    --beatmapset-loved-colour: hsl(var(--beatmapset-status-colour-default));
-    --beatmapset-discussion-colour--hype: hsl(var(--hsl-blue-3));
-    --beatmapset-discussion-colour--mapper_note: hsl(var(--hsl-purple-1));
-    --beatmapset-discussion-colour--praise: hsl(var(--hsl-blue-3));
-    --beatmapset-discussion-colour--problem: hsl(var(--hsl-red-3));
-    --beatmapset-discussion-colour--resolved: hsl(var(--hsl-lime-3));
-    --beatmapset-discussion-colour--review: hsl(var(--hsl-c2));
-    --beatmapset-discussion-colour--suggestion: hsl(var(--hsl-orange-3));
-    --forum-bg: hsl(var(--hsl-h1));
-    --forum-item-background-color: hsl(var(--hsl-b4));
-    --forum-item-background-color-hover: hsl(var(--hsl-b3));
-    --level-tier-iron: #bab3ab, #bab3ab;
-    --level-tier-bronze: #b88f7a, #855c47;
-    --level-tier-silver: #e0e0eb, #a3a3c2;
-    --level-tier-gold: #f0e4a8, #e0c952;
-    --level-tier-platinum: #a8f0ef, #52e0df;
-    --level-tier-rhodium: #d9f8d3, #a0cf96;
-    --level-tier-radiant: #97dcff, #ed82ff;
-    --level-tier-lustrous: #ffe600, #ed82ff;
+	--hsl-h1: var(--base-hue), 100%, 70%;
+	--hsl-h2: var(--base-hue), 50%, 45%;
+	--hsl-c1: var(--base-hue), 40%, 100%;
+	--hsl-c2: var(--base-hue), 40%, 90%;
+	--hsl-l1: var(--base-hue), 40%, 80%;
+	--hsl-l2: var(--base-hue), 40%, 75%;
+	--hsl-l3: var(--base-hue), 40%, 70%;
+	--hsl-l4: var(--base-hue), 40%, 50%;
+	--hsl-d1: var(--base-hue), 20%, 35%;
+	--hsl-d2: var(--base-hue), 20%, 30%;
+	--hsl-d3: var(--base-hue), 20%, 25%;
+	--hsl-d4: var(--base-hue), 20%, 20%;
+	--hsl-d5: var(--base-hue), 20%, 15%;
+	--hsl-d6: var(--base-hue), 20%, 10%;
+	--hsl-f1: var(--base-hue), 10%, 60%;
+	--hsl-b1: var(--base-hue), 10%, 40%;
+	--hsl-b2: var(--base-hue), 10%, 30%;
+	--hsl-b3: var(--base-hue), 10%, 25%;
+	--hsl-b4: var(--base-hue), 10%, 20%;
+	--hsl-b5: var(--base-hue), 10%, 15%;
+	--hsl-b6: var(--base-hue), 10%, 10%;
+	--c-saturation-1: 100%;
+	--c-saturation-2: 80%;
+	--c-saturation-3: 60%;
+	--c-saturation-4: 40%;
+	--c-lightness-1: 70%;
+	--c-lightness-2: 60%;
+	--c-lightness-3: 50%;
+	--c-lightness-4: 30%;
+	--colour-pink-hue: 333;
+	--hsl-pink-1:
+		var(--colour-pink-hue), var(--c-saturation-1), var(--c-lightness-1);
+	--hsl-pink-2:
+		var(--colour-pink-hue), var(--c-saturation-2), var(--c-lightness-2);
+	--hsl-pink-3:
+		var(--colour-pink-hue), var(--c-saturation-3), var(--c-lightness-3);
+	--hsl-pink-4:
+		var(--colour-pink-hue), var(--c-saturation-4), var(--c-lightness-4);
+	--colour-purple-hue: 255;
+	--hsl-purple-1:
+		var(--colour-purple-hue), var(--c-saturation-1), var(--c-lightness-1);
+	--hsl-purple-2:
+		var(--colour-purple-hue), var(--c-saturation-2), var(--c-lightness-2);
+	--hsl-purple-3:
+		var(--colour-purple-hue), var(--c-saturation-3), var(--c-lightness-3);
+	--hsl-purple-4:
+		var(--colour-purple-hue), var(--c-saturation-4), var(--c-lightness-4);
+	--colour-blue-hue: 200;
+	--hsl-blue-1:
+		var(--colour-blue-hue), var(--c-saturation-1), var(--c-lightness-1);
+	--hsl-blue-2:
+		var(--colour-blue-hue), var(--c-saturation-2), var(--c-lightness-2);
+	--hsl-blue-3:
+		var(--colour-blue-hue), var(--c-saturation-3), var(--c-lightness-3);
+	--hsl-blue-4:
+		var(--colour-blue-hue), var(--c-saturation-4), var(--c-lightness-4);
+	--colour-green-hue: 125;
+	--hsl-green-1:
+		var(--colour-green-hue), var(--c-saturation-1), var(--c-lightness-1);
+	--hsl-green-2:
+		var(--colour-green-hue), var(--c-saturation-2), var(--c-lightness-2);
+	--hsl-green-3:
+		var(--colour-green-hue), var(--c-saturation-3), var(--c-lightness-3);
+	--hsl-green-4:
+		var(--colour-green-hue), var(--c-saturation-4), var(--c-lightness-4);
+	--colour-lime-hue: 90;
+	--hsl-lime-1:
+		var(--colour-lime-hue), var(--c-saturation-1), var(--c-lightness-1);
+	--hsl-lime-2:
+		var(--colour-lime-hue), var(--c-saturation-2), var(--c-lightness-2);
+	--hsl-lime-3:
+		var(--colour-lime-hue), var(--c-saturation-3), var(--c-lightness-3);
+	--hsl-lime-4:
+		var(--colour-lime-hue), var(--c-saturation-4), var(--c-lightness-4);
+	--colour-orange-hue: 45;
+	--hsl-orange-1:
+		var(--colour-orange-hue), var(--c-saturation-1), var(--c-lightness-1);
+	--hsl-orange-2:
+		var(--colour-orange-hue), var(--c-saturation-2), var(--c-lightness-2);
+	--hsl-orange-3:
+		var(--colour-orange-hue), var(--c-saturation-3), var(--c-lightness-3);
+	--hsl-orange-4:
+		var(--colour-orange-hue), var(--c-saturation-4), var(--c-lightness-4);
+	--colour-red-hue: 360;
+	--hsl-red-1:
+		var(--colour-red-hue), var(--c-saturation-1), var(--c-lightness-1);
+	--hsl-red-2:
+		var(--colour-red-hue), var(--c-saturation-2), var(--c-lightness-2);
+	--hsl-red-3:
+		var(--colour-red-hue), var(--c-saturation-3), var(--c-lightness-3);
+	--hsl-red-4:
+		var(--colour-red-hue), var(--c-saturation-4), var(--c-lightness-4);
+	--colour-darkorange-hue: 20;
+	--hsl-darkorange-1:
+		var(--colour-darkorange-hue), var(--c-saturation-1), var(--c-lightness-1);
+	--hsl-darkorange-2:
+		var(--colour-darkorange-hue), var(--c-saturation-2), var(--c-lightness-2);
+	--hsl-darkorange-3:
+		var(--colour-darkorange-hue), var(--c-saturation-3), var(--c-lightness-3);
+	--hsl-darkorange-4:
+		var(--colour-darkorange-hue), var(--c-saturation-4), var(--c-lightness-4);
+
+	--header-pinned-animation-duration: 0ms;
+	--beatmapset-status-colour-default: var(--hsl-b3);
+	--beatmapset-graveyard-bg-hsl: 0, 0%, 0%;
+	--beatmapset-graveyard-colour: hsl(var(--hsl-b1));
+	--beatmapset-wip-bg-hsl: var(--hsl-darkorange-1);
+	--beatmapset-wip-colour: hsl(var(--beatmapset-status-colour-default));
+	--beatmapset-pending-bg-hsl: var(--hsl-orange-1);
+	--beatmapset-pending-colour: hsl(var(--beatmapset-status-colour-default));
+	--beatmapset-qualified-bg-hsl: var(--hsl-blue-1);
+	--beatmapset-qualified-colour: hsl(var(--beatmapset-status-colour-default));
+	--beatmapset-approved-bg-hsl: var(--hsl-lime-1);
+	--beatmapset-approved-colour: hsl(var(--beatmapset-status-colour-default));
+	--beatmapset-ranked-bg-hsl: var(--hsl-lime-1);
+	--beatmapset-ranked-colour: hsl(var(--beatmapset-status-colour-default));
+	--beatmapset-loved-bg-hsl: var(--hsl-pink-1);
+	--beatmapset-loved-colour: hsl(var(--beatmapset-status-colour-default));
+	--beatmapset-discussion-colour--hype: hsl(var(--hsl-blue-3));
+	--beatmapset-discussion-colour--mapper_note: hsl(var(--hsl-purple-1));
+	--beatmapset-discussion-colour--praise: hsl(var(--hsl-blue-3));
+	--beatmapset-discussion-colour--problem: hsl(var(--hsl-red-3));
+	--beatmapset-discussion-colour--resolved: hsl(var(--hsl-lime-3));
+	--beatmapset-discussion-colour--review: hsl(var(--hsl-c2));
+	--beatmapset-discussion-colour--suggestion: hsl(var(--hsl-orange-3));
+	--forum-bg: hsl(var(--hsl-h1));
+	--forum-item-background-color: hsl(var(--hsl-b4));
+	--forum-item-background-color-hover: hsl(var(--hsl-b3));
+	--level-tier-iron: #bab3ab, #bab3ab;
+	--level-tier-bronze: #b88f7a, #855c47;
+	--level-tier-silver: #e0e0eb, #a3a3c2;
+	--level-tier-gold: #f0e4a8, #e0c952;
+	--level-tier-platinum: #a8f0ef, #52e0df;
+	--level-tier-rhodium: #d9f8d3, #a0cf96;
+	--level-tier-radiant: #97dcff, #ed82ff;
+	--level-tier-lustrous: #ffe600, #ed82ff;
 }
 
-*, :after, :before {
-    box-sizing: border-box;
+*,
+:after,
+:before {
+	box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
 	margin: 0;
 	height: 100%;
 	background:
@@ -143,18 +179,18 @@ html, body, #root {
 body {
 	background-color: hsl(var(--hsl-b6));
 	color: var(--text);
-	font-family: Torus, 'Segoe UI', 'Exo 2', system-ui, sans-serif;
+	font-family: Torus, "Segoe UI", "Exo 2", system-ui, sans-serif;
 	-webkit-font-smoothing: antialiased;
 }
 
 [data-visibility] {
-    transition: opacity .12s;
-    will-change: opacity;
+	transition: opacity 0.12s;
+	will-change: opacity;
 }
 
-[data-visibility='hidden'] {
+[data-visibility="hidden"] {
 	opacity: 0;
-    pointer-events: none;
+	pointer-events: none;
 }
 
 .page {
@@ -166,9 +202,9 @@ body {
 	margin: 110px auto 0;
 
 	background-color: hsl(var(--hsl-b5));
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
-    color: hsl(var(--hsl-c1));
-	
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+	color: hsl(var(--hsl-c1));
+
 	position: relative;
 	z-index: 1;
 }
@@ -179,12 +215,12 @@ body {
 }
 
 h1.page-title {
-    display: flex;
-    flex-wrap: wrap;
+	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	height: 55px;
 	background-color: hsl(var(--hsl-d5));
-	
+
 	font-size: 20px;
 	margin: 0;
 	padding: 0 50px;
@@ -210,19 +246,24 @@ h1.page-title {
 a {
 	color: hsl(var(--hsl-l2));
 	outline-style: none;
-    text-decoration: none;
-    transition: color 80ms linear;
-    background-color: transparent;
+	text-decoration: none;
+	transition: color 80ms linear;
+	background-color: transparent;
 }
 
-a:active, a:focus, a:hover {
-    color: hsl(var(--hsl-l1));
+a:active,
+a:focus,
+a:hover {
+	color: hsl(var(--hsl-l1));
 }
 
 a:hover {
 	text-decoration: underline;
 }
 
-a:active, a:hover, a:link, a:visited {
-    outline-style: none;
+a:active,
+a:hover,
+a:link,
+a:visited {
+	outline-style: none;
 }

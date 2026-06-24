@@ -1,18 +1,24 @@
 import './PublicLanding.css';
 
-import { useEffect, useState } from 'react';
+import {
+	useEffect,
+	useState,
+} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiscord } from '@fortawesome/free-brands-svg-icons';
 import type { NewsDTO } from '@osu-idle/shared/news';
 
-import { Asset, ROUTE } from '../router';
+import { Asset } from '../router';
 import { loginWithOsu } from '../auth';
 import { listNews } from '../api/news';
 import Link from '../components/Link';
 import NewsCard, { articleToCard } from '../components/NewsCard';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import { getGeneralStats } from '../api/stats';
-import { Trans, useLingui } from '@lingui/react/macro';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
 import Footer from '../Footer';
 
 function formatCount(n: number): string {
@@ -30,10 +36,18 @@ export default function PublicLanding() {
 	const stats = useAsync(getGeneralStats, []);
 
 	const STATS = [
-		{ label: t`scores set`, value: stats?.scores ?? 0 },
-		{ label: t`characters`, value: stats?.users ?? 0 },
-		{ label: t`online now`, value: stats?.online ?? 0 },
-		{ label: t`playing now`, value: stats?.playing ?? 0 },
+		{
+			label: t`scores set`, value: stats?.scores ?? 0, 
+		},
+		{
+			label: t`characters`, value: stats?.users ?? 0, 
+		},
+		{
+			label: t`online now`, value: stats?.online ?? 0, 
+		},
+		{
+			label: t`playing now`, value: stats?.playing ?? 0, 
+		},
 	] as const;
 
 	return (
@@ -99,7 +113,7 @@ export default function PublicLanding() {
 			<section className="news">
 				<div className="news__head">
 					<h2 className="news__heading"><Trans>Latest news</Trans></h2>
-					<Link to={ROUTE.NEWS} className="news__all"><Trans>View all</Trans> →</Link>
+					<Link to="/news" className="news__all"><Trans>View all</Trans> →</Link>
 				</div>
 				<div className="news-grid">
 					{live && live.map(a => <NewsCard key={a.id} {...articleToCard(a)} />)}

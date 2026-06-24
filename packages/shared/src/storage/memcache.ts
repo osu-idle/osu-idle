@@ -18,7 +18,10 @@ class CacheStore<V> extends Map<string | number, V> {
 	}
 
 	private processLock = new Map<string | number | null, Promise<V>>();
-	async process(key: string | number | null, processor: () => V | Promise<V>, ttl?: number): Promise<V> {
+	async process(
+		key: string | number | null, processor: () => V | Promise<V>,
+		ttl?: number,
+	): Promise<V> {
 		key = key ?? global;
 		const existing = this.get(key);
 		if (existing) return existing;

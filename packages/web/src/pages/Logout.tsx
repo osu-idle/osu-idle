@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { logout } from '../api/logout';
-import { navigate, ROUTE } from '../router';
 import { refreshCurrentUser } from '../hooks/useCurrentUser';
 import { Trans } from '@lingui/react/macro';
 
@@ -12,7 +11,8 @@ export default function Logout() {
 			// the client and web session must never disagree on who's signed in.
 			void refreshCurrentUser();
 			try { localStorage.setItem('osu-idle:auth', String(Date.now())); } catch { /* ignore */ }
-			navigate(ROUTE.HOME, true);
+			// Full reload of the web home so every view re-resolves to guest.
+			window.location.assign('/web/');
 		});
 	}, []);
 

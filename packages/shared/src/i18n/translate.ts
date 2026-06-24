@@ -1,4 +1,7 @@
-import { i18n as i18nSingleton, type I18n } from '@lingui/core';
+import {
+	i18n as i18nSingleton,
+	type I18n,
+} from '@lingui/core';
 import { generateMessageId } from '@lingui/message-utils/generateMessageId';
 
 /**
@@ -25,9 +28,16 @@ import { generateMessageId } from '@lingui/message-utils/generateMessageId';
  * `tools/lingui/runtime-extractor.mjs`. Pass a non-literal and it still
  * translates at runtime, but won't be extracted.
  */
-export function __(message: string, context?: string, values?: Record<string, unknown>, i18n: I18n = i18nSingleton): string {
+export function __(
+	message: string, 
+	context?: string, 
+	values?: Record<string, unknown>, 
+	i18n: I18n = i18nSingleton,
+): string {
 	return i18n._(generateMessageId(message, context), values, { message });
 }
+
+type Messages = string | readonly (string | number)[];
 
 /**
  * Tag a map of enum-keyed display strings for extraction. Identity at runtime -
@@ -40,10 +50,12 @@ export function __(message: string, context?: string, values?: Record<string, un
  * const label = __(SKILL_NAMES[skill]); // id matches the literal
  * ```
  *
- * Values may also be arrays (e.g. a per-level list); the extractor harvests each
- * string-literal element, while non-string elements (numbers) are passed through
+ * Values may also be arrays (e.g. a per-level list) the extractor harvests each
+ * string-literal element while non-string elements (numbers) are passed through
  * untranslated.
  */
-export function defineMessages<T extends Record<string, string | readonly (string | number)[]>>(catalog: T): T {
+export const defineMessages = <T extends Record<string, Messages>>(
+	catalog: T,
+): T => {
 	return catalog;
-}
+};

@@ -4,11 +4,18 @@ import { logger } from 'hono/logger';
 import { HTTPException } from 'hono/http-exception';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { ZodError } from 'zod';
-import { clientUrl, DESKTOP_ORIGIN, isProd } from './env';
+import {
+	clientUrl,
+	DESKTOP_ORIGIN,
+	isProd,
+} from './env';
 import { i18nMiddleware } from './i18n';
 import { reportError } from './discord/error';
 import { __ } from '@osu-idle/shared/i18n/translate';
-import { UPLOAD_DIR, UPLOAD_ROUTE } from './uploads';
+import {
+	UPLOAD_DIR,
+	UPLOAD_ROUTE,
+} from './uploads';
 import { usersRoutes } from './routes/users';
 import { authRoutes } from './routes/auth';
 import { meRoutes } from './routes/me';
@@ -20,6 +27,7 @@ import { rankingRoutes } from './routes/ranking';
 import { beatmapsRoutes } from './routes/beatmap';
 import { playRoutes } from './routes/play';
 import { addonsRoutes } from './routes/addons';
+import { skinsRoutes } from './routes/skins';
 
 // The desktop app loads its bundle from a registered `app://` scheme, so it
 // calls us from that origin (Bearer-authed, no cookie). In dev also accept the
@@ -42,14 +50,18 @@ const v1 = new Hono()
 	.route('/me', meRoutes)
 	.route('/play', playRoutes)
 	.route('/news', newsRoutes)
-	.route('/addons', addonsRoutes);
+	.route('/addons', addonsRoutes)
+	.route('/skins', skinsRoutes)
+;
 
 // Built as one chained expression so the route schema is captured in the type
 // of `app`; `AppType` is then consumed by the client's typed RPC client to
 // match the API's exact request/response types with no duplication.
 const app = new Hono()
 	.use('*', logger())
-	.use('*', cors({ origin: allowedOrigins, credentials: true }))
+	.use('*', cors({
+		origin: allowedOrigins, credentials: true, 
+	}))
 	.use('*', i18nMiddleware)
 	.get('/health', c => c.json({ status: 'ok' }))
 	// Serve uploaded media (news cover images) from disk.
@@ -67,7 +79,9 @@ app.onError((err, c) => {
 		return c.json({ error: err.message }, err.status);
 	}
 	if (err instanceof ZodError) {
-		return c.json({ error: 'Validation failed', issues: err.issues }, 400);
+		return c.json({
+			error: 'Validation failed', issues: err.issues, 
+		}, 400);
 	}
 	console.error(err);
 	reportError(err, c);

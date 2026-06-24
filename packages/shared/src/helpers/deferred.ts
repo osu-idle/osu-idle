@@ -6,5 +6,7 @@ export const deferred = <T = void>() => {
 		r = resolve;
 		rr = reject;
 	});
-	return { promise, resolve: r!, reject: rr! };
+	return {
+		promise, resolve: r!, reject: rr!, 
+	};
 };

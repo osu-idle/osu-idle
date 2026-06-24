@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Trans } from '@lingui/react/macro';
-import { addonIconUrl, uploadAddonIcon } from '../../online/addons';
+import {
+	addonIconUrl,
+	uploadAddonIcon,
+} from '../../online/addons';
 
 type Props = {
 	value: string | null,
@@ -29,13 +32,23 @@ export default function AddonIconField({ value, onChange }: Props) {
 		<div className='addon-field'>
 			<span><Trans>Icon</Trans></span>
 			<div className='addon-icon-row'>
-				{value && <img className='addon-icon-preview' src={addonIconUrl(value)} alt='' />}
+				{value && <img 
+					className='addon-icon-preview'
+					src={addonIconUrl(value)} 
+					alt='' 
+				/>}
 				<label className='addon-btn'>
 					<Trans>Upload image</Trans>
-					<input type='file' accept='image/*' hidden disabled={busy} onChange={e => upload(e.target.files?.[0])} />
+					<input 
+						type='file' 
+						accept='image/*' 
+						hidden 
+						disabled={busy} 
+						onChange={e => upload(e.target.files?.[0])} 
+					/>
 				</label>
 			</div>
-			{error && <div className='addons__error'>{error}</div>}
+			{error && <div className='page__error'>{error}</div>}
 		</div>
 	);
 }

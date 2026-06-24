@@ -1,4 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import {
+	describe,
+	it,
+	expect,
+} from 'vitest';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 import { xpForLevel } from '@osu-idle/shared/sim/skills/xp';
 import { SKILL } from '@osu-idle/shared/skills';

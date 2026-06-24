@@ -1,5 +1,8 @@
 import './Tutorial.css';
-import { useEffect, type ReactNode } from 'react';
+import {
+	useEffect,
+	type ReactNode,
+} from 'react';
 import Synced from '@osu-idle/shared/helpers/synced';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import Auth from '../online/auth';
@@ -7,9 +10,11 @@ import Account from '../online/account';
 import SceneManager, { SCENE } from '../scenes/SceneManager';
 import { SETTINGS } from '../db/settings';
 import { isMobile } from '../globals';
-import { Trans, useLingui } from '@lingui/react/macro';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
 
-/** Let the menu's song + logo "pop" entrance land before the wizard fades in. */
 const APPEAR_DELAY_MS = 1200;
 
 interface Step {
@@ -81,7 +86,11 @@ export default function Tutorial() {
 			title: t`Early alpha`,
 			body: <Trans>
 				osu!idle is in <b>alpha</b> and under active development - if you hit a bug,
-				report it on <a href="https://discord.gg/Yd5GEaX8AJ" target="_blank" rel="noreferrer">discord</a>. Have fun!
+				report it on <a 
+					href="https://discord.gg/Yd5GEaX8AJ"
+					target="_blank"
+					rel="noreferrer"
+				>discord</a>. Have fun!
 			</Trans>,
 		},
 	];
@@ -93,7 +102,13 @@ export default function Tutorial() {
 	// mid-validation, and the delay lets the menu's entrance (flash, logo pop,
 	// music) settle first.
 	useEffect(() => {
-		if (isOpen || !resolved || user || scene !== SCENE.MENU || step >= STEPS.length) return;
+		if (isOpen 
+			|| !resolved 
+			|| user 
+			|| scene !== SCENE.MENU 
+			|| step >= STEPS.length
+		) return;
+
 		const t = setTimeout(() => void opened.set(true), APPEAR_DELAY_MS);
 		return () => clearTimeout(t);
 	}, [isOpen, resolved, user, scene, step]);
@@ -114,7 +129,10 @@ export default function Tutorial() {
 
 				<div className="tutorial__dots">
 					{STEPS.map((_, i) => (
-						<span key={i} className={`tutorial__dot ${i === step ? 'tutorial__dot--active' : ''}`} />
+						<span 
+							key={i} 
+							className={`tutorial__dot ${i === step ? 'tutorial__dot--active' : ''}`} 
+						/>
 					))}
 				</div>
 
@@ -132,7 +150,10 @@ export default function Tutorial() {
 							<Trans>Sign in</Trans>
 						</button>
 					)}
-					<button className="tutorial__btn tutorial__btn--primary" onClick={() => goTo(step + 1)}>
+					<button 
+						className="tutorial__btn tutorial__btn--primary" 
+						onClick={() => goTo(step + 1)}
+					>
 						{last ? t`Got it!` : t`Next`}
 					</button>
 				</div>

@@ -2,8 +2,15 @@ import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { eq } from 'drizzle-orm';
 import { onboardingBody } from '@osu-idle/shared/onboarding';
-import { db, farmPool, statsPool } from '../db/client';
-import { characters, characterToDTO } from '../db/schema/character';
+import {
+	db,
+	farmPool,
+	statsPool,
+} from '../db/client';
+import {
+	characters,
+	characterToDTO,
+} from '../db/schema/character';
 import { requireAuth } from '../auth/middleware';
 import { users } from '../db/schema/user';
 import { saveUploadedImage } from '../uploads';
@@ -48,8 +55,12 @@ export const meRoutes = new Hono()
 			.limit(1);
 		if (existingName) throw new HTTPException(409, { message: 'Name already taken' });
 
-		const [results1] = await statsPool.promise().query<RowDataPacket[]>('SELECT * FROM osu_user WHERE osu_id != ? AND username = ?', [userId, body.name]);
-		const [results2] = await farmPool.promise().query<RowDataPacket[]>('SELECT * FROM user WHERE osu_id != ? AND username = ?', [userId, body.name]);
+		const [results1] = await statsPool.promise().query<RowDataPacket[]>(
+			'SELECT * FROM osu_user WHERE osu_id != ? AND username = ?', 
+			[userId, body.name]);
+		const [results2] = await farmPool.promise().query<RowDataPacket[]>(
+			'SELECT * FROM user WHERE osu_id != ? AND username = ?', 
+			[userId, body.name]);
 
 		if ((results1 && results1.length) || (results2 && results2.length)) {
 			throw new HTTPException(403, { message: 'Name is reserved' });
@@ -57,7 +68,9 @@ export const meRoutes = new Hono()
 
 		// Always a fresh character - skill/profile columns default to zero, and
 		// local Guest progress is no longer migrated online.
-		const [created] = await db.insert(characters).values({ userId, name: body.name });
+		const [created] = await db.insert(characters).values({
+			userId, name: body.name, 
+		});
 		const characterId = created.insertId;
 
 		await db.update(users)
@@ -72,11 +85,17 @@ export const meRoutes = new Hono()
 			embeds: [{
 				title: `Welcome ${row.name} to osu!idle !`,
 				url: `https://osu.idle.rhythmgamers.net/web/c/${row.id}`,
+				fields: [
+					{
+						name: `osu! user: ${user.username}`,
+						value: `(see profile)[https://osu.ppy.sh/users/${user.id}]`,
+					},
+				],
 				thumbnail: {
 					url: row.avatarUrl ?? user.avatarUrl ?? GUEST_AVATAR_URL,
 					placeholder: GUEST_AVATAR_URL,
 				},
-			}]
+			}],
 		});
 
 		return c.json(characterToDTO(row!, user.avatarUrl, user.country), 201);
@@ -102,6 +121,10 @@ async function setCurrentCharacterAvatar(userId: number, url: string | null) {
 	if (!user?.currentCharacter) throw new HTTPException(409, { message: 'No character' });
 
 	await db.update(characters).set({ avatarUrl: url }).where(eq(characters.id, user.currentCharacter));
-	const [row] = await db.select().from(characters).where(eq(characters.id, user.currentCharacter)).limit(1);
+	const [row] = await db
+		.select()
+		.from(characters)
+		.where(eq(characters.id, user.currentCharacter))
+		.limit(1);
 	return characterToDTO(row!, user.avatarUrl, user.country);
 }

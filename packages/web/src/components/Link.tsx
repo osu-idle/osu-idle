@@ -1,50 +1,16 @@
-import type { MouseEvent, ReactNode } from 'react';
-import { HOME, navigate, Path } from '../router';
+import { createLink } from '@tanstack/react-router';
+import {
+	forwardRef,
+	type AnchorHTMLAttributes,
+} from 'react';
 
-/** An in-app link: real `href` (so the in-game browser's address bar updates and
- * middle-click/new-tab work) that navigates client-side on plain left-click.
- *
- * Pass `href` (and usually `target="_blank"`) for an external link - these are
- * left to the browser's default handling instead of client-side navigation. */
-export default function Link({ to, href, target, className, children, onMouseEnter, onMouseLeave }: {
-	to?: Path | ':play';
-	href?: string;
-	target?: string;
-	className?: string;
-	children?: ReactNode;
-	onMouseEnter?: () => void;
-	onMouseLeave?: () => void;
-}) {
-	const external = href !== undefined || target === '_blank';
+const Anchor = forwardRef<HTMLAnchorElement, AnchorHTMLAttributes<HTMLAnchorElement>>(
+	(props, ref) => <a ref={ref} {...props} />,
+);
 
-	const onClick = (e: MouseEvent) => {
-		// a Link handles its own click - never let it bubble to an enclosing Link
-		// (nav dropdown items sit inside the parent nav link), which would otherwise
-		// hijack an external/new-tab click and navigate the SPA away.
-		e.stopPropagation();
-		// external link or a modifier/middle click: leave it to the browser (new tab,
-		// real navigation) - just don't bubble.
-		if (external || to === undefined) return;
-		if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-		e.preventDefault();
-		if (to === ':play') {
-			window.location.assign('/');
-			return;
-		}
-		navigate(to);
-	};
+/** In-app link. Wraps TanStack's Link so `to`/`params`/`search` are inferred from
+ *  the route tree - the address bar updates and middle-click/new-tab work because
+ *  it renders a real `href`. Use OutLink for external links. */
+const Link = createLink(Anchor);
 
-	return (
-		<a
-			href={href ?? (to !== undefined ? `${HOME}${to}` : undefined)}
-			target={target}
-			rel={target === '_blank' ? 'noopener noreferrer' : undefined}
-			className={className}
-			onClick={onClick}
-			onMouseEnter={onMouseEnter}
-			onMouseLeave={onMouseLeave}
-		>
-			{children}
-		</a>
-	);
-}
+export default Link;

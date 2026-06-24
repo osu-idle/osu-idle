@@ -35,7 +35,9 @@ setInterval(async () => {
 		if (desktop()) {
 			awaitingUpdate = currentVersion !== VERSION;
 		} else {
-			Log.popup(t`Version ${currentVersion} is available ! Refresh the page to update.`, POPUP_TYPE.neutral, true);
+			Log.popup(
+				t`Version ${currentVersion} is available ! Refresh the page to update.`, 
+				POPUP_TYPE.neutral, true);
 		}
 	}
 	if (awaitingUpdate && !lock) {
@@ -43,7 +45,9 @@ setInterval(async () => {
 		const status = await checkForDesktopUpdate();
 		if (status && status.state !== 'none' && status.state !== 'checking') {
 			awaitingUpdate = false;
-			Log.popup(t`Version ${currentVersion} is available ! Update in the main menu.`, POPUP_TYPE.neutral, true);
+			Log.popup(
+				t`Version ${currentVersion} is available ! Update in the main menu.`, 
+				POPUP_TYPE.neutral, true);
 		}
 		lock = false;
 	}

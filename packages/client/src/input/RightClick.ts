@@ -1,4 +1,8 @@
-import { RefObject, useEffect, useRef } from 'react';
+import {
+	RefObject,
+	useEffect,
+	useRef,
+} from 'react';
 import { SETTINGS } from '../db/settings';
 
 export interface RightClickEvent {
@@ -35,7 +39,9 @@ export default class RightClick {
 	private static init() {
 		if (this.initialized) return;
 		this.initialized = true;
-		window.addEventListener('pointerdown', () => { this.suppressClick = false; }, { capture: true });
+		window.addEventListener('pointerdown', () => { 
+			this.suppressClick = false; 
+		}, { capture: true });
 		window.addEventListener('click', (e) => {
 			if (!this.suppressClick) return;
 			this.suppressClick = false;
@@ -48,7 +54,12 @@ export default class RightClick {
 	public static on(el: HTMLElement, callback: RightClickCallback): () => void {
 		this.init();
 
-		let pending: { id: number, x: number, y: number, target: EventTarget | null } | null = null;
+		let pending: { 
+			id: number,
+			x: number, 
+			y: number, 
+			target: EventTarget | null 
+		} | null = null;
 		let timer = 0;
 
 		const cancel = () => {
@@ -63,7 +74,9 @@ export default class RightClick {
 			if (!pending) return;
 			const { x, y, target } = pending;
 			cancel();
-			callback({ clientX: x, clientY: y, target, longPress });
+			callback({
+				clientX: x, clientY: y, target, longPress, 
+			});
 		};
 
 		const onDown = (e: PointerEvent) => {
@@ -72,9 +85,13 @@ export default class RightClick {
 			cancel();
 			if (e.pointerType === 'mouse') {
 				if (e.button !== 2) return;
-				pending = { id: e.pointerId, x: e.clientX, y: e.clientY, target: e.target };
+				pending = {
+					id: e.pointerId, x: e.clientX, y: e.clientY, target: e.target, 
+				};
 			} else if (e.isPrimary) {
-				pending = { id: e.pointerId, x: e.clientX, y: e.clientY, target: e.target };
+				pending = {
+					id: e.pointerId, x: e.clientX, y: e.clientY, target: e.target, 
+				};
 				timer = window.setTimeout(() => {
 					timer = 0;
 					RightClick.suppressClick = true;
@@ -85,7 +102,9 @@ export default class RightClick {
 
 		const onMove = (e: PointerEvent) => {
 			if (!pending || e.pointerId !== pending.id) return;
-			if (Math.hypot(e.clientX - pending.x, e.clientY - pending.y) >= RightClick.MOVE_PX) cancel();
+			const dist = Math.hypot(e.clientX - pending.x, e.clientY - pending.y);
+			if (dist >= RightClick.MOVE_PX) 
+				cancel();
 		};
 
 		const onUp = (e: PointerEvent) => {
@@ -111,7 +130,10 @@ export default class RightClick {
 	}
 
 	/** React hook variant of {@link on}: see {@link Listener.use}. */
-	public static use(ref: RefObject<HTMLElement | null>, callback: RightClickCallback): void {
+	public static use(
+		ref: RefObject<HTMLElement | null>, 
+		callback: RightClickCallback,
+	): void {
 		const cb = useRef(callback);
 		cb.current = callback;
 		useEffect(() => {

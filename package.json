@@ -1,7 +1,7 @@
 {
   "name": "osu-idle",
   "private": true,
-  "version": "0.13.0.0",
+  "version": "0.14.0.0",
   "type": "module",
   "description": "osu! idle - a replica of the osu! startup experience (React client + Hono backend)",
   "workspaces": [
@@ -40,6 +40,8 @@
     "migrate:beatmaps:prod": "npm -w @osu-idle/server run migrate:beatmaps:prod",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:css": "prettier --check \"**/*.css\"",
+    "lint:css:fix": "prettier --write \"**/*.css\"",
     "i18n:extract": "npm -w @osu-idle/shared run extract && npm -w @osu-idle/server run extract && npm -w @osu-idle/client run extract && npm -w @osu-idle/web run extract",
     "i18n:compile": "npm -w @osu-idle/shared run compile",
     "i18n:audit": "node tools/lingui/audit.mjs",
@@ -49,6 +51,7 @@
     "test": "npm -w @osu-idle/tests run test",
     "test:watch": "npm -w @osu-idle/tests run test:watch",
     "testplay": "npm -w @osu-idle/tests run testplay",
+    "testxp": "npm -w @osu-idle/tests run testxp",
     "benchmark": "npm -w @osu-idle/tests run benchmark"
   },
   "devDependencies": {
@@ -57,6 +60,8 @@
     "concurrently": "^9.1.2",
     "drizzle-orm": "^0.38.3",
     "eslint": "^10.4.1",
+    "eslint-plugin-import-newlines": "^2.0.0",
+    "prettier": "^3.8.4",
     "typescript-eslint": "^8.60.0"
   }
 }

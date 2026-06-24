@@ -21,7 +21,9 @@ export const getCharacter = async (id: number): Promise<CharacterResponse> => {
 
 const c2 = MemCache.get<CharacterStatsResponse>('API.getCharacterStats');
 export const flushCharacterStats = (id: number) => c2.delete(id);
-export const getCharacterStats = async (id: number): Promise<CharacterStatsResponse> => {
+export const getCharacterStats = async (
+	id: number,
+): Promise<CharacterStatsResponse> => {
 	const current = id === Entities.character.get().id;
 	return c2.process(id, async () => {
 		const res = await endpoint[':id']['stats'].$get({ param: { id: String(id) } });

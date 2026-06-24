@@ -1,11 +1,39 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import {
+	app,
+	BrowserWindow,
+	ipcMain,
+	shell,
+} from 'electron';
 import path from 'node:path';
-import { DESKTOP_SCHEME, IS_DEV, RENDERER_URL, iconPath } from './config';
-import { registerAppProtocol, registerAppSchemePrivileges } from './protocol';
-import { getToken, loadToken, logout, startLogin } from './auth';
+import {
+	DESKTOP_SCHEME,
+	IS_DEV,
+	RENDERER_URL,
+	iconPath,
+} from './config';
+import {
+	registerAppProtocol,
+	registerAppSchemePrivileges,
+} from './protocol';
+import {
+	getToken,
+	loadToken,
+	logout,
+	startLogin,
+} from './auth';
 import { handleDeepLink } from './deeplink';
-import { checkForUpdate, downloadUpdate, initUpdater, installUpdate } from './update';
-import { destroyPresence, initPresence, setPresence } from './presence';
+import {
+	checkForUpdate,
+	downloadUpdate,
+	initUpdater,
+	installUpdate,
+} from './update';
+import {
+	destroyPresence,
+	initPresence,
+	setPresence,
+} from './presence';
+// eslint-disable-next-line @stylistic/max-len
 import type { DesktopPresence } from '@osu-idle/shared/desktop' with { 'resolution-mode': 'import' };
 
 // Privileges must be declared before the app is ready.
@@ -51,8 +79,12 @@ function createWindow(): void {
 	mainWindow.on('closed', () => { mainWindow = null; });
 	// mirror native fullscreen changes (F11 / OS) back to the renderer so the
 	// in-game setting stays truthful.
-	mainWindow.on('enter-full-screen', () => mainWindow?.webContents.send('osu-idle:fullscreen', true));
-	mainWindow.on('leave-full-screen', () => mainWindow?.webContents.send('osu-idle:fullscreen', false));
+	mainWindow.on('enter-full-screen', 
+		() => mainWindow?.webContents.send('osu-idle:fullscreen', true),
+	);
+	mainWindow.on('leave-full-screen', 
+		() => mainWindow?.webContents.send('osu-idle:fullscreen', false),
+	);
 }
 
 function focusWindow(): void {
@@ -103,7 +135,9 @@ if (!app.requestSingleInstanceLock()) {
 		// Bridge IPC. `bootstrap` is synchronous so the preload can seed the token
 		// before the renderer's first API call (no signed-out flash on launch).
 		ipcMain.on('osu-idle:bootstrap', event => {
-			event.returnValue = { token: getToken(), version: app.getVersion() };
+			event.returnValue = {
+				token: getToken(), version: app.getVersion(), 
+			};
 		});
 		ipcMain.handle('osu-idle:login', () => startLogin());
 		ipcMain.handle('osu-idle:logout', () => { logout(); });
@@ -119,7 +153,9 @@ if (!app.requestSingleInstanceLock()) {
 		// Discord Rich Presence. The renderer pushes scene/map changes; the client
 		// is self-healing, so this is fire-and-forget too.
 		initPresence();
-		ipcMain.on('osu-idle:presence', (_event, presence: DesktopPresence | null) => setPresence(presence));
+		ipcMain.on('osu-idle:presence', 
+			(_event, presence: DesktopPresence | null) => setPresence(presence),
+		);
 
 		createWindow();
 

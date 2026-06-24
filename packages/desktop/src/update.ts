@@ -2,6 +2,7 @@ import { app } from 'electron';
 // electron-updater is CommonJS and exposes `autoUpdater` as a *named* export (no
 // default), so import it by name - a default import resolves to `undefined`.
 import { autoUpdater } from 'electron-updater';
+// eslint-disable-next-line @stylistic/max-len
 import type { DesktopUpdateStatus } from '@osu-idle/shared/desktop' with { 'resolution-mode': 'import' };
 import { broadcast } from './frames';
 
@@ -41,10 +42,16 @@ export function initUpdater(): void {
 	};
 
 	autoUpdater.on('checking-for-update', () => emit({ state: 'checking' }));
-	autoUpdater.on('update-available', info => emit({ state: 'available', version: info.version }));
+	autoUpdater.on('update-available', info => emit({
+		state: 'available', version: info.version, 
+	}));
 	autoUpdater.on('update-not-available', () => emit({ state: 'none' }));
-	autoUpdater.on('download-progress', p => emit({ state: 'downloading', percent: Math.round(p.percent) }));
-	autoUpdater.on('error', err => emit({ state: 'error', message: err?.message ?? String(err) }));
+	autoUpdater.on('download-progress', p => emit({
+		state: 'downloading', percent: Math.round(p.percent), 
+	}));
+	autoUpdater.on('error', err => emit({
+		state: 'error', message: err?.message ?? String(err), 
+	}));
 }
 
 /** The updater only works in a packaged build - it reads app-update.yml and
@@ -58,7 +65,9 @@ export async function checkForUpdate(): Promise<DesktopUpdateStatus> {
 	try {
 		await autoUpdater.checkForUpdates();
 	} catch (e) {
-		emit({ state: 'error', message: e instanceof Error ? e.message : String(e) });
+		emit({
+			state: 'error', message: e instanceof Error ? e.message : String(e), 
+		});
 	}
 	return status;
 }
@@ -68,7 +77,9 @@ export async function downloadUpdate(): Promise<void> {
 	try {
 		await autoUpdater.downloadUpdate();
 	} catch (e) {
-		emit({ state: 'error', message: e instanceof Error ? e.message : String(e) });
+		emit({
+			state: 'error', message: e instanceof Error ? e.message : String(e), 
+		});
 	}
 }
 

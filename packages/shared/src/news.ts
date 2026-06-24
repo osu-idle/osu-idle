@@ -8,11 +8,31 @@ import { z } from 'zod';
  * web and the in-game announcement render.
  */
 export const NEWS_TAGS = {
-	release:    { label: 'release',    hue: 333, image: 'release.png' },
-	update:     { label: 'update',     hue: 205, image: 'update.png' },
-	community:  { label: 'community',  hue: 150, image: null },
-	event:      { label: 'event',      hue: 35,  image: 'event.png' },
-	'dev-blog': { label: 'dev blog',   hue: 265, image: 'dev.jpg' },
+	release: {
+		label: 'release',   
+		hue: 333, 
+		image: 'release.png', 
+	},
+	update: {
+		label: 'update',   
+		hue: 205, 
+		image: 'update.png', 
+	},
+	community: {
+		label: 'community',
+		hue: 150,
+		image: null, 
+	},
+	event: {
+		label: 'event',     
+		hue: 35,  
+		image: 'event.png', 
+	},
+	'dev-blog': {
+		label: 'dev blog',  
+		hue: 265,
+		image: 'dev.jpg', 
+	},
 } as const;
 export type NewsTag = keyof typeof NEWS_TAGS;
 export const NEWS_TAG_NAMES = Object.keys(NEWS_TAGS) as [NewsTag, ...NewsTag[]];
@@ -42,7 +62,9 @@ export type NewsDTO = z.infer<typeof newsDTO>;
 
 /** URL-safe slug: lowercase letters, digits and single hyphens. */
 const slug = z.string().trim().toLowerCase()
-	.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug may only contain lowercase letters, numbers and hyphens')
+	.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 
+		'Slug may only contain lowercase letters, numbers and hyphens',
+	)
 	.min(1).max(120);
 
 /** Create payload (admin only). `published` defaults to a draft. */

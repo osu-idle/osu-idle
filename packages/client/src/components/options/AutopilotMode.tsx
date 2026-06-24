@@ -1,7 +1,10 @@
 import { Trans } from '@lingui/react/macro';
 import { SETTINGS } from '../../db/settings';
 import Dropdown from '../dropdown/Dropdown';
-import { autopilotModeLabels, AutopilotModes } from '../../gameplay/autopilot';
+import {
+	autopilotModeLabels,
+	AutopilotModes,
+} from '../../gameplay/autopilot';
 
 export default function AutopilotMode() {
 	const labels = autopilotModeLabels();

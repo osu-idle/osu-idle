@@ -1,8 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Synced from '@osu-idle/shared/helpers/synced';
-import { type Locale, detectBrowserLocale } from '@osu-idle/shared/i18n/locales';
-import { AUTOPILOT_MODE, AutopilotMode } from '../gameplay/autopilot';
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import {
+	type Locale,
+	detectBrowserLocale,
+} from '@osu-idle/shared/i18n/locales';
+import {
+	AUTOPILOT_MODE,
+	AutopilotMode,
+} from '../gameplay/autopilot';
+import {
+	mapped,
+	ValueIn,
+} from '@osu-idle/shared/helpers/mapped';
 
 export const SCORE_TAB = mapped(['LOCAL', 'GLOBAL', 'COUNTRY']);
 export type ScoreTab = ValueIn<typeof SCORE_TAB>;
@@ -34,7 +43,9 @@ export class Setting<T, K extends string = string> extends Synced<T> {
 	}
 
 	private load() {
-		this.set(JSON.parse(localStorage.getItem(this.key) ?? JSON.stringify(this.defaultValue)));
+		this.set(JSON.parse(
+			localStorage.getItem(this.key)?? JSON.stringify(this.defaultValue),
+		));
 	}
 
 	private save(value: T) {
@@ -46,7 +57,8 @@ export class Setting<T, K extends string = string> extends Synced<T> {
 export type DefaultSettings = readonly Setting<any, string>[];
 
 const option = <T>() =>
-	<K extends string>(key: K, defaultValue: T) => new Setting<T, K>(key, defaultValue);
+	<K extends string>(key: K, defaultValue: T) =>
+		new Setting<T, K>(key, defaultValue);
 
 const defaults = [
 	/**

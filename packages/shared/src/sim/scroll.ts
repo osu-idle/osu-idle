@@ -21,7 +21,11 @@
  * note are positioned the same way, so SV stretches/compresses them naturally.
  */
 
-import type { Beatmap, EffectPoint, TimingPoint } from 'osu-classes';
+import type {
+	Beatmap,
+	EffectPoint,
+	TimingPoint,
+} from 'osu-classes';
 
 interface Segment {
 	time: number
@@ -55,7 +59,9 @@ export class ScrollModel {
 		// keep raw beatmap time everywhere else, so divide it back out.
 		this.baseBpm = beatmap.bpm / beatmap.difficulty.clockRate;
 		this.segments = this.buildSegments(reds, greens);
-		this.speedChanges = this.segments.map((s) => ({ time: s.time, speed: s.speed }));
+		this.speedChanges = this.segments.map((s) => ({
+			time: s.time, speed: s.speed, 
+		}));
 	}
 
 	private buildSegments(reds: TimingPoint[], greens: EffectPoint[]): Segment[] {
@@ -87,7 +93,9 @@ export class ScrollModel {
 			const speed = (bpm / this.baseBpm) * sv;
 
 			if (i > 0) cumulative += prevSpeed * (t - prevTime);
-			segments.push({ time: t, cumulative, speed });
+			segments.push({
+				time: t, cumulative, speed, 
+			});
 			prevTime = t;
 			prevSpeed = speed;
 		}

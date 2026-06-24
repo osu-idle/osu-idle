@@ -33,7 +33,10 @@ export function matchesSearch(
 	for (const term of q.split(/\s+/)) {
 		const filter = parseFilter(term);
 		if (filter) {
-			if (!applyFilter(filter, { text, stars, keys, artist, title, creator, length })) return false;
+			if (!applyFilter(filter, {
+				text, stars, keys, artist, title, creator, length, 
+			}))
+				return false;
 		} else if (!text.includes(term)) {
 			return false;
 		}
@@ -52,7 +55,9 @@ function parseFilter(term: string): Filter | null {
 	for (const op of ['>=', '<=', '=', ':', '>', '<']) {
 		const idx = term.indexOf(op);
 		if (idx > 0 && idx + op.length < term.length) {
-			return { key: term.slice(0, idx), op, value: term.slice(idx + op.length) };
+			return {
+				key: term.slice(0, idx), op, value: term.slice(idx + op.length), 
+			};
 		}
 	}
 	return null;
@@ -93,7 +98,12 @@ function applyFilter(f: Filter, ctx: Ctx): boolean {
 	}
 }
 
-function numCompare(actual: number, op: string, value: number, stars: boolean): boolean {
+function numCompare(
+	actual: number, 
+	op: string, 
+	value: number, 
+	stars: boolean,
+): boolean {
 	if (Number.isNaN(value)) return true;
 	switch (op) {
 		case '>': return actual > value;

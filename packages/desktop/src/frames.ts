@@ -1,4 +1,7 @@
-import { BrowserWindow, type WebFrameMain } from 'electron';
+import {
+	BrowserWindow,
+	type WebFrameMain,
+} from 'electron';
 
 function* subtree(frame: WebFrameMain | null): Generator<WebFrameMain> {
 	if (!frame) return;

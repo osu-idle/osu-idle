@@ -1,56 +1,87 @@
+import Synced from '@osu-idle/shared/helpers/synced';
 import './Skin.css';
-import { Grade, JUDGEMENT, Judgement } from '@osu-idle/shared/judgement';
+import {
+	GRADE,
+	Grade,
+	Judgement,
+	JUDGEMENT,
+} from '@osu-idle/shared/judgement';
+import { HexColor } from '@osu-idle/shared/types/color';
+import { merge } from "ts-deepmerge";
+import { SkinDAO } from '../../db/schema/skin';
 
-export default class Skin {
-
-	/** vertical HP bar next to the playfield (see HpBar) */
-	public static readonly hpBar = {
+export const defaultSkin = {
+	hitObjects: [
+		{ color: '#e8e8f0' },
+		{ color: '#63b3ff' },
+		{ color: '#63b3ff' },
+		{ color: '#e8e8f0' },
+	],
+	judgements: {
+		[JUDGEMENT.MARVELOUS]: '#ffe88a',
+		[JUDGEMENT.PERFECT]: '#ffd24a',
+		[JUDGEMENT.GREAT]: '#6fe07a',
+		[JUDGEMENT.GOOD]: '#4aa6ff',
+		[JUDGEMENT.BAD]: '#b06bd6',
+		[JUDGEMENT.MISS]: '#ff5a72',
+	} satisfies {[key in Judgement]: HexColor},
+	hpBar: {
 		width: 16,
 		height: 340,
-		/** gap from the playfield's right edge, px */
 		gap: 5,
-		/** distance of the bar's bottom from the screen bottom, px */
 		fromBottom: 0,
 		radius: 4,
 		background: 'rgba(0, 0, 0, 0.45)',
-		/** fill colour when healthy, and at/below lowThreshold */
 		fill: '#ffffff',
 		fillLow: '#ff5a72',
 		lowThreshold: 0.3,
-		/** smoothing of the fill height/colour, ms */
 		transitionMs: 200,
-	};
+	},
+	grade: {
+		[GRADE.X]: `/skins/default/grade-X.png`,
+		[GRADE.SS]: `/skins/default/grade-SS.png`,
+		[GRADE.S]: `/skins/default/grade-S.png`,
+		[GRADE.A]: `/skins/default/grade-A.png`,
+		[GRADE.B]: `/skins/default/grade-B.png`,
+		[GRADE.C]: `/skins/default/grade-C.png`,
+		[GRADE.D]: `/skins/default/grade-D.png`,
+		[GRADE.F]: `/skins/default/grade-F.png`,
+	} satisfies {[key in Grade]: string},
+};
 
-	public static hitObjectColor(column: number): string {
-		switch(column) {
-			case 0:
-			case 3:
-				return '#e8e8f0';
-			case 1:
-			case 2:
-				return '#63b3ff';
+export type SkinDefinition = typeof defaultSkin;
+
+export default class Skin {
+
+	public readonly data: SkinDefinition;
+
+	constructor(protected definition?: SkinDefinition) {
+		this.data = merge(defaultSkin, definition ?? {});
+
+		// deep merge concats the hitobject array so we overwrite the specified cols
+		this.data.hitObjects = defaultSkin.hitObjects;
+		if (definition?.hitObjects) {
+			for (let i = 0; i < definition.hitObjects.length; i++) {
+				this.data.hitObjects[i] = definition.hitObjects[i];
+			}
 		}
-		return '#e8e8f0';
 	}
 
-	public static judgeColor(judge: Judgement): string {
-		switch (judge) {
-			case JUDGEMENT.MARVELOUS: return '#ffe88a';
-			case JUDGEMENT.PERFECT: return '#ffd24a';
-			case JUDGEMENT.GREAT: return '#6fe07a';
-			case JUDGEMENT.GOOD: return '#4aa6ff';
-			case JUDGEMENT.BAD: return '#b06bd6';
-			case JUDGEMENT.MISS: return '#ff5a72';
-		};
-	}
-
-	public static grade(grade: Grade, className: string = ''): JSX.Element {
+	public grade(grade: Grade, className: string = ''): JSX.Element {
 		return <img
 			className={`${className} skin__grade`}
-			src={`/skins/default/grade-${grade}.png`}
+			src={this.data.grade[grade]}
 			alt={`Grade ${grade}`}
 			draggable={false}
 		/>;
 	}
 
 }
+
+export const currentSkin = new Synced(new Skin());
+
+currentSkin.sync(current => console.log(current));
+
+SkinDAO.getEnabled().then(current => {
+	if (current) currentSkin.set(new Skin(JSON.parse(current.definition)));
+});

@@ -1,7 +1,17 @@
-import { mysqlTable, primaryKey } from 'drizzle-orm/mysql-core';
-import { bestTableDefinition, type ScoreRow } from './score';
+import {
+	mysqlTable,
+	primaryKey,
+} from 'drizzle-orm/mysql-core';
+import {
+	bestTableDefinition,
+	type ScoreRow,
+} from './score';
 import { db } from '../client';
-import { eq, desc, count } from 'drizzle-orm';
+import {
+	eq,
+	desc,
+	count,
+} from 'drizzle-orm';
 import { beatmaps } from './beatmap';
 import { beatmapset } from './beatmapset';
 
@@ -18,9 +28,7 @@ export const setNewFirstPlace = async (score: ScoreRow) => db
 	.onDuplicateKeyUpdate({ set: score });
 
 export const getNbFirstPlaces = async (characterId: number) => (await db
-	.select({
-		count: count(),
-	})
+	.select({ count: count() })
 	.from(firstPlace)
 	.where(eq(firstPlace.characterId, characterId))
 	.limit(1))[0]?.count ?? 0

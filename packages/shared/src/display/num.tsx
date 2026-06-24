@@ -1,11 +1,23 @@
 import type { JSX } from 'react';
 import { xpForLevel } from '../sim/skills/xp.js';
 
-const ensureNum = (n?: number | string): number => typeof n === 'number' ? n : (parseFloat(n ?? '0'));
+const ensureNum = (n?: number | string): number =>
+	typeof n === 'number' ? n : parseFloat(n ?? '0');
 
-const num = (n?: number | string, decimals = 0) => (Math.floor(ensureNum(n) * Math.pow(10, decimals)) / Math.pow(10, decimals)).toLocaleString('en-US');
+const num = (
+	n?: number | string,
+	decimals = 0,
+) => {
+	const v = Math.floor(ensureNum(n) * Math.pow(10, decimals))
+		/ Math.pow(10, decimals);
+	return v.toLocaleString('en-US');
+};
 
-export const bpm = (n?: number | string) => num(ensureNum(n), ensureNum(n) === Math.floor(ensureNum(n)) ? 3 : 0);
+export const bpm = (n?: number | string) =>
+	num(
+		ensureNum(n),
+		ensureNum(n) === Math.floor(ensureNum(n)) ? 3 : 0,
+	);
 
 export const level = (level: number, xp: number): string | JSX.Element => {
 	const l = String(level);
@@ -15,9 +27,9 @@ export const level = (level: number, xp: number): string | JSX.Element => {
 
 	return <span className={`level_container level_${l}`}>{l}
 		{p > 0 && (
-			<span className='level_part' style={{
-				opacity: 0.5 + 0.5 * (p / 100)
-			}}>.{String(p).padStart(2, '0')}</span>
+			<span className='level_part' style={{ opacity: 0.5 + 0.5 * (p / 100) }}>
+				.{String(p).padStart(2, '0')}
+			</span>
 		)}
 	</span>;
 };

@@ -4,7 +4,8 @@
 	// extension is disabled in settings.json (`jest.enable: false`).
 	"recommendations": [
 		"vitest.explorer",
-		"dbaeumer.vscode-eslint"
+		"dbaeumer.vscode-eslint",
+		"esbenp.prettier-vscode"
 	],
 	"unwantedRecommendations": [
 		"orta.vscode-jest"

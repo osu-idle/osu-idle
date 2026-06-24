@@ -6,7 +6,9 @@
 	pointer-events: none; /* never steal clicks while hidden */
 	opacity: 0;
 	transform: translateY(14px);
-	transition: opacity 0.22s ease, transform 0.22s ease;
+	transition:
+		opacity 0.22s ease,
+		transform 0.22s ease;
 	overflow: visible;
 	filter: drop-shadow(0rem 0rem 1rem black);
 }
@@ -44,7 +46,6 @@
 	right: 80px;
 	bottom: 150px;
 }
-
 
 .vol__pos3 {
 	right: 160px;
@@ -85,7 +86,7 @@
 	justify-content: center;
 	gap: 2px;
 	pointer-events: none;
-	font-family: 'Exo 2', sans-serif;
+	font-family: "Exo 2", sans-serif;
 	color: #fff;
 }
 

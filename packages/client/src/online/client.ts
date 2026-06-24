@@ -13,10 +13,14 @@ export const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
  */
 export function withAuth(init?: RequestInit): RequestInit {
 	const token = desktop()?.getToken();
-	if (!token) return { ...init, credentials: 'include' };
+	if (!token) return {
+		...init, credentials: 'include', 
+	};
 	const headers = new Headers(init?.headers);
 	headers.set('Authorization', `Bearer ${token}`);
-	return { ...init, headers, credentials: 'omit' };
+	return {
+		...init, headers, credentials: 'omit', 
+	};
 }
 
 /**

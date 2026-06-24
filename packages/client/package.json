@@ -1,7 +1,7 @@
 {
   "name": "@osu-idle/client",
   "private": true,
-  "version": "0.13.0.0",
+  "version": "0.14.0.0",
   "type": "module",
   "description": "A replica of the osu! startup experience built with React + TypeScript",
   "scripts": {
@@ -24,11 +24,13 @@
     "prism-themes": "^1.9.0",
     "prismjs": "^1.30.0",
     "react": "^18.3.1",
+    "react-colorful": "^5.7.0",
     "react-dom": "^18.3.1",
     "react-simple-code-editor": "^0.14.1",
     "rosu-pp-js": "^4.0.1",
     "rosu-pp-js-web": "https://github.com/MaxOhn/rosu-pp-js/releases/download/v4.0.1/rosu_pp_js_web.tar.gz",
     "sql.js": "^1.14.1",
+    "ts-deepmerge": "^8.0.0",
     "typescript-eslint": "^8.60.0"
   },
   "devDependencies": {

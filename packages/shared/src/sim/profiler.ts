@@ -39,7 +39,9 @@ export const skillProfiler = {
 	/** Per-skill totals, slowest first. */
 	snapshot(): SkillTiming[] {
 		return [...totalMs.entries()]
-			.map(([skill, ms]) => ({ skill, totalMs: ms, calls: calls.get(skill) ?? 0 }))
+			.map(([skill, ms]) => ({
+				skill, totalMs: ms, calls: calls.get(skill) ?? 0, 
+			}))
 			.sort((a, b) => b.totalMs - a.totalMs);
 	},
 };

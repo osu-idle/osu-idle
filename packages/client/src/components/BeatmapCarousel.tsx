@@ -1,5 +1,14 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Trans, Plural } from '@lingui/react/macro';
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from 'react';
+import {
+	Trans,
+	Plural,
+} from '@lingui/react/macro';
 import './BeatmapCarousel.css';
 import BeatmapCard from './BeatmapCard';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
@@ -21,12 +30,20 @@ export type CarouselItem = {
 	set: LightBeatmapSet,
 };
 
+export type CarouselHeaderRow = { 
+	type: 'header', 
+	key: string, 
+	label: string, 
+	count: number, 
+	collapsed: boolean ,
+};
+
 /** A single virtualised row: either a difficulty card or a collapsible group
  *  header. Headers are the same height as cards so the uniform-STRIDE
  *  virtualisation (and the arc) hold regardless of grouping. */
 export type CarouselRow =
 	| { type: 'card', item: CarouselItem }
-	| { type: 'header', key: string, label: string, count: number, collapsed: boolean };
+	| CarouselHeaderRow;
 
 interface Props {
 	rows: CarouselRow[]
@@ -47,13 +64,23 @@ interface Props {
 	totalCount: number
 }
 
-/** A collapsible group header row. Shares `.bm-card` so it rides the same arc. */
+/**
+ * A collapsible group header row.
+ * Shares `.bm-card` so it rides the same arc.
+ */
 function GroupHeader({ label, count, collapsed, onToggle }: {
 	label: string, count: number, collapsed: boolean, onToggle: () => void,
 }) {
 	return (
-		<div className={`bm-card bm-group ${collapsed ? 'is-collapsed' : 'is-selected'}`} onClick={onToggle}>
-			<span className="bm-group__label">{label} (<Plural value={count} one="# map" other="# maps" />)</span>
+		<div 
+			className={`bm-card bm-group ${collapsed ? 'is-collapsed' : 'is-selected'}`} 
+			onClick={onToggle}
+		>
+			<span 
+				className="bm-group__label"
+			>
+				{label} (<Plural value={count} one="# map" other="# maps" />)
+			</span>
 		</div>
 	);
 }
@@ -65,7 +92,9 @@ function GroupHeader({ label, count, collapsed, onToggle }: {
  */
 const CIRCLE_RADIUS = 3;
 
-/** Extra cards mounted above/below the viewport so a fast flick never blanks. */
+/**
+ * Extra cards mounted above/below the viewport so a fast flick never blanks.
+*/
 const OVERSCAN = 5;
 /** Card box height + bottom margin - must match the CSS (.bm-card). */
 const CARD_HEIGHT = 100;
@@ -94,9 +123,11 @@ function offsetX(dist: number, halfHeight: number): number {
  *
  * **Virtualisation.** The library can be hundreds of maps, so only the cards
  * near the viewport are mounted; the rest are stand-in spacer divs of the exact
- * height (cards are a fixed `STRIDE` apart). The smooth-scroll animation and the
+ * height (cards are a fixed `STRIDE` apart).
+ * 
+ * The smooth-scroll animation and the
  * arc are pure DOM - they never call setState. The mounted window is updated
- * *only* from the scroll event, which the browser also fires for the animation's
+ * only from the scroll event, which the browser also fires for the animation's
  * programmatic scrolls, so a React re-render can never feed back into the
  * animation loop (that was the source of earlier render storms).
  */
@@ -120,14 +151,18 @@ export default function BeatmapCarousel({
 	const lastTsRef = useRef(0);
 
 	// the slice of `rows` currently mounted; everything else is a spacer
-	const [range, setRange] = useState({ start: 0, end: 0 });
+	const [range, setRange] = useState({
+		start: 0, end: 0, 
+	});
 	const rangeRef = useRef(range);
 	// live rows, for the centering glide: music.beatmap.use() captures its
 	// callback once and so can't close over the latest `rows` prop.
 	const rowsRef = useRef(rows);
 	rowsRef.current = rows;
 
-	/** The scroller's top padding (the carousel is padded so the ends can centre). */
+	/**
+	 * The scroller's top padding (the carousel is padded so the ends can centre).
+	 */
 	const padTop = useCallback((): number => {
 		const scroller = scrollRef.current;
 		return scroller ? parseFloat(getComputedStyle(scroller).paddingTop) || 0 : 0;
@@ -142,12 +177,18 @@ export default function BeatmapCarousel({
 		const start = Math.max(0, first - OVERSCAN);
 		const end = Math.min(rows.length, Math.max(start, first + visible + OVERSCAN));
 		if (start !== rangeRef.current.start || end !== rangeRef.current.end) {
-			rangeRef.current = { start, end };
-			setRange({ start, end });
+			rangeRef.current = {
+				start, end, 
+			};
+			setRange({
+				start, end, 
+			});
 		}
 	}, [rows.length, padTop]);
 
-	/** Re-apply the circular-arc offset to every mounted card. Pure DOM, no state. */
+	/**
+	 * Re-apply the circular-arc offset to every mounted card. Pure DOM, no state.
+	 */
 	const updateCurve = useCallback(() => {
 		const scroller = scrollRef.current;
 		if (!scroller) return;
@@ -205,7 +246,9 @@ export default function BeatmapCarousel({
 		[updateCurve],
 	);
 
-	/** Point the animator at a clamped scroll target (wheel, scrollbar, centering). */
+	/**
+	 * Point the animator at a clamped scroll target (wheel, scrollbar, centering).
+	 */
 	const animateTo = useCallback(
 		(top: number) => {
 			const scroller = scrollRef.current;
@@ -250,7 +293,8 @@ export default function BeatmapCarousel({
 		if (!scroller) return;
 		const current = music.beatmap.get();
 		const i = current
-			? rowsRef.current.findIndex(r => r.type === 'card' && r.item.beatmap.is(current))
+			? rowsRef.current
+				.findIndex(r => r.type === 'card' && r.item.beatmap.is(current))
 			: -1;
 		if (i < 0) return;
 		lastCenteredRef.current = current!.metadata.id;
@@ -326,10 +370,14 @@ export default function BeatmapCarousel({
 		const scroller = scrollRef.current;
 		if (!scroller) return;
 		return RightClick.on(scroller, (e) => {
-			const card = (e.target as HTMLElement | null)?.closest?.('.bm-card[data-id]') as HTMLElement | null;
+			const card = (e.target as HTMLElement | null)
+				?.closest?.('.bm-card[data-id]') as HTMLElement | null;
+
 			if (card) {
 				const id = Number(card.dataset.id);
-				const row = rowsRef.current.find((r) => r.type === 'card' && r.item.beatmap.is(id));
+				const row = rowsRef.current
+					.find((r) => r.type === 'card' && r.item.beatmap.is(id));
+
 				if (row?.type === 'card') onCardRightClick(row.item);
 				return;
 			}
@@ -351,7 +399,7 @@ export default function BeatmapCarousel({
 	}, [syncWindow, updateCurve]);
 
 	// Re-bow the newly-mounted cards the instant the window changes (before paint),
-	// so cards scrolling into view never flash un-curved. Arc only - never setState.
+	// so cards scrolling into view never flash un-curved. Arc only, never setState.
 	useLayoutEffect(() => { updateCurve(); }, [range, updateCurve]);
 
 	// On mount / when the library changes / on resize: fit the window, draw the
@@ -364,7 +412,9 @@ export default function BeatmapCarousel({
 		// center only when the selection itself is new (initial load / re-entry),
 		// never on a plain group collapse/expand that just reshapes `rows`.
 		const current = music.beatmap.get();
-		if (current && lastCenteredRef.current !== current.metadata.id) centerOnActive();
+		if (current && lastCenteredRef.current !== current.metadata.id)
+			centerOnActive();
+
 		const scroller = scrollRef.current;
 		if (!scroller) return;
 		const ro = new ResizeObserver(() => { syncWindow(); updateCurve(); });
@@ -392,7 +442,10 @@ export default function BeatmapCarousel({
 	return (
 		<div className="carousel" ref={scrollRef} onScroll={onScroll}>
 			<div className="carousel__list">
-				{start > 0 && <div className="carousel__spacer" style={{ height: start * STRIDE }} />}
+				{start > 0 && <div 
+					className="carousel__spacer" 
+					style={{ height: start * STRIDE }} 
+				/>}
 
 				{rows.slice(start, end).map(row =>
 					row.type === 'header'
@@ -411,11 +464,14 @@ export default function BeatmapCarousel({
 							onCardDoubleClick={onCardDoubleClick}
 							hasDownloaded={hasDownloaded}
 							downloads={downloads}
-						/>
+						/>,
 				)}
 
 				{end < rows.length && (
-					<div className="carousel__spacer" style={{ height: (rows.length - end) * STRIDE }} />
+					<div 
+						className="carousel__spacer" 
+						style={{ height: (rows.length - end) * STRIDE }}
+					/>
 				)}
 
 				{loading && (
@@ -425,7 +481,15 @@ export default function BeatmapCarousel({
 					<div className="carousel__empty"><Trans>no maps match your search</Trans></div>
 				)}
 				{!loading && totalCount > 0 && (
-					<div className="carousel__end">- <Plural value={totalCount} one="that's all # difficulty" other="that's all # difficulties" /> -</div>
+					<div 
+						className="carousel__end"
+					>
+						- <Plural
+							value={totalCount}
+							one="that's all # difficulty"
+							other="that's all # difficulties"
+						/> -
+					</div>
 				)}
 			</div>
 		</div>

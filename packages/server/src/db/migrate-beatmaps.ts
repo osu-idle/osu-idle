@@ -1,6 +1,12 @@
 import 'dotenv/config';
-import { readFileSync, readdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import {
+	readFileSync,
+	readdirSync,
+} from 'node:fs';
+import {
+	dirname,
+	join,
+} from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { INTRO_SET_ID } from '@osu-idle/shared/beatmap';
 import { pool } from './client';
@@ -18,7 +24,10 @@ const here = dirname(fileURLToPath(import.meta.url));
 const corpus = join(here, '../../../client/public/beatmaps');
 
 const main = async (): Promise<void> => {
-	const file = readdirSync(corpus).find(f => f.startsWith(`${INTRO_SET_ID}`) && f.toLowerCase().endsWith('.osz'));
+	const file = readdirSync(corpus).find(f => 
+		f.startsWith(`${INTRO_SET_ID}`) 
+		&& f.toLowerCase().endsWith('.osz'),
+	);
 	if (!file) throw new Error(`Intro .osz (set ${INTRO_SET_ID}) not found in ${corpus}`);
 
 	const { setId, difficulties } = await ingestOsz(readFileSync(join(corpus, file)));

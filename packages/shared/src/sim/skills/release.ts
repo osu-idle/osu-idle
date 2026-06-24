@@ -1,9 +1,13 @@
 import type { BotContext } from '../bot.js';
-import type { Strain, SkillStrain } from '../bots/character.js';
+import type {
+	Strain,
+	SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import Skill from './skill.js';
 import { SKILL } from '../../skills.js';
+import normalize from '../../math/normalize.js';
 
 export default class Release extends Skill {
 
@@ -26,12 +30,19 @@ export default class Release extends Skill {
 			const base2 = fnBase(Math.max(0, 1 - (level / 150)));
 			this.baseImprecision =  base * (0.10 + 0.02 * base2);
 
-			this.recoveryRate = 0.005 * fn(Math.min(1, level / 100)) + 0.005 * fn(Math.max(0, (level - 100) / 100));
-			this.fatigueRate = 0.0008 * (1 - fn(Math.min(1, level / 100)));
+			this.recoveryRate = 0.005 * fn(normalize(level, [0, 100])) 
+				+ 0.005 * fn(Math.max(0, (level - 100) / 100))
+			;
+			this.fatigueRate = 0.0008 * (1 - fn(normalize(level, [100, 200])));
 		});
 	}
 
-	analyze(note: RuntimeNote, _context: BotContext, mapStrain: Strain, colStrain: Strain): SkillStrain {
+	analyze(
+		note: RuntimeNote, 
+		_context: BotContext, 
+		mapStrain: Strain, 
+		colStrain: Strain,
+	): SkillStrain {
 		const currentStrain: SkillStrain = {
 			note,
 			strain: 0,
@@ -42,7 +53,10 @@ export default class Release extends Skill {
 
 		if (!note.hold) return currentStrain;
 
-		const previous = mapStrain.release.length > 0 ? mapStrain.release[mapStrain.release.length - 1] : undefined;
+		const previous = mapStrain.release.length > 0 ? 
+			mapStrain.release[mapStrain.release.length - 1] 
+			: undefined
+		;
 
 		colStrain.release.push(currentStrain);
 		mapStrain.release.push(currentStrain);

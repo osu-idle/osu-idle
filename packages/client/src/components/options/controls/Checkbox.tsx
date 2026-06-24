@@ -16,9 +16,9 @@ interface Props {
 }
 
 /**
- * osu!-style settings checkbox: a full-width clickable row with the label on the
- * left and a tick box on the right. Backed by a `Synced<boolean>` so the state
- * is subscribable outside the panel.
+ * osu!-style settings checkbox: a full-width clickable row
+ * with the label on the left and a tick box on the right.
+ * Backed by a `Synced<boolean>` so the state is subscribable outside the panel.
  */
 export default function Checkbox({ value, label, onChange }: Props) {
 	const [checked] = useSynced(value);
@@ -30,7 +30,11 @@ export default function Checkbox({ value, label, onChange }: Props) {
 	};
 
 	return (
-		<button type="button" className={`opt-checkbox ${checked ? 'is-on' : ''}`} onClick={toggle}>
+		<button 
+			type="button"
+			className={`opt-checkbox ${checked ? 'is-on' : ''}`} 
+			onClick={toggle}
+		>
 			<span className="opt-checkbox__box" aria-hidden>
 				<span className="opt-checkbox__tick" />
 			</span>

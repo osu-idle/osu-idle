@@ -1,79 +1,70 @@
-import useAsync from '@osu-idle/shared/hooks/useAsync';
 import './RankedMaps.css';
-import { getAllMaps, getPopularMaps } from '../../api/maps';
-import { Trans, useLingui } from '@lingui/react/macro';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
 import { dateAgo } from '@osu-idle/shared/display/ago';
 import Link from '../../components/Link';
-import { beatmapListing } from '../../router';
+import type {
+	getAllMaps,
+	getPopularMaps,
+} from '../../api/maps';
 import { bignum } from '@osu-idle/shared/display/num';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretDown, faCaretUp, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import {
+	faCaretDown,
+	faCaretUp,
+	faPlayCircle,
+} from '@fortawesome/free-solid-svg-icons';
 
-const SORT = mapped(['date', 'plays']);
-type Sort = ValueIn<typeof SORT>;
+export type MapSort = 'date' | 'plays';
+export type MapDir = 'asc' | 'desc';
 
-const DIR = mapped(['desc', 'asc']);
-type Dir = ValueIn<typeof DIR>;
+type Mapsets = Awaited<ReturnType<typeof getAllMaps>> | Awaited<ReturnType<typeof getPopularMaps>>;
 
-type Sorts = {
-	type: Sort,
-	label: string,
-	getter: (dir?: 'asc' | 'desc') => ReturnType<typeof getAllMaps> | ReturnType<typeof getPopularMaps>,
-};
-
-export default function RankedMaps({ params: { sort, dir }}: {
-	params: { sort?: Sort, dir?: Dir }
+export default function RankedMaps({ sort, dir, mapsets }: {
+	sort: MapSort,
+	dir: MapDir,
+	mapsets: Mapsets,
 }) {
 	const { t } = useLingui();
 
-	sort = sort ? sort : SORT.date;
-	dir = dir ? dir : DIR.desc;
-
-	const Sorts = {
-		[SORT.date]: {
-			type: SORT.date,
-			label: t`Ranked`,
-			getter: getAllMaps,
-		},
-		[SORT.plays]: {
-			type: SORT.plays,
-			label: t`Plays`,
-			getter: getPopularMaps,
-		},
-	} satisfies Record<Sort, Sorts>;
-
-	const currentSort = Sorts[sort];
-
-	const mapsets = useAsync(async () => await currentSort.getter(dir), [sort, dir]);
+	const label: Record<MapSort, string> = {
+		date: t`Ranked`, plays: t`Plays`, 
+	};
 
 	return (
 		<main>
 			<div className='list__beatmap_sort'>
 				<span><Trans>Sort by</Trans></span>
-				{...Object.values(Sorts).map(sorts => {
-					const current = sorts.type === sort;
-					const nextDir = current ? (dir === DIR.asc ? DIR.desc : DIR.asc) : dir;
+				{(['date', 'plays'] as const).map(type => {
+					const current = type === sort;
+					const nextDir: MapDir = current ? (dir === 'asc' ? 'desc' : 'asc') : dir;
 					return (<Link
-						className={`${current ? 'current' : ''} ${dir === DIR.asc ? 'asc' : 'desc'}`}
-						to={beatmapListing(sorts.type, nextDir)}
+						className={`${current ? 'current' : ''} ${dir === 'asc' ? 'asc' : 'desc'}`}
+						to='/maps'
+						search={{
+							sort: type, dir: nextDir, 
+						}}
 					>
-						{sorts.label}
-						<FontAwesomeIcon icon={dir === DIR.asc ? faCaretUp : faCaretDown} />
+						{label[type]}
+						<FontAwesomeIcon icon={dir === 'asc' ? faCaretUp : faCaretDown} />
 					</Link>);
 				})}
 			</div>
 			<div className="page-contents">
 				<div className='list__beatmap-container'>
-					{mapsets?.map(mapset => <div className='list__beatmap'>
-						<div className='list__beatmap_background' style={{ backgroundImage: `url('https://assets.ppy.sh/beatmaps/${mapset.id}/covers/list.jpg')`}}></div>
+					{mapsets.map(mapset => <div className='list__beatmap'>
+						<div className='list__beatmap_background' style={{ backgroundImage: `url('https://assets.ppy.sh/beatmaps/${mapset.id}/covers/list.jpg')` }}></div>
 						<div className='list__beatmap_safe'>
-							<div className='list__beatmap_foreground' style={{ backgroundImage: `url('https://assets.ppy.sh/beatmaps/${mapset.id}/covers/list.jpg')`}}>
+							<div className='list__beatmap_foreground' style={{ backgroundImage: `url('https://assets.ppy.sh/beatmaps/${mapset.id}/covers/list.jpg')` }}>
 								<div className='list__beatmap_contents'>
 									<span className='list__beatmap_title'>{mapset.title}</span>
 									<span className='list__beatmap_artist'><Trans>by {mapset.artist}</Trans></span>
 									<span className='list__beatmap_creator'><Trans>mapped by {mapset.creator}</Trans></span>
-									<span className='list__beatmap_plays'><FontAwesomeIcon icon={faPlayCircle}/> {bignum(mapset.plays)}</span>
+									<span className='list__beatmap_plays'>
+										<FontAwesomeIcon icon={faPlayCircle}/> {bignum(mapset.plays)}
+									</span>
 									<div className='list__beatmap_bottom'>
 										<span className='list__beatmap_capsule'><Trans>Ranked</Trans></span>
 										<span className='list__beatmap_ago'>{dateAgo(mapset.rankedAt)}</span>

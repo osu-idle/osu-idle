@@ -15,14 +15,15 @@ export function applyFullscreen(on: boolean): void {
 		return;
 	}
 	if (on && !document.fullscreenElement) {
-		void document.documentElement.requestFullscreen?.().catch(() => { /* denied */ });
+		void document.documentElement.requestFullscreen?.()
+			.catch(() => { /* denied */ });
 	} else if (!on && document.fullscreenElement) {
 		void document.exitFullscreen?.().catch(() => { /* ignore */ });
 	}
 }
 
 /**
- * Keep the setting truthful when fullscreen changes outside the panel (Esc / F11),
+ * Keep the setting truthful when fullscreen changes outside the panel
  * so the checkbox always reflects the real state. On desktop we also apply the
  * persisted setting on boot (Electron allows it without a gesture).
  */

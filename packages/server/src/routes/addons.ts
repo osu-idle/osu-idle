@@ -1,11 +1,26 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { HTTPException } from 'hono/http-exception';
-import { and, desc, asc, eq, like, or } from 'drizzle-orm';
+import {
+	and,
+	desc,
+	asc,
+	eq,
+	like,
+	or,
+} from 'drizzle-orm';
 import { z } from 'zod';
-import { ADDON_STATUS, addonCreateBody, addonModerateBody, addonUpdateBody } from '@osu-idle/shared/addon';
+import {
+	ADDON_STATUS,
+	addonCreateBody,
+	addonModerateBody,
+	addonUpdateBody,
+} from '@osu-idle/shared/addon';
 import { db } from '../db/client';
-import { addons, toAddonDTO } from '../db/schema/addon';
+import {
+	addons,
+	toAddonDTO,
+} from '../db/schema/addon';
 import { users } from '../db/schema/user';
 import { requireAuth } from '../auth/middleware';
 import { requireAdmin } from '../auth/admin';
@@ -54,7 +69,12 @@ export const addonsRoutes = new Hono()
 		const dir = c.req.query('dir') === 'asc' ? asc : desc;
 
 		const where = [eq(addons.status, ADDON_STATUS.published)];
-		if (q) where.push(or(like(addons.name, `%${q}%`), like(users.username, `%${q}%`), like(addons.tags, `%${q}%`))!);
+		if (q) where.push(
+			or(
+				like(addons.name, `%${q}%`), 
+				like(users.username, `%${q}%`), 
+				like(addons.tags, `%${q}%`),
+			)!);
 		if (tag) where.push(like(addons.tags, `%${tag}%`));
 
 		const rows = await db
@@ -121,7 +141,11 @@ export const addonsRoutes = new Hono()
 			? (existing.publishedAt ?? new Date())
 			: existing.publishedAt;
 
-		await db.update(addons).set({ status, feedback, publishedAt }).where(eq(addons.id, id));
+		// Snapshot the source the admin acted on, so a later re-review can diff
+		// against it (what changed since the last validation).
+		await db.update(addons).set({
+			status, feedback, publishedAt, reviewedSource: existing.source, 
+		}).where(eq(addons.id, id));
 		const [row] = await db.select().from(addons).where(eq(addons.id, id)).limit(1);
 		return c.json(await withAuthor(row!));
 	})
@@ -155,7 +179,9 @@ export const addonsRoutes = new Hono()
 		if (existing.status === ADDON_STATUS.pending || existing.status === ADDON_STATUS.published) {
 			throw new HTTPException(409, { message: 'Add-on already submitted' });
 		}
-		await db.update(addons).set({ status: ADDON_STATUS.pending, feedback: null }).where(eq(addons.id, id));
+		await db.update(addons).set({
+			status: ADDON_STATUS.pending, feedback: null, 
+		}).where(eq(addons.id, id));
 		const [row] = await db.select().from(addons).where(eq(addons.id, id)).limit(1);
 		return c.json(await withAuthor(row!));
 	})

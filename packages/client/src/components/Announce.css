@@ -2,202 +2,214 @@
    The article's tag drives the accent colour via --tag-hue (set inline). */
 
 .announce {
-  position: absolute;
-  left: 50%;
-  bottom: 1.6rem;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: stretch;
-  width: min(560px, calc(100vw - 2.4rem));
-  border-radius: 14px;
-  overflow: hidden;
-  background: rgba(18, 14, 22, 0.6);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
-  z-index: 20;
-  animation: announce-enter 0.45s cubic-bezier(0.2, 1.1, 0.35, 1) both;
+	position: absolute;
+	left: 50%;
+	bottom: 1.6rem;
+	transform: translateX(-50%);
+	display: flex;
+	align-items: stretch;
+	width: min(560px, calc(100vw - 2.4rem));
+	border-radius: 14px;
+	overflow: hidden;
+	background: rgba(18, 14, 22, 0.6);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	border: 1px solid rgba(255, 255, 255, 0.07);
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+	z-index: 20;
+	animation: announce-enter 0.45s cubic-bezier(0.2, 1.1, 0.35, 1) both;
 }
 @keyframes announce-enter {
-  0% { opacity: 0; transform: translate(-50%, 1.2rem); }
-  100% { opacity: 1; transform: translate(-50%, 0); }
+	0% {
+		opacity: 0;
+		transform: translate(-50%, 1.2rem);
+	}
+	100% {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
 }
 
 .announce__body {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  min-width: 0;
-  padding: 0.6rem 0.2rem 0.6rem 0.6rem;
-  text-align: left;
-  transition: background 0.15s ease;
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 0.85rem;
+	min-width: 0;
+	padding: 0.6rem 0.2rem 0.6rem 0.6rem;
+	text-align: left;
+	transition: background 0.15s ease;
 }
 .announce__body:hover {
-  background: rgba(255, 255, 255, 0.05);
+	background: rgba(255, 255, 255, 0.05);
 }
 
 .announce__cover {
-  flex-shrink: 0;
-  width: 84px;
-  height: 56px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, hsl(var(--tag-hue) 70% 45%), hsl(calc(var(--tag-hue) + 40) 60% 30%));
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+	flex-shrink: 0;
+	width: 84px;
+	height: 56px;
+	border-radius: 9px;
+	background: linear-gradient(
+		135deg,
+		hsl(var(--tag-hue) 70% 45%),
+		hsl(calc(var(--tag-hue) + 40) 60% 30%)
+	);
+	background-size: cover;
+	background-position: center;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
 .announce__text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.12rem;
-  min-width: 0;
-  line-height: 1.25;
+	display: flex;
+	flex-direction: column;
+	gap: 0.12rem;
+	min-width: 0;
+	line-height: 1.25;
 }
 
 .announce__meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 .announce__tag {
-  padding: 0.08rem 0.55rem;
-  border-radius: 999px;
-  background: hsl(var(--tag-hue) 55% 42%);
-  color: #fff;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+	padding: 0.08rem 0.55rem;
+	border-radius: 999px;
+	background: hsl(var(--tag-hue) 55% 42%);
+	color: #fff;
+	font-size: 0.62rem;
+	font-weight: 700;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
 }
 .announce__date {
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--text-dim);
+	font-size: 0.7rem;
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	color: var(--text-dim);
 }
 
 .announce__heading {
-  display: flex;
-  align-items: baseline;
-  gap: 0.45rem;
-  min-width: 0;
+	display: flex;
+	align-items: baseline;
+	gap: 0.45rem;
+	min-width: 0;
 }
 .announce__title {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	font-weight: 700;
+	font-size: 0.95rem;
+	color: var(--text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 .announce__author {
-  flex-shrink: 0;
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--text-dim);
+	flex-shrink: 0;
+	font-size: 0.72rem;
+	font-weight: 500;
+	color: var(--text-dim);
 }
 .announce__summary {
-  font-size: 0.78rem;
-  color: var(--text-dim);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	font-size: 0.78rem;
+	color: var(--text-dim);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 /* Content preview, collapsed by default and expanding vertically on hover.
    The 0fr → 1fr grid row animates to the content's natural (line-clamped)
    height; the toast is bottom-anchored, so the growth reads as expanding up. */
 .announce__preview {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.35s cubic-bezier(0.2, 1, 0.35, 1);
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows 0.35s cubic-bezier(0.2, 1, 0.35, 1);
 }
 .announce:hover .announce__preview {
-  grid-template-rows: 1fr;
+	grid-template-rows: 1fr;
 }
 .announce__preview > div {
-  overflow: hidden;
-  min-height: 0;
+	overflow: hidden;
+	min-height: 0;
 }
 .announce__preview-content {
-  /* display-only: the toast is one big button, so article links must not
+	/* display-only: the toast is one big button, so article links must not
      hijack the click into a real navigation */
-  pointer-events: none;
-  margin-top: 0.4rem;
-  font-size: 0.76rem;
-  line-height: 1.45;
-  color: var(--text-dim);
-  display: -webkit-box;
-  -webkit-line-clamp: 6;
-  line-clamp: 6;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+	pointer-events: none;
+	margin-top: 0.4rem;
+	font-size: 0.76rem;
+	line-height: 1.45;
+	color: var(--text-dim);
+	display: -webkit-box;
+	-webkit-line-clamp: 6;
+	line-clamp: 6;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 /* Keep the article's own markup readable at toast scale: tighten block
    spacing, scale headings down, and drop media that can't fit a preview. */
 .announce__preview-content :is(p, ul, ol, blockquote, h1, h2, h3, h4, h5, h6) {
-  margin: 0 0 0.35em;
+	margin: 0 0 0.35em;
 }
 .announce__preview-content :is(h1, h2, h3, h4, h5, h6) {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--text);
+	font-size: 0.82rem;
+	font-weight: 700;
+	color: var(--text);
 }
 .announce__preview-content :is(ul, ol) {
-  padding-left: 1.1em;
+	padding-left: 1.1em;
 }
 .announce__preview-content a {
-  color: var(--osu-pink-light);
+	color: var(--osu-pink-light);
 }
 .announce__preview-content :is(img, video, iframe) {
-  display: none;
+	display: none;
 }
 /* Changelog markup (the web's "Format changelog" generator): a bulletless
    list of items led by project badge pills. The badge colour arrives inline;
    only the pill shape/size lives in the class. */
 .announce__preview-content .news-cl-list {
-  list-style: none;
-  padding-left: 0;
+	list-style: none;
+	padding-left: 0;
 }
 .announce__preview-content .news-cl-list li {
-  margin: 0.2em 0;
+	margin: 0.2em 0;
 }
 .announce__preview-content .news-cl-tag {
-  display: inline-block;
-  margin-right: 6px;
-  padding: 0 8px;
-  border-radius: 999px;
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #fff;
-  vertical-align: 1px;
+	display: inline-block;
+	margin-right: 6px;
+	padding: 0 8px;
+	border-radius: 999px;
+	font-size: 0.6rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: #fff;
+	vertical-align: 1px;
 }
 
 .announce__close {
-  flex-shrink: 0;
-  align-self: stretch;
-  display: grid;
-  place-items: center;
-  width: 2.2rem;
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  transition: color 0.15s ease, background 0.15s ease;
+	flex-shrink: 0;
+	align-self: stretch;
+	display: grid;
+	place-items: center;
+	width: 2.2rem;
+	color: var(--text-dim);
+	font-size: 0.85rem;
+	transition:
+		color 0.15s ease,
+		background 0.15s ease;
 }
 .announce__close:hover {
-  color: var(--text);
-  background: rgba(255, 102, 171, 0.18);
+	color: var(--text);
+	background: rgba(255, 102, 171, 0.18);
 }
 
 @media (max-width: 850px) {
-  .announce {
-    bottom: 1rem;
-  }
-  .announce__cover {
-    display: none;
-  }
+	.announce {
+		bottom: 1rem;
+	}
+	.announce__cover {
+		display: none;
+	}
 }

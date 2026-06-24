@@ -3,12 +3,18 @@ import { Trans } from '@lingui/react/macro';
 import Leaderboard from '../leaderboard/Leaderboard';
 import Dropdown from '../dropdown/Dropdown';
 import LightBeatmap from '../../osu/beatmap/LightBeatmap';
-import { GroupOption, GroupOptions, SETTINGS, SortOption, SortOptions } from '../../db/settings';
+import {
+	GroupOption,
+	GroupOptions,
+	SETTINGS,
+	SortOption,
+	SortOptions,
+} from '../../db/settings';
 import { bpm } from '@osu-idle/shared/display/num';
 import { length } from '@osu-idle/shared/display/length';
 
 /** Player-facing label for a sort/group option. The option *value* stays the
- *  raw key - comparators, the persisted setting, and grouping all branch on it -
+ *  raw key - comparators, the persisted setting, and grouping all branch on it
  *  so only this display text is translated. GroupOption is the superset, so one
  *  mapping covers both dropdowns. */
 function optionLabel(option: GroupOption | SortOption): ReactNode {
@@ -27,12 +33,23 @@ function optionLabel(option: GroupOption | SortOption): ReactNode {
 	}
 }
 
-const GROUP_OPTIONS = GroupOptions.map((v) => ({ value: v, label: optionLabel(v) }));
-const SORT_OPTIONS = SortOptions.map((v) => ({ value: v, label: optionLabel(v) }));
+const GROUP_OPTIONS = GroupOptions.map((v) => ({
+	value: v, 
+	label: optionLabel(v),
+}));
+const SORT_OPTIONS = SortOptions.map((v) => ({ 
+	value: v, 
+	label: optionLabel(v), 
+}));
 
 /** Top bar: selected-difficulty metadata, the scores leaderboard, and the
  *  sort/group dropdowns. Empty (just the shape) until something is selected. */
-export default function TopBar({ version, scrollSpeed, scoreView, setScoreView }: {
+export default function TopBar({ 
+	version, 
+	scrollSpeed,
+	scoreView, 
+	setScoreView, 
+}: {
 	version: LightBeatmap | undefined;
 	scrollSpeed: number;
 	scoreView: boolean;
@@ -42,22 +59,36 @@ export default function TopBar({ version, scrollSpeed, scoreView, setScoreView }
 	// in the catalog instead of positional {0}.
 	const totalLength = length((version?.metadata.total_length ?? 0) / 1000);
 	const bpmText = bpm(version?.metadata.bpm ?? 0);
+	const title = `${version?.set.metadata.artist} - ${version?.set.metadata.title} [${version?.metadata.version}]`;
+	const icon = `url('${version?.metadata.runtime ? '/ranked.png' : '/unknown.png' }')`;
+
 	return (
 		<header className="game__topbar">
-			<svg className="game__topshape" viewBox="0 0 1000 185" preserveAspectRatio="none" aria-hidden>
-				<path className="game__topshape-fill" d="M0 0 H1000 V100 H430 C300 100 288 185 270 185 H0 Z" />
-				<path className="game__topshape-edge" d="M0 185 H270 C288 185 300 100 430 100 H1000" />
+			<svg 
+				className="game__topshape" 
+				viewBox="0 0 1000 185" 
+				preserveAspectRatio="none" 
+				aria-hidden
+			>
+				<path 
+					className="game__topshape-fill" 
+					d="M0 0 H1000 V100 H430 C300 100 288 185 270 185 H0 Z" 
+				/>
+				<path 
+					className="game__topshape-edge" 
+					d="M0 185 H270 C288 185 300 100 430 100 H1000" 
+				/>
 			</svg>
 			{version && (<>
 				<div className="game__topinfo">
 					<div className="game__top_md-container">
 						<div className="game__top_md">
 							<div className="game__top_md_icon">
-								<div style={{ backgroundImage: `url('${version.metadata.runtime ? '/ranked.png' : '/unknown.png' }')`}}></div>
+								<div style={{ backgroundImage: icon }}></div>
 							</div>
 							<div className="game__top_md_text">
 								<div className="game__top_md_title">
-									{version.set.metadata.artist} - {version.set.metadata.title} [{version.metadata.version}]
+									{title}
 								</div>
 								<div className="game__top_md_creator">
 									<Trans>Mapped by {version.set.metadata.creator}</Trans>
@@ -77,7 +108,12 @@ export default function TopBar({ version, scrollSpeed, scoreView, setScoreView }
 						</div>
 					</div>
 					<div className="game__top_lb-container">
-						<button className='mobile__scores' onClick={() => setScoreView(!scoreView)}>{scoreView ? <Trans>Back</Trans> : <Trans>Show scores</Trans>}</button>
+						<button 
+							className='mobile__scores' 
+							onClick={() => setScoreView(!scoreView)}
+						>
+							{scoreView ? <Trans>Back</Trans> : <Trans>Show scores</Trans>}
+						</button>
 
 						<Leaderboard />
 					</div>

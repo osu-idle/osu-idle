@@ -1,4 +1,9 @@
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import {
+	ReactNode,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import Synced from '@osu-idle/shared/helpers/synced';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import './Dropdown.css';
@@ -20,10 +25,16 @@ interface DropdownProps<T> {
 
 /**
  * osu!stable-style dropdown: black background, white text, a single accent tint
- * for the selected border and hover/selected background. Backed by a `Synced<T>`
- * so the current selection is subscribable outside this component.
+ * for the selected border and hover/selected background.
+ * Backed by a `Synced<T>` so the current selection is subscribable
+ * outside this component.
  */
-export default function Dropdown<T>({ value, options, accent, className }: DropdownProps<T>) {
+export default function Dropdown<T>({ 
+	value, 
+	options, 
+	accent, 
+	className, 
+}: DropdownProps<T>) {
 	const [selected] = useSynced(value);
 	const [open, setOpen] = useState(false);
 	const root = useRef<HTMLDivElement>(null);
@@ -39,7 +50,10 @@ export default function Dropdown<T>({ value, options, accent, className }: Dropd
 	}, [open]);
 
 	const current = options.find((o) => o.value === selected);
-	const style = accent ? ({ '--dropdown-accent': accent, '--dropdown-border': accent } as React.CSSProperties) : undefined;
+	const style = accent ? ({ 
+		'--dropdown-accent': accent, 
+		'--dropdown-border': accent,
+	} as React.CSSProperties) : undefined;
 
 	return (
 		<div
@@ -47,7 +61,11 @@ export default function Dropdown<T>({ value, options, accent, className }: Dropd
 			className={`dropdown ${open ? 'is-open' : ''} ${className ?? ''}`}
 			style={style}
 		>
-			<button type="button" className="dropdown__current" onClick={() => setOpen((o) => !o)}>
+			<button 
+				type="button"
+				className="dropdown__current" 
+				onClick={() => setOpen((o) => !o)}
+			>
 				<span className="dropdown__label">{current?.label}</span>
 				<span className="dropdown__caret" aria-hidden />
 			</button>

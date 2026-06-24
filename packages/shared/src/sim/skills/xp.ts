@@ -27,5 +27,8 @@ export const xpGivesLevel = (xp: number): { level: number, xp: number } => {
 		level++;
 	} while(true);
 	
-	return { level, xp };
+	return {
+		level,
+		xp,
+	};
 };

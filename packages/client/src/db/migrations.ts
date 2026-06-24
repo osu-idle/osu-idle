@@ -77,7 +77,9 @@ const dedupeGuests: Migration = db => {
 	
 	if (!ids || !ids.length) return;
 
-	const keep = db.exec("SELECT * FROM character WHERE name = 'Guest' ORDER BY accuracy DESC")[0]?.values[0][0];
+	const keep = db.exec(
+		"SELECT * FROM character WHERE name = 'Guest' ORDER BY accuracy DESC",
+	)[0]?.values[0][0];
 	if (keep === undefined) return; // ignore
 	if (keep !== 1) {
 		db.run('DELETE FROM character WHERE id = 1');
@@ -114,11 +116,33 @@ const removeScoreSetId: Migration = db => {
 	db.run('ALTER TABLE score DROP COLUMN setId');
 };
 
+const addAddonsGameVersion: Migration = db => {
+	// The addon table only exists once the add-ons scene has run (the registry
+	// creates it, with gameVersion, on boot). Patch only an older table that was
+	// created before the column existed; backfill blanks.
+	const tableExists = db.exec(`
+		SELECT EXISTS (
+			SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'addon'
+		);
+	`)[0].values[0][0] as number;
+	if (!tableExists) return;
+
+	const hasColumn = db.exec(`
+		SELECT EXISTS (
+			SELECT 1 FROM pragma_table_info('addon') WHERE name = 'gameVersion'
+		);
+	`)[0].values[0][0] as number;
+	if (hasColumn) return;
+
+	db.run(`ALTER TABLE addon ADD COLUMN gameVersion TEXT NOT NULL DEFAULT '';`);
+};
+
 const migrations: Migration[] = [
 	recomputeBests,
 	addOnlineId,
 	dedupeGuests,
 	removeScoreSetId,
+	addAddonsGameVersion,
 ];
 
 /**

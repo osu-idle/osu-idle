@@ -22,7 +22,7 @@ export function isLocale(value: string): value is Locale {
 
 /**
  * First supported locale in a preference-ordered list of BCP-47 tags, matched by
- * primary subtag (so `fr-CA` matches `fr`). Falls back to {@link DEFAULT_LOCALE}.
+ * primary subtag (so `fr-CA` matches `fr`). Falls back to DEFAULT_LOCALE
  * Backs both browser detection ({@link detectBrowserLocale}) and server-side
  * `Accept-Language` negotiation ({@link negotiateLocale}).
  */
@@ -50,6 +50,8 @@ export function negotiateLocale(acceptLanguage?: string | null): Locale {
  */
 export function detectBrowserLocale(): Locale {
 	if (typeof navigator === 'undefined') return DEFAULT_LOCALE;
-	const preferred = navigator.languages?.length ? navigator.languages : [navigator.language];
+	const preferred = navigator.languages?.length ? 
+		navigator.languages 
+		: [navigator.language];
 	return resolveLocale(preferred);
 }

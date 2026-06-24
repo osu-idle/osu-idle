@@ -1,6 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { defineConfig, type Plugin } from 'vite';
+import {
+	defineConfig,
+	type Plugin,
+} from 'vite';
 import react from '@vitejs/plugin-react';
 import { lingui } from '@lingui/vite-plugin';
 
@@ -85,7 +88,5 @@ export default defineConfig({
 			},
 		},
 	},
-	build: {
-		target: 'esnext',
-	}
+	build: { target: 'esnext' },
 });

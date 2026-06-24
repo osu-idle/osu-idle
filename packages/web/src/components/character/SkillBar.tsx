@@ -16,7 +16,9 @@ export function SkillBar({ skill, progress: { level, xp } }: {
 			<span className='skill__name'>{skillName(skill)}</span>
 			<div
 				className='skill__track'
-				title={`${Math.round(xp).toLocaleString()} / ${Math.round(toNext).toLocaleString()} XP to next level`}
+				title={
+					`${Math.round(xp).toLocaleString()} / ${Math.round(toNext).toLocaleString()} XP to next level`
+				}
 			>
 				<div className='skill__fill' style={{ width: `${percent*100}%` }} />
 			</div>

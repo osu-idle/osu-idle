@@ -1,13 +1,16 @@
 import './Cursor.css';
 
-import { useEffect, useRef } from 'react';
+import {
+	useEffect,
+	useRef,
+} from 'react';
 import { isWebOpen } from '../globals';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 
 const TRAIL = 30;
 
 /**
- * Replaces the system cursor with osu!'s cursor (cursor.png + cursor_middle.png)
+ * Replaces the system cursor with osu!'s cursor
  * plus a lerp-chain trail (cursor_trail.png) and the click "expand" effect.
  * Mouse only - hidden for touch input.
  */
@@ -30,7 +33,9 @@ export default function Cursor() {
 		document.documentElement.classList.add('custom-cursor');
 		const root = rootRef.current!;
 
-		const target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+		const target = {
+			x: window.innerWidth / 2, y: window.innerHeight / 2, 
+		};
 		const trail = Array.from({ length: TRAIL }, () => ({ ...target }));
 		let shown = false;
 
@@ -59,7 +64,10 @@ export default function Cursor() {
 		// pointerrawupdate fires at the device's raw polling rate (ahead of the
 		// frame-coalesced pointermove), so it keeps `target` the freshest possible
 		// sample on every frame; pointermove stays as the fallback where unsupported.
-		window.addEventListener('pointerrawupdate', onMove as EventListener, { passive: true });
+		window.addEventListener('pointerrawupdate', 
+			onMove as EventListener,
+			{ passive: true },
+		);
 		window.addEventListener('pointermove', onMove, { passive: true });
 		window.addEventListener('pointerdown', onDown);
 		window.addEventListener('pointerup', onUp);
@@ -74,7 +82,8 @@ export default function Cursor() {
 				t.x += (px - t.x) * 0.35;
 				t.y += (py - t.y) * 0.35;
 				const el = trailRefs.current[i];
-				if (el) el.style.transform = `translate(${t.x}px, ${t.y}px) translate(-50%, -50%)`;
+				if (el) 
+					el.style.transform = `translate(${t.x}px, ${t.y}px) translate(-50%, -50%)`;
 				px = t.x;
 				py = t.y;
 			}

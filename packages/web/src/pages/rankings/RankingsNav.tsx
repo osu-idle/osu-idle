@@ -1,7 +1,7 @@
 import Nav from '../../components/Nav';
+import Link from '../../components/Link';
 import { useLingui } from '@lingui/react/macro';
 import { SKILL_SORT } from '../../components/leaderboard/PlayerSkillLeaderboard';
-import { countryRankPath, globalGradesRankPath, globalRankPath, globalSkillRankPath, playsRankPath } from '../../router';
 import { GOOD_GRADE } from '@osu-idle/shared/judgement';
 
 export default function RankingsNav({ current }: {
@@ -9,31 +9,23 @@ export default function RankingsNav({ current }: {
 }) {
 	const { t } = useLingui();
 
-	return (<Nav current={current} links={[
-		{
-			id: 'global',
-			label: t`global`,
-			link: globalRankPath(1),
-		},
-		{
-			id: 'skills',
-			label: t`skills`,
-			link: globalSkillRankPath(SKILL_SORT.overall, 1),
-		},
-		{
-			id: 'grades',
-			label: t`grades`,
-			link: globalGradesRankPath(GOOD_GRADE.X, 1),
-		},
-		{
-			id: 'country',
-			label: t`country`,
-			link: countryRankPath(1),
-		},
-		{
-			id: 'top plays',
-			label: t`top plays`,
-			link: playsRankPath(1),
-		},
-	]}/>);
+	const item = (id: string) => `nav__item ${id === current ? 'current' : ''}`;
+
+	return (<Nav>
+		<Link to='/rankings/global' search={{ page: 1 }} className={item('global')}>{t`global`}</Link>
+		<Link to='/rankings/skills/$skill' 
+			params={{ skill: SKILL_SORT.overall }} 
+			search={{ page: 1 }} 
+			className={item('skills')}>
+			{t`skills`}
+		</Link>
+		<Link to='/rankings/grades/$grade'
+			params={{ grade: GOOD_GRADE.X }} 
+			search={{ page: 1 }} 
+			className={item('grades')}>
+			{t`grades`}
+		</Link>
+		<Link to='/rankings/country' search={{ page: 1 }} className={item('country')}>{t`country`}</Link>
+		<Link to='/rankings/plays' search={{ page: 1 }} className={item('top plays')}>{t`top plays`}</Link>
+	</Nav>);
 }

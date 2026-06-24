@@ -1,4 +1,7 @@
-import { getActivePlay, fetchPlayResult } from './play';
+import {
+	getActivePlay,
+	fetchPlayResult,
+} from './play';
 import SceneManager, { SCENE } from '../scenes/SceneManager';
 import { launchPlay } from '../scenes/launchPlay';
 import BeatmapStore from '../osu/beatmap/beatmap_store';
@@ -42,8 +45,16 @@ export default class Spectate {
 		const state = await getActivePlay();
 		console.log(state);
 		if (!state) return;
-		if (state.active) await this.spectate(state.beatmapId);
-		else if ('finished' in state && state.finished && 'notify' in state && state.notify) await this.showResult(state.token);
+		if (state.active) {
+			await this.spectate(state.beatmapId);
+		} else if (
+			'finished' in state
+			&& state.finished
+			&& 'notify' in state
+			&& state.notify
+		) {
+			await this.showResult(state.token);
+		}
 	}
 
 	/** Launch gameplay to spectate the active play, if we have its map downloaded.
@@ -77,7 +88,9 @@ export default class Spectate {
 	}
 
 	/** The downloaded (playable) difficulty for a beatmap id, or null. */
-	private static async findDownloaded(beatmapId: number): Promise<LightBeatmap | null> {
+	private static async findDownloaded(
+		beatmapId: number,
+	): Promise<LightBeatmap | null> {
 		for (const set of await BeatmapStore.getAllSets()) {
 			const beatmap = set.beatmaps.find(b => b.metadata.id === beatmapId);
 			if (beatmap) return beatmap;

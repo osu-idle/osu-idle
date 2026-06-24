@@ -1,0 +1,4 @@
+**/dist/**
+**/dist.next/**
+packages/client/public/**
+packages/client/osu!design/**

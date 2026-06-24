@@ -1,6 +1,9 @@
 import './Message.css';
 import { message } from '../globals';
-import { useCallback, useState } from 'react';
+import {
+	useCallback,
+	useState,
+} from 'react';
 
 type MessageState = {
 	id: number,
@@ -18,7 +21,9 @@ export default function Message() {
 
 	const addMessage = useCallback((message: string) => {
 		const assignedId = id++;
-		setMessages(prev => [...prev.map(m => ({ ...m, close: true })), {
+		setMessages(prev => [...prev.map(m => ({
+			...m, close: true, 
+		})), {
 			id: assignedId,
 			message,
 			animate: false,
@@ -26,10 +31,18 @@ export default function Message() {
 		}]);
 
 		setTimeout(() => {
-			setMessages(prev => prev.map(m => m.id === assignedId ? { ...m, animate: true } : m));
+			setMessages(prev => prev.map(m => 
+				m.id === assignedId ? {
+					...m, animate: true, 
+				} : m,
+			));
 		}, ANIMATE_TIME);
 		setTimeout(() => {
-			setMessages(prev => prev.map(m => m.id === assignedId ? { ...m, close: true } : m));
+			setMessages(prev => prev.map(m => 
+				m.id === assignedId ? {
+					...m, close: true, 
+				} : m,
+			));
 		}, FADE_TIME);
 		setTimeout(() => {
 			setMessages(prev => prev.filter(m => m.id !== assignedId));
@@ -40,7 +53,12 @@ export default function Message() {
 
 	return (
 		<div className='message__overlay'>
-			{messages.map(message => <div key={message.id} className={`message__contents ${message.animate ? 'animate' : ''} ${message.close ? 'closing' : ''}`}>
+			{messages.map(message => <div
+				key={message.id} 
+				className={
+					`message__contents ${message.animate ? 'animate' : ''} ${message.close ? 'closing' : ''}`
+				}
+			>
 				{message.message}
 			</div>)}
 		</div>

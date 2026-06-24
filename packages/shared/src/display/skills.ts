@@ -1,5 +1,11 @@
-import { __, defineMessages } from '../i18n/translate.js';
-import { UPGRADE, type SkillName } from '../skills.js';
+import {
+	__,
+	defineMessages,
+} from '../i18n/translate.js';
+import {
+	UPGRADE,
+	type SkillName,
+} from '../skills.js';
 
 // Display names live here, deliberately apart from skills.ts - that file owns
 // the enum keys the sim/scoring branch on (logic), this owns how they read to a

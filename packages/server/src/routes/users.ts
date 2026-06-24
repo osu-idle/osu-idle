@@ -3,7 +3,10 @@ import { HTTPException } from 'hono/http-exception';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client';
-import { users, toUserDTO } from '../db/schema/user';
+import {
+	users,
+	toUserDTO,
+} from '../db/schema/user';
 
 const idParam = z.coerce.number().int().positive();
 

@@ -1,10 +1,17 @@
 import { expect } from 'vitest';
-import { Grades, type Grade } from '@osu-idle/shared/judgement';
+import {
+	Grades,
+	type Grade,
+} from '@osu-idle/shared/judgement';
 import type { HitRecord } from '@osu-idle/shared/sim/maniaGame';
 import type { ScoreState } from '@osu-idle/shared/sim/scoring';
 import type { SkillName } from '@osu-idle/shared/skills';
 import type { Beatmap } from 'osu-classes';
-import { simulate, analyzeSkill, type SkillSpec } from '../sim';
+import {
+	simulate,
+	analyzeSkill,
+	type SkillSpec,
+} from '../sim';
 import sum from '@osu-idle/shared/helpers/sum';
 import avg from '@osu-idle/shared/math/avg';
 import { getBeatmap } from './charts';
@@ -41,10 +48,11 @@ interface Outcome {
 
 function outcomeOf(score: ScoreState, hits: HitRecord[]): Outcome {
 	const failed = score.failed;
+	const imperfect = Math.max(1, sum(Object.values(score.counts)) - score.counts.MARVELOUS);
 	return {
 		score: score.score,
 		accuracy: score.accuracy,
-		ratio: score.counts.MARVELOUS / Math.max(1, sum(Object.values(score.counts)) - score.counts.MARVELOUS),
+		ratio: score.counts.MARVELOUS / imperfect,
 		grade: score.grade,
 		failed,
 		// hits is parallel to the judgement sequence, so the failing judgement's
@@ -117,7 +125,7 @@ export function aggregate(input: ScenarioInput): Aggregate {
 		gradeCounts,
 		failRate: outcomes.filter(o => o.failed).length / runs,
 		meanFailTime: failTimes.length ? mean(failTimes) : null,
-		map: `${beatmap.metadata.title} [${beatmap.metadata.version}]`
+		map: `${beatmap.metadata.title} [${beatmap.metadata.version}]`,
 	};
 }
 
@@ -184,7 +192,9 @@ const DEFAULT_TOLERANCE: Required<Tolerance> = {
  *  run, else the (mean of the) skill spec. */
 function scenarioLevel(scenario: ScenarioInput): number {
 	if ('skill' in scenario) return scenario.level;
-	return typeof scenario.skills === 'number' ? scenario.skills : avg(...Object.values(scenario.skills));
+	return typeof scenario.skills === 'number' ? 
+		scenario.skills 
+		: avg(...Object.values(scenario.skills));
 }
 
 const gradeRank = (g: Grade) => Grades.indexOf(g); // 0 = X (best) … 7 = F
@@ -200,18 +210,46 @@ const pad = (s: string, w: number) => s.padEnd(w);
 interface Verdict { ok: boolean; tolStr: string; }
 
 /** Symmetric tolerance band, unless a one-sided bound is given for the metric. */
-function band(actual: number, expected: number, tol: number, fmt: (n: number) => string, bound?: Bound): Verdict {
-	if (bound === 'gte') return { ok: actual >= expected, tolStr: `≥${fmt(expected)}` };
-	if (bound === 'lte') return { ok: actual <= expected, tolStr: `≤${fmt(expected)}` };
-	return { ok: Math.abs(actual - expected) <= tol, tolStr: `±${fmt(tol)}` };
+function band(
+	actual: number, 
+	expected: number, 
+	tol: number, 
+	fmt: (n: number) => string, 
+	bound?: Bound,
+): Verdict {
+	if (bound === 'gte') return {
+		ok: actual >= expected, tolStr: `≥${fmt(expected)}`, 
+	};
+	if (bound === 'lte') return {
+		ok: actual <= expected, tolStr: `≤${fmt(expected)}`, 
+	};
+	return {
+		ok: Math.abs(actual - expected) <= tol, tolStr: `±${fmt(tol)}`, 
+	};
 }
 
 /** Sink for one report row: renders it and, when the metric failed, records why. */
-type Report = (metric: string, expected: string, actual: string, delta: string, verdict: Verdict, problem: string) => void;
+type Report = (
+	metric: string,
+	expected: string, 
+	actual: string, 
+	delta: string, 
+	verdict: Verdict, 
+	problem: string
+) => void;
 
 /** Standard numeric metric: a symmetric (or one-sided) tolerance band on the
  *  mean, shown next to its stdev. No-op when the scenario doesn't expect it. */
-function reportMetric(report: Report, metric: string, expected: number | undefined, mean: number, stdev: number, tol: number, fmt: (n: number) => string, bound?: Bound): void {
+function reportMetric(
+	report: Report, 
+	metric: string,
+	expected: number | undefined,
+	mean: number, 
+	stdev: number,
+	tol: number, 
+	fmt: (n: number) => string, 
+	bound?: Bound,
+): void {
 	if (expected === undefined) return;
 	const d = mean - expected;
 	report(metric, fmt(expected), `${fmt(mean)} ±${fmt(stdev)}`, signed(d, fmt),
@@ -220,12 +258,20 @@ function reportMetric(report: Report, metric: string, expected: number | undefin
 }
 
 /** Ratio is multiplicative: the symmetric band is a fold factor, not ±. */
-function reportRatio(report: Report, a: Aggregate, exp: Expectation, tol: Required<Tolerance>, bounds: Bounds): void {
+function reportRatio(
+	report: Report, 
+	a: Aggregate,
+	exp: Expectation, 
+	tol: Required<Tolerance>, 
+	bounds: Bounds,
+): void {
 	if (exp.ratio === undefined) return;
 	const factor = a.meanRatio / Math.max(0.1, exp.ratio);
 	const verdict = bounds.ratio
 		? band(a.meanRatio, exp.ratio, tol.ratio, pr, bounds.ratio)
-		: { ok: factor <= tol.ratio && factor >= 1 / tol.ratio, tolStr: `±${pr(tol.ratio)}` };
+		: {
+			ok: factor <= tol.ratio && factor >= 1 / tol.ratio, tolStr: `±${pr(tol.ratio)}`, 
+		};
 	report('ratio', pr(exp.ratio), `${pr(a.meanRatio)} ±${pr(a.ratioStdev)}`, pr(factor), verdict,
 		`ratio off by a factor of ${scaled(factor, pr)}`);
 }
@@ -233,7 +279,14 @@ function reportRatio(report: Report, a: Aggregate, exp: Expectation, tol: Requir
 /** Grade is checked one of two ways: as a hit-rate (reached this grade or better
  *  in ≥X% of runs) when the scenario sets a gradeRate tolerance, else as the
  *  modal grade's distance in tiers from the expected one. */
-function reportGrade(report: Report, a: Aggregate, exp: Expectation, tol: Required<Tolerance>, tolerance: Tolerance | undefined, gradeDist: string): void {
+function reportGrade(
+	report: Report,
+	a: Aggregate,
+	exp: Expectation, 
+	tol: Required<Tolerance>,
+	tolerance: Tolerance | undefined,
+	gradeDist: string,
+): void {
 	if (exp.grade === undefined) return;
 	if (tolerance?.gradeRate !== undefined) {
 		// How often the play reaches the expected grade or better (lower rank = better).
@@ -241,37 +294,61 @@ function reportGrade(report: Report, a: Aggregate, exp: Expectation, tol: Requir
 			.filter(([g]) => gradeRank(g) <= gradeRank(exp.grade!))
 			.map(([, n]) => n)) / a.runs;
 		report('grade', `≥${exp.grade}`, `${a.modalGrade}  (${gradeDist})`, `${pct(rate)} reached`,
-			{ ok: rate >= tol.gradeRate, tolStr: `≥${pct(tol.gradeRate)}` },
+			{
+				ok: rate >= tol.gradeRate, tolStr: `≥${pct(tol.gradeRate)}`, 
+			},
 			`reached ${exp.grade}+ in ${pct(rate)} of runs (need ≥${pct(tol.gradeRate)})`);
 	} else {
 		const d = Math.abs(gradeRank(a.modalGrade) - gradeRank(exp.grade));
 		report('grade', exp.grade, `${a.modalGrade}  (${gradeDist})`, `${d} tier${d === 1 ? '' : 's'}`,
-			{ ok: d <= tol.gradeTiers, tolStr: `≤${tol.gradeTiers}` },
+			{
+				ok: d <= tol.gradeTiers, tolStr: `≤${tol.gradeTiers}`, 
+			},
 			`modal grade ${a.modalGrade}, expected ${exp.grade} (${d} tiers off)`);
 	}
 }
 
 /** Whether the play fails as often as expected (a pure pass/fail expectation). */
-function reportFail(report: Report, a: Aggregate, exp: Expectation, tol: Required<Tolerance>): void {
+function reportFail(
+	report: Report,
+	a: Aggregate,
+	exp: Expectation,
+	tol: Required<Tolerance>,
+): void {
 	if (exp.fail === undefined) return;
 	const d = a.failRate - (exp.fail ? 1 : 0);
 	report('fail', exp.fail ? 'fails' : 'passes', `${pct(a.failRate)} failed`, signed(d, pct),
-		{ ok: Math.abs(d) <= tol.failRate, tolStr: `±${pct(tol.failRate)}` },
+		{
+			ok: Math.abs(d) <= tol.failRate, tolStr: `±${pct(tol.failRate)}`, 
+		},
 		`fail rate ${pct(a.failRate)}, expected ${exp.fail ? 'fail' : 'pass'}`);
 }
 
 /** When the play is expected to fail mid-map, how close the mean fail time lands. */
-function reportFailTime(report: Report, a: Aggregate, exp: Expectation, tol: Required<Tolerance>): void {
+function reportFailTime(
+	report: Report, 
+	a: Aggregate, 
+	exp: Expectation,
+	tol: Required<Tolerance>,
+): void {
 	if (exp.failTime === undefined) return;
 	if (a.meanFailTime === null) {
 		report('failTime', secs(exp.failTime), 'never failed', '-',
-			{ ok: false, tolStr: `±${secs(tol.failTime)}` },
+			{
+				ok: false, tolStr: `±${secs(tol.failTime)}`, 
+			},
 			`expected failure near ${secs(exp.failTime)} but no run failed`);
 		return;
 	}
 	const d = a.meanFailTime - exp.failTime;
-	report('failTime', secs(exp.failTime), `${secs(a.meanFailTime)} (${pct(a.failRate)} of runs)`, signed(d, secs),
-		{ ok: Math.abs(d) <= tol.failTime, tolStr: `±${secs(tol.failTime)}` },
+	report(
+		'failTime', 
+		secs(exp.failTime), 
+		`${secs(a.meanFailTime)} (${pct(a.failRate)} of runs)`,
+		signed(d, secs),
+		{
+			ok: Math.abs(d) <= tol.failTime, tolStr: `±${secs(tol.failTime)}`, 
+		},
 		`fail time off by ${signed(d, secs)}`);
 }
 
@@ -280,7 +357,9 @@ function reportFailTime(report: Report, a: Aggregate, exp: Expectation, tol: Req
  * within tolerance. Call inside a vitest `it(...)`.
  */
 export function runScenario(scenario: Scenario): void {
-	const tol = { ...DEFAULT_TOLERANCE, ...scenario.tolerance };
+	const tol = {
+		...DEFAULT_TOLERANCE, ...scenario.tolerance, 
+	};
 	const bounds = scenario.bounds ?? {};
 	const a = aggregate(scenario);
 	const exp = { ...scenario.expect };
@@ -303,12 +382,22 @@ export function runScenario(scenario: Scenario): void {
 
 	/** Append one report row; record a problem when the metric failed. */
 	const report: Report = (metric, expected, actual, delta, { ok, tolStr }, problem) => {
-		lines.push(`   ${ok ? '✓' : '✗'} ${pad(metric, 8)}${pad(expected, 14)}${pad(actual, 22)}${pad(delta, 14)}${tolStr}`);
+		lines.push(
+			`   ${ok ? '✓' : '✗'} ${pad(metric, 8)}${pad(expected, 14)}${pad(actual, 22)}${pad(delta, 14)}${tolStr}`,
+		);
 		if (!ok) problems.push(`${problem} (tol ${tolStr})`);
 	};
 
 	reportMetric(report, 'score', exp.score, a.meanScore, a.scoreStdev, tol.score, num, bounds.score);
-	reportMetric(report, 'accuracy', exp.accuracy, a.meanAccuracy, a.accuracyStdev, tol.accuracy, pct, bounds.accuracy);
+	reportMetric(report, 
+		'accuracy',
+		exp.accuracy,
+		a.meanAccuracy,
+		a.accuracyStdev,
+		tol.accuracy,
+		pct,
+		bounds.accuracy,
+	);
 	reportRatio(report, a, exp, tol, bounds);
 	reportGrade(report, a, exp, tol, scenario.tolerance, gradeDist);
 	reportFail(report, a, exp, tol);
@@ -316,5 +405,7 @@ export function runScenario(scenario: Scenario): void {
 
 	// Always surface the report - pass or fail - so deviations are visible.
 	console.log(lines.join('\n'));
-	expect(problems, `'${scenario.goal}' for level ${scenario.profile} not achieved:\n  ${problems.join('\n  ')}\n${lines.join('\n')}`).toEqual([]);
+	expect(problems, 
+		`'${scenario.goal}' for level ${scenario.profile} not achieved:\n  ${problems.join('\n  ')}\n${lines.join('\n')}`,
+	).toEqual([]);
 }

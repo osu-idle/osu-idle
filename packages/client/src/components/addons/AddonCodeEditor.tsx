@@ -18,7 +18,11 @@ export default function AddonCodeEditor({ value, onChange }: Props) {
 			<Editor
 				value={value}
 				onValueChange={onChange}
-				highlight={code => Prism.highlight(code, Prism.languages.javascript, 'javascript')}
+				highlight={code => Prism.highlight(
+					code,
+					Prism.languages.javascript, 
+					'javascript',
+				)}
 				padding={12}
 				tabSize={4}
 				insertSpaces={false}

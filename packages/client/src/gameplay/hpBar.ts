@@ -14,9 +14,26 @@ interface HpBarOpts {
  * from the bottom by the current health, tinting red once it runs low. Drawn on
  * the canvas (before the hit-error bar) so that bar stays on top of it.
  */
-export function drawHpBar(ctx: CanvasRenderingContext2D, opts: HpBarOpts): void {
-	const { hp, x, bottom } = opts;
-	const { width, height, radius, background, fill, fillLow, lowThreshold } = Skin.hpBar;
+export function drawHpBar(
+	skin: Skin,
+	ctx: CanvasRenderingContext2D, 
+	opts: HpBarOpts,
+): void {
+	const { 
+		hp, 
+		x, 
+		bottom, 
+	} = opts;
+
+	const { 
+		width, 
+		height, 
+		radius, 
+		background, 
+		fill, 
+		fillLow, 
+		lowThreshold, 
+	} = skin.data.hpBar;
 
 	ctx.fillStyle = background;
 	roundRect(ctx, x, bottom - height, width, height, radius);
@@ -30,7 +47,14 @@ export function drawHpBar(ctx: CanvasRenderingContext2D, opts: HpBarOpts): void 
 	}
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function roundRect(
+	ctx: CanvasRenderingContext2D, 
+	x: number, 
+	y: number,
+	w: number, 
+	h: number, 
+	r: number,
+) {
 	const rr = Math.min(r, w / 2, h / 2);
 	ctx.beginPath();
 	ctx.moveTo(x + rr, y);

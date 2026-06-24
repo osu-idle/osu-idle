@@ -6,12 +6,13 @@ import SceneManager, { SCENE } from '../../scenes/SceneManager';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import { ScoreDTO } from '@osu-idle/shared/score';
 import { getCharacter } from '../../online/services/characters';
-import Skin from '../../osu/skin/Skin';
+import { currentSkin } from '../../osu/skin/Skin';
 import { getUser } from '../../online/services/users';
 import { recentTimeAgo } from '@osu-idle/shared/display/ago';
 import Entities from '../../entity/entities';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 import ScoreTooltip from './ScoreTooltip';
+import useSynced from '@osu-idle/shared/hooks/useSynced';
 
 interface Props {
 	score: Score | ScoreDTO,
@@ -22,42 +23,67 @@ interface Props {
 type EntryCharacter = Character | Awaited<ReturnType<typeof getCharacter>>;
 
 /** Server characters carry a resolved avatar (custom upload or osu! fallback);
- *  the local Guest has none, so fall back to the user avatar then the default. */
-function entryAvatar(character: EntryCharacter | undefined, userAvatarUrl: string | null | undefined) {
-	if (character && 'avatarUrl' in character && character.avatarUrl) return character.avatarUrl;
+ *  the local Guest has none, so fall back to the user avatar then the default.
+ */
+function entryAvatar(
+	character: EntryCharacter | undefined, 
+	userAvatarUrl: string | null | undefined,
+) {
+	if (character && 'avatarUrl' in character && character.avatarUrl)
+		return character.avatarUrl;
 	return userAvatarUrl || GUEST_AVATAR_URL;
 }
 
 export default function ScoreEntry({ score, previous, rank }: Props) {
+	const [skin] = useSynced(currentSkin);
+
 	const character = useAsync(async () =>
-		score.characterId <= 1 ? await Character.get({ id: score.characterId }) : await getCharacter(score.characterId)
+		score.characterId <= 1 ? 
+			await Character.get({ id: score.characterId }) 
+			: await getCharacter(score.characterId)
 	, [score]);
-	const user = useAsync(async () => character && ('userId' in character) ? getUser(character.userId) : null, [character]);
+
+	const user = useAsync(async () => character && ('userId' in character) ? 
+		getUser(character.userId) 
+		: null,
+	[character]);
 
 	const loaded = !!character && user !== null;
 
 	const ago = recentTimeAgo(Date.now() - score.playedAt);
 
 	const [hover, setHover] = useState(false);
-	const [mouse, setMouse] = useState({ x: 0, y: 0 });
+	const [mouse, setMouse] = useState({
+		x: 0, y: 0, 
+	});
+	const self = character?.name === Entities.character.get().name;
 
 	return (
 		<li
 			key={score.id}
-			className={`score_entry__row ${loaded ? 'loaded' : ''} ${score.pfc ? 'is-pfc' : ''}`}
+			className={
+				`score_entry__row ${loaded ? 'loaded' : ''} ${score.pfc ? 'is-pfc' : ''}`
+			}
 			onClick={() => SceneManager.set(SCENE.RESULT, score)}
 			onMouseEnter={() => setHover(true)}
 			onMouseLeave={() => setHover(false)}
-			onMouseMove={e => setMouse({ x: e.clientX, y: e.clientY })}
+			onMouseMove={e => setMouse({
+				x: e.clientX, y: e.clientY, 
+			})}
 		>
-			<span className="score_entry__avatar" style={{ backgroundImage: `url(${entryAvatar(character, user?.avatarUrl)})`}}>
+			<span 
+				className="score_entry__avatar" 
+				style={{ backgroundImage: `url(${entryAvatar(character, user?.avatarUrl)})` }}
+			>
 				{rank !== undefined && <span className="score_entry__rank">#{rank}</span>}
 			</span>
 			<span className="score_entry__grade">
-				{Skin.grade(score.grade)}
+				{skin.grade(score.grade)}
 			</span>
 			<span className="score_entry__main">
-				<span className={`score_entry__name ${character?.name === Entities.character.get().name ? 'score_self' : ''}`}>
+				<span className={
+					`score_entry__name ${self ? 'score_self' : ''}`
+				}>
 					{character ? character.name : 'Loading...'}
 				</span>
 				<span className="score_entry__score">
@@ -72,7 +98,10 @@ export default function ScoreEntry({ score, previous, rank }: Props) {
 					{(score.accuracy * 100).toFixed(2)}%
 				</span>
 				<span className="score_entry__diff">
-					{previous && previous.score < score.score ? `+${(score.score - previous.score).toLocaleString()}` : '-'}
+					{previous && previous.score < score.score ? 
+						`+${(score.score - previous.score).toLocaleString()}` 
+						: '-'
+					}
 				</span>
 			</span>
 

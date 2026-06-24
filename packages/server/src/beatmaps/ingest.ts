@@ -1,5 +1,10 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	existsSync,
+	mkdirSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { extname } from 'node:path';
 import AdmZip from 'adm-zip';
 import '@osu-idle/shared/osu/controlPointPatch';
@@ -8,9 +13,17 @@ import { ManiaRuleset } from 'osu-mania-stable';
 import * as rosu from 'rosu-pp-js';
 import { INTRO_SET_ID } from '@osu-idle/shared/beatmap';
 import { db } from '../db/client';
-import { beatmaps, type NewBeatmapRow } from '../db/schema/beatmap';
+import {
+	beatmaps,
+	type NewBeatmapRow,
+} from '../db/schema/beatmap';
 import { beatmapset } from '../db/schema/beatmapset';
-import { BEATMAP_DIR, PREVIEW_DIR, oszPath, previewPath } from './storage';
+import {
+	BEATMAP_DIR,
+	PREVIEW_DIR,
+	oszPath,
+	previewPath,
+} from './storage';
 
 /**
  * The single runtime beatmap pipeline - replaces the old client `index-beatmaps`
@@ -49,7 +62,9 @@ export const ingestOsz = async (buffer: Buffer): Promise<IngestResult> => {
 			if (decoded.originalMode !== 3 && !isIntro) return [];
 			const id = decoded.metadata.beatmapId;
 			if (!id || id <= 0) return [];
-			return [{ buf, decoded }];
+			return [{
+				buf, decoded, 
+			}];
 		});
 
 	if (parsed.length === 0) throw new Error('No mania difficulties with a valid beatmap id');
@@ -153,7 +168,9 @@ export const ingestOsz = async (buffer: Buffer): Promise<IngestResult> => {
 	// on first ingest (announced so the sweep skips it). Everything else lands as
 	// pending. Re-ingest preserves status/rankedAt/announced either way.
 	const intro = setId === INTRO_SET_ID
-		? { status: 'ranked' as const, rankedAt: new Date(), announced: true }
+		? {
+			status: 'ranked' as const, rankedAt: new Date(), announced: true, 
+		}
 		: {};
 	await db.insert(beatmapset).values({
 		id: setId,
@@ -162,7 +179,9 @@ export const ingestOsz = async (buffer: Buffer): Promise<IngestResult> => {
 		creator: meta.creator,
 		...intro,
 	}).onDuplicateKeyUpdate({
-		set: { artist: meta.artist, title: meta.title, creator: meta.creator },
+		set: {
+			artist: meta.artist, title: meta.title, creator: meta.creator, 
+		}, 
 	});
 
 	for (const row of rows) {
@@ -187,5 +206,7 @@ export const ingestOsz = async (buffer: Buffer): Promise<IngestResult> => {
 		});
 	}
 
-	return { setId, difficulties: rows.length };
+	return {
+		setId, difficulties: rows.length, 
+	};
 };

@@ -1,12 +1,14 @@
 import './NowPlaying.css';
-import { useEffect, useRef } from 'react';
+import {
+	useEffect,
+	useRef,
+} from 'react';
 import { music } from '../audio/MusicPlayer';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { useLingui } from '@lingui/react/macro';
 
 const BARS = 5;
 
-/** osu!-style bottom music widget: track info, transport and a live visualiser. */
 export default function NowPlaying() {
 	const { t } = useLingui();
 
@@ -45,7 +47,11 @@ export default function NowPlaying() {
 				))}
 			</div>
 
-			<button className="nowplaying__play" onClick={() => music.toggle()} aria-label={playing ? 'Pause' : 'Play'}>
+			<button
+				className="nowplaying__play" 
+				onClick={() => music.toggle()} 
+				aria-label={playing ? 'Pause' : 'Play'
+				}>
 				{playing ? (
 					<svg viewBox="0 0 24 24" width="20" height="20">
 						<rect x="5" y="4" width="4.5" height="16" rx="1" fill="currentColor" />
@@ -58,7 +64,11 @@ export default function NowPlaying() {
 				)}
 			</button>
 
-			<button className="nowplaying__next" onClick={() => music.next()} aria-label={t`Next track`}>
+			<button 
+				className="nowplaying__next"
+				onClick={() => music.next()}
+				aria-label={t`Next track`}
+			>
 				<svg viewBox="0 0 24 24" width="18" height="18">
 					<path d="M6 5l10 7-10 7z" fill="currentColor" />
 					<rect x="17" y="5" width="3" height="14" rx="1" fill="currentColor" />
@@ -66,8 +76,12 @@ export default function NowPlaying() {
 			</button>
 
 			<div className="nowplaying__meta">
-				<span className="nowplaying__title">{beatmap?.set.metadata.title ?? '--'}</span>
-				<span className="nowplaying__artist">{beatmap?.set.metadata.artist ?? '--'}</span>
+				<span className="nowplaying__title">
+					{beatmap?.set.metadata.title ?? '--'}
+				</span>
+				<span className="nowplaying__artist">
+					{beatmap?.set.metadata.artist ?? '--'}
+				</span>
 			</div>
 		</div>
 	);

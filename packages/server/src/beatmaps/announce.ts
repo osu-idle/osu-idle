@@ -1,4 +1,7 @@
-import { env, isProd } from '../env';
+import {
+	env,
+	isProd,
+} from '../env';
 import { publish } from '../discord/publish';
 
 export type AnnounceSet = {
@@ -24,7 +27,9 @@ export const announceRanked = async (set: AnnounceSet): Promise<void> => {
 				description: asc.map(d => `\`${d.sr.toFixed(2)}☆\` \`${d.version}\``).join('\n'),
 				color: 5814783,
 				author: { name: `New ranked map by ${set.creator}` },
-				fields: [{ name: 'Ranked', value: `<t:${Math.floor(Date.now() / 1000)}:R>` }],
+				fields: [{
+					name: 'Ranked', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, 
+				}],
 				image: { url: `https://assets.ppy.sh/beatmaps/${set.setId}/covers/cover.jpg` },
 			},
 		],

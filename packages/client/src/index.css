@@ -1,104 +1,104 @@
 /* ---- Exo 2 : osu!'s official typeface ---- */
 @font-face {
-  font-family: 'Exo 2';
-  src: url('/fonts/Exo2-Light.otf') format('opentype');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Exo 2";
+	src: url("/fonts/Exo2-Light.otf") format("opentype");
+	font-weight: 300;
+	font-style: normal;
+	font-display: swap;
 }
 @font-face {
-  font-family: 'Exo 2';
-  src: url('/fonts/Exo2-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Exo 2";
+	src: url("/fonts/Exo2-Regular.otf") format("opentype");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
 }
 @font-face {
-  font-family: 'Exo 2';
-  src: url('/fonts/Exo2-Medium.otf') format('opentype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Exo 2";
+	src: url("/fonts/Exo2-Medium.otf") format("opentype");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
 }
 @font-face {
-  font-family: 'Exo 2';
-  src: url('/fonts/Exo2-SemiBold.otf') format('opentype');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Exo 2";
+	src: url("/fonts/Exo2-SemiBold.otf") format("opentype");
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
 }
 @font-face {
-  font-family: 'Exo 2';
-  src: url('/fonts/Exo2-Bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Exo 2";
+	src: url("/fonts/Exo2-Bold.otf") format("opentype");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
 }
 @font-face {
-  font-family: 'Exo 2';
-  src: url('/fonts/Exo2-Black.otf') format('opentype');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
+	font-family: "Exo 2";
+	src: url("/fonts/Exo2-Black.otf") format("opentype");
+	font-weight: 900;
+	font-style: normal;
+	font-display: swap;
 }
 
 :root {
-  /* osu! brand palette */
-  --osu-pink: #ff8ab7;
-  --osu-pink-dark: #ff7cae;
-  --osu-pink-darkest:rgb(255, 64, 137);
-  --osu-pink-light: #ffa5c8;
-  --bg-0: #0a090c;
-  --bg-1: #16131a;
-  --bg-2: #211c28;
-  --text: #f6f0f5;
-  --text-dim: rgba(246, 240, 245, 0.55);
+	/* osu! brand palette */
+	--osu-pink: #ff8ab7;
+	--osu-pink-dark: #ff7cae;
+	--osu-pink-darkest: rgb(255, 64, 137);
+	--osu-pink-light: #ffa5c8;
+	--bg-0: #0a090c;
+	--bg-1: #16131a;
+	--bg-2: #211c28;
+	--text: #f6f0f5;
+	--text-dim: rgba(246, 240, 245, 0.55);
 
-  color-scheme: dark;
-  font-family: 'Exo 2', system-ui, 'Segoe UI', Roboto, sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	color-scheme: dark;
+	font-family: "Exo 2", system-ui, "Segoe UI", Roboto, sans-serif;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
 }
 
 html,
 body,
 #root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  /* iOS: stop the page itself from scrolling / rubber-banding so touch drags
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	/* iOS: stop the page itself from scrolling / rubber-banding so touch drags
      only move the inner scroll areas, never the whole game. */
-  overscroll-behavior: none;
+	overscroll-behavior: none;
 }
 
 body {
-  background: var(--bg-0);
-  color: var(--text);
-  cursor: default;
-  user-select: none;
-  -webkit-user-select: none;
-  /* Pin the document to the viewport: on iOS `overflow: hidden` alone doesn't
+	background: var(--bg-0);
+	color: var(--text);
+	cursor: default;
+	user-select: none;
+	-webkit-user-select: none;
+	/* Pin the document to the viewport: on iOS `overflow: hidden` alone doesn't
      prevent the body from being dragged around. (Don't add `touch-action: none`
      here - it intersects down the tree and would kill touch scrolling in the
      carousel and other inner scroll areas.) */
-  position: fixed;
-  inset: 0;
+	position: fixed;
+	inset: 0;
 }
 
 button {
-  font-family: inherit;
-  color: inherit;
-  border: none;
-  background: none;
-  cursor: pointer;
+	font-family: inherit;
+	color: inherit;
+	border: none;
+	background: none;
+	cursor: pointer;
 }
 
 /* ---- Bounce keyframes ----
@@ -108,26 +108,66 @@ button {
    from translate*(0) to translate*(--bounce-to), bouncing as it settles. Use
    `forwards` so it stays at the target. */
 @keyframes ease-out-bounce-x {
-  0%   { transform: translateX(0); }
-  12%  { transform: translateX(calc(var(--bounce-to) * 0.1089)); }
-  24%  { transform: translateX(calc(var(--bounce-to) * 0.4356)); }
-  36%  { transform: translateX(calc(var(--bounce-to) * 0.9801)); }
-  54%  { transform: translateX(calc(var(--bounce-to) * 0.7502)); }
-  74%  { transform: translateX(calc(var(--bounce-to) * 0.9837)); }
-  82%  { transform: translateX(calc(var(--bounce-to) * 0.9375)); }
-  92%  { transform: translateX(calc(var(--bounce-to) * 0.9934)); }
-  96%  { transform: translateX(calc(var(--bounce-to) * 0.9846)); }
-  100% { transform: translateX(var(--bounce-to)); }
+	0% {
+		transform: translateX(0);
+	}
+	12% {
+		transform: translateX(calc(var(--bounce-to) * 0.1089));
+	}
+	24% {
+		transform: translateX(calc(var(--bounce-to) * 0.4356));
+	}
+	36% {
+		transform: translateX(calc(var(--bounce-to) * 0.9801));
+	}
+	54% {
+		transform: translateX(calc(var(--bounce-to) * 0.7502));
+	}
+	74% {
+		transform: translateX(calc(var(--bounce-to) * 0.9837));
+	}
+	82% {
+		transform: translateX(calc(var(--bounce-to) * 0.9375));
+	}
+	92% {
+		transform: translateX(calc(var(--bounce-to) * 0.9934));
+	}
+	96% {
+		transform: translateX(calc(var(--bounce-to) * 0.9846));
+	}
+	100% {
+		transform: translateX(var(--bounce-to));
+	}
 }
 @keyframes ease-out-bounce-y {
-  0%   { transform: translateY(0); }
-  12%  { transform: translateY(calc(var(--bounce-to) * 0.1089)); }
-  24%  { transform: translateY(calc(var(--bounce-to) * 0.4356)); }
-  36%  { transform: translateY(calc(var(--bounce-to) * 0.9801)); }
-  54%  { transform: translateY(calc(var(--bounce-to) * 0.7502)); }
-  74%  { transform: translateY(calc(var(--bounce-to) * 0.9837)); }
-  82%  { transform: translateY(calc(var(--bounce-to) * 0.9375)); }
-  92%  { transform: translateY(calc(var(--bounce-to) * 0.9934)); }
-  96%  { transform: translateY(calc(var(--bounce-to) * 0.9846)); }
-  100% { transform: translateY(var(--bounce-to)); }
+	0% {
+		transform: translateY(0);
+	}
+	12% {
+		transform: translateY(calc(var(--bounce-to) * 0.1089));
+	}
+	24% {
+		transform: translateY(calc(var(--bounce-to) * 0.4356));
+	}
+	36% {
+		transform: translateY(calc(var(--bounce-to) * 0.9801));
+	}
+	54% {
+		transform: translateY(calc(var(--bounce-to) * 0.7502));
+	}
+	74% {
+		transform: translateY(calc(var(--bounce-to) * 0.9837));
+	}
+	82% {
+		transform: translateY(calc(var(--bounce-to) * 0.9375));
+	}
+	92% {
+		transform: translateY(calc(var(--bounce-to) * 0.9934));
+	}
+	96% {
+		transform: translateY(calc(var(--bounce-to) * 0.9846));
+	}
+	100% {
+		transform: translateY(var(--bounce-to));
+	}
 }

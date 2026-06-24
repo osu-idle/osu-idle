@@ -1,5 +1,15 @@
-import { int, mediumtext, mysqlTable, text, timestamp, varchar } from 'drizzle-orm/mysql-core';
-import { ADDON_STATUS, type AddonStatus } from '@osu-idle/shared/addon';
+import {
+	int,
+	longtext,
+	mysqlTable,
+	text,
+	timestamp,
+	varchar,
+} from 'drizzle-orm/mysql-core';
+import {
+	ADDON_STATUS,
+	type AddonStatus,
+} from '@osu-idle/shared/addon';
 import { users } from './user';
 
 export const addons = mysqlTable('addons', {
@@ -12,7 +22,8 @@ export const addons = mysqlTable('addons', {
 	icon: varchar({ length: 512 }), // uploaded image path, null → no icon
 	version: varchar({ length: 20 }).notNull().default('0.1.0'),
 	gameVersion: varchar({ length: 20 }).notNull(),
-	source: mediumtext().notNull(),
+	source: longtext().notNull(),
+	reviewedSource: longtext(), // source as it was at the last moderation, null → never reviewed
 	status: varchar({ length: 20 }).notNull().default(ADDON_STATUS.unpublished),
 	feedback: text(), // admin moderation note, null → none
 	createdAt: timestamp().notNull().defaultNow(),
@@ -42,6 +53,7 @@ export const toAddonDTO = (row: AddonRow, authorName: string) => {
 		version: row.version,
 		gameVersion: row.gameVersion,
 		source: row.source,
+		reviewedSource: row.reviewedSource ?? null,
 		status: row.status as AddonStatus,
 		feedback: row.feedback ?? null,
 		createdAt: row.createdAt.toISOString(),

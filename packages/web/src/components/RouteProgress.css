@@ -1,0 +1,19 @@
+.route-progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 3px;
+	background: linear-gradient(90deg, #ff66ab, #ffa1cd);
+	box-shadow: 0 0 10px rgba(255, 102, 171, 0.7);
+	border-radius: 0 2px 2px 0;
+	z-index: 100000;
+	transition: width 0.2s ease;
+	pointer-events: none;
+}
+
+.route-progress[data-done="true"] {
+	transition:
+		width 0.2s ease,
+		opacity 0.3s ease 0.1s;
+	opacity: 0;
+}

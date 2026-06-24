@@ -1,12 +1,24 @@
 #!/usr/bin/env node
 
-import { readFile, writeFile } from 'node:fs/promises';
+import {
+	readFile,
+	writeFile,
+} from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises';
-import { stdin, stdout } from 'node:process';
-import { execFile, spawn } from 'node:child_process';
+import {
+	stdin,
+	stdout,
+} from 'node:process';
+import {
+	execFile,
+	spawn,
+} from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import {
+	dirname,
+	join,
+} from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -83,7 +95,9 @@ async function restoreVersionFiles(snap) {
 // On failure the bumped files are rolled back and the deploy aborts.
 function runBuild(command) {
 	return new Promise(resolve => {
-		const child = spawn(command, { cwd: ROOT, stdio: 'inherit', shell: true });
+		const child = spawn(command, {
+			cwd: ROOT, stdio: 'inherit', shell: true, 
+		});
 		child.on('close', code => resolve(code === 0));
 		child.on('error', () => resolve(false));
 	});
@@ -175,13 +189,20 @@ async function publishPublic(version) {
 	try {
 		const tree = (await git('rev-parse', 'HEAD^{tree}')).stdout.trim();
 		const parent = (await git('rev-parse', PUBLIC_REF)).stdout.trim();
-		commit = (await git('commit-tree', tree, '-p', parent, '-m', `release version ${version}`)).stdout.trim();
+		commit = (await git('commit-tree', tree, '-p', parent, '-m', `release version ${version}`))
+			.stdout.trim();
 	} catch (err) {
 		stdout.write(`Could not build public release commit: ${(err.stderr || err.message).trim()}\n`);
 		return;
 	}
 
-	if (!await gitTry('Push to public/main', 'push', PUBLIC_REMOTE, `${commit}:refs/heads/${PUBLIC_BRANCH}`)) return;
+	if (!await gitTry(
+		'Push to public/main', 
+		'push', 
+		PUBLIC_REMOTE, 
+		`${commit}:refs/heads/${PUBLIC_BRANCH}`,
+	))
+		return;
 	await gitTry(`Push ${tag} to public`, 'push', PUBLIC_REMOTE, `${commit}:refs/tags/${tag}`);
 	stdout.write(`Published ${tag} to ${PUBLIC_REF} (${commit.slice(0, 9)}).\n`);
 
@@ -255,7 +276,9 @@ async function promptBump(current) {
 	const previews = Object.fromEntries(
 		Object.entries(BUMPS).map(([type, bump]) => [type, bump(parse(current)).join('.')]),
 	);
-	const rl = createInterface({ input: stdin, output: stdout });
+	const rl = createInterface({
+		input: stdin, output: stdout, 
+	});
 	try {
 		while (true) {
 			stdout.write(
@@ -294,7 +317,9 @@ function parseArgs(argv) {
 		if (argv[i] === '--verify') verifyCmd = argv[++i];
 		else positional.push(argv[i]);
 	}
-	return { verifyCmd, bump: positional[0]?.toLowerCase() };
+	return {
+		verifyCmd, bump: positional[0]?.toLowerCase(), 
+	};
 }
 
 async function main() {

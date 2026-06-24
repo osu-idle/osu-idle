@@ -1,12 +1,15 @@
 import Synced from '@osu-idle/shared/helpers/synced';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import { t } from '@lingui/core/macro';
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import {
+	mapped,
+	ValueIn,
+} from '@osu-idle/shared/helpers/mapped';
 
 export const AutopilotModes = [
 	'PLAYLIST',
 	'NEXT',
-	'LOOP'
+	'LOOP',
 ] as const;
 export const AUTOPILOT_MODE = mapped(AutopilotModes);
 export type AutopilotMode = ValueIn<typeof AUTOPILOT_MODE>;
@@ -39,8 +42,14 @@ export default class Autopilot {
 
 	public static session = new Synced<AutopilotSession | null>(null);
 
-	public static start(playlist: string, entries: LightBeatmap[], index: number): void {
-		void this.session.set({ playlist, entries, index });
+	public static start(
+		playlist: string, 
+		entries: LightBeatmap[], 
+		index: number,
+	): void {
+		void this.session.set({
+			playlist, entries, index, 
+		});
 	}
 
 	public static stop(): void {
@@ -61,7 +70,9 @@ export default class Autopilot {
 			return null;
 		}
 		const s = this.session.get()!;
-		void this.session.set({ ...s, index: found.index });
+		void this.session.set({
+			...s, index: found.index, 
+		});
 		return found.beatmap;
 	}
 
@@ -73,7 +84,9 @@ export default class Autopilot {
 		if (!s || s.entries.length === 0) return null;
 		for (let step = 1; step <= s.entries.length; step++) {
 			const i = (s.index + step) % s.entries.length;
-			if (s.entries[i].metadata.runtime) return { beatmap: s.entries[i], index: i };
+			if (s.entries[i].metadata.runtime) return {
+				beatmap: s.entries[i], index: i, 
+			};
 		}
 		return null;
 	}

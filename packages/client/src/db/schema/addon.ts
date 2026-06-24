@@ -1,16 +1,19 @@
 import Synced from '@osu-idle/shared/helpers/synced';
 import type { AddonStatus } from '@osu-idle/shared/addon';
-import { boolean, DAO, integer, table, text } from '../dao';
+import {
+	boolean,
+	DAO,
+	integer,
+	table,
+	text,
+} from '../dao';
 
-// Installed add-ons (per-browser). `id` is the server add-on id, so reinstalling
-// or updating overwrites the same row (the DAO inserts OR REPLACE). `source` is
-// kept locally so enabled add-ons run offline; the other fields are a display
-// snapshot of the catalog entry at install/update time.
 const addon = table('addon', {
 	id:          integer().primaryKey(),
 	name:        text(),
 	description: text(),
 	version:     text(),
+	gameVersion: text(),
 	source:      text(),
 	icon:        text().nullable(),
 	authorId:    integer(),

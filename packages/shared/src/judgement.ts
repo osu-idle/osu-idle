@@ -1,4 +1,7 @@
-import { mapped, type ValueIn } from './helpers/mapped.js';
+import {
+	mapped,
+	type ValueIn,
+} from './helpers/mapped.js';
 
 export const Grades = ['X', 'SS', 'S', 'A', 'B', 'C', 'D', 'F'] as const;
 export const GRADE = mapped(Grades);

@@ -10,7 +10,7 @@ type Score = InferResponseType<(typeof rpc.v1.scores[':id'])['$get'], 200>;
 type Beatmap = InferResponseType<(typeof rpc.v1.beatmap[':id'])['$get'], 200>;
 
 export default function ScoreRow({
-	score, beatmap
+	score, beatmap,
 }: {
 	score: Score,
 	beatmap: Beatmap,

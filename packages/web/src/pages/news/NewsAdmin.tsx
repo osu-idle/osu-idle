@@ -1,12 +1,27 @@
 import './News.css';
 
-import { useEffect, useState } from 'react';
-import { NEWS_TAGS, NEWS_TAG_NAMES, type NewsTag, type NewsDTO } from '@osu-idle/shared/news';
+import {
+	useEffect,
+	useState,
+} from 'react';
+import {
+	NEWS_TAGS,
+	NEWS_TAG_NAMES,
+	type NewsTag,
+	type NewsDTO,
+} from '@osu-idle/shared/news';
 
-import { listAllNews, createNews, updateNews, deleteNews, formatDate, uploadNewsImage, mediaUrl } from '../../api/news';
+import {
+	listAllNews,
+	createNews,
+	updateNews,
+	deleteNews,
+	formatDate,
+	uploadNewsImage,
+	mediaUrl,
+} from '../../api/news';
 import { formatChangelog } from './changelog';
 import Link from '../../components/Link';
-import { ROUTE } from '../../router';
 
 interface Draft {
 	slug: string;
@@ -17,7 +32,9 @@ interface Draft {
 	imageUrl: string | null;
 	published: boolean;
 }
-const EMPTY: Draft = { slug: '', title: '', summary: '', content: '', tag: 'update', imageUrl: null, published: false };
+const EMPTY: Draft = {
+	slug: '', title: '', summary: '', content: '', tag: 'update', imageUrl: null, published: false, 
+};
 
 const slugify = (s: string) =>
 	s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 120);
@@ -41,16 +58,25 @@ export default function NewsAdmin() {
 
 	useEffect(() => { void refresh(); }, []);
 
-	const editNew = () => { setEditingId(null); setDraft(EMPTY); setSlugTouched(false); setError(null); };
+	const editNew = () => { 
+		setEditingId(null);
+		setDraft(EMPTY);
+		setSlugTouched(false); 
+		setError(null);
+	};
 	const edit = (a: NewsDTO) => {
 		setEditingId(a.id);
-		setDraft({ slug: a.slug, title: a.title, summary: a.summary, content: a.content, tag: a.tag, imageUrl: a.imageUrl, published: a.published });
+		setDraft({
+			slug: a.slug, title: a.title, summary: a.summary, content: a.content, tag: a.tag, imageUrl: a.imageUrl, published: a.published, 
+		});
 		setSlugTouched(true);
 		setError(null);
 	};
 
 	const onTitle = (title: string) =>
-		setDraft(d => ({ ...d, title, slug: slugTouched ? d.slug : slugify(title) }));
+		setDraft(d => ({
+			...d, title, slug: slugTouched ? d.slug : slugify(title), 
+		}));
 
 	const onPickImage = async (file: File | undefined) => {
 		if (!file) return;
@@ -58,7 +84,9 @@ export default function NewsAdmin() {
 		setError(null);
 		try {
 			const url = await uploadNewsImage(file);
-			setDraft(d => ({ ...d, imageUrl: url }));
+			setDraft(d => ({
+				...d, imageUrl: url, 
+			}));
 		} catch (e) {
 			setError(String((e as Error).message ?? e));
 		} finally {
@@ -69,7 +97,9 @@ export default function NewsAdmin() {
 	const save = async (publish?: boolean) => {
 		setSaving(true);
 		setError(null);
-		const body = { ...draft, ...(publish === undefined ? {} : { published: publish }) };
+		const body = {
+			...draft, ...(publish === undefined ? {} : { published: publish }), 
+		};
 		try {
 			if (editingId === null) await createNews(body);
 			else await updateNews(editingId, body);
@@ -93,19 +123,21 @@ export default function NewsAdmin() {
 		}
 	};
 
-	if (authorized === null) return <main className="page-contents"><p className="news-msg">Loading…</p></main>;
+	if (authorized === null) return <main className="page-contents">
+		<p className="news-msg">Loading…</p>
+	</main>;
 	if (!authorized) {
 		return (
 			<main className="page-contents">
 				<p className="news-msg news-msg--error">You don’t have access to this page.</p>
-				<Link to={ROUTE.NEWS} className="news-back">← All news</Link>
+				<Link to="/news" className="news-back">← All news</Link>
 			</main>
 		);
 	}
 
 	return (
 		<main className="page-contents">
-			<Link to={ROUTE.NEWS} className="news-back">← All news</Link>
+			<Link to="/news" className="news-back">← All news</Link>
 
 			<div className="news-admin__grid">
 				{/* Existing articles */}
@@ -130,7 +162,16 @@ export default function NewsAdmin() {
 									{formatDate(a.publishedAt)}
 								</span>
 							</div>
-							<button type="button" className="news-admin__del" onClick={e => { e.stopPropagation(); void remove(a); }}>✕</button>
+							<button 
+								type="button"
+								className="news-admin__del" 
+								onClick={e => {
+									e.stopPropagation(); 
+									void remove(a);
+								}}
+							>
+								✕
+							</button>
 						</div>
 					))}
 				</aside>
@@ -148,7 +189,9 @@ export default function NewsAdmin() {
 						<span>Slug</span>
 						<input
 							value={draft.slug}
-							onChange={e => { setSlugTouched(true); setDraft(d => ({ ...d, slug: e.target.value })); }}
+							onChange={e => { setSlugTouched(true); setDraft(d => ({
+								...d, slug: e.target.value, 
+							})); }}
 							required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxLength={120}
 						/>
 						<small>Used in the URL: /news/{draft.slug || 'your-slug'}</small>
@@ -156,7 +199,9 @@ export default function NewsAdmin() {
 
 					<label className="news-field">
 						<span>Tag</span>
-						<select value={draft.tag} onChange={e => setDraft(d => ({ ...d, tag: e.target.value as NewsTag }))}>
+						<select value={draft.tag} onChange={e => setDraft(d => ({
+							...d, tag: e.target.value as NewsTag, 
+						}))}>
 							{NEWS_TAG_NAMES.map(t => <option key={t} value={t}>{NEWS_TAGS[t].label}</option>)}
 						</select>
 						<small>Sets the card colour and the default cover.</small>
@@ -167,17 +212,25 @@ export default function NewsAdmin() {
 						{draft.imageUrl ? (
 							<div className="news-cover">
 								<img className="news-cover__img" src={mediaUrl(draft.imageUrl)!} alt="" />
-								<button type="button" className="news-btn news-btn--sm" onClick={() => setDraft(d => ({ ...d, imageUrl: null }))}>Remove</button>
+								<button type="button" className="news-btn news-btn--sm" onClick={() => setDraft(d => ({
+									...d, imageUrl: null, 
+								}))}>Remove</button>
 							</div>
 						) : (
-							<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={e => void onPickImage(e.target.files?.[0])} />
+							<input 
+								type="file"
+								accept="image/png,image/jpeg,image/webp,image/gif" 
+								onChange={e => void onPickImage(e.target.files?.[0])} 
+							/>
 						)}
 						<small>{uploading ? 'Uploading…' : 'Optional - falls back to the tag colour.'}</small>
 					</div>
 
 					<label className="news-field">
 						<span>Summary</span>
-						<textarea value={draft.summary} onChange={e => setDraft(d => ({ ...d, summary: e.target.value }))} required maxLength={500} rows={2} />
+						<textarea value={draft.summary} onChange={e => setDraft(d => ({
+							...d, summary: e.target.value, 
+						}))} required maxLength={500} rows={2} />
 					</label>
 
 					<div className="news-field">
@@ -186,13 +239,20 @@ export default function NewsAdmin() {
 							<button
 								type="button"
 								className="news-btn news-btn--sm"
-								onClick={() => setDraft(d => ({ ...d, content: formatChangelog(d.content) }))}
+								onClick={() => setDraft(d => ({
+									...d, content: formatChangelog(d.content), 
+								}))}
 							>
 								Format changelog
 							</button>
 						</div>
-						<textarea value={draft.content} onChange={e => setDraft(d => ({ ...d, content: e.target.value }))} required rows={14} className="news-field__code" />
-						<small>HTML is supported - headings, links, &lt;img&gt;, embeds, etc. “Format changelog” turns a markdown changelog into HTML.</small>
+						<textarea value={draft.content} onChange={e => setDraft(d => ({
+							...d, content: e.target.value, 
+						}))} required rows={14} className="news-field__code" />
+						<small>
+							HTML is supported - headings, links, &lt;img&gt;, embeds, etc.
+							“Format changelog” turns a markdown changelog into HTML.
+						</small>
 					</div>
 
 					{error && <p className="news-msg news-msg--error">{error}</p>}
@@ -211,7 +271,12 @@ export default function NewsAdmin() {
 							<button type="submit" className="news-btn" disabled={saving}>
 								{saving ? 'Saving…' : 'Save draft'}
 							</button>
-							<button type="button" className="news-btn news-btn--accent" disabled={saving} onClick={() => void save(true)}>
+							<button 
+								type="button"
+								className="news-btn news-btn--accent" 
+								disabled={saving} 
+								onClick={() => void save(true)}
+							>
 								Save &amp; publish
 							</button>
 						</>)}

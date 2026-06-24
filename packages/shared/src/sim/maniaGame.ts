@@ -1,11 +1,31 @@
-import { ScrollModel, buildBarlines, type Barline } from './scroll.js';
-import { type Bot, type BotContext, type InputEvent } from './bot.js';
+import {
+	ScrollModel,
+	buildBarlines,
+	type Barline,
+} from './scroll.js';
+import {
+	type Bot,
+	type BotContext,
+	type InputEvent,
+} from './bot.js';
 import RuntimeNote from './runtimeNote.js';
 import type { Beatmap } from 'osu-classes';
 import { ManiaRuleset } from 'osu-mania-stable';
 import beatSnap from './beat_snap.js';
-import { JUDGEMENT, type Judgement } from '../judgement.js';
-import { type HitWindows, holdTiers, judge, judgeHold, maniaWindows, ScoreState } from './scoring.js';
+import {
+	JUDGEMENT,
+	type Judgement,
+} from '../judgement.js';
+import {
+	computeHpMultiplier,
+	maxHpIncrease,
+	type HitWindows,
+	holdTiers,
+	judge,
+	judgeHold,
+	maniaWindows,
+	ScoreState,
+} from './scoring.js';
 
 export const LEAD_IN_MS = 2000;
 
@@ -82,6 +102,10 @@ export class ManiaGame {
 	 *  avoids a burst when a throttled tab catches up. */
 	readonly hitTimes: number[];
 
+	/** the same audible head presses as `hitTimes`, paired with their note so the
+	 *  client can play the note's keysound (or the default) at the press time. */
+	readonly headHits: { time: number, note: RuntimeNote }[];
+
 	/** scroll position of each note's head, parallel to `notes` (ascending) */
 	private readonly notePositions: number[];
 	/** ascending note times, for O(log N) windowed nps counts */
@@ -113,7 +137,25 @@ export class ManiaGame {
 		// one judgement per note (a long note scores once, at its tail - the head's
 		// press error is folded into that combined judgement), so the score scales
 		// to 1M over the note count.
-		this.score = new ScoreState(beatmap.difficulty.overallDifficulty, this.notes.length, options.noFail);
+		const drain = beatmap.difficulty.drainRate;
+		const inc = maxHpIncrease(drain);
+		const hpMultiplier = computeHpMultiplier(
+			this.notes.map(n => n.hold
+				? {
+					start: n.time, end: n.endTime, nested: [inc, inc], own: 0, 
+				}
+				: {
+					start: n.time, end: n.time, nested: [], own: inc, 
+				}),
+			drain,
+		);
+		this.score = new ScoreState(
+			drain, 
+			beatmap.difficulty.overallDifficulty, 
+			this.notes.length,
+			options.noFail,
+			hpMultiplier,
+		);
 		this.songEndMs =
 			this.notes.reduce((m, n) => Math.max(m, n.hold ? n.endTime : n.time), 0) + 2000;
 		this.songStartMs =
@@ -148,7 +190,10 @@ export class ManiaGame {
 		};
 		this.events = bot.generateEvents(context);
 		// note-head presses the bot will actually make, in ascending time order
-		this.hitTimes = this.events.filter((e) => !e.tail && !e.ignore).map((e) => e.time);
+		this.headHits = this.events.filter((e) => !e.tail && !e.ignore).map((e) => ({
+			time: e.time, note: e.note, 
+		}));
+		this.hitTimes = this.headHits.map((h) => h.time);
 
 		// Resolve each input at its true chronological time and merge with misses.
 		// An input resolves as a MISS at its hit-window deadline when it is ignored
@@ -161,7 +206,9 @@ export class ManiaGame {
 		this.schedule = this.events.map<Scheduled>((event) => {
 			const deadline = (event.tail ? event.note.endTime : event.note.time) + missWindow;
 			const timedOut = event.ignore || event.time > deadline;
-			return { time: timedOut ? deadline : event.time, event, timedOut };
+			return {
+				time: timedOut ? deadline : event.time, event, timedOut, 
+			};
 		});
 		this.schedule.sort((a, b) => a.time - b.time);
 	}
@@ -313,7 +360,13 @@ export class ManiaGame {
 			if (note.headOffset !== undefined) this.timings.push(ev.time - note.endTime);
 			// the graph/bar dot carries the combined error mapped into its judgement's
 			// band, so its position sits with its colour; a miss reads as a full miss
-			this.registerHit(j, ev.column, ev.time, note.endTime, j === JUDGEMENT.MISS ? null : this.combinedOffset(note, ev, j));
+			this.registerHit(
+				j, 
+				ev.column, 
+				ev.time, 
+				note.endTime, 
+				j === JUDGEMENT.MISS ? null : this.combinedOffset(note, ev, j),
+			);
 		}
 	}
 
@@ -325,7 +378,8 @@ export class ManiaGame {
 	private judgeTail(note: RuntimeNote, ev: InputEvent): Judgement {
 		if (ev.ignore || note.headOffset === undefined) return JUDGEMENT.MISS;
 		const release = ev.time - note.endTime; // signed: <0 early, >0 late
-		if (release > this.windows[JUDGEMENT.GOOD] || release < -this.windows[JUDGEMENT.BAD]) return JUDGEMENT.MISS;
+		if (release > this.windows[JUDGEMENT.GOOD] || release < -this.windows[JUDGEMENT.BAD]) 
+			return JUDGEMENT.MISS;
 		return judgeHold(Math.abs(note.headOffset), Math.abs(release), this.windows);
 	}
 
@@ -351,8 +405,12 @@ export class ManiaGame {
 		// so append it with the largest combined a non-miss hold can reach (head within
 		// the miss window + an early release at the MEH edge).
 		const edges = holdTiers(w)
-			.map(t => ({ judgement: t.judgement, tap: w[t.judgement], combined: t.combined }))
-			.concat({ judgement: JUDGEMENT.BAD, tap: w[JUDGEMENT.BAD], combined: w[JUDGEMENT.MISS] + w[JUDGEMENT.BAD] });
+			.map(t => ({
+				judgement: t.judgement, tap: w[t.judgement], combined: t.combined, 
+			}))
+			.concat({
+				judgement: JUDGEMENT.BAD, tap: w[JUDGEMENT.BAD], combined: w[JUDGEMENT.MISS] + w[JUDGEMENT.BAD], 
+			});
 		const k = edges.findIndex(e => e.judgement === j);
 		const tLo = k === 0 ? 0 : edges[k - 1].tap;
 		const cLo = k === 0 ? 0 : edges[k - 1].combined;
@@ -388,9 +446,13 @@ export class ManiaGame {
 		offset: number | null,
 	): void {
 		this.score.add(j);
-		this.lastFlash = { judgement: j, time: hitTime };
+		this.lastFlash = {
+			judgement: j, time: hitTime, 
+		};
 		if (j !== JUDGEMENT.MISS) this.columnFlash[column] = hitTime;
-		this.hits.push({ time: noteTime, offset, judgement: j });
+		this.hits.push({
+			time: noteTime, offset, judgement: j, 
+		});
 	}
 
 	/** true once the play is over - either HP hit 0 (failed) or every note has

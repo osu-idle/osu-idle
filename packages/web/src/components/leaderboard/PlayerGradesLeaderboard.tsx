@@ -1,34 +1,38 @@
 import './PlayerLeaderboard.css';
 import Link from '../Link';
-import { characterPath, countryGradesRankPath, globalGradesRankPath } from '../../router';
 import int from '@osu-idle/shared/math/int';
-import { getCountryGradesRanking, getGradesRanking } from '../../api/rankings';
-import useAsync from '@osu-idle/shared/hooks/useAsync';
+import type { getGradesRanking } from '../../api/rankings';
 import Flag from '../Flag';
 import rank from '@osu-idle/shared/display/rank';
 import num from '@osu-idle/shared/display/num';
 import hitAccuracy from '@osu-idle/shared/osu/hitAccuracy';
 import accuracy from '@osu-idle/shared/display/accuracy';
-import { Trans, useLingui } from '@lingui/react/macro';
-import { GoodGrade, GoodGrades } from '@osu-idle/shared/judgement';
+import {
+	Trans,
+	useLingui,
+} from '@lingui/react/macro';
+import {
+	GoodGrade,
+	GoodGrades,
+} from '@osu-idle/shared/judgement';
 import sum from '@osu-idle/shared/helpers/sum';
 
 type Sort = GoodGrade | 'all';
 
-export default function PlayerGradesLeaderboard({ sort, country, page }: {
+type Players = Awaited<ReturnType<typeof getGradesRanking>>;
+
+export default function PlayerGradesLeaderboard({ sort, country, page, players }: {
 	sort: Sort,
 	page: number,
 	country?: string,
+	players: Players,
 }) {
 	const { t } = useLingui();
-	const getTo = (sort: Sort) => country ? countryGradesRankPath(sort, country, page) : globalGradesRankPath(sort, page);
-
 
 	const sorts = [...GoodGrades, 'all'] as const;
 	const sortLabel = (sort: Sort) => sort === 'all' ? t`Total` : sort;
 
-	const players = useAsync(async () => await (country ? getCountryGradesRanking(sort, country, page) : getGradesRanking(sort, page)), [sort, page, country]);
-	type Player = NonNullable<typeof players>[number];
+	type Player = Players[number];
 
 	const totalGrades = (p: Player) =>
 		sum(GoodGrades.map(g => p.character_totals[g]));
@@ -49,29 +53,31 @@ export default function PlayerGradesLeaderboard({ sort, country, page }: {
 		return totalGrades(b) - totalGrades(a);
 	};
 
-	const sortedPlayers = players
-		? [...players].sort((a, b) => {
-			const aScore = sort === 'all'
-				? sum(GoodGrades.map(g => a.character_totals[g]))
-				: a.character_totals[sort];
+	const sortedPlayers = [...players].sort((a, b) => {
+		const aScore = sort === 'all'
+			? sum(GoodGrades.map(g => a.character_totals[g]))
+			: a.character_totals[sort];
 
-			const bScore = sort === 'all'
-				? sum(GoodGrades.map(g => b.character_totals[g]))
-				: b.character_totals[sort];
+		const bScore = sort === 'all'
+			? sum(GoodGrades.map(g => b.character_totals[g]))
+			: b.character_totals[sort];
 
-			// preserve original order when not tied
-			if (aScore !== bScore)
-				return 0;
+		// preserve original order when not tied
+		if (aScore !== bScore)
+			return 0;
 
-			return untie(a, b);
-		})
-		: undefined;
-	
+		return untie(a, b);
+	});
+
 	return (<div className='player__lb'>
 		<div className='player__lb_sort'>
 			<span><Trans>Sort by</Trans></span>
 			{sorts.map(type => <Link
-				to={getTo(type)}
+				to='/rankings/grades/$grade'
+				params={{ grade: type }}
+				search={{
+					page, country, 
+				}}
 				className={`${sort === type ? 'current' : ''}`}>
 				{sortLabel(type)}
 			</Link>)}
@@ -90,11 +96,11 @@ export default function PlayerGradesLeaderboard({ sort, country, page }: {
 				</th>)}
 			</thead>
 			<tbody>
-				{sortedPlayers?.map((player, r) => <tr>
+				{sortedPlayers.map((player, r) => <tr>
 					<td>{rank(r+1+((page - 1) * 50))}</td>
 					<td className='main'><div className='player__lb_listing_main'>
 						<Flag country={player.user.country} />
-						<Link to={characterPath(player.character.id)}>{player.character.name}</Link>
+						<Link to='/c/$id' params={{ id: String(player.character.id) }}>{player.character.name}</Link>
 					</div></td>
 					<td className='dimmed'>{accuracy(hitAccuracy(player.character_totals))}</td>
 					<td className='dimmed'>{num(player.character_totals.playCount)}</td>
@@ -103,7 +109,9 @@ export default function PlayerGradesLeaderboard({ sort, country, page }: {
 					{...GoodGrades.map(type => <td className={sort === type ? '' : 'dimmed'}>
 						{num(player.character_totals[type])}
 					</td>)}
-					<td className={sort === 'all' ? '' : 'dimmed'}>{num(sum(GoodGrades.map(g => player.character_totals[g])))}</td>
+					<td className={sort === 'all' ? '' : 'dimmed'}>
+						{num(sum(GoodGrades.map(g => player.character_totals[g])))}
+					</td>
 				</tr>)}
 			</tbody>
 		</table>

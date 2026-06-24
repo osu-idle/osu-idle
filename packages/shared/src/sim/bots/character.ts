@@ -1,10 +1,17 @@
-import { PRESSURE_SKILLS, SKILL, type SkillName } from '../../skills.js';
+import {
+	PRESSURE_SKILLS,
+	SKILL,
+	type SkillName,
+} from '../../skills.js';
 import type Skill from '../skills/skill.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import gaussian from '../../math/gaussian.js';
 import normalize from '../../math/normalize.js';
 import transpose from '../../math/transpose.js';
-import { Bot, type BotContext } from '../bot.js';
+import {
+	Bot,
+	type BotContext,
+} from '../bot.js';
 import type RuntimeNote from '../runtimeNote.js';
 import { maniaWindows } from '../scoring.js';
 import { JUDGEMENT } from '../../judgement.js';
@@ -136,18 +143,24 @@ export function computeReleaseStrainOffset(s: SkillStrain): number {
 	return Math.abs(error) * (Math.random() >= s.type ? -1 : 1);
 }
 
-export const generalBasedScoreFactor = (skillLevel: number, score: ScoreLike) => {
+export const generalBasedScoreFactor = (
+	skillLevel: number, 
+	score: ScoreLike,
+) => {
 	const normalized = transpose(score.accuracy, [
 		transpose(skillLevel, [0, 100], [0.7, 0.95]),
-		transpose(skillLevel, [0, 100], [0.9, 1.05])
+		transpose(skillLevel, [0, 100], [0.9, 1.05]),
 	], [0, 2]);
 	return Math.min(1, Math.max(0, normalized));
 };
 
-export const hardAccBasedScoreFactor = (skillLevel: number, score: ScoreLike) => {
+export const hardAccBasedScoreFactor = (
+	skillLevel: number, 
+	score: ScoreLike,
+) => {
 	const normalized = transpose(score.accuracy, [
 		transpose(skillLevel, [0, 60], [0.7, 0.93]),
-		transpose(skillLevel, [40, 100], [0.98, 1.02])
+		transpose(skillLevel, [40, 100], [0.98, 1.02]),
 	], [0, 2]);
 	return Math.min(1, Math.max(0, normalized));
 };
@@ -155,7 +168,18 @@ export const hardAccBasedScoreFactor = (skillLevel: number, score: ScoreLike) =>
 export const accBasedScoreFactor = (skillLevel: number, score: ScoreLike) => {
 	const normalized = transpose(score.accuracy, [
 		transpose(skillLevel, [0, 50], [0.7, 0.95]),
-		transpose(skillLevel, [30, 100], [1, 1.05])
+		transpose(skillLevel, [30, 100], [1, 1.05]),
+	], [0, 2]);
+	return Math.min(1, Math.max(0, normalized));
+};
+
+export const highAccBasedScoreFactor = (
+	skillLevel: number,
+	score: ScoreLike,
+) => {
+	const normalized = transpose(score.accuracy, [
+		transpose(skillLevel, [0, 75], [0.7, 0.995]),
+		transpose(skillLevel, [50, 100], [1, 1.005]),
 	], [0, 2]);
 	return Math.min(1, Math.max(0, normalized));
 };
@@ -163,7 +187,7 @@ export const accBasedScoreFactor = (skillLevel: number, score: ScoreLike) => {
 export const speedBasedScoreFactor = (skillLevel: number, score: ScoreLike) => {
 	const normalized = transpose(score.accuracy, [
 		transpose(skillLevel, [10, 100], [0.7, 0.9]),
-		transpose(skillLevel, [10, 100], [1, 0.96])
+		transpose(skillLevel, [10, 100], [1, 0.96]),
 	], [0, 2]);
 	return Math.min(1, Math.max(0, normalized));
 };
@@ -173,11 +197,16 @@ export const xpFactorForLevel = (skillLevel: number): number => {
 	return 1 + ((1 - levelFactorCB(clamp(skillLevel / 40, 0, 1))) * 2);
 };
 
-export const xpFactorForScore = (skill: SkillName, skillLevel: number, score: ScoreLike): number => {
+export const xpFactorForScore = (
+	skill: SkillName,
+	skillLevel: number,
+	score: ScoreLike,
+): number => {
 	switch(skill) {
 		case SKILL.reading:
 			return generalBasedScoreFactor(skillLevel, score);
 		case SKILL.accuracy:
+			return highAccBasedScoreFactor(skillLevel, score);
 		case SKILL.concentration:
 		case SKILL.release:
 			return accBasedScoreFactor(skillLevel, score);
@@ -195,31 +224,44 @@ export const xpFactorForScore = (skill: SkillName, skillLevel: number, score: Sc
 };
 
 export const notesCB = cubic_bezier(.62, .16, .5, .83);
-export const highDensityBasedNotesFactor = (skillLevel: number, notes: number) => {
+export const highDensityBasedNotesFactor = (
+	skillLevel: number,
+	notes: number,
+) => {
 	const normalized = normalize(notes, [
 		transpose(skillLevel, [0, 70], [0, 400]),
-		transpose(skillLevel, [20, 100], [800, 1800])
+		transpose(skillLevel, [20, 100], [800, 1800]),
 	]);
 	return notesCB(normalized);
 };
 
-export const mediumDensityBasedNotesFactor = (skillLevel: number, notes: number) => {
+export const mediumDensityBasedNotesFactor = (
+	skillLevel: number,
+	notes: number,
+) => {
 	const normalized = normalize(notes, [
 		transpose(skillLevel, [0, 70], [0, 200]),
-		transpose(skillLevel, [0, 100], [300, 1200])
+		transpose(skillLevel, [0, 100], [300, 1200]),
 	]);
 	return notesCB(normalized);
 };
 
-export const lowDensityBasedNotesFactor = (skillLevel: number, notes: number) => {
+export const lowDensityBasedNotesFactor = (
+	skillLevel: number, 
+	notes: number,
+) => {
 	const normalized = normalize(notes, [
 		transpose(skillLevel, [0, 70], [0, 20]),
-		transpose(skillLevel, [0, 100], [50, 700])
+		transpose(skillLevel, [0, 100], [50, 700]),
 	]);
 	return notesCB(normalized);
 };
 
-export const xpFactorForNotes = (skill: SkillName, skillLevel: number, notes: number): number => {
+export const xpFactorForNotes = (
+	skill: SkillName,
+	skillLevel: number,
+	notes: number,
+): number => {
 	switch(skill) {
 		case SKILL.accuracy:
 		case SKILL.concentration:
@@ -241,7 +283,9 @@ const LENGTH_END = 300000;
 const LENGTH_FACTOR = 3;
 export const lengthCB = cubic_bezier(.2,0,.75,.0);
 export const xpFactorForLength = (length: number): number => {
-	return 1 + lengthCB(Math.max(0, Math.min(1, (length - LENGTH_START) / (LENGTH_END - LENGTH_START)))) * (LENGTH_FACTOR - 1);
+	return 1 + 
+	lengthCB(clamp((length - LENGTH_START) / (LENGTH_END - LENGTH_START), 0, 1) )
+	* (LENGTH_FACTOR - 1);
 };
 
 /** Each miss in a play multiplies consistency's earned pressure notes down -
@@ -249,7 +293,15 @@ export const xpFactorForLength = (length: number): number => {
  *  "clean" to mean anything. */
 export const CONSISTENCY_MISS_PENALTY = 0.5;
 
-export const factorXP = (skill: SkillName, noteXP: number, level: number, score: ScoreLike, notes: number, nonAcc: number, length: number): number => {
+export const factorXP = (
+	skill: SkillName, 
+	noteXP: number,
+	level: number, 
+	score: ScoreLike,
+	notes: number, 
+	nonAcc: number, 
+	length: number,
+): number => {
 	const skillNotes = skill === SKILL.accuracy ?  notes : nonAcc;
 	if (skillNotes === 0) return 0; // no notes credited to this skill - avoid 0/0 → NaN
 	const factor =  xpFactorForLevel(level)
@@ -275,7 +327,9 @@ export const fatigueXPFactor = (sessionTime: number): number => {
 	const hours = sessionTime / 3600;
 	if (hours <= FATIGUE_START_HOURS) return 1;
 	if (hours >= FATIGUE_END_HOURS) return 0;
-	return 1 - fatigueCB((hours - FATIGUE_START_HOURS) / (FATIGUE_END_HOURS - FATIGUE_START_HOURS));
+	return 1 -  fatigueCB(
+		(hours - FATIGUE_START_HOURS) / (FATIGUE_END_HOURS - FATIGUE_START_HOURS),
+	);
 };
 
 export const rcCB = cubic_bezier(.25,0,.2,1);
@@ -284,12 +338,14 @@ export const getRecoveryTime = (startMs: number, endMs: number) => {
 	return raw * (0.25 + (rcCB(raw / 60000) * 1.25));
 };
 
+export type Strains = [RuntimeNote, [NoteStrain, number, number][]];
+
 export default class CharacterBot extends Bot {
 
 	/**
 	 * What each note has been possibly strained by
 	 */
-	private noteStrains = new Map<string, [RuntimeNote, [NoteStrain, number, number][]]>();
+	private noteStrains = new Map<string, Strains>();
 
 	/**
 	 * Remember by what each note has been strained, so we can apply character progression based on struggles
@@ -334,9 +390,22 @@ export default class CharacterBot extends Bot {
 			for(const skill of this.skills) {
 				// per-skill timing is off in production - just a boolean check here
 				const t0 = skillProfiler.enabled ? performance.now() : 0;
-				const result = {...skill.analyze(note, context, this.mapStrain, strain), skill: skill.name };
-				if (skillProfiler.enabled) skillProfiler.add(skill.name, performance.now() - t0);
-				arr.push([result, computeStrainOffset(result), computeReleaseStrainOffset(result)]);
+				const result = {
+					...skill.analyze(
+						note, 
+						context, 
+						this.mapStrain, 
+						strain,
+					), 
+					skill: skill.name, 
+				};
+				if (skillProfiler.enabled) 
+					skillProfiler.add(skill.name, performance.now() - t0);
+				arr.push([
+					result, 
+					computeStrainOffset(result), 
+					computeReleaseStrainOffset(result),
+				]);
 			}
 		}
 	}
@@ -370,7 +439,11 @@ export default class CharacterBot extends Bot {
 	 * baseline rather than merely competing with it 50/50. When fresh they add
 	 * nothing. The remaining "technique" skills keep the worst-vs-accuracy pick.
 	 */
-	private resolveOffset(entries: [NoteStrain, number, number][], i: 1 | 2): { offset: number, strain: NoteStrain, xpStrain: NoteStrain | null } {
+	private resolveOffset(entries: [NoteStrain, number, number][], i: 1 | 2): { 
+		offset: number, 
+		strain: NoteStrain,
+		xpStrain: NoteStrain | null
+	} {
 		const acc = entries.find(r => r[0].skill === 'accuracy')!;
 
 		// one pass over the per-skill entries; a forced outcome (fumbled hold / miss)
@@ -404,7 +477,9 @@ export default class CharacterBot extends Bot {
 			xpStrain = floorStrain;
 		}
 
-		return { offset, strain: worst[0], xpStrain };
+		return {
+			offset, strain: worst[0], xpStrain, 
+		};
 	}
 
 	/**
@@ -416,8 +491,20 @@ export default class CharacterBot extends Bot {
 	 */
 	private scanEntries(
 		entries: [NoteStrain, number, number][], i: 1 | 2, acc: [NoteStrain, number, number],
-	): { done: true, result: { offset: number, strain: NoteStrain, xpStrain: NoteStrain | null } }
-		| { done: false, worst: [NoteStrain, number, number], pureness: number, maxUnpure: NoteStrain, lateFloor: number, floorStrain?: NoteStrain } {
+	): { 
+		done: true, 
+		result: { 
+			offset: number, 
+			strain: NoteStrain, 
+			xpStrain: NoteStrain | null
+		} } | { 
+			done: false, 
+			worst: [NoteStrain, number, number],
+			pureness: number,
+			maxUnpure: NoteStrain, 
+			lateFloor: number,
+			floorStrain?: NoteStrain
+		} {
 		let pureness = 1;
 		let worst = acc;
 		let maxUnpure = acc[0];
@@ -428,7 +515,14 @@ export default class CharacterBot extends Bot {
 			// a coordination error fumbled this hold: it is released at the erroring
 			// press's moment, overriding whatever tail offset the skills computed
 			if (i === 2 && strain.forcedRelease?.at !== undefined) {
-				return { done: true, result: { offset: strain.forcedRelease.at - strain.note.getEndTime(), strain, xpStrain: strain } };
+				return { 
+					done: true, 
+					result: { 
+						offset: strain.forcedRelease.at - strain.note.getEndTime(),
+						strain,
+						xpStrain: strain,
+					}, 
+				};
 			}
 			pureness -= strain.unpure ?? 0;
 			if ((strain.unpure ?? 0) > (maxUnpure.unpure ?? 0)) {
@@ -438,12 +532,21 @@ export default class CharacterBot extends Bot {
 				lateFloor = strain.lateFloor!;
 				floorStrain = strain;
 			}
-			if (strain.miss) return { done: true, result: { offset: r[i], strain, xpStrain: r[0] } };
+			if (strain.miss) return { 
+				done: true, 
+				result: { 
+					offset: r[i], 
+					strain, 
+					xpStrain: r[0], 
+				},
+			};
 			if (Math.abs(r[i]) > Math.abs(worst[i])) {
 				worst = r;
 			}
 		}
-		return { done: false, worst, pureness, maxUnpure, lateFloor, floorStrain };
+		return {
+			done: false, worst, pureness, maxUnpure, lateFloor, floorStrain, 
+		};
 	}
 
 	/**
@@ -474,7 +577,11 @@ export default class CharacterBot extends Bot {
 	}
 
 	private xp?: Record<SkillName, number>;
-	getSkillsXP(length: number, score: ScoreLike, factor: number = 1): Record<SkillName, number> {
+	getSkillsXP(
+		length: number, 
+		score: ScoreLike, 
+		factor: number = 1,
+	): Record<SkillName, number> {
 		if (this.xp) return this.xp;
 
 		this.xp = this.skills.reduce((skills, skill) => {
@@ -482,7 +589,10 @@ export default class CharacterBot extends Bot {
 			return skills;
 		}, {} as Record<SkillName, number>);
 
-		const strained = [...this.noteStrained.entries(), ...this.releaseStrained.entries()];
+		const strained = [
+			...this.noteStrained.entries(), 
+			...this.releaseStrained.entries(),
+		];
 		const notes = strained.length;
 		let nonAcc = 0;
 		let pressure = 0;
@@ -501,17 +611,24 @@ export default class CharacterBot extends Bot {
 		// damp it through the score factor. The result then flows through the
 		// same factorXP pipeline as every other skill, keeping the progression
 		// curve coherent.
-		this.xp[SKILL.consistency] = pressure * Math.pow(CONSISTENCY_MISS_PENALTY, score.MISS ?? 0);
+		this.xp[SKILL.consistency] = pressure 
+		* Math.pow(CONSISTENCY_MISS_PENALTY, score.MISS ?? 0) 
+		* 0.33;
 
 		// Memory also earns at play level: it is never a blamed skill (its press
 		// strain is zero), so its only credit is the SpeedJam error it shaved off
 		// across the map. SpeedJam loses that XP organically - its reduced errors
 		// get it blamed on fewer notes. The sum flows through factorXP like any skill.
-		this.xp[SKILL.memory] = this.mapStrain.memory.reduce((sum, m) => sum + (m.memoryCredit ?? 0), 0);
+		this.xp[SKILL.memory] = this.mapStrain.memory.reduce((sum, m) => 
+			sum + (m.memoryCredit ?? 0)
+		, 0);
 
 		for (const skill of this.skills) {
 			const level = skill.level.get();
-			this.xp[skill.name] = Math.floor(factor * factorXP(skill.name, this.xp[skill.name], level, score, notes, nonAcc, length));
+			this.xp[skill.name] = Math.floor(
+				factor 
+				* factorXP(skill.name, this.xp[skill.name], level, score, notes, nonAcc, length),
+			);
 		}
 
 		return this.xp;

@@ -1,7 +1,17 @@
-import { int, mysqlTable, primaryKey } from 'drizzle-orm/mysql-core';
+import {
+	int,
+	mysqlTable,
+	primaryKey,
+} from 'drizzle-orm/mysql-core';
 import { characters } from './character';
 import { db } from '../client';
-import { and, count, desc, eq, sql } from 'drizzle-orm';
+import {
+	and,
+	count,
+	desc,
+	eq,
+	sql,
+} from 'drizzle-orm';
 import { beatmaps } from './beatmap';
 import { beatmapset } from './beatmapset';
 
@@ -14,7 +24,7 @@ export const beatmaps_played = mysqlTable('beatmaps_played', {
 	plays: int().notNull().default(0),
 	memory: int().notNull().default(0),
 }, table => [
-	primaryKey({ columns: [table.characterId, table.beatmapId]})
+	primaryKey({ columns: [table.characterId, table.beatmapId] }),
 ]);
 
 export type BeatmapsPlayedRow = typeof beatmaps_played.$inferSelect;
@@ -51,15 +61,18 @@ export const getPlays = async (characterId: number, beatmapId: number): Promise<
 	const row = (await db
 		.select({ plays: beatmaps_played.memory })
 		.from(beatmaps_played)
-		.where(and(eq(beatmaps_played.characterId, characterId), eq(beatmaps_played.beatmapId, beatmapId))))[0];
+		.where(
+			and(
+				eq(beatmaps_played.characterId, characterId), 
+				eq(beatmaps_played.beatmapId, beatmapId),
+			),
+		))[0];
 	return row?.plays ?? 0;
 };
 
 export const addBeatmapPlayed = async (characterId: number, beatmapId: number) => {
 	await db.update(beatmaps)
-		.set({
-			plays: sql`${beatmaps.plays} + 1`,
-		})
+		.set({ plays: sql`${beatmaps.plays} + 1` })
 		.where(eq(beatmaps.id, beatmapId));
 
 	return db
@@ -74,7 +87,7 @@ export const addBeatmapPlayed = async (characterId: number, beatmapId: number) =
 			set: {
 				plays: sql`${beatmaps_played.plays} + 1`,
 				memory: sql`${beatmaps_played.memory} + 1`,
-			}
+			},
 		})
 	;
 };

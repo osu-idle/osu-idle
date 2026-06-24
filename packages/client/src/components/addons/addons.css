@@ -1,81 +1,8 @@
-/* The add-ons scene, styled after osu!stable: a flat dark screen with skewed
-   tabs (white when active, pink when not), a large thin title, flat translucent
-   list rows, and the signature full-width bottom action bar with a thin
-   blue→green gradient edge. No rounded "pill" shapes. */
-.addons {
-	position: absolute;
-	inset: 0;
-	overflow: hidden;
-	display: flex;
-	flex-direction: column;
-	background: radial-gradient(circle at 60% 22%, #1a1420 0%, #07060a 85%);
-	color: var(--text);
-	font-weight: 300;
-	animation: addons-in 0.35s ease both;
-}
-@keyframes addons-in {
-	from { opacity: 0; }
-	to { opacity: 1; }
-}
-
-/* ---- skewed osu! tabs ---- */
-.addons__tabs {
-	flex: none;
-	display: flex;
-	gap: 5px;
-	padding: 12px 18px 0;
-}
-.addons__tab {
-	padding: 9px 40px;
-	transform: skewX(-12deg);
-	background: rgba(255, 64, 137, 0.5);
-	color: #fff;
-	font-size: 1.1rem;
-	font-weight: 400;
-	letter-spacing: 0.01em;
-	transition: background 0.15s ease, color 0.15s ease;
-}
-.addons__tab > span { display: block; transform: skewX(12deg); }
-.addons__tab:hover { background: rgba(255, 64, 137, 0.7); }
-.addons__tab.is-active { background: var(--text); color: #1a1018; }
-
-/* ---- header: large thin title + dim subtitle ---- */
-.addons__header {
-	flex: none;
-	display: flex;
-	align-items: baseline;
-	gap: 14px;
-	flex-wrap: wrap;
-	padding: 16px 34px 4px;
-}
-.addons__title { font-size: 2.6rem; font-weight: 200; color: #fff; letter-spacing: 0.01em; }
-.addons__subtitle { font-size: 1.05rem; font-weight: 300; color: var(--text-dim); }
-
-/* ---- scrolling content ---- */
-.addons__body {
-	flex: 1 1 auto;
-	min-height: 0;
-	overflow-y: auto;
-	padding: 10px 34px 28px;
-	scrollbar-width: thin;
-	scrollbar-color: rgba(255, 64, 137, 0.5) transparent;
-}
-.addons__body::-webkit-scrollbar { width: 8px; }
-.addons__body::-webkit-scrollbar-thumb { background: rgba(255, 64, 137, 0.45); }
-
-/* ---- section label ---- */
-.addons__section {
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	margin: 18px 0 10px;
-	font-size: 1.5rem;
-	font-weight: 200;
-	color: var(--osu-pink-light);
-}
+/* Add-on-specific styles. The scene chrome (container, tabs, header, body,
+   bottom bar, and the shared section/list/muted/error helpers) lives in the
+   reusable page layout - see components/page/page.css. */
 
 /* ---- flat list rows ---- */
-.addons__list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; }
 .addon {
 	display: flex;
 	align-items: center;
@@ -83,10 +10,17 @@
 	padding: 10px 14px;
 	background: rgba(0, 0, 0, 0.42);
 	border-left: 3px solid transparent;
-	transition: background 0.14s ease, border-color 0.14s ease;
+	transition:
+		background 0.14s ease,
+		border-color 0.14s ease;
 }
-.addon:hover { background: rgba(255, 255, 255, 0.06); }
-.addon.is-on { border-left-color: var(--osu-pink); background: rgba(255, 64, 137, 0.1); }
+.addon:hover {
+	background: rgba(255, 255, 255, 0.06);
+}
+.addon.is-on {
+	border-left-color: var(--osu-pink);
+	background: rgba(255, 64, 137, 0.1);
+}
 
 .addon__icon {
 	flex: none;
@@ -103,7 +37,13 @@
 	color: var(--osu-pink-light);
 }
 
-.addon__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.addon__main {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+}
 .addon__name {
 	font-size: 1.05rem;
 	font-weight: 500;
@@ -112,10 +52,27 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.addon__ver { color: var(--text-dim); font-size: 0.8rem; font-weight: 300; margin-left: 0.4rem; }
-.addon__by { color: rgba(255, 255, 255, 0.55); font-size: 0.82rem; }
-.addon__row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-.addon__tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.addon__ver {
+	color: var(--text-dim);
+	font-size: 0.8rem;
+	font-weight: 300;
+	margin-left: 0.4rem;
+}
+.addon__by {
+	color: rgba(255, 255, 255, 0.55);
+	font-size: 0.82rem;
+}
+.addon__row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+.addon__tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3rem;
+}
 .addon__tag {
 	font-size: 0.72rem;
 	padding: 0.05rem 0.5rem;
@@ -123,7 +80,11 @@
 	background: rgba(255, 255, 255, 0.08);
 	color: rgba(255, 255, 255, 0.7);
 }
-.addon__feedback { font-size: 0.8rem; font-style: italic; color: #f0c674; }
+.addon__feedback {
+	font-size: 0.8rem;
+	font-style: italic;
+	color: #f0c674;
+}
 .addon__desc {
 	font-size: 0.82rem;
 	color: rgba(255, 255, 255, 0.58);
@@ -143,17 +104,54 @@
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 }
-.addon__badge--published { background: rgba(110, 226, 154, 0.2); color: #6ee29a; }
-.addon__badge--pending { background: rgba(240, 198, 116, 0.2); color: #f0c674; }
-.addon__badge--onHold { background: rgba(110, 170, 240, 0.2); color: #8ab6f0; }
-.addon__badge--denied { background: rgba(239, 136, 136, 0.2); color: #ef8888; }
-.addon__badge--unpublished { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.65); }
+.addon__badge--published {
+	background: rgba(110, 226, 154, 0.2);
+	color: #6ee29a;
+}
+.addon__badge--pending {
+	background: rgba(240, 198, 116, 0.2);
+	color: #f0c674;
+}
+.addon__badge--onHold {
+	background: rgba(110, 170, 240, 0.2);
+	color: #8ab6f0;
+}
+.addon__badge--denied {
+	background: rgba(239, 136, 136, 0.2);
+	color: #ef8888;
+}
+.addon__badge--unpublished {
+	background: rgba(255, 255, 255, 0.1);
+	color: rgba(255, 255, 255, 0.65);
+}
 
-.addon__actions { flex: none; display: flex; align-items: center; gap: 0.45rem; }
-.addon__installed { color: #6ee29a; font-size: 0.85rem; font-weight: 600; padding: 0 0.5rem; }
+.addon__actions {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+}
+.addon__installed {
+	color: #6ee29a;
+	font-size: 0.85rem;
+	font-weight: 600;
+	padding: 0 0.5rem;
+}
 
-.addon-toggle { display: flex; align-items: center; gap: 0.4rem; color: var(--text); font-size: 0.84rem; cursor: pointer; user-select: none; }
-.addon-toggle input { accent-color: var(--osu-pink); width: 15px; height: 15px; }
+.addon-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	color: var(--text);
+	font-size: 0.84rem;
+	cursor: pointer;
+	user-select: none;
+}
+.addon-toggle input {
+	accent-color: var(--osu-pink);
+	width: 15px;
+	height: 15px;
+}
 
 /* ---- flat buttons ---- */
 .addon-btn {
@@ -164,27 +162,45 @@
 	font-size: 0.85rem;
 	font-weight: 400;
 	cursor: pointer;
-	transition: background 0.14s ease, opacity 0.14s ease;
+	transition:
+		background 0.14s ease,
+		opacity 0.14s ease;
 }
-.addon-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); }
-.addon-btn:disabled { opacity: 0.4; cursor: default; }
-.addon-btn--primary { background: var(--osu-pink-darkest); color: #fff; font-weight: 600; }
-.addon-btn--primary:hover:not(:disabled) { background: var(--osu-pink-dark); }
-.addon-btn--danger { background: rgba(214, 64, 69, 0.28); color: #ffb1b3; }
-.addon-btn--danger:hover:not(:disabled) { background: rgba(214, 64, 69, 0.48); }
-
-.addons__muted { color: var(--text-dim); font-size: 0.95rem; padding: 0.6rem 0.2rem; }
-.addons__error {
-	color: #ef8888;
-	background: rgba(140, 47, 47, 0.18);
-	padding: 0.7rem 1rem;
-	margin: 0.6rem 0;
-	font-size: 0.9rem;
+.addon-btn:hover:not(:disabled) {
+	background: rgba(255, 255, 255, 0.18);
+}
+.addon-btn:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+.addon-btn--primary {
+	background: var(--osu-pink-darkest);
+	color: #fff;
+	font-weight: 600;
+}
+.addon-btn--primary:hover:not(:disabled) {
+	background: var(--osu-pink-dark);
+}
+.addon-btn--danger {
+	background: rgba(214, 64, 69, 0.28);
+	color: #ffb1b3;
+}
+.addon-btn--danger:hover:not(:disabled) {
+	background: rgba(214, 64, 69, 0.48);
 }
 
 /* ---- browse toolbar (osu! "Search:" + sort) ---- */
-.addons__toolbar { display: flex; align-items: center; gap: 1.2rem; margin: 6px 0 16px; flex-wrap: wrap; }
-.addons__search-label { color: var(--text-dim); font-size: 1rem; }
+.addons__toolbar {
+	display: flex;
+	align-items: center;
+	gap: 1.2rem;
+	margin: 6px 0 16px;
+	flex-wrap: wrap;
+}
+.addons__search-label {
+	color: var(--text-dim);
+	font-size: 1rem;
+}
 .addons__search {
 	flex: 0 1 360px;
 	padding: 0.5rem 0.85rem;
@@ -195,55 +211,40 @@
 	font-size: 1rem;
 	outline: none;
 }
-.addons__search:focus { border-color: rgba(255, 64, 137, 0.6); }
-.addons__search::placeholder { color: var(--text-dim); }
-.addons__sort { display: flex; gap: 1.2rem; margin-left: auto; }
-.addons__sort-btn { color: var(--text-dim); font-size: 1rem; transition: color 0.14s ease; }
-.addons__sort-btn:hover { color: var(--text); }
-.addons__sort-btn.is-active { color: var(--osu-pink-light); }
-
-/* ---- bottom action bar (osu! signature) ---- */
-.addons__bottombar {
-	position: relative;
-	flex: none;
-	height: 74px;
-	display: flex;
-	background: rgba(0, 0, 0, 0.55);
+.addons__search:focus {
+	border-color: rgba(255, 64, 137, 0.6);
 }
-.addons__bottombar::before {
-	content: '';
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 2px;
-	background: linear-gradient(90deg, #3c5dd1, #79d68b 50%, #3c5dd1);
+.addons__search::placeholder {
+	color: var(--text-dim);
 }
-.addons__baraction {
-	flex: 1;
+.addons__sort {
 	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 1.6rem;
-	font-weight: 300;
+	gap: 1.2rem;
+	margin-left: auto;
+}
+.addons__sort-btn {
+	color: var(--text-dim);
+	font-size: 1rem;
+	transition: color 0.14s ease;
+}
+.addons__sort-btn:hover {
 	color: var(--text);
-	cursor: pointer;
-	transition: background 0.15s ease;
 }
-.addons__baraction:hover { background: rgba(255, 255, 255, 0.06); }
+.addons__sort-btn.is-active {
+	color: var(--osu-pink-light);
+}
 
-/* ---- editor (flat dark panel) ---- */
-.addon-editor {
+/* ---- the unified add-on view (editor / details / install / update) ---- */
+.addon-view {
 	display: flex;
 	flex-direction: column;
 	gap: 1.1rem;
 	padding: 1.5rem;
 	background: rgba(0, 0, 0, 0.5);
 }
-.addon-editor__title { font-size: 1.6rem; font-weight: 200; color: #fff; }
 
-/* moderator feedback, pinned at the top of the editor for the author */
-.addon-editor__feedback {
+/* moderator feedback, pinned at the top of the metadata (edit mode only) */
+.addon-view__feedback {
 	display: flex;
 	flex-direction: column;
 	gap: 0.25rem;
@@ -253,7 +254,7 @@
 	color: #f4d488;
 	font-size: 0.92rem;
 }
-.addon-editor__feedback-label {
+.addon-view__feedback-label {
 	font-size: 0.7rem;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -261,17 +262,81 @@
 	color: #f0c674;
 }
 
-/* metadata fills the left, the code editor is a fixed 80-col column on the
-   right; both stack into rows when the viewport is too narrow */
-.addon-editor__cols { display: flex; gap: 1.5rem; align-items: stretch; }
-.addon-editor__meta { flex: 1 1 auto; min-width: 300px; display: flex; flex-direction: column; gap: 1.1rem; }
-.addon-field--code { flex: 0 0 auto; min-width: 0; }
+/* metadata fills the left, the code is a fixed 80-col column on the right;
+   both stack into rows when the viewport is too narrow */
+.addon-view__cols {
+	display: flex;
+	gap: 1.5rem;
+	align-items: stretch;
+}
+.addon-view__meta {
+	flex: 1 1 auto;
+	min-width: 300px;
+	display: flex;
+	flex-direction: column;
+	gap: 1.1rem;
+}
+.addon-field--code {
+	flex: 0 0 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
 @media (max-width: 1100px) {
-	.addon-editor__cols { flex-direction: column; }
-	.addon-editor__meta { flex: none; min-width: 0; }
+	.addon-view__cols {
+		flex-direction: column;
+	}
+	.addon-view__meta {
+		flex: none;
+		min-width: 0;
+	}
 }
 
-.addon-field { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+/* read-only metadata header (view mode) */
+.addon-view__head {
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+}
+.addon-view__headmeta {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+.addon-view__name {
+	font-size: 1.3rem;
+	font-weight: 500;
+	color: #fff;
+}
+.addon-view__desc {
+	margin: 0;
+	color: rgba(255, 255, 255, 0.75);
+	font-size: 0.95rem;
+}
+
+/* code column header: the "Code" label or the Code / Changes tabs */
+.addon-view__codehead {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	min-height: 1.4rem;
+}
+.addon-view__codelabel {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--text-dim);
+}
+
+.addon-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	min-width: 0;
+}
 .addon-field > span {
 	font-size: 0.8rem;
 	font-weight: 600;
@@ -279,8 +344,14 @@
 	letter-spacing: 0.06em;
 	color: var(--text-dim);
 }
-.addon-field-row { display: flex; gap: 1rem; }
-.addon-field-row .addon-field { flex: 1 1 0; min-width: 0; }
+.addon-field-row {
+	display: flex;
+	gap: 1rem;
+}
+.addon-field-row .addon-field {
+	flex: 1 1 0;
+	min-width: 0;
+}
 .addon-field input,
 .addon-desc {
 	width: 100%;
@@ -293,8 +364,13 @@
 	outline: none;
 }
 .addon-field input:focus,
-.addon-desc:focus { border-color: rgba(255, 64, 137, 0.6); }
-.addon-desc { min-height: 64px; resize: vertical; }
+.addon-desc:focus {
+	border-color: rgba(255, 64, 137, 0.6);
+}
+.addon-desc {
+	min-height: 64px;
+	resize: vertical;
+}
 
 /* Scroll wrapper around react-simple-code-editor: it owns the height, border and
    scrolling; the editor inside grows with its content (VSCode Dark+ token theme
@@ -316,11 +392,17 @@
 	line-height: 1.5;
 	tab-size: 4;
 }
-.addon-code:focus-within { border-color: rgba(255, 64, 137, 0.6); }
-.addon-code__inner { min-height: 100%; }
-.addon-code__area { outline: none; }
+.addon-code:focus-within {
+	border-color: rgba(255, 64, 137, 0.6);
+}
+.addon-code__inner {
+	min-height: 100%;
+}
+.addon-code__area {
+	outline: none;
+}
 
-.addon-editor__notice {
+.addon-view__notice {
 	margin: 0;
 	font-size: 0.82rem;
 	color: var(--text-dim);
@@ -328,6 +410,62 @@
 	padding-left: 0.7rem;
 }
 
-.addon-icon-row { display: flex; align-items: center; gap: 1rem; }
-.addon-icon-preview { width: 48px; height: 48px; object-fit: cover; }
-.addon-editor__actions { display: flex; justify-content: flex-end; gap: 0.7rem; margin-top: 0.4rem; }
+.addon-icon-row {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+.addon-icon-preview {
+	width: 48px;
+	height: 48px;
+	object-fit: cover;
+}
+
+/* ---- read-only code view ---- */
+.addon-codeview {
+	max-height: 60vh;
+	overflow: auto;
+	margin: 0;
+	font-size: 0.82rem;
+}
+
+/* ---- code diff ---- */
+.addon-diff {
+	max-height: 60vh;
+	overflow: auto;
+	margin: 0;
+	padding: 0.6rem 0;
+	background: #1e1e1e;
+	color: #d4d4d4;
+	font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+	font-size: 0.82rem;
+	line-height: 1.5;
+	tab-size: 4;
+}
+.addon-diff__line {
+	display: flex;
+	gap: 0.6rem;
+	padding: 0 0.8rem;
+	white-space: pre;
+}
+.addon-diff__line code {
+	background: none;
+}
+.addon-diff__sigil {
+	flex: none;
+	width: 1ch;
+	color: rgba(255, 255, 255, 0.35);
+	user-select: none;
+}
+.addon-diff__line--add {
+	background: rgba(80, 200, 120, 0.16);
+}
+.addon-diff__line--add .addon-diff__sigil {
+	color: #6ee29a;
+}
+.addon-diff__line--remove {
+	background: rgba(214, 64, 69, 0.18);
+}
+.addon-diff__line--remove .addon-diff__sigil {
+	color: #ef8888;
+}

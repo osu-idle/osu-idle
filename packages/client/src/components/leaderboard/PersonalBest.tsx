@@ -12,9 +12,12 @@ interface Props {
 	country?: string,
 }
 
-/** The signed-in player's own best on this beatmap + its rank (global, or within
- *  a country), shown below the leaderboard even when it falls outside the top 50.
- *  Hidden when signed out or the player has no play here yet. */
+/**
+ * The signed-in player's own best on this beatmap + its rank (global,
+ * or within a country), shown below the leaderboard even when it falls
+ * outside the top 50.
+ * Hidden when signed out or the player has no play here yet.
+ */
 export default function PersonalBest({ beatmapId, country }: Props) {
 	const [account] = useSynced(Account.character);
 

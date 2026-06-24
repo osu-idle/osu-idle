@@ -1,7 +1,11 @@
-import { Skills, type SkillName } from '../skills.js';
+import {
+	Skills,
+	type SkillName,
+} from '../skills.js';
 
 type SkillLevels = Record<SkillName, {level: number, xp: number}>;
-type SkilledCharacter = { id: number } & Record<`${SkillName}Level` | `${SkillName}Xp`, number>;
+type SkilledCharacter = { id: number } 
+	& Record<`${SkillName}Level` | `${SkillName}Xp`, number>;
 
 export const extractSkills = (character: SkilledCharacter): SkillLevels => {
 	const skills: SkillLevels = {} as SkillLevels;

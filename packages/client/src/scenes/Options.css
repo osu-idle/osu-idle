@@ -44,7 +44,10 @@
 	text-align: center;
 	line-height: 3;
 	border-right: 6px solid transparent;
-	transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+	transition:
+		color 120ms ease,
+		background 120ms ease,
+		border-color 120ms ease;
 }
 .options__tab:hover {
 	color: white;

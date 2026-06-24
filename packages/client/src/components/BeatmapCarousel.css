@@ -1,40 +1,40 @@
 .carousel {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  position: relative;
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* iOS: own the vertical drag, keep momentum, don't chain to the page. */
-  touch-action: pan-y;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  /* The carousel virtualises and drives its own scroll position; the browser's
+	flex: 1;
+	min-width: 0;
+	height: 100%;
+	position: relative;
+	overflow-y: auto;
+	overflow-x: hidden;
+	/* iOS: own the vertical drag, keep momentum, don't chain to the page. */
+	touch-action: pan-y;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+	/* The carousel virtualises and drives its own scroll position; the browser's
      scroll anchoring would fight it by nudging scrollTop as cards mount/unmount. */
-  overflow-anchor: none;
-  padding: 25vh 0;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 102, 171, 0.5) transparent;
+	overflow-anchor: none;
+	padding: 25vh 0;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 102, 171, 0.5) transparent;
 }
 .carousel::-webkit-scrollbar {
-  width: 8px;
+	width: 8px;
 }
 .carousel::-webkit-scrollbar-thumb {
-  background: rgba(255, 102, 171, 0.45);
-  border-radius: 4px;
+	background: rgba(255, 102, 171, 0.45);
+	border-radius: 4px;
 }
 
 .carousel__list {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
 }
 
 /* stands in for the virtualised (un-mounted) cards above/below the viewport */
 .carousel__spacer {
-  flex: 0 0 auto;
-  width: 0;
-  pointer-events: none;
+	flex: 0 0 auto;
+	width: 0;
+	pointer-events: none;
 }
 
 /*
@@ -44,114 +44,119 @@
  * Positive translateX = toward the right edge, negative = out toward the player.
  */
 .bm-card {
-  --bow: 0px;
-  --pop: 0px;
-  --scale: 1;
-  position: relative;
-  width: 77%;
-  height: 100px;
-  /* spacing lives on the card (not a flex gap on the list) so the virtualiser's
+	--bow: 0px;
+	--pop: 0px;
+	--scale: 1;
+	position: relative;
+	width: 77%;
+	height: 100px;
+	/* spacing lives on the card (not a flex gap on the list) so the virtualiser's
      fixed STRIDE holds no matter how the window is sliced - keep in sync with JS */
-  margin-bottom: 5px;
-  border: 0;
-  border-radius: 10px 0 0 10px;
-  overflow: hidden;
-  background-size: cover;
-  background-position: center;
-  text-align: left;
-  color: #fff;
-  display: flex;
-  align-items: stretch;
-  cursor: pointer;
-  transform-origin: right center;
-  transform: translateX(calc(var(--bow) + var(--pop) + 40px)) scale(var(--scale));
-  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1),
-    box-shadow 0.18s ease, opacity 0.18s ease, filter 0.18s ease;
-  box-shadow: -4px 4px 14px rgba(0, 0, 0, 0.5);
+	margin-bottom: 5px;
+	border: 0;
+	border-radius: 10px 0 0 10px;
+	overflow: hidden;
+	background-size: cover;
+	background-position: center;
+	text-align: left;
+	color: #fff;
+	display: flex;
+	align-items: stretch;
+	cursor: pointer;
+	transform-origin: right center;
+	transform: translateX(calc(var(--bow) + var(--pop) + 40px))
+		scale(var(--scale));
+	transition:
+		transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1),
+		box-shadow 0.18s ease,
+		opacity 0.18s ease,
+		filter 0.18s ease;
+	box-shadow: -4px 4px 14px rgba(0, 0, 0, 0.5);
 }
 .bm-card:hover {
-  --pop: -32px;
+	--pop: -32px;
 }
 
 /* not-yet-downloaded maps are dimmed; downloaded ones are full strength */
 .bm-card.is-remote {
-  opacity: 0.4;
-  filter: saturate(0.7);
+	opacity: 0.4;
+	filter: saturate(0.7);
 }
 .bm-card.is-remote:hover,
 .bm-card.is-remote.is-active {
-  opacity: 0.85;
-  filter: saturate(0.9);
+	opacity: 0.85;
+	filter: saturate(0.9);
 }
 .bm-card.is-downloaded {
-  opacity: 1;
+	opacity: 1;
 }
 
 /* the other difficulties of the selected set stand out together with it:
    full strength, nudged out, with a pink accent - but less than the active one */
 .bm-card.is-sibling {
-  --pop: -16px;
-  opacity: 1;
-  filter: none;
-  box-shadow: -5px 4px 18px rgba(255, 102, 171, 0.3),
-    inset 4px 0 0 rgba(255, 102, 171, 0.85);
+	--pop: -16px;
+	opacity: 1;
+	filter: none;
+	box-shadow:
+		-5px 4px 18px rgba(255, 102, 171, 0.3),
+		inset 4px 0 0 rgba(255, 102, 171, 0.85);
 }
 .bm-card.is-sibling.is-remote {
-  opacity: 0.92;
-  filter: saturate(0.95);
+	opacity: 0.92;
+	filter: saturate(0.95);
 }
 .bm-card.is-sibling:hover {
-  --pop: -34px;
+	--pop: -34px;
 }
 
 .bm-card.is-active {
-  --pop: -36px;
-  --scale: 1.06;
-  box-shadow: -8px 6px 26px rgba(255, 102, 171, 0.5);
+	--pop: -36px;
+	--scale: 1.06;
+	box-shadow: -8px 6px 26px rgba(255, 102, 171, 0.5);
 }
 .bm-card.is-active:hover {
-  --pop: -42px;
+	--pop: -42px;
 }
 
 .bm-card__progress {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  z-index: 2;
-  height: 3px;
-  background: var(--osu-pink, #ff66ab);
-  box-shadow: 0 0 8px rgba(255, 102, 171, 0.8);
-  transition: width 0.15s linear;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	z-index: 2;
+	height: 3px;
+	background: var(--osu-pink, #ff66ab);
+	box-shadow: 0 0 8px rgba(255, 102, 171, 0.8);
+	transition: width 0.15s linear;
 }
 
 /* osu! stable panels: bright on the left fading to the bare cover on the right */
 .bm-card__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.85) 0%,
-    rgba(0, 0, 0, 0.6) 45%,
-    rgba(0, 0, 0, 0.15) 100%
-  );
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		90deg,
+		rgba(0, 0, 0, 0.85) 0%,
+		rgba(0, 0, 0, 0.6) 45%,
+		rgba(0, 0, 0, 0.15) 100%
+	);
 }
 .bm-card.is-active .bm-card__scrim {
-  background: linear-gradient(
-    90deg,
-    rgba(54, 20, 38, 0.88) 0%,
-    rgba(30, 12, 22, 0.6) 50%,
-    rgba(20, 10, 16, 0.15) 100%
-  );
+	background: linear-gradient(
+		90deg,
+		rgba(54, 20, 38, 0.88) 0%,
+		rgba(30, 12, 22, 0.6) 50%,
+		rgba(20, 10, 16, 0.15) 100%
+	);
 }
 
 .bm-card__inner {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.12rem;
-  min-width: 0;
+	position: relative;
+	z-index: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0.12rem;
+	min-width: 0;
 }
 .bm-card__inner .skin__grade {
 	height: 70%;
@@ -159,118 +164,118 @@
 	margin-right: -5px;
 }
 .bm-card__body {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.12rem;
-  padding: 0.55rem 0.9rem;
-  min-width: 0;
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 0.12rem;
+	padding: 0.55rem 0.9rem;
+	min-width: 0;
 }
 .bm-card__title {
-  display: flex;
-  flex-wrap: wrap;
-  font-weight: 600;
-  font-size: 1.04rem;
-  line-height: 1.18;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+	display: flex;
+	flex-wrap: wrap;
+	font-weight: 600;
+	font-size: 1.04rem;
+	line-height: 1.18;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 .bm-card__dl {
 	font-weight: 700;
 	margin-left: 10px;
 }
 .bm-card__artist {
-  font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.82);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+	font-size: 0.82rem;
+	color: rgba(255, 255, 255, 0.82);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 .bm-card__meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.18rem;
-  min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.18rem;
+	min-width: 0;
 }
 .bm-card__stars {
-  font-size: 0.78rem;
-  font-weight: 800;
-  white-space: nowrap;
-  flex-shrink: 0;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+	font-size: 0.78rem;
+	font-weight: 800;
+	white-space: nowrap;
+	flex-shrink: 0;
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
 }
 .bm-card__version {
-  font-size: 0.76rem;
-  font-weight: 700;
-  white-space: nowrap;
-  flex-shrink: 0;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+	font-size: 0.76rem;
+	font-weight: 700;
+	white-space: nowrap;
+	flex-shrink: 0;
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
 }
 .bm-card__creator {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.55);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	font-size: 0.7rem;
+	color: rgba(255, 255, 255, 0.55);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 /* group header row - reuses .bm-card (so it rides the arc + stride) but reads as
    a solid osu!-style bar: black, accent border, label + count, a collapse caret */
 .bm-group {
-  width: 82%;
-  background: #000000d7;
-  border-radius: 0px;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0 1.2rem;
-  color: #fff;
+	width: 82%;
+	background: #000000d7;
+	border-radius: 0px;
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	padding: 0 1.2rem;
+	color: #fff;
 }
 .bm-group:hover {
-  --pop: -16px;
+	--pop: -16px;
 }
 .bm-group__label {
-  flex: 1;
-  min-width: 0;
-  font-weight: 100;
-  font-size: 2.2rem;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: rgb(168, 168, 168);
+	flex: 1;
+	min-width: 0;
+	font-weight: 100;
+	font-size: 2.2rem;
+	letter-spacing: 0.06em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: rgb(168, 168, 168);
 }
 .bm-group.is-selected .bm-group__label {
 	color: white;
 }
 
 .carousel__sentinel {
-  height: 40px;
-  display: grid;
-  place-items: center;
-  width: 87%;
-  font-size: 0.8rem;
-  color: var(--text-dim);
+	height: 40px;
+	display: grid;
+	place-items: center;
+	width: 87%;
+	font-size: 0.8rem;
+	color: var(--text-dim);
 }
 .carousel__empty {
-  width: 87%;
-  text-align: center;
-  padding: 2rem 0;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  color: var(--text-dim);
+	width: 87%;
+	text-align: center;
+	padding: 2rem 0;
+	font-size: 0.95rem;
+	letter-spacing: 0.04em;
+	color: var(--text-dim);
 }
 .carousel__end {
-  width: 87%;
-  text-align: center;
-  padding: 1rem 0 2rem;
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
+	width: 87%;
+	text-align: center;
+	padding: 1rem 0 2rem;
+	font-size: 0.78rem;
+	letter-spacing: 0.06em;
+	color: var(--text-dim);
 }

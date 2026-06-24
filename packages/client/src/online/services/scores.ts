@@ -18,15 +18,28 @@ export const getScore = async (id: number): Promise<ScoreResponse> => {
 
 /** The signed-in character's own best on this beatmap + its rank, global or
  *  within a country (null when signed out or no play yet). */
-export const getMyBeatmapScore = async (beatmap: number, country?: string): Promise<MyBeatmapScoreResponse> => {
+export const getMyBeatmapScore = async (
+	beatmap: number, 
+	country?: string,
+): Promise<MyBeatmapScoreResponse> => {
 	const res = country === undefined
-		? await endpoint['beatmap'][':beatmap']['me'].$get({ param: { beatmap: String(beatmap) } })
-		: await endpoint['beatmap'][':beatmap']['country'][':country']['me'].$get({ param: { beatmap: String(beatmap), country } });
-	if (!res.ok) throw new Error(`getMyBeatmapScore(${beatmap}) failed: ${res.status}`);
+		? await endpoint['beatmap'][':beatmap']['me']
+			.$get({ param: { beatmap: String(beatmap) } })
+		: await endpoint['beatmap'][':beatmap']['country'][':country']['me']
+			.$get({
+				param: {
+					beatmap: String(beatmap), country, 
+				}, 
+			});
+
+	if (!res.ok)
+		throw new Error(`getMyBeatmapScore(${beatmap}) failed: ${res.status}`);
 	return res.json();
 };
 
-export const flushBeatmapScores = async (beatmap: number) => MemCache.get<BeatmapScoresResponse>('API.getBeatmapScores').delete(beatmap);
+export const flushBeatmapScores = async (beatmap: number) => 
+	MemCache.get<BeatmapScoresResponse>('API.getBeatmapScores')
+		.delete(beatmap);
 
 const importScores = (scores: BeatmapScoresResponse) => {
 	void (async () => {
@@ -40,22 +53,35 @@ const importScores = (scores: BeatmapScoresResponse) => {
 	})();
 };
 
-export const getBeatmapScores = async (beatmap: number): Promise<BeatmapScoresResponse> => {
-	return MemCache.get<BeatmapScoresResponse>('API.getBeatmapScores').process(beatmap, async () => {
-		const res = await endpoint['beatmap'][':beatmap'].$get({ param: { beatmap: String(beatmap) } });
-		if (!res.ok) throw new Error(`getBeatmapScores(${beatmap}) failed: ${res.status}`);
-		const scores: BeatmapScoresResponse = await res.json();
-		importScores(scores);
-		return scores;
-	}, 1000 * 60);
+export const getBeatmapScores = async (
+	beatmap: number,
+): Promise<BeatmapScoresResponse> => {
+	return MemCache.get<BeatmapScoresResponse>('API.getBeatmapScores')
+		.process(beatmap, async () => {
+			const res = await endpoint['beatmap'][':beatmap']
+				.$get({ param: { beatmap: String(beatmap) } });
+			if (!res.ok) throw new Error(`getBeatmapScores(${beatmap}) failed: ${res.status}`);
+			const scores: BeatmapScoresResponse = await res.json();
+			importScores(scores);
+			return scores;
+		}, 1000 * 60);
 };
 
-export const getCountryBeatmapScores = async (beatmap: number, country: string): Promise<BeatmapScoresResponse> => {
-	return MemCache.get<BeatmapScoresResponse>('API.getCountryBeatmapScores').process(`${beatmap}:${country}`, async () => {
-		const res = await endpoint['beatmap'][':beatmap']['country'][':country'].$get({ param: { beatmap: String(beatmap), country } });
-		if (!res.ok) throw new Error(`getCountryBeatmapScores(${beatmap}, ${country}) failed: ${res.status}`);
-		const scores: BeatmapScoresResponse = await res.json();
-		importScores(scores);
-		return scores;
-	}, 1000 * 60);
+export const getCountryBeatmapScores = async (
+	beatmap: number, 
+	country: string,
+): Promise<BeatmapScoresResponse> => {
+	return MemCache.get<BeatmapScoresResponse>('API.getCountryBeatmapScores')
+		.process(`${beatmap}:${country}`, async () => {
+			const res = await endpoint['beatmap'][':beatmap']['country'][':country']
+				.$get({
+					param: {
+						beatmap: String(beatmap), country, 
+					}, 
+				});
+			if (!res.ok) throw new Error(`getCountryBeatmapScores(${beatmap}, ${country}) failed: ${res.status}`);
+			const scores: BeatmapScoresResponse = await res.json();
+			importScores(scores);
+			return scores;
+		}, 1000 * 60);
 };

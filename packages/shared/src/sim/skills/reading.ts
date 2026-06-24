@@ -1,10 +1,16 @@
 import type { BotContext } from '../bot.js';
-import type { Strain, SkillStrain } from '../bots/character.js';
+import type {
+	Strain,
+	SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import Skill from './skill.js';
 import { SKILL } from '../../skills.js';
-import { mapped, type ValueIn } from '../../helpers/mapped.js';
+import {
+	mapped,
+	type ValueIn,
+} from '../../helpers/mapped.js';
 
 const HAND = mapped(['LEFT', 'RIGHT']);
 type Hand = ValueIn<typeof HAND>;
@@ -39,6 +45,7 @@ type Group = {
 export default class Reading extends Skill {
 
 	private static fn = cubic_bezier(.22,1,.8,.6);
+	private static fn2 = cubic_bezier(.5, 0, .5, 1);
 	private notes!: number;
 	private above!: number;
 
@@ -125,13 +132,16 @@ export default class Reading extends Skill {
 	}
 
 	analyze(note: RuntimeNote, context: BotContext, mapStrain: Strain, strain: Strain): SkillStrain {
-		const previous = mapStrain.reading.length > 0 ? mapStrain.reading[mapStrain.reading.length - 1] : undefined;
+		const previous = mapStrain.reading.length > 0 ? 
+			mapStrain.reading[mapStrain.reading.length - 1] 
+			: undefined
+		;
 		const previousStrain = !previous ? 0 : previous.strain;
 
 		const notes = context.visibleNotes(note.time - 400);
 		const complexity = Reading.countTransitions(this._noteGroup, notes);
-		const strainVal = cubic_bezier(.5, 0, .5, 1)((complexity - this.notes) / Math.max(1, this.notes / 8));
-		const strainAboveVal = cubic_bezier(.5, 0, .5, 1)((complexity - this.above) / Math.max(1, this.above / 8));
+		const strainVal = Reading.fn2(complexity - this.notes) / Math.max(1, this.notes / 8);
+		const strainAboveVal = Reading.fn2(complexity - this.above) / Math.max(1, this.above / 8);
 
 		const next = (previousStrain / 1.15) + (strainVal / 8);
 

@@ -19,10 +19,20 @@ interface Props {
  * and a filled track below. Backed by a `Synced<number>` so the value is
  * subscribable outside the panel (volumes feed the audio players this way).
  */
-export default function Slider({ value, label, min = 0, max = 1, step = 0.01, format }: Props) {
+export default function Slider({ 
+	value, 
+	label, 
+	min = 0,
+	max = 1, 
+	step = 0.01,
+	format, 
+}: Props) {
 	const [current] = useSynced(value);
 	const pct = max === min ? 0 : ((current - min) / (max - min)) * 100;
-	const shown = format ? format(current) : `${Math.round((current / max) * 100)}%`;
+	const shown = format ? 
+		format(current) : 
+		`${Math.round((current / max) * 100)}%`
+	;
 
 	return (
 		<label className="opt-slider">

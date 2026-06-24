@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import { VERSION } from './version.js';
+import {
+	mapped,
+	type ValueIn,
+} from './helpers/mapped.js';
 
 /**
  * Add-on moderation lifecycle. An add-on is born `unpublished` (a private draft
@@ -9,22 +13,26 @@ import { VERSION } from './version.js';
  * the add-on returns it to `pending`. The UI and server branch on these keys;
  * their human labels live in `display/addon` so the keys never carry presentation.
  */
-export const ADDON_STATUS = {
-	unpublished: 'unpublished',
-	pending: 'pending',
-	onHold: 'onHold',
-	denied: 'denied',
-	published: 'published',
-} as const;
-export type AddonStatus = (typeof ADDON_STATUS)[keyof typeof ADDON_STATUS];
-export const ADDON_STATUSES = Object.values(ADDON_STATUS) as [AddonStatus, ...AddonStatus[]];
+export const AddonStatuses = [
+	'unpublished',
+	'pending',
+	'onHold',
+	'denied',
+	'published',
+] as const;
+export const ADDON_STATUS = mapped(AddonStatuses);
+export type AddonStatus = ValueIn<typeof ADDON_STATUS>;
 
 /** Semantic version `MAJOR.MINOR.PATCH`, the author-managed add-on version. */
 const semver = z.string().trim().regex(/^\d+\.\d+\.\d+$/, 'Version must look like 1.2.3');
 
 /** Free-form tags: lowercase, hyphen/alnum, deduped, capped. */
 const tags = z.array(
-	z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9-]*$/, 'Tags use lowercase letters, numbers and hyphens').max(24),
+	z.string()
+		.trim()
+		.toLowerCase()
+		.regex(/^[a-z0-9][a-z0-9-]*$/, 'Tags use lowercase letters, numbers and hyphens')
+		.max(24),
 ).max(8).transform(list => [...new Set(list)]);
 
 /**
@@ -62,7 +70,7 @@ export type AddonUpdateBody = z.infer<typeof addonUpdateBody>;
 
 /** Moderation payload (admin): set the status, optionally leave feedback. */
 export const addonModerateBody = z.object({
-	status: z.enum(ADDON_STATUSES),
+	status: z.enum(AddonStatuses),
 	feedback: z.string().max(2000).nullable().default(null),
 });
 export type AddonModerateBody = z.infer<typeof addonModerateBody>;

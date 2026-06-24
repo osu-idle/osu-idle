@@ -1,41 +1,41 @@
 @font-face {
-	font-family:Torus;
-	font-weight:100;
-	src:url(/font/Torus-Thin.otf)
+	font-family: Torus;
+	font-weight: 100;
+	src: url(/font/Torus-Thin.otf);
 }
 
 @font-face {
-	font-family:Torus;
-	font-weight:300;
-	src:url(/font/Torus-Light.otf);
+	font-family: Torus;
+	font-weight: 300;
+	src: url(/font/Torus-Light.otf);
 }
 
 @font-face {
-	font-family:Torus;
-	font-weight:400;
-	src:url(/font/Torus-Regular.otf);
-}
-
-@font-face{
-	font-family:Torus;
-	font-weight:600;
-	src:url(/font/Torus-SemiBold.otf);
+	font-family: Torus;
+	font-weight: 400;
+	src: url(/font/Torus-Regular.otf);
 }
 
 @font-face {
-	font-family:Torus;
-	font-weight:700;
-	src:url(/font/Torus-SemiBold.otf);
+	font-family: Torus;
+	font-weight: 600;
+	src: url(/font/Torus-SemiBold.otf);
 }
 
 @font-face {
-	font-family:Torus;
-	font-weight:800;
-	src:url(/font/Torus-Bold.otf);
+	font-family: Torus;
+	font-weight: 700;
+	src: url(/font/Torus-SemiBold.otf);
 }
 
 @font-face {
-	font-family:Torus;
-	font-weight:900;
-	src:url(/font/Torus-Heavy.otf);
+	font-family: Torus;
+	font-weight: 800;
+	src: url(/font/Torus-Bold.otf);
+}
+
+@font-face {
+	font-family: Torus;
+	font-weight: 900;
+	src: url(/font/Torus-Heavy.otf);
 }

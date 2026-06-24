@@ -1,6 +1,12 @@
 import { z } from 'zod';
-import { Skills, type SkillName } from './skills.js';
-import { Grades, type Grade } from './judgement.js';
+import {
+	Skills,
+	type SkillName,
+} from './skills.js';
+import {
+	Grades,
+	type Grade,
+} from './judgement.js';
 
 export const skillProgressDTO = z.object({
 	level: z.number().int().min(0),

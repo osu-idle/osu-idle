@@ -1,6 +1,3 @@
-
-
-
 /* ===== left column ===== */
 
 .result__title {
@@ -59,7 +56,7 @@
 /* combo + accuracy */
 .result__totals {
 	display: flex;
-	width: 100%;;
+	width: 100%;
 	margin-top: 0.6rem;
 	justify-content: space-around;
 }
@@ -117,8 +114,14 @@
 	animation: grade-in 0.6s cubic-bezier(0.2, 1.5, 0.4, 1) both;
 }
 @keyframes grade-in {
-	from { opacity: 0; transform: scale(0.5) rotate(-10deg); }
-	to { opacity: 1; transform: scale(1) rotate(0); }
+	from {
+		opacity: 0;
+		transform: scale(0.5) rotate(-10deg);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) rotate(0);
+	}
 }
 
 /* ---- skill progression rows ---- */
@@ -129,11 +132,17 @@
 	gap: 0.6rem;
 	min-width: 450px;
 	animation: skillxp-enter 0.34s cubic-bezier(0.2, 0.9, 0.3, 1) both;
-	filter: drop-shadow(0rem 0rem .2rem black);
+	filter: drop-shadow(0rem 0rem 0.2rem black);
 }
 @keyframes skillxp-enter {
-	from { opacity: 0; transform: translateX(-14px); }
-	to { opacity: 1; transform: translateX(0); }
+	from {
+		opacity: 0;
+		transform: translateX(-14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
 }
 .skillxp__name {
 	font-size: 0.85rem;
@@ -160,9 +169,16 @@
 	margin-right: 0.2rem;
 }
 @keyframes skillxp-pop {
-	0% { transform: scale(1); }
-	45% { transform: scale(1.35); color: #ffd24a; }
-	100% { transform: scale(1); }
+	0% {
+		transform: scale(1);
+	}
+	45% {
+		transform: scale(1.35);
+		color: #ffd24a;
+	}
+	100% {
+		transform: scale(1);
+	}
 }
 .skillxp__track {
 	height: 10px;
@@ -198,7 +214,6 @@
 	text-shadow: 0 0 8px rgba(255, 210, 74, 0.6);
 }
 
-
 /* /// */
 
 .resultscreen {
@@ -211,7 +226,11 @@
 	touch-action: pan-y;
 	overscroll-behavior: contain;
 	-webkit-overflow-scrolling: touch;
-	background: radial-gradient(120% 90% at 70% 0%, rgba(20, 8, 18, 0.55), rgba(5, 4, 10, 0.85));
+	background: radial-gradient(
+		120% 90% at 70% 0%,
+		rgba(20, 8, 18, 0.55),
+		rgba(5, 4, 10, 0.85)
+	);
 	backdrop-filter: blur(4px);
 	width: 100vw;
 	height: 100vh;
@@ -221,8 +240,12 @@
 }
 
 @keyframes results-in {
-	from { opacity: 0; }
-	to { opacity: 1; }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 .result__meta {
@@ -263,7 +286,7 @@
 	font-size: 4rem;
 	font-weight: 700;
 	line-height: 1;
-	letter-spacing: .75rem;
+	letter-spacing: 0.75rem;
 	text-align: right;
 	color: #fff;
 	font-variant-numeric: tabular-nums;
@@ -278,8 +301,6 @@
 }
 
 /* GRAPHS */
-
-
 
 /* the two graphs, side by side, pinned to the bottom of the column */
 .result__graphs {
@@ -357,7 +378,9 @@
 	padding: 1rem 3rem;
 	font-weight: 700;
 	color: #fff;
-	transition: transform 0.12s ease, filter 0.15s ease;
+	transition:
+		transform 0.12s ease,
+		filter 0.15s ease;
 	z-index: 500;
 }
 .result__exit:hover {
@@ -422,7 +445,7 @@
 	}
 
 	.result__right {
-		opacity: .2;
+		opacity: 0.2;
 		inset: 0;
 		width: 100vw;
 		justify-content: center;
@@ -433,7 +456,7 @@
 	.result__judge {
 		flex-direction: column;
 		align-items: center;
-    	justify-content: center;
+		justify-content: center;
 	}
 }
 
@@ -449,7 +472,7 @@
 	.result__judge-count {
 		font-size: 2.5rem;
 	}
-	
+
 	.result__total-value {
 		font-size: 2rem;
 	}

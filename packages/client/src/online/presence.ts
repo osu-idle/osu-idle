@@ -1,7 +1,10 @@
 import { t } from '@lingui/core/macro';
 import Synced from '@osu-idle/shared/helpers/synced';
 import { desktop } from '@osu-idle/shared/desktop';
-import SceneManager, { SCENE, type Scene } from '../scenes/SceneManager';
+import SceneManager, {
+	SCENE,
+	type Scene,
+} from '../scenes/SceneManager';
 import { music } from '../audio/MusicPlayer';
 import type LightBeatmap from '../osu/beatmap/LightBeatmap';
 import { ScoreDTO } from '@osu-idle/shared/score';
@@ -11,7 +14,7 @@ import num from '@osu-idle/shared/display/num';
 
 /**
  * Drives the desktop app's Discord Rich Presence from the live scene and the
- * playing map. Inert in the browser (`desktop()` is null), so it's safe to start
+ * playing map. Inert in the browser, so it's safe to start
  * unconditionally. To add a scene, give it a label in {@link sceneLabel} - the
  * Discord-specific plumbing lives in the desktop package and never changes here.
  */
@@ -22,10 +25,18 @@ export default class Presence {
 
 	public static start(): void {
 		if (!desktop()) return;
-		void Synced.all([SceneManager.current, music.beatmap, currentScore], ([scene, beatmap, score]) => this.update(scene, beatmap, score));
+		void Synced.all([
+			SceneManager.current, 
+			music.beatmap,
+			currentScore,
+		], ([scene, beatmap, score]) => this.update(scene, beatmap, score));
 	}
 
-	private static update(scene: Scene, beatmap?: LightBeatmap, score?: Score | ScoreDTO): void {
+	private static update(
+		scene: Scene,
+		beatmap?: LightBeatmap,
+		score?: Score | ScoreDTO,
+	): void {
 		const bridge = desktop();
 		if (!bridge) return;
 
@@ -35,7 +46,7 @@ export default class Presence {
 			bridge.setPresence({
 				details: t`Playing`,
 				state: map,
-				startedAt: this.startedAt
+				startedAt: this.startedAt,
 			});
 		} else if (scene === SCENE.RESULT && beatmap && score) {
 			const result = num(score.score);
@@ -48,7 +59,10 @@ export default class Presence {
 				smallImage: `grade-${score.grade.toLowerCase()}`,
 			});
 		} else {
-			bridge.setPresence({ details: this.sceneLabel(scene), startedAt: this.startedAt });
+			bridge.setPresence({
+				details: this.sceneLabel(scene), 
+				startedAt: this.startedAt, 
+			});
 		}
 	}
 

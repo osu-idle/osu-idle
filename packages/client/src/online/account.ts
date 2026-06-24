@@ -50,7 +50,10 @@ export default class Account {
 		// Drive the live character off the *resolved* session. Until validation
 		// answers we leave the placeholder in place - we must neither present a
 		// guest nor a stale account before online auth has confirmed who we are.
-		void Synced.all([Account.character, Account.resolved], async ([dto, resolved]) => {
+		void Synced.all([
+			Account.character, 
+			Account.resolved,
+		], async ([dto, resolved]) => {
 			if (dto) {
 				// Make sure the dto exists in the local db for score assignment.
 				const existing = await Character.get(dto.id);
@@ -100,9 +103,9 @@ export default class Account {
 
 /**
  * One bounded attempt to validate the session against the API. Resolves the user
- * and (if signed in) their character, committing both atomically so the UI never
- * shows a half-resolved state. Returns true if the server answered (signed in or
- * out), false if it couldn't be reached within {@link VALIDATE_TIMEOUT_MS}.
+ * and their character, committing both atomically so the UI never
+ * shows a half-resolved state. Returns true if the server answered,
+ * false if it couldn't be reached within {@link VALIDATE_TIMEOUT_MS}.
  *
  * The timeout is what bounds us: API.fetch retries transient failures (network
  * errors, 5xx) indefinitely, but it surfaces an intentional abort - so a downed
@@ -155,12 +158,12 @@ async function goOffline(): Promise<void> {
 
 /**
  * Validate the session, bounded so a down/restarting server can't hang the
- * client. On success we're online with the real character; on a timeout we settle
- * as guest (offline) and keep retrying in the background until the server returns.
+ * client. On success we're online with the real character on a timeout we settle
+ * as guest and keep retrying in the background until the server returns.
  */
 async function syncSession(fromLogin = false): Promise<void> {
 	const ok = await probeSession();
-	await Account.resolved.set(true); // we now have a character to use (account or guest)
+	await Account.resolved.set(true);
 
 	if (ok) {
 		await goOnline();
@@ -197,8 +200,8 @@ async function reconnectLoop(): Promise<void> {
  * Tie the in-game browser (web) session to the client's. The web platform runs
  * in a same-origin iframe and authenticates off the same HttpOnly cookie, so the
  * source of truth is shared - but its cached view can drift. Whenever our
- * resolved user identity changes we ping localStorage, which the web iframe (and
- * any other tab) listens for to re-read the session. Guarded on the user id so a
+ * resolved user identity changes we ping localStorage, which the web iframe
+ * listens for to re-read the session. Guarded on the user id so a
  * re-validation landing on the same account doesn't loop the ping back and forth.
  */
 let lastBroadcastUserId: number | null = Auth.user.get()?.id ?? null;
@@ -206,7 +209,8 @@ void Auth.user.sync(user => {
 	const id = user?.id ?? null;
 	if (id === lastBroadcastUserId) return;
 	lastBroadcastUserId = id;
-	try { localStorage.setItem(AUTH_PING_KEY, String(Date.now())); } catch { /* ignore */ }
+	try { localStorage.setItem(AUTH_PING_KEY, String(Date.now())); }
+	catch { /* ignore */ }
 });
 
 // Resolve on boot.

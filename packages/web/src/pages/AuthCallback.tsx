@@ -1,7 +1,7 @@
 import './AuthCallback.css';
 
 import { useEffect } from 'react';
-import { navigate, ROUTE } from '../router';
+import { useNavigate } from '@tanstack/react-router';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { pageTitle } from '../globals';
 import { Trans } from '@lingui/react/macro';
@@ -10,11 +10,12 @@ import PlayOsuIdle from './PlayOsuIdle';
 /** osu! → API → here. The API already set the session cookie; this page just
  * notifies the game (same-origin localStorage ping) and closes the popup. */
 export default function AuthCallback() {
+	const navigate = useNavigate();
 	useEffect(() => {
 		try {
 			localStorage.setItem('osu-idle:auth', String(Date.now()));
 		} catch {
-			navigate(ROUTE.AUTH_ERROR);
+			void navigate({ to: '/auth/error' });
 			return;
 		}
 

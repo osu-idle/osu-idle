@@ -1,3 +1,4 @@
+import gaussian from '../../math/gaussian.js';
 import { Bot } from '../bot.js';
 
 export default class BasicBot extends Bot {
@@ -5,7 +6,7 @@ export default class BasicBot extends Bot {
 	private sigmaMs = 40;
 
 	gaussian() {
-		return ((Math.random() + Math.random() + Math.random() - 1.5) / 1.5) * this.sigmaMs;
+		return gaussian(this.sigmaMs);
 	}
 
 	pressOffset() {

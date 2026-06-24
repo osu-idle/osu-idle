@@ -9,7 +9,11 @@
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
-	background: radial-gradient(circle at 50% 45%, transparent 45%, rgba(0, 0, 0, 0.65) 100%);
+	background: radial-gradient(
+		circle at 50% 45%,
+		transparent 45%,
+		rgba(0, 0, 0, 0.65) 100%
+	);
 	z-index: 1;
 }
 
@@ -100,8 +104,12 @@
 	animation: menu-flash 0.6s ease-out forwards;
 }
 @keyframes menu-flash {
-	0% { opacity: 0.92; }
-	100% { opacity: 0; }
+	0% {
+		opacity: 0.92;
+	}
+	100% {
+		opacity: 0;
+	}
 }
 
 .menu__logo-enter {
@@ -122,8 +130,14 @@
 	animation: logo-enter 0.6s cubic-bezier(0.2, 1.2, 0.35, 1) 0.08s both;
 }
 @keyframes logo-enter {
-	0% { opacity: 0; transform: scale(0.7); }
-	100% { opacity: 1; transform: scale(1); }
+	0% {
+		opacity: 0;
+		transform: scale(0.7);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
 }
 
 .menu__logo-options {
@@ -168,7 +182,9 @@
 	align-items: center;
 
 	transform: translateX(0px);
-	transition: all 0.6s ease, transform 0.6s ease;
+	transition:
+		all 0.6s ease,
+		transform 0.6s ease;
 }
 .menu__option.disabled {
 	pointer-events: none;
@@ -198,7 +214,7 @@
 	z-index: 2;
 	width: 100%;
 	height: 100%;
-	
+
 	transition: opacity 0.2s linear;
 }
 .menu__option_bg_safe {
@@ -238,7 +254,6 @@
 .menu__option.flip .menu__option_bg {
 	transform: scaleY(-1);
 }
-
 
 @media (max-width: 850px) {
 	.menu__top {

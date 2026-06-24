@@ -1,5 +1,8 @@
 import type RuntimeNote from './runtimeNote.js';
-import type { ScrollModel, SpeedChange } from './scroll.js';
+import type {
+	ScrollModel,
+	SpeedChange,
+} from './scroll.js';
 
 export type InputEvent = {
 	time: number,

@@ -35,14 +35,16 @@ export default class BeatmapSet {
 			.reduce((set, [id, text]) => {
 				set[Number(id)] = (new BeatmapDecoder()).decodeFromString(text);
 				return set;
-			}, {} as Record<number, Beatmap>)
+			}, {} as Record<number, Beatmap>),
 		);
 	}
 
 	public static async getIntro(): Promise<LightBeatmapSet> {
 		const intro = (await BeatmapAPI.getManifest()).intro;
 		if (!intro) throw new Error('Intro beatmap is not available');
-		return LightBeatmapSet.fromMetadata((await BeatmapAPI.downloadOsz(intro)).metadata);
+		return LightBeatmapSet.fromMetadata(
+			(await BeatmapAPI.downloadOsz(intro)).metadata,
+		);
 	}
 
 }

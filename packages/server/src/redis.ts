@@ -1,5 +1,8 @@
 import { Redis } from 'ioredis';
-import { env, redisDb } from './env';
+import {
+	env,
+	redisDb,
+} from './env';
 
 /**
  * Shared Redis connection. It holds the play state that used to live in

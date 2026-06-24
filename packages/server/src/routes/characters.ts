@@ -3,16 +3,33 @@ import { HTTPException } from 'hono/http-exception';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client';
-import { characters, getCharacterById, resolveAvatarUrl } from '../db/schema/character';
+import {
+	characters,
+	getCharacterById,
+	resolveAvatarUrl,
+} from '../db/schema/character';
 import { getUserById } from '../db/schema/user';
 import { getCharacterTotals } from '../db/schema/character_totals';
-import { bestSkillRank, countryRank, globalRank } from '../rankings';
-import { getMostPlayed, getTotalPlayed } from '../db/schema/beatmaps_played';
+import {
+	bestSkillRank,
+	countryRank,
+	globalRank,
+} from '../rankings';
+import {
+	getMostPlayed,
+	getTotalPlayed,
+} from '../db/schema/beatmaps_played';
 import { getBestPP } from '../db/schema/best_pp';
-import { getFirstPlaces, getNbFirstPlaces } from '../db/schema/first_place';
+import {
+	getFirstPlaces,
+	getNbFirstPlaces,
+} from '../db/schema/first_place';
 import { getRecentCharacterScores } from '../db/schema/score';
 import { getPlayTime } from '../play';
-import { fatigueXPFactor, getRecoveryTime } from '@osu-idle/shared/sim/bots/character';
+import {
+	fatigueXPFactor,
+	getRecoveryTime,
+} from '@osu-idle/shared/sim/bots/character';
 
 const numberParam = z.coerce.number().int().positive();
 
@@ -27,7 +44,9 @@ export const charactersRoutes = new Hono()
 		const user = await getUserById(row.userId);
 
 		const session = await getPlayTime(id);
-		const strainTime = Math.max(0, (session?.currentStrainTime ?? 0) - getRecoveryTime(session?.lastEnd ?? -Infinity, Date.now()));
+		const strainTime = Math.max(0, 
+			(session?.currentStrainTime ?? 0) - getRecoveryTime(session?.lastEnd ?? -Infinity, Date.now()),
+		);
 		const fatigue = fatigueXPFactor(strainTime / 1000);
 
 		return c.json({

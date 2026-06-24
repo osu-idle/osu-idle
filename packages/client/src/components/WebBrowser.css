@@ -11,7 +11,9 @@
 	   until after the fade so the close transition still plays. visibility:hidden
 	   keeps the iframe loaded, preserving its state. */
 	visibility: hidden;
-	transition: opacity 0.18s ease, visibility 0s linear 0.18s;
+	transition:
+		opacity 0.18s ease,
+		visibility 0s linear 0.18s;
 	pointer-events: none;
 }
 
@@ -19,7 +21,9 @@
 	background: rgba(10, 8, 9, 0.55);
 	opacity: 1;
 	visibility: visible;
-	transition: opacity 0.18s ease, visibility 0s;
+	transition:
+		opacity 0.18s ease,
+		visibility 0s;
 	pointer-events: all;
 	backdrop-filter: blur(8px);
 }
@@ -42,7 +46,9 @@
 	box-shadow: -4px 4px 24px rgba(0, 0, 0, 0.5);
 
 	opacity: 0;
-	transition: opacity 0.2s ease, transform 0.2s ease;
+	transition:
+		opacity 0.2s ease,
+		transform 0.2s ease;
 }
 
 .web.is-open .web-inner {
@@ -76,8 +82,12 @@
 	cursor: pointer;
 	transition: background 0.12s ease;
 }
-.web__btn:hover { background: rgba(255, 255, 255, 0.14); }
-.web__btn:active { background: rgba(255, 255, 255, 0.2); }
+.web__btn:hover {
+	background: rgba(255, 255, 255, 0.14);
+}
+.web__btn:active {
+	background: rgba(255, 255, 255, 0.2);
+}
 
 .web__spacer {
 	flex: 1;
@@ -87,7 +97,9 @@
 	color: #ff8aa6;
 	font-size: 15px;
 }
-.web__close:hover { background: rgba(255, 90, 114, 0.18); }
+.web__close:hover {
+	background: rgba(255, 90, 114, 0.18);
+}
 
 .web__viewport {
 	position: relative;
@@ -144,10 +156,16 @@
 }
 
 @keyframes web-shimmer {
-	0% { background-position: 220% 0; }
-	100% { background-position: -220% 0; }
+	0% {
+		background-position: 220% 0;
+	}
+	100% {
+		background-position: -220% 0;
+	}
 }
 
 @keyframes web-spin {
-	to { transform: rotate(360deg); }
+	to {
+		transform: rotate(360deg);
+	}
 }

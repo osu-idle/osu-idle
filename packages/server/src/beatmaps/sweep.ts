@@ -1,4 +1,9 @@
-import { and, eq, lte, sql } from 'drizzle-orm';
+import {
+	and,
+	eq,
+	lte,
+	sql,
+} from 'drizzle-orm';
 import { db } from '../db/client';
 import { beatmaps } from '../db/schema/beatmap';
 import { beatmapset } from '../db/schema/beatmapset';
@@ -28,7 +33,9 @@ export const sweepRankedMaps = async (): Promise<void> => {
 		if (!claim.affectedRows) continue;
 
 		const diffs = await db
-			.select({ version: beatmaps.version, sr: beatmaps.sr })
+			.select({
+				version: beatmaps.version, sr: beatmaps.sr, 
+			})
 			.from(beatmaps)
 			.where(eq(beatmaps.setId, set.id));
 
@@ -37,7 +44,9 @@ export const sweepRankedMaps = async (): Promise<void> => {
 			artist: set.artist,
 			title: set.title,
 			creator: set.creator,
-			difficulties: diffs.map(d => ({ version: d.version, sr: Number(d.sr) })),
+			difficulties: diffs.map(d => ({
+				version: d.version, sr: Number(d.sr), 
+			})),
 		});
 	}
 };

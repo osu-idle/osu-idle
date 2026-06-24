@@ -1,14 +1,38 @@
 import { Hono } from 'hono';
-import { setCookie, deleteCookie } from 'hono/cookie';
+import {
+	setCookie,
+	deleteCookie,
+} from 'hono/cookie';
 import { HTTPException } from 'hono/http-exception';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/client';
-import { users, toUserDTO } from '../db/schema/user';
-import { clientUrl, cookieSecure } from '../env';
-import { authorizeUrl, exchangeCode, fetchOsuUser } from '../auth/osu';
-import { signSession, signState, verifyState } from '../auth/jwt';
-import { requireAuth, SESSION_COOKIE } from '../auth/middleware';
-import { storeHandoff, takeHandoff, claimStateNonce } from '../auth/handoff';
+import {
+	users,
+	toUserDTO,
+} from '../db/schema/user';
+import {
+	clientUrl,
+	cookieSecure,
+} from '../env';
+import {
+	authorizeUrl,
+	exchangeCode,
+	fetchOsuUser,
+} from '../auth/osu';
+import {
+	signSession,
+	signState,
+	verifyState,
+} from '../auth/jwt';
+import {
+	requireAuth,
+	SESSION_COOKIE,
+} from '../auth/middleware';
+import {
+	storeHandoff,
+	takeHandoff,
+	claimStateNonce,
+} from '../auth/handoff';
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days, seconds
 
@@ -55,10 +79,18 @@ export const authRoutes = new Hono()
 
 		await db
 			.insert(users)
-			.values({ id: osu.id, username: osu.username, avatarUrl: osu.avatar_url, country: osu.country_code })
-			.onDuplicateKeyUpdate({ set: { username: osu.username, avatarUrl: osu.avatar_url, country: osu.country_code } });
+			.values({
+				id: osu.id, username: osu.username, avatarUrl: osu.avatar_url, country: osu.country_code, 
+			})
+			.onDuplicateKeyUpdate({
+				set: {
+					username: osu.username, avatarUrl: osu.avatar_url, country: osu.country_code, 
+				}, 
+			});
 
-		const session = await signSession({ id: osu.id, username: osu.username });
+		const session = await signSession({
+			id: osu.id, username: osu.username, 
+		});
 
 		// Desktop: a browser cookie wouldn't reach the app, so stash the session
 		// under the poll code the app generated; the app polls /osu/desktop/exchange

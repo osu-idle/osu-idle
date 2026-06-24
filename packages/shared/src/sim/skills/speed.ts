@@ -1,12 +1,18 @@
 import type { BotContext } from '../bot.js';
-import type { Strain, SkillStrain } from '../bots/character.js';
+import type {
+	Strain,
+	SkillStrain,
+} from '../bots/character.js';
 import type RuntimeNote from '../runtimeNote.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
 import gaussian from '../../math/gaussian.js';
 import lerp from '../../math/lerp.js';
 import Skill from './skill.js';
 import { SKILL } from '../../skills.js';
-import { mapped, type ValueIn } from '../../helpers/mapped.js';
+import {
+	mapped,
+	type ValueIn,
+} from '../../helpers/mapped.js';
 
 const HAND = mapped(['LEFT', 'RIGHT']);
 export type Hand = ValueIn<typeof HAND>;
@@ -86,7 +92,10 @@ export default class Speed extends Skill {
 			unpure: 0,
 		};
 
-		const previous = mapStrain.speed.length > 0 ? mapStrain.speed[mapStrain.speed.length - 1] : undefined;
+		const previous = mapStrain.speed.length > 0 ? 
+			mapStrain.speed[mapStrain.speed.length - 1] 
+			: undefined
+		;
 		const previousStrain = !previous ? 0 : previous.strain;
 		const previousOverflow = previous?.overflow ?? 0;
 		const nps = Speed.weightedGroups(this._noteGroup, context.recentNotes(note.time));

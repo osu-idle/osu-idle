@@ -1,10 +1,10 @@
 .score__row {
-    border-radius: 10px;
-    color: #fff;
-    font-size: 12px;
-    line-height: normal;
-    margin: 2px 0;
-    position: relative;
+	border-radius: 10px;
+	color: #fff;
+	font-size: 12px;
+	line-height: normal;
+	margin: 2px 0;
+	position: relative;
 
 	background-color: transparent;
 	display: flex;
@@ -16,8 +16,8 @@
 	align-items: center;
 	background-color: hsl(var(--hsl-b2));
 	border-radius: 10px 0 0 10px;
-    display: flex;
-    min-width: 0;
+	display: flex;
+	min-width: 0;
 
 	flex: 1;
 	padding-bottom: 5px;
@@ -27,9 +27,9 @@
 
 .score__title {
 	display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-width: 0;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
 }
 
 .score__grade .grade__container {
@@ -38,40 +38,39 @@
 
 .score__md {
 	align-self: flex-start;
-    color: #fff;
-    display: block;
-    font-size: 14px;
-    max-width: 100%;
+	color: #fff;
+	display: block;
+	font-size: 14px;
+	max-width: 100%;
 }
 
 .score__mb {
 	display: flex;
-    gap: 15px;
-    margin-top: 2px;
-    white-space: nowrap;
+	gap: 15px;
+	margin-top: 2px;
+	white-space: nowrap;
 }
 
 .score__mb b {
 	color: #ea0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 	font-weight: normal;
-
 }
 
 .score__mb span {
 	color: hsl(var(--hsl-f1));
-    flex: none;
+	flex: none;
 }
 
 .score__acc {
 	margin-left: 10px;
 	font-size: 14px;
-    font-weight: 600;
+	font-weight: 600;
 	color: #fc2;
-    display: inline-block;
-    min-width: 60px;
+	display: inline-block;
+	min-width: 60px;
 }
 
 .score__bottom {
@@ -85,10 +84,10 @@
 }
 
 .score__pp-container {
-    align-content: flex-end;
-    color: hsl(var(--hsl-h1));
-    font-size: 16px;
-    font-weight: 700;
+	align-content: flex-end;
+	color: hsl(var(--hsl-h1));
+	font-size: 16px;
+	font-weight: 700;
 
 	align-items: center;
 	background: hsl(var(--hsl-b3));
@@ -115,7 +114,6 @@
 }
 
 .score__pp {
-
 	align-items: center;
 	background: hsl(var(--hsl-b3));
 	border-radius: 0 10px 10px 0;
@@ -131,5 +129,5 @@
 
 .score__pp_unit {
 	color: hsl(var(--hsl-l3));
-    font-size: 12px;
+	font-size: 12px;
 }

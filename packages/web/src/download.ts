@@ -49,7 +49,9 @@ function linkFor(manifest: DownloadManifest, platform: Platform): DownloadLink |
 	const file = platform === 'windows' ? manifest.files.windows
 		: platform === 'linux' ? manifest.files.linux
 			: null;
-	return file ? { platform, label: PLATFORM_LABEL[platform], href: fileUrl(file) } : null;
+	return file ? {
+		platform, label: PLATFORM_LABEL[platform], href: fileUrl(file), 
+	} : null;
 }
 
 /** Resolve everything the download UI needs: the live version, the primary link
@@ -60,7 +62,9 @@ export function resolveDownload(manifest: DownloadManifest | null, platform: Pla
 	alternatives: DownloadLink[];
 } {
 	const version = manifest?.version ?? VERSION;
-	if (!manifest) return { version, primary: null, alternatives: [] };
+	if (!manifest) return {
+		version, primary: null, alternatives: [], 
+	};
 
 	const primary = linkFor(manifest, platform);
 	const alternatives = (['windows', 'linux'] as const)
@@ -68,5 +72,7 @@ export function resolveDownload(manifest: DownloadManifest | null, platform: Pla
 		.map(p => linkFor(manifest, p))
 		.filter((l): l is DownloadLink => l !== null);
 
-	return { version, primary, alternatives };
+	return {
+		version, primary, alternatives, 
+	};
 }

@@ -11,14 +11,17 @@
 	border-radius: 16px;
 	overflow: hidden;
 	background: hsl(var(--hsl-b4));
-	border: 1px solid hsla(var(--hsl-c1), .07);
+	border: 1px solid hsla(var(--hsl-c1), 0.07);
 	cursor: pointer;
-	transition: transform .15s, border-color .15s, background-color .15s;
+	transition:
+		transform 0.15s,
+		border-color 0.15s,
+		background-color 0.15s;
 }
 
 .news-card:hover {
 	transform: translateY(-4px);
-	border-color: hsla(var(--hsl-p), .4);
+	border-color: hsla(var(--hsl-p), 0.4);
 	background: hsl(var(--hsl-b3));
 }
 
@@ -35,11 +38,11 @@
 	bottom: 12px;
 	padding: 4px 12px;
 	border-radius: 999px;
-	background: rgba(0, 0, 0, .45);
+	background: rgba(0, 0, 0, 0.45);
 	backdrop-filter: blur(4px);
 	font-size: 11px;
 	font-weight: 700;
-	letter-spacing: .6px;
+	letter-spacing: 0.6px;
 	text-transform: uppercase;
 }
 
@@ -74,7 +77,9 @@
 }
 
 @media (max-width: 760px) {
-	.news-grid { grid-template-columns: 1fr; }
+	.news-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 .news-card.home-news {
@@ -91,23 +96,23 @@
 }
 .news-card.home-news .news-card__date {
 	align-items: flex-end;
-    border-right: 1px solid hsl(var(--hsl-l1));
-    color: hsl(var(--hsl-l1));
-    display: flex;
-    flex: none;
-    flex-direction: column;
-    justify-content: center;
-    margin: 10px;
-    padding-right: 10px;
-    text-align: right;
-    width: 70px;
+	border-right: 1px solid hsl(var(--hsl-l1));
+	color: hsl(var(--hsl-l1));
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	justify-content: center;
+	margin: 10px;
+	padding-right: 10px;
+	text-align: right;
+	width: 70px;
 }
 .news-card.home-news .news-card__title {
 	color: #fff;
-    display: block;
-    font-size: 16px;
-    font-weight: 700;
-    margin: 5px 0 10px;
+	display: block;
+	font-size: 16px;
+	font-weight: 700;
+	margin: 5px 0 10px;
 }
 .news-card.home-news .news-card__title:hover {
 	text-decoration: underline;
@@ -115,7 +120,7 @@
 }
 .news-card.home-news .news-card__blurb {
 	color: #fff;
-	
-    font-size: 12px;
+
+	font-size: 12px;
 	margin: 0 0 10px;
 }

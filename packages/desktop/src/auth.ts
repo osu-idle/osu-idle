@@ -1,4 +1,8 @@
-import { app, safeStorage, shell } from 'electron';
+import {
+	app,
+	safeStorage,
+	shell,
+} from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';

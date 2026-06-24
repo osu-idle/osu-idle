@@ -378,6 +378,7 @@ msgid "Post-it pattern drawings"
 msgstr "Post-it pattern drawings"
 
 #: src/display/addon.ts
+#: src/display/skin.ts
 msgid "Published"
 msgstr "Published"
 
@@ -478,6 +479,7 @@ msgid "Unbranded membrane keyboard"
 msgstr "Unbranded membrane keyboard"
 
 #: src/display/addon.ts
+#: src/display/skin.ts
 msgid "Unpublished"
 msgstr "Unpublished"
 

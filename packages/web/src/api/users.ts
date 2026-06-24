@@ -1,5 +1,10 @@
 import type { CharacterDTO } from '@osu-idle/shared/character';
-import { apiUrl, json, rpc, unwrap } from './client';
+import {
+	apiUrl,
+	json,
+	rpc,
+	unwrap,
+} from './client';
 
 /** Public: a single user by id. */
 export const getUser = (id: number | string) =>
@@ -10,7 +15,9 @@ export const getUser = (id: number | string) =>
 export async function uploadAvatar(file: File): Promise<CharacterDTO> {
 	const form = new FormData();
 	form.append('file', file);
-	const res = await fetch(apiUrl('/v1/me/avatar'), { method: 'POST', credentials: 'include', body: form });
+	const res = await fetch(apiUrl('/v1/me/avatar'), {
+		method: 'POST', credentials: 'include', body: form, 
+	});
 	return json<CharacterDTO>(res);
 }
 

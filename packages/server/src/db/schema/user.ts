@@ -1,4 +1,9 @@
-import { int, mysqlTable, timestamp, varchar } from 'drizzle-orm/mysql-core';
+import {
+	int,
+	mysqlTable,
+	timestamp,
+	varchar,
+} from 'drizzle-orm/mysql-core';
 import type { UserDTO } from '@osu-idle/shared/user';
 import { db } from '../client';
 import { eq } from 'drizzle-orm';

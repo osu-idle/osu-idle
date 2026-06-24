@@ -1,12 +1,19 @@
 import './NewsCard.css';
 
-import { NEWS_TAGS, type NewsTag, type NewsDTO } from '@osu-idle/shared/news';
+import {
+	NEWS_TAGS,
+	type NewsTag,
+	type NewsDTO,
+} from '@osu-idle/shared/news';
 import Link from './Link';
-import { formatDate, mediaUrl } from '../api/news';
-import { Asset, newsArticlePath, Path } from '../router';
+import {
+	formatDate,
+	mediaUrl,
+} from '../api/news';
+import { Asset } from '../router';
 
 export interface NewsCardData {
-	to: Path;
+	slug: string;
 	tag: string;
 	hue: number;
 	image?: string | null;
@@ -39,7 +46,7 @@ export function coverImage(a: { imageUrl: string | null; tag: NewsTag }): string
 export function articleToCard(a: NewsDTO): NewsCardData {
 	const t = NEWS_TAGS[a.tag];
 	return {
-		to: newsArticlePath(a.slug),
+		slug: a.slug,
 		tag: t.label,
 		hue: t.hue,
 		image: coverImage(a),
@@ -51,9 +58,18 @@ export function articleToCard(a: NewsDTO): NewsCardData {
 
 /** The shared news card - one display reused by the landing, dashboard and news
  *  list. Purely presentational; callers map their data to NewsCardData. */
-export default function NewsCard({ to, tag, hue, image, date, title, blurb, className }: NewsCardData) {
+export default function NewsCard({ 
+	slug, 
+	tag,
+	hue,
+	image,
+	date, 
+	title,
+	blurb,
+	className, 
+}: NewsCardData) {
 	return (
-		<Link to={to} className={`news-card ${className ?? ''}`}>
+		<Link to="/news/$slug" params={{ slug }} className={`news-card ${className ?? ''}`}>
 			<div
 				className="news-card__cover"
 				style={image ? { backgroundImage: `url(${image})` } : { background: tagGradient(hue) }}

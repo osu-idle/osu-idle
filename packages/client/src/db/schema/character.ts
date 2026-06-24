@@ -1,6 +1,16 @@
-import { mapped, ValueIn } from '@osu-idle/shared/helpers/mapped';
+import {
+	mapped,
+	ValueIn,
+} from '@osu-idle/shared/helpers/mapped';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
-import { Column, DAO, Insert, integer, table, text } from '../dao';
+import {
+	Column,
+	DAO,
+	Insert,
+	integer,
+	table,
+	text,
+} from '../dao';
 import Synced from '@osu-idle/shared/helpers/synced';
 import { CharacterDTO } from '@osu-idle/shared/character';
 import type { SkillName } from '@osu-idle/shared/skills';
@@ -64,10 +74,12 @@ export default class Character extends DAO(t) {
 	static fromDTO(dto: CharacterDTO): Character {
 		const { skills, ...rest } = dto;
 		const skillData = Object.fromEntries(
-			Object.entries(skills).flatMap(([name, { level, xp}]) => 
-				[ [name, level], [`${name}XP`, xp ] ])
+			Object.entries(skills).flatMap(([name, { level, xp }]) => 
+				[ [name, level], [`${name}XP`, xp ] ]),
 		);
-		const char = new Character({ ...rest, ...skillData });
+		const char = new Character({
+			...rest, ...skillData, 
+		});
 		return char;
 	}
 
