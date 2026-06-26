@@ -14,8 +14,8 @@ const schema = z.object({
 	PORT_PROD: z.coerce.number().int().positive().default(3874),
 	// Client origin, per-env (resolved below) - used for CORS and the OAuth
 	// redirect. Dev and prod differ, but share one .env, so both are declared.
-	CLIENT_URL: z.string().url().default('http://localhost:5173'),
-	CLIENT_URL_PROD: z.string().url().default('https://osu.idle.rhythmgamers.net'),
+	CLIENT_URL: z.url().default('http://localhost:5173'),
+	CLIENT_URL_PROD: z.url().default('https://osu.idle.rhythmgamers.net'),
 
 	DB_HOST: z.string().min(1),
 	DB_PORT: z.coerce.number().int().positive().default(3306),

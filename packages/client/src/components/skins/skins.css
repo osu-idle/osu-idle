@@ -332,6 +332,29 @@
 	letter-spacing: 0.06em;
 	color: var(--text-dim);
 }
+.skin-view__validation {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+.skin-view__validation > span {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: #ef8888;
+}
+.skin-view__validation > pre {
+	margin: 0;
+	padding: 0.6rem 0.85rem;
+	background: rgba(140, 47, 47, 0.18);
+	color: #ef8888;
+	font-size: 0.85rem;
+	white-space: pre-wrap;
+	word-break: break-word;
+	max-height: 220px;
+	overflow: auto;
+}
 .skin-field-row {
 	display: flex;
 	gap: 1rem;

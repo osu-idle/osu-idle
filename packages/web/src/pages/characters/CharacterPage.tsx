@@ -146,7 +146,7 @@ export default function CharacterPage({ id, character, stats }: {
 			<div className='character__blocks'>
 				<div className='character__block character__block-skills'>
 					<div className='character__block-title'><Trans>Skills</Trans></div>
-					<div className='main-skill'><SkillBar skill={`overall` as SkillName} progress={{
+					<div className='main-skill'><SkillBar skill={'overall' as SkillName} progress={{
 						level: character.overallLevel, xp: character.overallXp, 
 					}} /></div>
 					<ul className='skills'>

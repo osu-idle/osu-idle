@@ -202,15 +202,48 @@ export class ManiaGame {
 		// resolution time - rather than applying every input first and bunching all
 		// misses at the end - is what makes the result step-size independent, so the
 		// HP curve, combo and score match between the client and the server.
-		const missWindow = this.windows[JUDGEMENT.MISS];
-		this.schedule = this.events.map<Scheduled>((event) => {
-			const deadline = (event.tail ? event.note.endTime : event.note.time) + missWindow;
-			const timedOut = event.ignore || event.time > deadline;
-			return {
-				time: timedOut ? deadline : event.time, event, timedOut, 
-			};
-		});
+		this.schedule = this.events.map((event) => this.toScheduled(event));
 		this.schedule.sort((a, b) => a.time - b.time);
+	}
+
+	/** Place an input on the resolution timeline (see the schedule build above). */
+	private toScheduled(event: InputEvent): Scheduled {
+		const deadline = (event.tail ? event.note.endTime : event.note.time) + this.windows[JUDGEMENT.MISS];
+		const timedOut = event.ignore || event.time > deadline;
+		return {
+			time: timedOut ? deadline : event.time, event, timedOut,
+		};
+	}
+
+	/**
+	 * Fold streamed replay inputs into a play already in progress. Online plays
+	 * receive the server's offsets a few seconds at a time (anti-cheat: the client
+	 * never knows the whole outcome up front), so events arrive after construction.
+	 * Every streamed input lands ahead of the live clock, so only the unresolved
+	 * tail of the schedule is re-sorted - anything already judged is untouched, and
+	 * the score stays identical to the all-at-once replay.
+	 */
+	appendReplay(events: InputEvent[]): void {
+		if (!events.length) return;
+		for (const event of events) {
+			this.events.push(event);
+			this.schedule.push(this.toScheduled(event));
+			if (!event.tail && !event.ignore) {
+				this.headHits.push({
+					time: event.time, note: event.note, 
+				});
+				this.hitTimes.push(event.time);
+			}
+		}
+		// re-sort only the not-yet-resolved entries; consumed ones (< schedPtr) all
+		// have an earlier time than any streamed input, so they never move.
+		const tail = this.schedule.slice(this.schedPtr);
+		tail.sort((a, b) => a.time - b.time);
+		for (let i = 0; i < tail.length; i++) this.schedule[this.schedPtr + i] = tail[i];
+		// hitsound lookahead reads these in ascending order (streamed heads are all
+		// future, so they sort in past the already-queued ones).
+		this.headHits.sort((a, b) => a.time - b.time);
+		this.hitTimes.sort((a, b) => a - b);
 	}
 
 	/**

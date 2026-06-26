@@ -37,8 +37,8 @@ export default function ScoreTooltip({ score, x, y }: Props) {
 		}}>
 			<Trans>Achieved on {date} ({dateAgo(score.playedAt)})</Trans><br />
 			{Judgements.map(j => <span>
-				<span style={{ color: skin.data.judgements[j] }}>
-					{j}
+				<span style={{ color: skin.data.judgements[j].judge }}>
+					{skin.data.judgements[j].text}
 				</span>: {getJudge(j, score)}&nbsp;
 			</span>)}<br />
 			<Trans>Accuracy: {acc}</Trans>

@@ -17,6 +17,12 @@ msgstr ""
 msgid "(mobile) Tap duration to right click"
 msgstr "(mobile) Tap duration to right click"
 
+#. placeholder {0}: a.downloads
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+msgid "{0, plural, one {# download} other {# downloads}}"
+msgstr "{0, plural, one {# download} other {# downloads}}"
+
 #. placeholder {0}: items.length
 #: src/scenes/SongSelect.tsx
 msgid "{0, plural, one {# result} other {# results}}"
@@ -230,7 +236,7 @@ msgstr "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map t
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/skins/BrowseSkinsView.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "by"
 msgstr "by"
 
@@ -410,7 +416,7 @@ msgstr "Description"
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/skins/BrowseSkinsView.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "Details"
 msgstr "Details"
 
@@ -452,7 +458,7 @@ msgid "Effect"
 msgstr "Effect"
 
 #: src/components/addons/InstalledAddonRow.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -464,6 +470,11 @@ msgstr "Exit"
 #: src/scenes/MainMenu.tsx
 msgid "Exit osu!idle"
 msgstr "Exit osu!idle"
+
+#. placeholder {0}: '{ 0: ..., 1: ..., 2: ..., 3: ... }'
+#: src/osu/skin/Skin.tsx
+msgid "Expected a column record like {0}"
+msgstr "Expected a column record like {0}"
 
 #: src/scenes/Result.tsx
 msgid "FAILED"
@@ -639,6 +650,11 @@ msgstr "Master"
 #: src/components/addons/AddonView.tsx
 msgid "Moderator feedback"
 msgstr "Moderator feedback"
+
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+msgid "Most downloaded"
+msgstr "Most downloaded"
 
 #: src/scenes/MainMenu.tsx
 msgid "Multi"
@@ -1062,7 +1078,7 @@ msgstr "Unable to load \"{0}\": Malformed definition"
 
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/addons/ManageAddonsView.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "Uninstall"
 msgstr "Uninstall"
 
@@ -1076,7 +1092,7 @@ msgstr "Unplayed"
 
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/addons/ManageAddonsView.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "Update"
 msgstr "Update"
 
@@ -1102,6 +1118,10 @@ msgstr "Upload image"
 #: src/components/Onboarding.tsx
 msgid "Uploading…"
 msgstr "Uploading…"
+
+#: src/components/skins/SkinView.tsx
+msgid "Validation errors"
+msgstr "Validation errors"
 
 #: src/components/addons/AddonView.tsx
 #: src/components/skins/SkinView.tsx

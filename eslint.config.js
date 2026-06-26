@@ -50,19 +50,20 @@ export default tseslint.config(
 			'import-newlines/enforce': ['error', { items: 1 }],
 			'@stylistic/indent': ['error', 'tab'],
 			'@stylistic/semi': 'error',
+			'@stylistic/quotes': ['error', 'single'],
 			'@stylistic/max-len': ['error', {
-				"code": 100,
-				"tabWidth": 0,
-				"ignorePattern": maxLenIgnore,
-				"ignoreComments": true,
-				"ignoreUrls": true,
+				'code': 100,
+				'tabWidth': 0,
+				'ignorePattern': maxLenIgnore,
+				'ignoreComments': true,
+				'ignoreUrls': true,
 			}],
 			'no-tabs': 'off',
 			'complexity': ['error', { 'max': 14 }],
-			"comma-dangle": ["error", "always-multiline"],
-			"object-curly-spacing": ["error", "always"],
-			"object-curly-newline": [
-				"error",
+			'comma-dangle': ['error', 'always-multiline'],
+			'object-curly-spacing': ['error', 'always'],
+			'object-curly-newline': [
+				'error',
 				{
 					ObjectExpression: {
 						multiline: true,

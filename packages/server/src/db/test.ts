@@ -9,18 +9,18 @@ const publish = async () => {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({
-			"content": null,
-			"embeds": [
+			'content': null,
+			'embeds': [
 				{
-					"title": "${artist} - $(title)",
+					'title': '${artist} - $(title)',
 					// eslint-disable-next-line @stylistic/max-len
-					"description": "`${difficulty}☆` `${version}`\n`${difficulty}☆` `${version}`\n`${difficulty}☆` `${version}`\n`${difficulty}☆` `${version}`",
-					"color": 5814783,
-					"author": { "name": "New ranked map by {creator}" },
-					"image": { "url": "https://assets.ppy.sh/beatmaps/2555008/covers/cover.jpg" },
+					'description': '`${difficulty}☆` `${version}`\n`${difficulty}☆` `${version}`\n`${difficulty}☆` `${version}`\n`${difficulty}☆` `${version}`',
+					'color': 5814783,
+					'author': { 'name': 'New ranked map by {creator}' },
+					'image': { 'url': 'https://assets.ppy.sh/beatmaps/2555008/covers/cover.jpg' },
 				},
 			],
-			"attachments": [],
+			'attachments': [],
 		}),
 	});
 

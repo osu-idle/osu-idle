@@ -3,6 +3,7 @@ import {
 	useState,
 } from 'react';
 import {
+	Plural,
 	Trans,
 	useLingui,
 } from '@lingui/react/macro';
@@ -14,14 +15,16 @@ import {
 import { enableAddon } from '../../addons/runtime';
 import {
 	browseAddons,
+	recordAddonDownload,
 	type Addon,
 } from '../../online/addons';
+import Account from '../../online/account';
 import AddonIcon from './AddonIcon';
 import AddonView, { detailOfDTO } from './AddonView';
 import ConfirmMenu, { type Confirm } from '../ConfirmMenu';
 import type { PageAction } from '../page/pageBar';
 
-type Sort = 'created' | 'updated';
+type Sort = 'created' | 'updated' | 'downloads';
 
 /** Persist a catalog add-on locally and enable it. */
 const install = async (dto: Addon) => {
@@ -70,9 +73,25 @@ export default function BrowseAddonsView() {
 	};
 	useEffect(() => { void refresh(); }, [sort]);
 
+	// Count this player's install once (server dedupes); reflect the new total in
+	// the list/detail. Signed-out players can't be counted, so skip the call.
+	const recordDownload = async (id: number) => {
+		if (!Account.character.get()) return;
+		try {
+			const { downloads } = await recordAddonDownload(id);
+			setList(prev => prev?.map(a => a.id === id ? {
+				...a, downloads, 
+			} : a));
+			setDetail(prev => prev && prev.id === id ? {
+				...prev, downloads, 
+			} : prev);
+		} catch { /* a counter miss must not fail the local install */ }
+	};
+
 	const doInstall = (dto: Addon) => {
 		setBusy(true);
 		void install(dto)
+			.then(() => recordDownload(dto.id))
 			.catch(e => setError(String((e as Error).message ?? e)))
 			.finally(() => setBusy(false));
 	};
@@ -140,10 +159,16 @@ export default function BrowseAddonsView() {
 									<Trans>Newest</Trans>
 								</button>
 								<button
-									className={`addons__sort-btn ${sort === 'updated' ? 'is-active' : ''}`} 
+									className={`addons__sort-btn ${sort === 'updated' ? 'is-active' : ''}`}
 									onClick={() => setSort('updated')}
 								>
 									<Trans>Updated</Trans>
+								</button>
+								<button
+									className={`addons__sort-btn ${sort === 'downloads' ? 'is-active' : ''}`}
+									onClick={() => setSort('downloads')}
+								>
+									<Trans>Most downloaded</Trans>
 								</button>
 							</div>
 						</div>
@@ -162,7 +187,13 @@ export default function BrowseAddonsView() {
 										<div className='addon__name'>
 											{a.name}<span className='addon__ver'>v{a.version}</span>
 										</div>
-										<div className='addon__by'><Trans>by</Trans> {a.authorName}</div>
+										<div className='addon__by'>
+											<Trans>by</Trans> {a.authorName}
+											<span className='addon__downloads'>
+												{' · '}
+												<Plural value={a.downloads} one='# download' other='# downloads' />
+											</span>
+										</div>
 										{a.description && <div className='addon__desc'>{a.description}</div>}
 										{a.tags.length > 0 && <div className='addon__tags'>
 											{a.tags.map(tag => <span key={tag} className='addon__tag'>{tag}

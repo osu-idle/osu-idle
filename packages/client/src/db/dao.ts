@@ -49,7 +49,7 @@ type SqlType = 'INTEGER' | 'REAL' | 'TEXT';
 function sqlLiteral(v: SqlValue): string {
 	if (v === null) return 'NULL';
 	if (typeof v === 'number') return String(v);
-	if (typeof v === 'string') return `'${v.replace(/'/g, "''")}'`;
+	if (typeof v === 'string') return `'${v.replace(/'/g, '\'\'')}'`;
 	throw new Error(`default value of type ${typeof v} is not supported`);
 }
 

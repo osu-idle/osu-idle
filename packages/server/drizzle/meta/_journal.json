@@ -204,6 +204,13 @@
       "when": 1782334754632,
       "tag": "0028_greedy_gambit",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "5",
+      "when": 1782398457137,
+      "tag": "0029_closed_star_brand",
+      "breakpoints": true
     }
   ]
 }

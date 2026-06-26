@@ -1,5 +1,6 @@
 import {
 	useCallback,
+	useMemo,
 	useState,
 } from 'react';
 import {
@@ -8,14 +9,17 @@ import {
 } from '@lingui/react/macro';
 import PageBarActions from '../page/PageBarActions';
 import type { PageAction } from '../page/pageBar';
-import { defaultSkin } from '../../osu/skin/Skin';
+import {
+	defaultSkin,
+	validateSkinSource,
+} from '../../osu/skin/Skin';
 import {
 	SkinCreateBody,
 	SkinUpdateBody,
 } from '@osu-idle/shared/skin';
 import {
 	createSkin,
-	Skin,
+	SkinDetail,
 	updateSkin,
 } from '../../online/skins';
 import SkinIconField from './SkinIconField';
@@ -29,7 +33,7 @@ export const newSkin = (): SkinCreateBody => ({
 	description: '',
 	icon: null,
 	tags: [],
-	definition: JSON.stringify(defaultSkin),
+	definition: JSON.stringify(defaultSkin()),
 });
 
 type BarOpts = {
@@ -60,7 +64,7 @@ const barActions = (o: BarOpts): PageAction[] => {
 	return [back, save];
 };
 type Props = {
-	detail?: Skin | SkinCreateBody,
+	detail?: SkinDetail | SkinCreateBody,
 	editing?: boolean,
 	actions?: PageAction[],
 	onBack: () => void,
@@ -84,9 +88,14 @@ export default function SkinView({
 	const [tags, setTags] = useState(skin.tags.join(', '));
 	const [version, setVersion] = useState(skin.version);
 	const [icon, setIcon] = useState(skin.icon);
-	const [definition, setDefinition] = useState(skin.definition);
+	const [definition, setDefinition] = useState(JSON.stringify(JSON.parse(skin.definition), null, 2));
 	const [busy, setBusy] = useState(false);
-	const [error, setError] = useState<string | undefined>(); 
+	const [error, setError] = useState<string | undefined>();
+
+	const validation = useMemo(
+		() => editing ? validateSkinSource(definition) : undefined,
+		[editing, definition],
+	);
 
 	const save = useCallback(async () => {
 		if (!editing) return;
@@ -148,6 +157,12 @@ export default function SkinView({
 								/>
 							</label>
 							<SkinIconField value={icon} onChange={setIcon} />
+							{validation && (
+								<div className='skin-view__validation'>
+									<span><Trans>Validation errors</Trans></span>
+									<pre>{validation}</pre>
+								</div>
+							)}
 						</>
 					) : <SkinReadMeta skin={skin} />}
 				</div>
@@ -155,7 +170,7 @@ export default function SkinView({
 				<div className='addon-field addon-field--code'>
 					<SkinCodePane
 						editing={editing} 
-						source={JSON.stringify(JSON.parse(definition), null, 2)}
+						source={definition}
 						onChange={setDefinition}
 					/>
 				</div>
@@ -169,7 +184,7 @@ export default function SkinView({
 					...barActions({
 						editing,
 						busy,
-						canSave: !!name.trim(),
+						canSave: !!name.trim() && !validation,
 						onBack, 
 						onSave: save,
 					}),

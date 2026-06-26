@@ -257,6 +257,18 @@ msgstr "Gym, stretch session + meditation"
 msgid "Hbada E3 Pro"
 msgstr "Hbada E3 Pro"
 
+#: src/types/color.ts
+msgid "Invalid #hex color"
+msgstr "Invalid #hex color"
+
+#: src/types/color.ts
+msgid "Invalid color: use a #hex (e.g. #63b3ff) or rgb()/rgba() value"
+msgstr "Invalid color: use a #hex (e.g. #63b3ff) or rgb()/rgba() value"
+
+#: src/types/color.ts
+msgid "Invalid rgb()/rgba() color"
+msgstr "Invalid rgb()/rgba() color"
+
 #: src/skills.ts
 msgid "IRON165"
 msgstr "IRON165"

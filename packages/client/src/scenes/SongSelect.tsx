@@ -116,10 +116,10 @@ const SORT_COMPARATORS: Record<SortOption, (
 		a.beatmap.metadata.total_length - b.beatmap.metadata.total_length,
 	'By Title': (a, b) => 
 		a.set.metadata.title.localeCompare(b.set.metadata.title),
-	"By Rank Achieved": (a, b, h) => 
+	'By Rank Achieved': (a, b, h) => 
 		(h.bestRank.get(b.beatmap.metadata.id) ?? Infinity) 
 		- (h.bestRank.get(a.beatmap.metadata.id) ?? Infinity),
-	"Recently Played": (a, b, h) => 
+	'Recently Played': (a, b, h) => 
 		(h.lastPlayed.get(b.beatmap.metadata.id) ?? 0) 
 		- (h.lastPlayed.get(a.beatmap.metadata.id) ?? 0),
 };

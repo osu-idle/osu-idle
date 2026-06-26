@@ -3,6 +3,7 @@ import {
 	longtext,
 	mysqlTable,
 	timestamp,
+	unique,
 	varchar,
 } from 'drizzle-orm/mysql-core';
 import { users } from './user';
@@ -22,10 +23,22 @@ export const skins = mysqlTable('skin', {
 	version: varchar({ length: 20 }).notNull().default('0.1.0'),
 	definition: longtext().notNull(),
 	status: varchar({ length: 20 }).notNull().default(SKIN_STATUS.UNPUBLISHED),
+	downloads: int().notNull().default(0), // unique installs, one per player
 	createdAt: timestamp().notNull().defaultNow(),
 	updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
 	publishedAt: timestamp(),
 });
+
+// One row per (skin, player); the unique key dedupes repeat installs so
+// `skins.downloads` counts distinct players.
+export const skinDownloads = mysqlTable('skin_downloads', {
+	id: int().autoincrement().primaryKey(),
+	skinId: int().notNull()
+		.references(() => skins.id, { onDelete: 'cascade' }),
+	userId: int().notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	downloadedAt: timestamp().notNull().defaultNow(),
+}, t => [unique().on(t.skinId, t.userId)]);
 
 export type SkinRow = typeof skins.$inferSelect;
 export type NewSkinRow = typeof skins.$inferInsert;
@@ -44,6 +57,7 @@ export const toSkinDTO = (row: SkinRow, authorName: string) => {
 		version: row.version,
 		definition: row.definition,
 		status: row.status as SkinStatus,
+		downloads: row.downloads,
 		createdAt: row.createdAt.toISOString(),
 		updatedAt: row.updatedAt.toISOString(),
 		publishedAt: row.publishedAt?.toISOString() ?? null,

@@ -88,7 +88,7 @@ export default function StrainDebug({ beatmapInfo, onClose, onPlay }: Props) {
 							</span>}
 							<span className="strain__judges">
 								{Judgements.map((j) => (
-									<i key={j} style={{ color: skin.data.judgements[j] }}>
+									<i key={j} style={{ color: skin.data.judgements[j].judge }}>
 										{s.score.counts[j]}
 									</i>
 								))}

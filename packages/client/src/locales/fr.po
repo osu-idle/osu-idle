@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-24 22:26\n"
+"PO-Revision-Date: 2026-06-25 14:43\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -21,6 +21,12 @@ msgstr ""
 #: src/components/options/RightClickHold.tsx
 msgid "(mobile) Tap duration to right click"
 msgstr "(mobile) Durée du maintien pour faire un clic droit"
+
+#. placeholder {0}: a.downloads
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+msgid "{0, plural, one {# download} other {# downloads}}"
+msgstr ""
 
 #. placeholder {0}: items.length
 #: src/scenes/SongSelect.tsx
@@ -235,7 +241,7 @@ msgstr "Des maps sont disponibles par défaut dans <0>l'écran de sélection</0>
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/skins/BrowseSkinsView.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "by"
 msgstr "par"
 
@@ -415,7 +421,7 @@ msgstr "Description"
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/skins/BrowseSkinsView.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "Details"
 msgstr "Détails"
 
@@ -457,7 +463,7 @@ msgid "Effect"
 msgstr "Effet"
 
 #: src/components/addons/InstalledAddonRow.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "Enabled"
 msgstr "Activé"
 
@@ -469,6 +475,11 @@ msgstr "Quitter"
 #: src/scenes/MainMenu.tsx
 msgid "Exit osu!idle"
 msgstr "Quitter osu!idle"
+
+#. placeholder {0}: '{ 0: ..., 1: ..., 2: ..., 3: ... }'
+#: src/osu/skin/Skin.tsx
+msgid "Expected a column record like {0}"
+msgstr ""
 
 #: src/scenes/Result.tsx
 msgid "FAILED"
@@ -644,6 +655,11 @@ msgstr "Principal"
 #: src/components/addons/AddonView.tsx
 msgid "Moderator feedback"
 msgstr "Retours de la modération"
+
+#: src/components/addons/BrowseAddonsView.tsx
+#: src/components/skins/BrowseSkinsView.tsx
+msgid "Most downloaded"
+msgstr ""
 
 #: src/scenes/MainMenu.tsx
 msgid "Multi"
@@ -1067,7 +1083,7 @@ msgstr "Impossible de charger \"{0}\" : Définition malformée"
 
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/addons/ManageAddonsView.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "Uninstall"
 msgstr "Désinstaller"
 
@@ -1081,7 +1097,7 @@ msgstr "Non joué"
 
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/addons/ManageAddonsView.tsx
-#: src/components/skins/InstalledSkinRow.tsx
+#: src/components/skins/SkinDAORow.tsx
 msgid "Update"
 msgstr "Mettre à jour"
 
@@ -1107,6 +1123,10 @@ msgstr "Envoyer une image"
 #: src/components/Onboarding.tsx
 msgid "Uploading…"
 msgstr "Envoi…"
+
+#: src/components/skins/SkinView.tsx
+msgid "Validation errors"
+msgstr ""
 
 #: src/components/addons/AddonView.tsx
 #: src/components/skins/SkinView.tsx

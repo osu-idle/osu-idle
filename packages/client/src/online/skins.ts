@@ -12,6 +12,9 @@ import {
 /** One catalog/own skin as it crosses the wire, inferred from the route. */
 export type Skin = InferResponseType<typeof rpc.v1.skins[':id']['$get']>;
 
+/** A skin for display/editing, minus the catalog-only stats a local skin lacks. */
+export type SkinDetail = Omit<Skin, 'downloads'>;
+
 type Resp = { ok: boolean; status: number; json: () => Promise<unknown> };
 
 /** Await a request and throw the server's error on a non-2xx, else return the JSON. */
@@ -29,16 +32,21 @@ export const skinIconUrl = (
 ): string | undefined =>
 	icon ? (/^https?:\/\//.test(icon) ? icon : `${BASE_URL}${icon}`) : undefined;
 
-type BrowseQuery = { 
+type BrowseQuery = {
 	q?: string,
-	tag?: string, 
-	sort?: 'created' | 'updated', 
+	tag?: string,
+	sort?: 'created' | 'updated' | 'downloads',
 	dir?: 'asc' | 'desc',
 };
 
 /** Public: browse the published catalog. */
 export const browseSkins = (query: BrowseQuery = {}) =>
 	unwrap<Skin[]>(rpc.v1.skins.$get({ query }));
+
+/** Auth: record the caller's install (deduped per player); returns the new count. */
+export const recordSkinDownload = (id: number) =>
+	unwrap<{ downloads: number }>(
+		rpc.v1.skins[':id'].download.$post({ param: { id: String(id) } }));
 
 /** Public: a single published skin (incl source, for install). */
 export const getSkin = (id: number) =>

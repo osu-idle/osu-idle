@@ -1,6 +1,10 @@
 import { effects } from './EffectPlayer';
 import BeatmapStore from '../osu/beatmap/beatmap_store';
 import type { SampleEvent } from '../osu/beatmap/storyboard';
+import {
+	currentSkin,
+	HITSOUND,
+} from '../osu/skin/Skin';
 
 /**
  * The default-hitsound layer: a note with no keysound plays the default skin's
@@ -13,18 +17,9 @@ import type { SampleEvent } from '../osu/beatmap/storyboard';
  * slot in here by resolving the right default key(s) per note from the beatmap.
  */
 
-const BASE = import.meta.env.BASE_URL;
-
-export const HITSOUND = { NORMAL: 'default/normal-hitnormal' } as const;
-
-const DEFAULT_SAMPLES: Record<string, string> = { 
-	[HITSOUND.NORMAL]: 
-		`${BASE}skins/default/hitsounds/normal-hitnormal.wav`, 
-};
-
 /** Decode the default skin's hitsounds so they can be played with no latency. */
 export function preloadDefaultHitsounds(): Promise<void> {
-	return effects.preload(DEFAULT_SAMPLES);
+	return effects.preload(currentSkin.get().data.hitSounds);
 }
 
 /**
@@ -47,7 +42,7 @@ export async function preloadSamples(
 
 /** Play the hitsound(s) for a landed hit, now. */
 export function playHitsound(): void {
-	effects.play(HITSOUND.NORMAL);
+	effects.play(currentSkin.get().data.hitSounds[HITSOUND.NORMAL]);
 }
 
 /**

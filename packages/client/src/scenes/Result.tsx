@@ -143,14 +143,14 @@ export default function Result({ score, game, progression, failed }: Props) {
 										<span 
 											className="result__judge-label" 
 											style={{
-												color: skin.data.judgements[j], 
-												textShadow: `0 0px 4px ${skin.data.judgements[j]}`, 
+												color: skin.data.judgements[j].judge, 
+												textShadow: `0 0px 4px ${skin.data.judgements[j].judge}`, 
 											}}>
-											{j}
+											{skin.data.judgements[j].text}
 										</span>
 										<span 
 											className="result__judge-count" 
-											style={{ textShadow: `0 0px 4px ${skin.data.judgements[j]}` }}>
+											style={{ textShadow: `0 0px 4px ${skin.data.judgements[j].judge}` }}>
 											<CountUp value={score instanceof Score ? score[j] : score.judgements[j]} 
 											/></span>
 									</div>

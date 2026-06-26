@@ -10,7 +10,10 @@ export default defineConfig({
 		// `@osu-idle/shared/foo` → `../shared/src/foo`. The package's own `exports`
 		// map points at `dist/`; aliasing to source keeps the suite testing the
 		// code you're editing. Add server/client/web here if/when they're imported.
-		alias: { '@osu-idle/shared': src('shared') },
+		alias: {
+			'@osu-idle/shared': src('shared'),
+			'@osu-idle/client': src('client'),
+		},
 	},
 	test: {
 		environment: 'node', // pure logic - no DOM, no browser automation

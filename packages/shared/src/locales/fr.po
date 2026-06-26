@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-24 22:22\n"
+"PO-Revision-Date: 2026-06-25 13:17\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -261,6 +261,18 @@ msgstr "Musculation, étirements + méditation"
 #: src/skills.ts
 msgid "Hbada E3 Pro"
 msgstr "Hbada E3 Pro"
+
+#: src/types/color.ts
+msgid "Invalid #hex color"
+msgstr ""
+
+#: src/types/color.ts
+msgid "Invalid color: use a #hex (e.g. #63b3ff) or rgb()/rgba() value"
+msgstr ""
+
+#: src/types/color.ts
+msgid "Invalid rgb()/rgba() color"
+msgstr ""
 
 #: src/skills.ts
 msgid "IRON165"

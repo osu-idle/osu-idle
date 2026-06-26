@@ -6,19 +6,20 @@ import { Trans } from '@lingui/react/macro';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import Auth from '../../online/auth';
 import PageBarActions from '../page/PageBarActions';
-import { currentSkin } from '../../osu/skin/Skin';
-import { SkinDAO } from '../../db/schema/skin';
+import { currentSkinDAO } from '../../osu/skin/Skin';
+import { installedSkins } from '../../db/schema/skin';
 import {
 	deleteSkin,
 	getSkin,
 	mySkins,
 	publishSkin,
 	Skin as SkinDTO,
+	SkinDetail,
 } from '../../online/skins';
 import SkinView from './SkinView';
 import MySkinRow from './MySkinRow';
 import { install } from './BrowseSkinsView';
-import InstalledSkinRow from './InstalledSkinRow';
+import SkinDAORow from './SkinDAORow';
 
 type Editing = { skin?: SkinDTO };
 
@@ -32,20 +33,14 @@ const isNewer = (a: string, b: string): boolean => {
 };
 
 export default function ManageSkinsView() {
-	const [current] = useSynced(currentSkin);
 	const [user] = useSynced(Auth.user);
+	const [installed] = useSynced(installedSkins);
 	const [editing, setEditing] = useState<Editing | undefined>();
-	const [details, setDetails] = useState<SkinDTO | undefined>();
-	const [installed, setInstalled] = useState<SkinDAO[]>([]);
+	const [details, setDetails] = useState<SkinDetail | undefined>();
 	const [mine, setMine] = useState<SkinDTO[]>([]);
 	const [latest, setLatest] = useState<Record<number, string>>({});
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | undefined>();
-
-	useEffect(() => { 
-		void SkinDAO.getAll()
-			.then(setInstalled); 
-	}, [current]);
 
 	const refreshMine = () => {
 		if (!user) { setMine([]); return Promise.resolve(); }
@@ -119,21 +114,26 @@ export default function ManageSkinsView() {
 
 			<div className='page__list'>
 				{installed.map(a => (
-					<InstalledSkinRow
+					<SkinDAORow
 						key={a.id}
 						skin={a}
 						busy={busy}
 						hasUpdate={latest[a.id] !== undefined && isNewer(a.version, latest[a.id])}
 						onToggle={enabled => run(() => a.setEnabled(enabled))}
 						onDetails={() => setDetails(a)}
-						onUpdate={async () => {
+						onUpdate={() => run(async () => {
 							const remote = await getSkin(a.id);
 							if (!remote) return;
-
-							run(async () => {
-								SkinDAO.fromSkinDTO(remote).update();
+							await a.update({
+								name: remote.name,
+								description: remote.description,
+								version: remote.version,
+								definition: remote.definition,
+								icon: remote.icon,
+								status: remote.status,
 							});
-						}}
+							if (currentSkinDAO.get()?.id === a.id) currentSkinDAO.set(a);
+						})}
 						onUninstall={() => a.uninstall()}
 					/>
 				))}

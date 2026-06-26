@@ -51,10 +51,10 @@ export default function Header() {
 			setUserMenuActive(false);
 		};
 
-		document.addEventListener("pointerdown", handleClickOutside, true);
+		document.addEventListener('pointerdown', handleClickOutside, true);
 
 		return () => {
-			document.removeEventListener("pointerdown", handleClickOutside);
+			document.removeEventListener('pointerdown', handleClickOutside);
 		};
 	}, []);
 

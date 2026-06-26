@@ -2,12 +2,16 @@ import { rpc } from './client';
 import type Character from '../db/schema/character';
 import { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
 
-export type RankedPlayContext = { 
-	mode: 'ranked'; 
-	token: string; 
-	offsets: ReplayOffset[]; 
-	startedAt: number; 
-	endsAt: number 
+export type RankedPlayContext = {
+	mode: 'ranked';
+	token: string;
+	/** the offsets revealed so far; the rest stream in via {@link fetchPlayOffsets} */
+	offsets: ReplayOffset[];
+	/** resume cursor + whether every offset has already been delivered */
+	next: number;
+	done: boolean;
+	startedAt: number;
+	endsAt: number
 };
 
 /**
@@ -58,11 +62,13 @@ export async function startPlaySession(
 			// timestamps into our own clock, so anchoring with our Date.now() is exact.
 			const skew = (sentAt + Date.now()) / 2 - data.serverNow;
 			return {
-				mode: 'ranked', 
-				token: data.token, 
-				offsets: data.offsets, 
-				startedAt: data.startedAt + skew, 
-				endsAt: data.endsAt + skew, 
+				mode: 'ranked',
+				token: data.token,
+				offsets: data.offsets,
+				next: data.next,
+				done: data.done,
+				startedAt: data.startedAt + skew,
+				endsAt: data.endsAt + skew,
 			};
 		}
 		return data.status === 'refused' ? { mode: 'refused' } : { mode: 'unranked' };
@@ -102,6 +108,21 @@ export async function fetchPlayResult(
 			param: {
 				token, forceSee: forceSee ? 'true' : 'false', 
 			}, 
+		});
+	if (!res.ok) {
+		throw new PlayResultError(res.status);
+	}
+	return res.json();
+}
+
+/** Pull the next slice of replay offsets the server has revealed (from cursor
+ *  `from`). The server gates this to a few seconds ahead of the live position. */
+export async function fetchPlayOffsets(token: string, from: number) {
+	const res = await rpc.v1.play[':token'].offsets[':from']
+		.$get({
+			param: {
+				token, from: String(from),
+			},
 		});
 	if (!res.ok) {
 		throw new PlayResultError(res.status);

@@ -5,67 +5,12 @@ import {
 import type { HitRecord } from '@osu-idle/shared/sim/maniaGame';
 import Skin from '../osu/skin/Skin';
 import { HitWindows } from '@osu-idle/shared/sim/scoring';
+import {
+	colorA,
+	colorDim,
+} from '@osu-idle/shared/types/color';
 
 export { unstableRate } from '@osu-idle/shared/sim/maniaGame';
-
-/** parse a #rrggbb or rgba(...) colour into [r, g, b, a] */
-function parseColor(c: string): [number, number, number, number] {
-	c = c.trim();
-
-	if (c.startsWith('#')) {
-		let h = c.slice(1);
-
-		if (h.length === 3 || h.length === 4) {
-			h = h
-				.split('')
-				.map(ch => ch + ch)
-				.join('');
-		}
-
-		if (h.length === 6) {
-			h += 'ff';
-		}
-
-		if (h.length !== 8) {
-			throw new Error(`Invalid hex colour: ${c}`);
-		}
-
-		return [
-			parseInt(h.slice(0, 2), 16),
-			parseInt(h.slice(2, 4), 16),
-			parseInt(h.slice(4, 6), 16),
-			parseInt(h.slice(6, 8), 16) / 255,
-		];
-	}
-
-	const parts = c
-		.slice(c.indexOf('(') + 1, c.lastIndexOf(')'))
-		.split(',')
-		.map(v => v.trim());
-
-	if (parts.length === 3) {
-		const [r, g, b] = parts.map(Number);
-		return [r, g, b, 1];
-	}
-
-	if (parts.length === 4) {
-		const [r, g, b, a] = parts.map(Number);
-		return [r, g, b, a];
-	}
-
-	throw new Error(`Unsupported colour format: ${c}`);
-}
-/** apply alpha to a colour */
-function colorA(c: string, a: number): string {
-	const [r, g, b] = parseColor(c);
-	return `rgba(${r}, ${g}, ${b}, ${a})`;
-}
-/** dim a colour, keeping its alpha */
-function colorDim(c: string, dim: number): string {
-	const [r, g, b, a] = parseColor(c);
-	const dimm = (c: number) => Math.floor(c * dim);
-	return `rgba(${dimm(r)}, ${dimm(g)}, ${dimm(b)}, ${a})`;
-}
 
 function meanOffset(hits: HitRecord[]): number | null {
 	let sum = 0;
@@ -107,7 +52,7 @@ export function drawHitErrorBar(
 	let prevWin = 0;
 	for (const j of Judgements) {
 		const win = windows[j] * scale;
-		ctx.fillStyle = colorA(colorDim(skin.data.judgements[j], 1.35), 0.2);
+		ctx.fillStyle = colorA(colorDim(skin.data.judgements[j].hitErrorBg, 1.35), 0.2);
 		ctx.fillRect(cx + prevWin, y - barH / 2, win - prevWin, barH);
 		ctx.fillRect(cx - win, y - barH / 2, win - prevWin, barH);
 		prevWin = win;
@@ -129,7 +74,7 @@ export function drawHitErrorBar(
 		if (age < 0 || age > FADE) continue;
 		const off = Math.max(-miss, Math.min(miss, h.offset));
 		ctx.globalAlpha = 1 - age / FADE;
-		ctx.fillStyle = skin.data.judgements[h.judgement];
+		ctx.fillStyle = skin.data.judgements[h.judgement].hitErrorTick;
 		ctx.fillRect(cx + off * scale - 1, y - barH - 2, 2, barH * 2 + 4);
 	}
 	ctx.globalAlpha = 1;
@@ -189,7 +134,7 @@ export function drawDevianceGraph(
 	let prevWin = 0;
 	for (const j of Judgements) {
 		const win = windows[j];
-		ctx.fillStyle = colorDim(colorA(skin.data.judgements[j], 0.15), 1.35);
+		ctx.fillStyle = colorDim(colorA(skin.data.judgements[j].devianceGraphBg, 0.15), 1.35);
 		ctx.fillRect(padX, yFor(win), gw, yFor(prevWin) - yFor(win));
 		ctx.fillRect(padX, yFor(-prevWin), gw, yFor(-win) - yFor(-prevWin));
 		prevWin = win;
@@ -209,12 +154,12 @@ export function drawDevianceGraph(
 	for (const h of hits) {
 		const x = xFor(h.time);
 		if (h.offset == null || h.judgement === JUDGEMENT.MISS) {
-			ctx.fillStyle = skin.data.judgements[JUDGEMENT.MISS];
+			ctx.fillStyle = skin.data.judgements[JUDGEMENT.MISS].devianceGraphTick;
 			ctx.fillRect(x - 1, padY, 2, 5);
 			ctx.fillRect(x - 1, height - padY - 5, 2, 5);
 		} else {
 			const off = Math.max(-miss, Math.min(miss, h.offset));
-			ctx.fillStyle = skin.data.judgements[h.judgement];
+			ctx.fillStyle = skin.data.judgements[h.judgement].devianceGraphTick;
 			ctx.fillRect(x - 1.2, yFor(off) - 1.2, 2.4, 2.4);
 		}
 	}
@@ -248,7 +193,7 @@ export function drawDevianceGraph(
 	// fail marker: vertical red bar at the moment HP hit 0
 	if (failMs != null) {
 		const fx = xFor(failMs);
-		ctx.fillStyle = skin.data.judgements[JUDGEMENT.MISS];
+		ctx.fillStyle = skin.data.judgements[JUDGEMENT.MISS].devianceGraphTick;
 		ctx.fillRect(fx - 1, padY, 2, gh);
 	}
 }

@@ -13,6 +13,7 @@ import {
 	playStatus,
 	skipPlay,
 	startPlay,
+	streamOffsets,
 } from '../play';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
@@ -38,6 +39,7 @@ export const playRoutes = new Hono()
 
 		console.log(character.name, 'wants to play', beatmapId);
 		const result = await startPlay(character, beatmapId);
+		console.log(character.name, 'play status', result.status);
 
 		return c.json(result.status === 'ranked'
 			? {
@@ -73,6 +75,18 @@ export const playRoutes = new Hono()
 			throw new HTTPException(result.code as ContentfulStatusCode, { message: result.reason });
 		}
 		return c.json(result);
+	})
+
+	// Stream the next slice of replay offsets (anti-cheat: revealed a few seconds
+	// ahead of the live position, not all at once).
+	.get('/:token/offsets/:from', requireAuth, async c => {
+		const character = await currentCharacter(c.get('userId'));
+		if (!character) throw new HTTPException(409, { message: 'No character' });
+		return c.json(await streamOffsets(
+			character.id,
+			c.req.param('token'),
+			Number(c.req.param('from')),
+		));
 	})
 
 	// Get specific play status (skipped, aborted)

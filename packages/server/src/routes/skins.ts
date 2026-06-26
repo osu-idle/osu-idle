@@ -8,6 +8,7 @@ import {
 	eq,
 	like,
 	or,
+	sql,
 } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client';
@@ -17,6 +18,7 @@ import { requireAdmin } from '../auth/admin';
 import { saveUploadedImage } from '../uploads';
 import {
 	skins,
+	skinDownloads,
 	toSkinDTO,
 } from '../db/schema/skin';
 import {
@@ -51,11 +53,19 @@ const ownedBy = async (id: number, userId: number) => {
 
 const csv = (list: string[]) => list.join(',');
 
+// Browse sort column keyed by the `sort` query; defaults to publish date.
+const SORT_COLUMNS = {
+	updated: skins.updatedAt,
+	downloads: skins.downloads,
+	created: skins.publishedAt,
+} as const;
+
 export const skinsRoutes = new Hono()
 	.get('/', async c => {
 		const q = c.req.query('q')?.trim();
 		const tag = c.req.query('tag')?.trim().toLowerCase();
-		const sort = c.req.query('sort') === 'updated' ? skins.updatedAt : skins.publishedAt;
+		const sort = SORT_COLUMNS[c.req.query('sort') as keyof typeof SORT_COLUMNS]
+			?? SORT_COLUMNS.created;
 		const dir = c.req.query('dir') === 'asc' ? asc : desc;
 
 		const where = [eq(skins.status, SKIN_STATUS.PUBLISHED)];
@@ -139,6 +149,29 @@ export const skinsRoutes = new Hono()
 		await db.update(skins).set({ status: SKIN_STATUS.PUBLISHED }).where(eq(skins.id, id));
 		const [row] = await db.select().from(skins).where(eq(skins.id, id)).limit(1);
 		return c.json(await withAuthor(row!));
+	})
+
+	// Auth: record that the caller installed this skin. Deduped per player by the
+	// unique key, so the counter only moves on a player's first install.
+	.post('/:id/download', requireAuth, async c => {
+		const id = idParam.parse(c.req.param('id'));
+		const [pub] = await db.select({ id: skins.id }).from(skins)
+			.where(and(eq(skins.id, id), eq(skins.status, SKIN_STATUS.PUBLISHED)))
+			.limit(1);
+		if (!pub) throw new HTTPException(404, { message: 'Skin not found' });
+
+		const [res] = await db.insert(skinDownloads).ignore()
+			.values({
+				skinId: id, userId: c.get('userId'), 
+			});
+		if (res.affectedRows > 0) {
+			await db.update(skins)
+				.set({ downloads: sql`${skins.downloads} + 1` })
+				.where(eq(skins.id, id));
+		}
+		const [row] = await db.select({ downloads: skins.downloads })
+			.from(skins).where(eq(skins.id, id)).limit(1);
+		return c.json({ downloads: row?.downloads ?? 0 });
 	})
 
 	.patch('/:id', requireAuth, jsonBody(skinUpdateBody), async c => {

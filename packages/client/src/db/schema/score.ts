@@ -118,7 +118,7 @@ export class Score extends DAO(t) {
 
 	static getByOnlineId(onlineId: number): Promise<Score | undefined> {
 		return this.first(
-			`SELECT * FROM score WHERE onlineId = ?`,
+			'SELECT * FROM score WHERE onlineId = ?',
 			[onlineId],
 		);
 	}
@@ -149,14 +149,14 @@ export class Score extends DAO(t) {
 
 	static recent(characterId: number, limit = 50): Promise<Score[]> {
 		return this.query(
-			`SELECT * FROM score WHERE characterId = ? ORDER BY playedAt DESC LIMIT ?`,
+			'SELECT * FROM score WHERE characterId = ? ORDER BY playedAt DESC LIMIT ?',
 			[characterId, limit],
 		);
 	}
 
 	static forBeatmap(beatmapId: number, limit = 50): Promise<Score[]> {
 		return this.query(
-			`SELECT * FROM score WHERE beatmapId = ? ORDER BY score DESC, playedAt DESC LIMIT ?`,
+			'SELECT * FROM score WHERE beatmapId = ? ORDER BY score DESC, playedAt DESC LIMIT ?',
 			[beatmapId, limit],
 		);
 	}
@@ -166,7 +166,7 @@ export class Score extends DAO(t) {
 	static countPlays(characterId: number, beatmapId: number): Promise<number> {
 		return DB.read(db => {
 			const res = db.exec(
-				`SELECT COUNT(*) AS n FROM score WHERE characterId = ? AND beatmapId = ?`,
+				'SELECT COUNT(*) AS n FROM score WHERE characterId = ? AND beatmapId = ?',
 				[characterId, beatmapId],
 			);
 			return (res[0]?.values[0][0] as number) ?? 0;

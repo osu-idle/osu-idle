@@ -8,6 +8,7 @@ import {
 	eq,
 	like,
 	or,
+	sql,
 } from 'drizzle-orm';
 import { z } from 'zod';
 import {
@@ -19,6 +20,7 @@ import {
 import { db } from '../db/client';
 import {
 	addons,
+	addonDownloads,
 	toAddonDTO,
 } from '../db/schema/addon';
 import { users } from '../db/schema/user';
@@ -54,6 +56,13 @@ const ownedBy = async (id: number, userId: number) => {
 
 const csv = (list: string[]) => list.join(',');
 
+// Browse sort column keyed by the `sort` query; defaults to publish date.
+const SORT_COLUMNS = {
+	updated: addons.updatedAt,
+	downloads: addons.downloads,
+	created: addons.publishedAt,
+} as const;
+
 /**
  * Add-ons (user-published mods). Browsing the catalog is public but only exposes
  * published add-ons; authoring is auth-gated and owner-checked; moderation is
@@ -65,7 +74,8 @@ export const addonsRoutes = new Hono()
 	.get('/', async c => {
 		const q = c.req.query('q')?.trim();
 		const tag = c.req.query('tag')?.trim().toLowerCase();
-		const sort = c.req.query('sort') === 'updated' ? addons.updatedAt : addons.publishedAt;
+		const sort = SORT_COLUMNS[c.req.query('sort') as keyof typeof SORT_COLUMNS]
+			?? SORT_COLUMNS.created;
 		const dir = c.req.query('dir') === 'asc' ? asc : desc;
 
 		const where = [eq(addons.status, ADDON_STATUS.published)];
@@ -192,6 +202,29 @@ export const addonsRoutes = new Hono()
 		await ownedBy(id, c.get('userId'));
 		await db.delete(addons).where(eq(addons.id, id));
 		return c.json({ ok: true });
+	})
+
+	// Auth: record that the caller installed this add-on. Deduped per player by
+	// the unique key, so the counter only moves on a player's first install.
+	.post('/:id/download', requireAuth, async c => {
+		const id = idParam.parse(c.req.param('id'));
+		const [pub] = await db.select({ id: addons.id }).from(addons)
+			.where(and(eq(addons.id, id), eq(addons.status, ADDON_STATUS.published)))
+			.limit(1);
+		if (!pub) throw new HTTPException(404, { message: 'Add-on not found' });
+
+		const [res] = await db.insert(addonDownloads).ignore()
+			.values({
+				addonId: id, userId: c.get('userId'), 
+			});
+		if (res.affectedRows > 0) {
+			await db.update(addons)
+				.set({ downloads: sql`${addons.downloads} + 1` })
+				.where(eq(addons.id, id));
+		}
+		const [row] = await db.select({ downloads: addons.downloads })
+			.from(addons).where(eq(addons.id, id)).limit(1);
+		return c.json({ downloads: row?.downloads ?? 0 });
 	})
 
 	// Public: a single published add-on (incl source, for install). Kept last so

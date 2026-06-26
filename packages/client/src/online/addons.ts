@@ -29,16 +29,21 @@ export const addonIconUrl = (
 ): string | undefined =>
 	icon ? (/^https?:\/\//.test(icon) ? icon : `${BASE_URL}${icon}`) : undefined;
 
-type BrowseQuery = { 
+type BrowseQuery = {
 	q?: string,
-	tag?: string, 
-	sort?: 'created' | 'updated', 
+	tag?: string,
+	sort?: 'created' | 'updated' | 'downloads',
 	dir?: 'asc' | 'desc',
 };
 
 /** Public: browse the published catalog. */
 export const browseAddons = (query: BrowseQuery = {}) =>
 	unwrap<Addon[]>(rpc.v1.addons.$get({ query }));
+
+/** Auth: record the caller's install (deduped per player); returns the new count. */
+export const recordAddonDownload = (id: number) =>
+	unwrap<{ downloads: number }>(
+		rpc.v1.addons[':id'].download.$post({ param: { id: String(id) } }));
 
 /** Public: a single published add-on (incl source, for install). */
 export const getAddon = (id: number) =>

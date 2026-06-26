@@ -66,8 +66,8 @@ const addOnlineId: Migration = db => {
 
 	if (exists) return;
 
-	db.run(`ALTER TABLE score ADD COLUMN onlineId INTEGER DEFAULT -1;`);
-	db.run(`CREATE INDEX IF NOT EXISTS idx_score_online_id ON score(onlineId);`);
+	db.run('ALTER TABLE score ADD COLUMN onlineId INTEGER DEFAULT -1;');
+	db.run('CREATE INDEX IF NOT EXISTS idx_score_online_id ON score(onlineId);');
 };
 
 const dedupeGuests: Migration = db => {
@@ -78,7 +78,7 @@ const dedupeGuests: Migration = db => {
 	if (!ids || !ids.length) return;
 
 	const keep = db.exec(
-		"SELECT * FROM character WHERE name = 'Guest' ORDER BY accuracy DESC",
+		'SELECT * FROM character WHERE name = \'Guest\' ORDER BY accuracy DESC',
 	)[0]?.values[0][0];
 	if (keep === undefined) return; // ignore
 	if (keep !== 1) {
@@ -134,7 +134,7 @@ const addAddonsGameVersion: Migration = db => {
 	`)[0].values[0][0] as number;
 	if (hasColumn) return;
 
-	db.run(`ALTER TABLE addon ADD COLUMN gameVersion TEXT NOT NULL DEFAULT '';`);
+	db.run('ALTER TABLE addon ADD COLUMN gameVersion TEXT NOT NULL DEFAULT \'\';');
 };
 
 const migrations: Migration[] = [

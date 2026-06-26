@@ -41,7 +41,7 @@ try {
 	execSync('npm run build', { stdio: 'inherit' });
 	execSync('npm run dist:linuxwin', { stdio: 'inherit' });
 } catch(e) {
-	console.error("Build failed:", e.message);
+	console.error('Build failed:', e.message);
 	failed = true;
 } finally {
 	pkg.version = original;

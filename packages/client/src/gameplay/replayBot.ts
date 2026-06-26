@@ -4,6 +4,7 @@ import {
 	type InputEvent,
 } from '@osu-idle/shared/sim/bot';
 import { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
+import type RuntimeNote from '@osu-idle/shared/sim/runtimeNote';
 
 /**
  * Replays a server-computed play: instead of generating timing error from the
@@ -11,48 +12,57 @@ import { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
  * produced. Because judgement is pure given `(offset, windows)`, feeding these
  * through `ManiaGame` reproduces the server's score exactly. A null offset is an
  * intentional miss (Infinity → ignored input), matching the base bot.
+ *
+ * Offsets arrive a few seconds at a time (anti-cheat: the client must not know
+ * the whole outcome up front), so only the inputs streamed so far become events;
+ * the rest are added later via {@link addOffsets} + `ManiaGame.appendReplay`.
  */
 export default class ReplayBot extends Bot {
-	private head = new Map<string, number | undefined>();
-	private tail = new Map<string, number | undefined>();
+	private offsets: ReplayOffset[];
+	private byId = new Map<string, RuntimeNote>();
+	/** inputs already turned into events, keyed `id:tail` so re-sent offsets are ignored */
+	private seen = new Set<string>();
 
 	constructor(offsets: ReplayOffset[]) {
 		super();
-		for (const o of offsets) (o.tail ? this.tail : this.head).set(o.id, o.offset);
+		this.offsets = [...offsets];
 	}
 
-	// unused - generateEvents is overridden to pull offsets from the maps
+	// unused - generateEvents is overridden to emit from the streamed offsets
 	pressOffset(): number { return 0; }
 	releaseOffset(): number { return 0; }
 
 	generateEvents(ctx: BotContext): InputEvent[] {
-		const events: InputEvent[] = [];
+		for (const note of ctx.notes) this.byId.set(note.getId(), note);
+		const events = this.build(this.offsets);
 		ctx.inputs = events;
-		for (const note of ctx.notes) {
-			const h = this.head.get(note.getId());
-			const ho = h == null ? Infinity : h;
-			events.push({ 
-				time: note.time + ho, 
-				column: note.column, 
-				action: 'press', 
-				note, 
-				tail: false, 
-				ignore: !isFinite(ho), 
-			});
-			if (note.hold) {
-				const t = this.tail.get(note.getId());
-				const to = t == null ? Infinity : t;
-				events.push({ 
-					time: note.endTime + to, 
-					column: note.column, 
-					action: 'release', 
-					note, 
-					tail: true, 
-					ignore: !isFinite(to), 
-				});
-			}
-		}
 		events.sort((a, b) => a.time - b.time);
+		return events;
+	}
+
+	/** Fold a streamed chunk of offsets in, returning the input events it adds. */
+	addOffsets(offsets: ReplayOffset[]): InputEvent[] {
+		return this.build(offsets);
+	}
+
+	private build(offsets: ReplayOffset[]): InputEvent[] {
+		const events: InputEvent[] = [];
+		for (const o of offsets) {
+			const key = `${o.id}:${o.tail ? 1 : 0}`;
+			if (this.seen.has(key)) continue;
+			const note = this.byId.get(o.id);
+			if (!note) continue;
+			this.seen.add(key);
+			const off = o.offset == null ? Infinity : o.offset;
+			events.push({
+				time: (o.tail ? note.endTime : note.time) + off,
+				column: note.column,
+				action: o.tail ? 'release' : 'press',
+				note,
+				tail: !!o.tail,
+				ignore: !isFinite(off),
+			});
+		}
 		return events;
 	}
 }

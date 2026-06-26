@@ -62,12 +62,19 @@ const SESSION_TTL = 60 * 60 * 1000;
 
 const decoder = new BeatmapDecoder();
 
-/** A play's full server-side state */
+/** How far ahead of the live position the client may know its replay. The client
+ *  streams offsets in; the server reveals only those whose note is within this
+ *  window of the live position, so a cheater can't read the whole outcome up front. */
+const STREAM_BUFFER_MS = 5000;
+
+/** A play's full server-side state. `offsets`/`reveals` are parallel and sorted by
+ *  reveal time (the offset's note nominal time), so streaming is a simple cursor. */
 type Pending = {
 	token: string,
 	characterId: number,
 	beatmapId: number,
 	offsets: ReplayOffset[],
+	reveals: number[],
 	startedAt: number,
 	endsAt: number,
 	songStartMs: number,
@@ -199,15 +206,30 @@ function setPlayTime(session: PlayTime) {
 	return redis.set(playTimeKey(session.characterId), JSON.stringify(session), 'PX', Math.round(ttl));
 }
 
+type OffsetChunk = {
+	offsets: ReplayOffset[],
+	next: number,
+	done: boolean,
+};
+
 type RankedStartPlayResult = {
 	status: 'ranked',
 	joined: boolean,
 	token: string,
-	offsets: ReplayOffset[],
-	failedAt?: number,
 	startedAt: number,
 	endsAt: number,
-};
+} & OffsetChunk;
+
+/** The offsets revealed so far: every one whose note is within the buffer window
+ *  of the live position. `next` is the resume cursor; `done` once all are sent. */
+function chunkFrom(p: Pending, from: number): OffsetChunk {
+	const horizon = Date.now() - p.startedAt - LEAD_IN_MS + STREAM_BUFFER_MS;
+	let i = Math.max(0, from);
+	while (i < p.reveals.length && p.reveals[i] <= horizon) i++;
+	return {
+		offsets: p.offsets.slice(from, i), next: i, done: i >= p.offsets.length,
+	};
+}
 
 type StartPlayResult = RankedStartPlayResult
 	| { status: 'unranked' }
@@ -238,10 +260,9 @@ const joinResult = (p: Pending): StartPlayResult => ({
 	status: 'ranked',
 	joined: true,
 	token: p.token,
-	offsets: p.offsets,
-	failedAt: p.failedAt,
 	startedAt: p.startedAt,
 	endsAt: p.endsAt,
+	...chunkFrom(p, 0),
 });
 
 /** Join the play already in progress for this character (spectate), or null to
@@ -387,12 +408,26 @@ async function simulateAndStore(
 	const startedAt = Date.now();
 	const endsAt = startedAt + LEAD_IN_MS + endSongTime;
 
+	// Sort the offsets by reveal time (their note's nominal time) so the client can
+	// stream them in with a simple forward cursor and never learn the outcome early.
+	const noteById = new Map(game.notes.map(n => [n.getId(), n]));
+	const revealOf = (o: ReplayOffset) => {
+		const note = noteById.get(o.id)!;
+		return o.tail ? note.endTime : note.time;
+	};
+	const ordered = game.replayOffsets()
+		.map(o => ({
+			o, reveal: revealOf(o), 
+		}))
+		.sort((a, b) => a.reveal - b.reveal);
+
 	const token = randomUUID();
 	const entry: Pending = {
 		token,
 		characterId: character.id,
 		beatmapId,
-		offsets: game.replayOffsets(),
+		offsets: ordered.map(x => x.o),
+		reveals: ordered.map(x => x.reveal),
 		startedAt,
 		endsAt,
 		songStartMs: game.songStartMs,
@@ -418,10 +453,9 @@ async function simulateAndStore(
 		status: 'ranked',
 		joined: false,
 		token,
-		offsets: entry.offsets,
-		...(failedAt ? { failedAt } : undefined),
 		startedAt,
 		endsAt,
+		...chunkFrom(entry, 0),
 	};
 }
 
@@ -592,6 +626,23 @@ export async function playStatus(
 		ok: true, startedAt: play.startedAt, endsAt: play.endsAt, 
 	};
 	return { ok: true };
+}
+
+/** Stream the next slice of replay offsets, gated to the buffer window so the
+ *  client never holds more than a few seconds of the play's future. Returns an
+ *  empty done chunk for an unknown/foreign token (the play already finished). */
+export async function streamOffsets(
+	characterId: number,
+	token: string,
+	from: number,
+): Promise<OffsetChunk> {
+	const play = await readPlay(characterId);
+	if (!play || play.token !== token) {
+		return {
+			offsets: [], next: from, done: true,
+		};
+	}
+	return chunkFrom(play, from);
 }
 
 /** Current play descriptor for resume-after-refresh / cross-tab spectating. */

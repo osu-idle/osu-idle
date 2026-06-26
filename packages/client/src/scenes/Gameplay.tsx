@@ -21,6 +21,7 @@ import { DEBUG_BOT_LEVEL } from '../gameplay/strainDebug';
 import ReplayBot from '../gameplay/replayBot';
 import {
 	abortPlaySession,
+	fetchPlayOffsets,
 	fetchPlayResult,
 	playSessionHeartbeat,
 	PlayResultError,
@@ -81,6 +82,10 @@ import { MAX_HP } from '@osu-idle/shared/sim/scoring';
 import { SETTINGS } from '../db/settings';
 import { scrollSpeedToMs } from '@osu-idle/shared/osu/scroll_speed';
 import sleep from '@osu-idle/shared/helpers/sleep';
+import {
+	Color,
+	colorA,
+} from '@osu-idle/shared/types/color';
 
 type InnerProps = {
 	beatmapInfo: LightBeatmap,
@@ -104,6 +109,9 @@ const HITSOUND_LOOKAHEAD_MS = 1500;
 /** keep the scheduler ticking off the rAF loop so it runs while the tab is
  *  hidden (rAF is paused then; timers are merely throttled). */
 const HITSOUND_TICK_MS = 250;
+/** how often a ranked play pulls the next slice of its streamed replay offsets.
+ *  Well under the server's reveal buffer so the play never out-runs its data. */
+const STREAM_POLL_MS = 1500;
 
 // skills whose live strain is meaningful to watch - the rest are hidden from
 // the strain HUD (accuracy is a level constant; memory has no press strain of
@@ -478,6 +486,36 @@ function GameplayInner({
 		return () => clearInterval(watch);
 	}, []);
 
+	// Stream the rest of the replay in. The server only revealed the first few
+	// seconds at start (anti-cheat: the client must not know the outcome up front),
+	// so keep pulling the next slices and fold them into the live play until every
+	// offset has arrived.
+	useEffect(() => {
+		if (play.mode !== 'ranked' || play.done) return;
+		const bot = botRef.current;
+		if (!(bot instanceof ReplayBot)) return;
+
+		let alive = true;
+		let cursor = play.next;
+		void (async () => {
+			while (alive) {
+				try {
+					const chunk = await fetchPlayOffsets(play.token, cursor);
+					if (!alive) return;
+					if (chunk.offsets.length) {
+						gameRef.current?.appendReplay(bot.addOffsets(chunk.offsets));
+					}
+					cursor = chunk.next;
+					if (chunk.done) return;
+				} catch (e) {
+					console.warn('[play] offset stream failed', e);
+				}
+				await sleep(STREAM_POLL_MS);
+			}
+		})();
+		return () => { alive = false; };
+	}, []);
+
 	// decode + preload the map's keysounds and storyboard samples (effects channel)
 	// and its storyboard video, then build the schedulers. Runs behind the lead-in
 	// cover; until it resolves notes just play the default hitsound.
@@ -735,7 +773,7 @@ function GameplayInner({
 		const drawHoldNote = (
 			note: RenderNote, 
 			cx: number, 
-			color: string, 
+			color: Color, 
 			now: number,
 		) => {
 			if (note.tailJudged) {
@@ -751,7 +789,7 @@ function GameplayInner({
 					const bottom = Math.max(yFrom, yTail);
 					if (bottom < -2 || top > h + 2) return;
 					ctx.globalAlpha = 0.3;
-					ctx.fillStyle = hexA(color, 0.5);
+					ctx.fillStyle = colorA(color, 0.5);
 					ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
 					ctx.fillStyle = color;
 					ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
@@ -763,7 +801,7 @@ function GameplayInner({
 				// hold finishes its travel normally, no pop, no dimming
 				if (now >= note.endTime) return;
 				const yTail = noteY(note.endTime, now);
-				ctx.fillStyle = hexA(color, 0.85);
+				ctx.fillStyle = colorA(color, 0.85);
 				ctx.fillRect(
 					cx + 6, 
 					Math.min(lineY, yTail), 
@@ -781,7 +819,7 @@ function GameplayInner({
 			const bottom = Math.max(yHead, yTail);
 			if (bottom < -2 || top > h + 2) return;
 			// body
-			ctx.fillStyle = note.holding ? hexA(color, 0.85) : hexA(color, 0.5);
+			ctx.fillStyle = note.holding ? colorA(color, 0.85) : colorA(color, 0.5);
 			ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
 			// tail cap
 			ctx.fillStyle = color;
@@ -843,7 +881,7 @@ function GameplayInner({
 					RECEPTOR_HEIGHT,
 				);
 				if (glow > 0) {
-					ctx.fillStyle = hexA(skin.data.hitObjects[c].color, 0.35 * glow);
+					ctx.fillStyle = colorA(skin.data.hitObjects[c].color, 0.35 * glow);
 					ctx.fillRect(
 						cx + 4, 
 						lineY - RECEPTOR_HEIGHT, 
@@ -915,10 +953,10 @@ function GameplayInner({
 				const age = now - flash.time;
 				if (age >= 0 && age < 400) {
 					ctx.globalAlpha = 1 - age / 400;
-					ctx.fillStyle = skin.data.judgements[flash.judgement];
+					ctx.fillStyle = skin.data.judgements[flash.judgement].judge;
 					ctx.font = '700 26px "Exo 2", sans-serif';
 					ctx.textAlign = 'center';
-					ctx.fillText(flash.judgement, cxField, lineY - 90);
+					ctx.fillText(skin.data.judgements[flash.judgement].text, cxField, lineY - 90);
 					ctx.globalAlpha = 1;
 				}
 			}
@@ -964,29 +1002,29 @@ function GameplayInner({
 				ctx.fillStyle = '#fff';
 				ctx.font = '800 23px "Exo 2", sans-serif';
 				ctx.textAlign = 'center';
-				ctx.fillText(`SKIP`, cxField, h * 0.62);
-				ctx.fillText(`>>>>`, cxField, h * 0.64);
+				ctx.fillText('SKIP', cxField, h * 0.62);
+				ctx.fillText('>>>>', cxField, h * 0.64);
 			}
 
 			if (play.mode === 'guest') {
 				ctx.fillStyle = '#ffffff';
 				ctx.font = '800 23px "Exo 2", sans-serif';
 				ctx.textAlign = 'center';
-				ctx.fillText(`Offline play`, cxField, h * 0.66);
+				ctx.fillText('Offline play', cxField, h * 0.66);
 			}
 
 			if (play.mode === 'unranked') {
 				ctx.fillStyle = '#bb2727';
 				ctx.font = '800 23px "Exo 2", sans-serif';
 				ctx.textAlign = 'center';
-				ctx.fillText(`Unranked`, cxField, h * 0.66);
+				ctx.fillText('Unranked', cxField, h * 0.66);
 			}
 
 			if (play.mode === 'debug') {
 				ctx.fillStyle = '#63b3ff';
 				ctx.font = '800 23px "Exo 2", sans-serif';
 				ctx.textAlign = 'center';
-				ctx.fillText(`Debug bot - no fail`, cxField, h * 0.66);
+				ctx.fillText('Debug bot - no fail', cxField, h * 0.66);
 			}
 			// current grade badge (DOM <img>, top right)
 			if (game.score.grade !== gradeRef.current) {
@@ -1351,26 +1389,4 @@ function roundRect(
 	ctx.arcTo(x, y + h, x, y, r);
 	ctx.arcTo(x, y, x + w, y, r);
 	ctx.closePath();
-}
-
-/** apply alpha to a #rrggbb colour */
-function hexA(hex: string, alpha: number): string {
-	let h = hex.replace(/^#/, '');
-
-	if (h.length === 3 || h.length === 4) {
-		h = h
-			.split('')
-			.map(c => c + c)
-			.join('');
-	}
-
-	if (h.length !== 6 && h.length !== 8) {
-		throw new Error(`Invalid hex colour: ${hex}`);
-	}
-
-	const r = parseInt(h.slice(0, 2), 16);
-	const g = parseInt(h.slice(2, 4), 16);
-	const b = parseInt(h.slice(4, 6), 16);
-
-	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }

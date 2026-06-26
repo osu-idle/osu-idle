@@ -3,22 +3,27 @@ import {
 	useState,
 } from 'react';
 import {
+	Plural,
 	Trans,
 	useLingui,
 } from '@lingui/react/macro';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import type { PageAction } from '../page/pageBar';
-import { currentSkin } from '../../osu/skin/Skin';
-import { SkinDAO } from '../../db/schema/skin';
+import {
+	installedSkins,
+	SkinDAO,
+} from '../../db/schema/skin';
 import {
 	browseSkins,
+	recordSkinDownload,
 	Skin,
 } from '../../online/skins';
+import Account from '../../online/account';
 import ConfirmMenu, { Confirm } from '../ConfirmMenu';
 import SkinIcon from './SkinIcon';
 import SkinView from './SkinView';
 
-type Sort = 'created' | 'updated';
+type Sort = 'created' | 'updated' | 'downloads';
 
 /** Persist a catalog skin locally and enable it. */
 export const install = async (skin: Skin) => {
@@ -28,8 +33,8 @@ export const install = async (skin: Skin) => {
 
 export default function BrowseSkinsView() {
 	const { t } = useLingui();
-	const [current] = useSynced(currentSkin);
-	const [installedIds, setInstalledIds] = useState<Set<number>>(new Set());
+	const [installed] = useSynced(installedSkins);
+	const installedIds = new Set(installed.map(s => s.id));
 	const [list, setList] = useState<Skin[] | undefined>();
 	const [detail, setDetail] = useState<Skin | undefined>();
 	const [confirming, setConfirming] = useState<Confirm | undefined>();
@@ -37,11 +42,6 @@ export default function BrowseSkinsView() {
 	const [sort, setSort] = useState<Sort>('created');
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | undefined>();
-
-	useEffect(() => {
-		void SkinDAO.getAll()
-			.then(rows => setInstalledIds(new Set(rows.map(r => r.id))));
-	}, [current]);
 
 	const refresh = () => {
 		setError(undefined);
@@ -53,9 +53,25 @@ export default function BrowseSkinsView() {
 	};
 	useEffect(() => { void refresh(); }, [sort]);
 
+	// Count this player's install once (server dedupes); reflect the new total in
+	// the list/detail. Signed-out players can't be counted, so skip the call.
+	const recordDownload = async (id: number) => {
+		if (!Account.character.get()) return;
+		try {
+			const { downloads } = await recordSkinDownload(id);
+			setList(prev => prev?.map(a => a.id === id ? {
+				...a, downloads, 
+			} : a));
+			setDetail(prev => prev && prev.id === id ? {
+				...prev, downloads, 
+			} : prev);
+		} catch { /* a counter miss must not fail the local install */ }
+	};
+
 	const doInstall = (dto: Skin) => {
 		setBusy(true);
 		void install(dto)
+			.then(() => recordDownload(dto.id))
 			.catch(e => setError(String((e as Error).message ?? e)))
 			.finally(() => setBusy(false));
 	};
@@ -114,10 +130,16 @@ export default function BrowseSkinsView() {
 									<Trans>Newest</Trans>
 								</button>
 								<button
-									className={`skins__sort-btn ${sort === 'updated' ? 'is-active' : ''}`} 
+									className={`skins__sort-btn ${sort === 'updated' ? 'is-active' : ''}`}
 									onClick={() => setSort('updated')}
 								>
 									<Trans>Updated</Trans>
+								</button>
+								<button
+									className={`skins__sort-btn ${sort === 'downloads' ? 'is-active' : ''}`}
+									onClick={() => setSort('downloads')}
+								>
+									<Trans>Most downloaded</Trans>
 								</button>
 							</div>
 						</div>
@@ -136,7 +158,13 @@ export default function BrowseSkinsView() {
 										<div className='skin__name'>
 											{a.name}<span className='skin__ver'>v{a.version}</span>
 										</div>
-										<div className='skin__by'><Trans>by</Trans> {a.authorName}</div>
+										<div className='skin__by'>
+											<Trans>by</Trans> {a.authorName}
+											<span className='skin__downloads'>
+												{' · '}
+												<Plural value={a.downloads} one='# download' other='# downloads' />
+											</span>
+										</div>
 										{a.description && <div className='skin__desc'>{a.description}</div>}
 										{a.tags.length > 0 && <div className='skin__tags'>
 											{a.tags.map(tag => <span key={tag} className='skin__tag'>{tag}
