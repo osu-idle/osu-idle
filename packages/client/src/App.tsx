@@ -14,17 +14,19 @@ import Options from './scenes/Options';
 import FpsCounter from './components/FpsCounter';
 import Spectate from './online/spectate';
 import Presence from './online/presence';
+import Socket from './online/socket';
+import CommunityOverlay from './components/community/CommunityOverlay';
 
 Spectate.start();
 Presence.start();
+Socket.start();
 
 export default function App() {
 	const [scene] = useSynced(SceneManager.scene);
-	const [alpha] = useSynced(SceneManager.displayAlpha);
 
 	return (
 		<>
-			{alpha && <Alpha />}
+			<Alpha />
 			{scene}
 			<TransitionOverlay />
 			<VolumeOverlay />
@@ -33,6 +35,7 @@ export default function App() {
 			<Message />
 			<Options />
 			<WebBrowser />
+			<CommunityOverlay />
 			<Popups />
 			<FpsCounter />
 			{!isMobile && <Cursor />}

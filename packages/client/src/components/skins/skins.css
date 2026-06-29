@@ -319,6 +319,59 @@
 	color: var(--text-dim);
 }
 
+/* looping gameplay preview of the current beatmap, drawn with the edited skin */
+.skin-view__preview {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+.skin-view__preview > span {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--text-dim);
+}
+.skin-preview {
+	position: relative;
+	aspect-ratio: 16/9;
+	background: #0a0a0f;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	overflow: hidden;
+}
+/* stacked layers behind the transparent playfield canvas: bg → dim → canvas,
+   mirroring the live gameplay scene's DOM layer model */
+.skin-preview__bg,
+.skin-preview__dim,
+.skin-preview__canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+.skin-preview__bg {
+	background-size: cover;
+	background-position: center;
+}
+.skin-preview__dim {
+	background: #000;
+}
+.skin-preview__grade {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	height: 40px;
+	width: auto;
+}
+.skin-preview--empty {
+	display: grid;
+	place-items: center;
+	padding: 0 1rem;
+	text-align: center;
+	color: var(--text-dim);
+	font-size: 0.88rem;
+}
+
 .skin-field {
 	display: flex;
 	flex-direction: column;
@@ -383,18 +436,19 @@
 	resize: vertical;
 }
 
-/* Scroll wrapper around react-simple-code-editor: it owns the height, border and
-   scrolling; the editor inside grows with its content (VSCode Dark+ token theme
-   is imported globally). */
+/* Wrapper around react-simple-code-editor: fills the column (so it's always at
+   least as tall as its parent via the row's align-items:stretch), and grows the
+   page when the code is taller instead of scrolling vertically. Long lines still
+   scroll horizontally. The editor inside grows with its content (VSCode Dark+
+   token theme is imported globally). */
 .skin-code {
-	flex: 1 1 auto;
-	min-height: 420px;
-	max-height: 65vh;
+	flex: 1 0 auto;
 	/* fixed ~80 columns (+ the editor's 12px side padding), shrinking only when
 	   stacked under the metadata on a narrow viewport */
 	width: calc(80ch + 24px);
 	max-width: 100%;
-	overflow: auto;
+	overflow-x: auto;
+	overflow-y: hidden;
 	background: #1e1e1e;
 	color: #d4d4d4;
 	border: 1px solid rgba(255, 255, 255, 0.18);

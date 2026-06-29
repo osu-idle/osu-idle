@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-25 14:43\n"
+"PO-Revision-Date: 2026-06-29 21:12\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -26,7 +26,7 @@ msgstr "(mobile) Durée du maintien pour faire un clic droit"
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/skins/BrowseSkinsView.tsx
 msgid "{0, plural, one {# download} other {# downloads}}"
-msgstr ""
+msgstr "{0, plural, one {# téléchargement} other {# téléchargements}}"
 
 #. placeholder {0}: items.length
 #: src/scenes/SongSelect.tsx
@@ -42,6 +42,10 @@ msgstr "{0} sur {total} résultats"
 msgid "{count, plural, one {# map} other {# maps}}"
 msgstr "{count, plural, one {# map} other {# maps}}"
 
+#: src/components/community/WorldMap.tsx
+msgid "{count} here"
+msgstr "{count} ici"
+
 #. placeholder {0}: min + 1
 #: src/osu/beatmap/grouping.ts
 msgid "{min}-{0} min"
@@ -54,6 +58,10 @@ msgstr "{months, plural, one {il y a # mois} other {il y a # mois}}"
 #: src/components/PlaylistOverlay.tsx
 msgid "{nbMaps} maps"
 msgstr "{nbMaps} maps"
+
+#: src/components/community/CommunityHeader.tsx
+msgid "{online} users connected"
+msgstr "{online} utilisateurs en ligne"
 
 #: src/online/presence.ts
 msgid "{result} on {map}"
@@ -111,6 +119,10 @@ msgstr "Précision : {acc}"
 msgid "Accuracy: {accText}"
 msgstr "Précision : {accText}"
 
+#: src/components/community/PlayerCard.tsx
+msgid "Accuracy: {accuracy}"
+msgstr "Précision : {accuracy}"
+
 #. placeholder {0}: dateAgo(score.playedAt)
 #: src/components/leaderboard/ScoreTooltip.tsx
 msgid "Achieved on {date} ({0})"
@@ -142,6 +154,10 @@ msgstr "addon|addons|add-on|mod|mods|recherche|catalogue|installer"
 msgid "addon|addons|add-on|mod|mods|manage|installed"
 msgstr "addon|addons|add-on|mod|mods|gérer|gerer|installé"
 
+#: src/components/community/CommunityHeader.tsx
+msgid "All"
+msgstr "Tout"
+
 #: src/components/options/DeleteAllBeatmaps.tsx
 msgid "All beatmaps deleted."
 msgstr "Toutes les maps ont été supprimées."
@@ -149,6 +165,10 @@ msgstr "Toutes les maps ont été supprimées."
 #: src/scenes/MainMenu.tsx
 msgid "Are you sure you want to quit?"
 msgstr "Êtes-vous sûr de vouloir quitter ?"
+
+#: src/components/community/CommunityControls.tsx
+msgid "Auto-hide"
+msgstr "Cacher auto."
 
 #: src/components/options/AutopilotDelay.tsx
 msgid "Autopilot delay"
@@ -340,6 +360,10 @@ msgstr "Fermer"
 msgid "Close (Esc)"
 msgstr "Fermer (Échap)"
 
+#: src/components/community/chat/Chat.tsx
+msgid "Close channel"
+msgstr "Fermer le chat"
+
 #: src/components/addons/AddonCodePane.tsx
 #: src/components/addons/AddonCodePane.tsx
 #: src/components/skins/SkinCodePane.tsx
@@ -479,11 +503,15 @@ msgstr "Quitter osu!idle"
 #. placeholder {0}: '{ 0: ..., 1: ..., 2: ..., 3: ... }'
 #: src/osu/skin/Skin.tsx
 msgid "Expected a column record like {0}"
-msgstr ""
+msgstr "Une liste indexée était attendue, comme {0}"
 
 #: src/scenes/Result.tsx
 msgid "FAILED"
 msgstr "ÉCHEC"
+
+#: src/components/community/CommunityHeader.tsx
+msgid "Filter:"
+msgstr "Filtrer :"
 
 #: src/components/WebBrowser.tsx
 msgid "Forward"
@@ -492,6 +520,14 @@ msgstr "Suivant"
 #: src/scenes/Options.tsx
 msgid "fps|frame|rate|refresh|hz"
 msgstr "fps|ips|frame|image|hz"
+
+#: src/components/community/CommunityHeader.tsx
+msgid "Friends"
+msgstr "Amis"
+
+#: src/components/community/CommunityBody.tsx
+msgid "Friends are coming soon"
+msgstr "La liste d'amis arrive bientôt"
 
 #: src/scenes/Options.tsx
 msgid "fullscreen"
@@ -530,6 +566,10 @@ msgstr "GRAPHISMES"
 #: src/components/songselect/TopBar.tsx
 msgid "Group"
 msgstr "Grouper"
+
+#: src/components/community/CommunityControls.tsx
+msgid "Hide chat"
+msgstr "Cacher le chat"
 
 #: src/scenes/Result.tsx
 msgid "Hit deviance · {ur} UR"
@@ -602,6 +642,10 @@ msgstr "chargement de la bibliothèque…"
 msgid "Loading…"
 msgstr "Chargement…"
 
+#: src/components/community/CommunityBody.tsx
+msgid "Location"
+msgstr "Localisation"
+
 #: src/gameplay/autopilot.ts
 msgid "Loop"
 msgstr "En boucle"
@@ -659,7 +703,7 @@ msgstr "Retours de la modération"
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/skins/BrowseSkinsView.tsx
 msgid "Most downloaded"
-msgstr ""
+msgstr "Les plus téléchargés"
 
 #: src/scenes/MainMenu.tsx
 msgid "Multi"
@@ -670,6 +714,7 @@ msgid "Music"
 msgstr "Musique"
 
 #: src/components/addons/AddonView.tsx
+#: src/components/community/CommunityBody.tsx
 #: src/components/skins/SkinView.tsx
 msgid "Name"
 msgstr "Nom"
@@ -688,16 +733,13 @@ msgstr "Jamais"
 msgid "Newest"
 msgstr "Récents"
 
+#: src/components/community/MusicControls.tsx
 #: src/components/Tutorial.tsx
 msgid "Next"
 msgstr "Suivant"
 
 #: src/gameplay/autopilot.ts
 msgid "Next song"
-msgstr "Chanson suivante"
-
-#: src/components/NowPlaying.tsx
-msgid "Next track"
 msgstr "Chanson suivante"
 
 #: src/scenes/Result.tsx
@@ -720,6 +762,10 @@ msgstr "Aucun add-on installé. Vous en trouverez dans le catalogue."
 msgid "No Grouping"
 msgstr "Aucun groupe"
 
+#: src/components/community/WorldMap.tsx
+msgid "No locations to show"
+msgstr "Aucune localisation à afficher"
+
 #: src/components/BeatmapCarousel.tsx
 msgid "no maps match your search"
 msgstr "aucune map ne correspond à votre recherche"
@@ -727,6 +773,10 @@ msgstr "aucune map ne correspond à votre recherche"
 #: src/scenes/Options.tsx
 msgid "No matching settings."
 msgstr "Aucun résultat."
+
+#: src/components/community/PlayerGrid.tsx
+msgid "No one online"
+msgstr "Personne n'est en ligne"
 
 #: src/components/PlaylistOverlay.tsx
 msgid "No playlists yet. Type a name above and press Enter."
@@ -751,6 +801,14 @@ msgstr "Aucun skin trouvé."
 #: src/components/skins/ManageSkinsView.tsx
 msgid "No skins installed. Browse the catalog to find some."
 msgstr "Aucun skin installé. Vous en trouverez dans le catalogue."
+
+#: src/components/community/MusicControls.tsx
+msgid "Now playing"
+msgstr "En cours de lecture"
+
+#: src/components/community/CommunityControls.tsx
+msgid "Online users"
+msgstr "Utilisateurs en ligne"
 
 #: src/components/songselect/UserCard.tsx
 msgid "Open osu! web"
@@ -793,9 +851,17 @@ msgstr "parallax"
 msgid "Parallax"
 msgstr "Effet parallax"
 
+#: src/components/community/MusicControls.tsx
+msgid "Pause"
+msgstr "Pause"
+
 #: src/scenes/Result.tsx
 msgid "Performance"
 msgstr "Performance"
+
+#: src/components/community/PlayerCard.tsx
+msgid "Performance: {pp}"
+msgstr "Performance : {pp}"
 
 #: src/components/songselect/UserCard.tsx
 msgid "Performance: {pp}pp"
@@ -814,9 +880,18 @@ msgstr "Record personnel"
 msgid "Pick a song"
 msgstr "Choisir une musique"
 
+#: src/components/community/MusicControls.tsx
 #: src/scenes/MainMenu.tsx
 msgid "Play"
 msgstr "Jouer"
+
+#: src/components/skins/GameplayPreview.tsx
+msgid "Play a beatmap to preview the skin."
+msgstr "Lancez une map pour prévisualiser le skin."
+
+#: src/components/community/PlayerCard.tsx
+msgid "Play Count: {playCount} (Lv{level})"
+msgstr "Parties : {playCount} (Lv{level})"
 
 #: src/components/Tutorial.tsx
 msgid "Play online"
@@ -847,6 +922,15 @@ msgstr "Playlist"
 msgid "Playlists"
 msgstr "Playlists"
 
+#: src/components/skins/SkinView.tsx
+#: src/components/skins/SkinView.tsx
+msgid "Preview"
+msgstr "Prévisualiser"
+
+#: src/components/community/MusicControls.tsx
+msgid "Previous"
+msgstr "Précédent"
+
 #: src/components/Onboarding.tsx
 msgid "Profile picture<0/>Defaults to your osu! avatar"
 msgstr "Avatar<0/>Votre avatar osu! est utilisé par défaut"
@@ -858,6 +942,10 @@ msgstr "Les add-ons publiés doivent l'être sous une licence AGPLv3 (ou licence
 #: src/scenes/Gameplay.tsx
 msgid "quit"
 msgstr "quitter"
+
+#: src/components/community/CommunityBody.tsx
+msgid "Rank"
+msgstr "Rang"
 
 #: src/components/Announce.tsx
 msgid "Read the full article"
@@ -918,11 +1006,21 @@ msgstr "Sauvegarder"
 msgid "Saving…"
 msgstr "Sauvegarde…"
 
+#: src/components/community/CommunityHeader.tsx
+msgid "Search"
+msgstr "Rechercher"
+
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/skins/BrowseSkinsView.tsx
 #: src/scenes/SongSelect.tsx
 msgid "Search:"
 msgstr "Recherche :"
+
+#. to search (verb)
+#. js-lingui-explicit-id
+#: src/components/community/CommunityHeader.tsx
+msgid "search_verb"
+msgstr "Rechercher"
 
 #: src/components/leaderboard/Leaderboard.tsx
 msgid "Select a difficulty to see its scores."
@@ -940,6 +1038,10 @@ msgstr "Choisir une langue"
 msgid "Selecting a song"
 msgstr "Sélectionne une map"
 
+#: src/components/community/CommunityControls.tsx
+msgid "Show chat"
+msgstr "Voir le chat"
+
 #: src/components/options/ShowFPS.tsx
 msgid "Show FPS counter"
 msgstr "Montrer le compteur d'IPS"
@@ -951,6 +1053,10 @@ msgstr "Afficher les scores"
 #: src/components/options/ShowThumbnails.tsx
 msgid "Show thumbnails"
 msgstr "Montrer les images"
+
+#: src/components/community/CommunityControls.tsx
+msgid "Show ticker"
+msgstr "Voir le ticker"
 
 #: src/components/options/SignIn.tsx
 #: src/components/Tutorial.tsx
@@ -1020,6 +1126,10 @@ msgstr "Trier"
 msgid "Star Rating: {0}★"
 msgstr "Difficulté : {0}★"
 
+#: src/components/community/MusicControls.tsx
+msgid "Stop"
+msgstr "Stop"
+
 #: src/scenes/SongSelect.tsx
 msgid "Strain debug"
 msgstr "Strain debug"
@@ -1066,6 +1176,10 @@ msgstr "Il s'agit d'une version <0>automatisée</0> du jeu osu!mania (version st
 #: src/scenes/Options.tsx
 msgid "thumb|thumbnail"
 msgstr "thumb|thumbnail"
+
+#: src/components/community/CommunityBody.tsx
+msgid "Time Zone"
+msgstr "Fuseau horaire"
 
 #: src/osu/beatmap/grouping.ts
 msgid "Today"
@@ -1126,7 +1240,7 @@ msgstr "Envoi…"
 
 #: src/components/skins/SkinView.tsx
 msgid "Validation errors"
-msgstr ""
+msgstr "Erreurs de validation"
 
 #: src/components/addons/AddonView.tsx
 #: src/components/skins/SkinView.tsx
@@ -1172,6 +1286,10 @@ msgstr "Bienvenue, {0} !"
 #: src/components/songselect/CardContextMenu.tsx
 msgid "What do you want to do with this beatmap?"
 msgstr "Que voulez-vous faire avec cette map ?"
+
+#: src/components/community/CommunityBody.tsx
+msgid "World Map"
+msgstr "Carte du Monde"
 
 #: src/osu/beatmap/grouping.ts
 msgid "Yesterday"

@@ -1,7 +1,17 @@
 import { eq } from 'drizzle-orm';
 import { type SkillName } from '@osu-idle/shared/skills';
 import { db } from './db/client';
-import { characters } from './db/schema/character';
+import {
+	characters,
+	getCharacterById,
+} from './db/schema/character';
+import { getBeatmapById } from './db/schema/beatmap';
+import { announce } from './ws/chat';
+import { DEFAULT_CHANNEL } from '@osu-idle/shared/community/wire';
+import {
+	billionsMessage,
+	firstPlaceMessage,
+} from '@osu-idle/shared/community/announcements';
 import {
 	getScoreById,
 	scores,
@@ -97,8 +107,15 @@ export const checkNewBest = async (totals: CharacterTotalsRow, score: ScoreRow) 
 		removeBestScoreFromTotals(totals, best);
 	}
 
+	const billionsBefore = Math.floor(totals.rankedScore / 1_000_000_000);
 	addBestScoreToTotals(totals, score);
 	await setNewBestPlay(score);
+
+	const billionsAfter = Math.floor(totals.rankedScore / 1_000_000_000);
+
+	if (billionsAfter > billionsBefore) {
+		await announceBillions(score, totals.rankedScore);
+	}
 };
 
 export const checkNewBestPP = async (score: ScoreRow, recompute = true) => {
@@ -114,6 +131,36 @@ export const checkNewFirstPlace = async (score: ScoreRow) => {
 	if (best && compareScores(best, score)) return;
 
 	await setNewFirstPlace(score);
+	await announceFirstPlace(score);
+};
+
+/** Server-announce a new #1 in chat (a "perfect" variant for a max score). */
+const announceFirstPlace = async (score: ScoreRow) => {
+	const [character, beatmap] = await Promise.all([
+		getCharacterById(score.characterId),
+		getBeatmapById(score.beatmapId),
+	]);
+	if (!character || !beatmap) return;
+
+	const perfect = score.score >= 1_000_000;
+	announce(
+		DEFAULT_CHANNEL, 
+		firstPlaceMessage(character.name, beatmap, perfect), 
+		perfect ? '#c794ff' : '#fa81c6',
+	);
+};
+
+/** Server-announce a new #1 in chat (a "perfect" variant for a max score). */
+const announceBillions = async (score: ScoreRow, rankedScore: number) => {
+	const character = await getCharacterById(score.characterId);
+	if (!character) return;
+
+	const billions = Math.floor(rankedScore / 1_000_000_000) * 1_000_000_000;
+	announce(
+		DEFAULT_CHANNEL, 
+		billionsMessage(character.name, billions), 
+		'#81e2fa',
+	);
 };
 
 /** Apply per-skill XP gains to a character, reusing the shared levelling curve.

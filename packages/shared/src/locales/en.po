@@ -77,6 +77,10 @@ msgstr "60hz GMMK firmware"
 msgid "Accuracy"
 msgstr "Accuracy"
 
+#: src/display/community.ts
+msgid "AFK"
+msgstr "AFK"
+
 #: src/skills.ts
 msgid "AirPods"
 msgstr "AirPods"
@@ -257,6 +261,10 @@ msgstr "Gym, stretch session + meditation"
 msgid "Hbada E3 Pro"
 msgstr "Hbada E3 Pro"
 
+#: src/display/community.ts
+msgid "Idle"
+msgstr "Idle"
+
 #: src/types/color.ts
 msgid "Invalid #hex color"
 msgstr "Invalid #hex color"
@@ -380,6 +388,10 @@ msgstr "Pending"
 #: src/skills.ts
 msgid "Per-map scroll speed setting"
 msgstr "Per-map scroll speed setting"
+
+#: src/display/community.ts
+msgid "Playing"
+msgstr "Playing"
 
 #: src/skills.ts
 msgid "Post-it notes"

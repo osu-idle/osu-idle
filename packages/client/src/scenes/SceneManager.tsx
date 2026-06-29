@@ -31,7 +31,6 @@ export type Scene = ValueIn<typeof SCENE>;
 const persisted = (import.meta.hot?.data ?? {}) as {
 	current?: Synced<Scene>;
 	scene?: Synced<JSX.Element>;
-	displayAlpha?: Synced<boolean>;
 	initialized?: boolean;
 };
 
@@ -69,7 +68,6 @@ export default class SceneManager {
 
 	public static current = (persisted.current ??= new Synced<Scene>(SCENE.INTRO));
 	public static scene = (persisted.scene ??= new Synced<JSX.Element>(<></>));
-	public static displayAlpha = (persisted.displayAlpha ??= new Synced(false));
 
 	public static set<S extends Scene>(
 		scene: S, 
@@ -78,19 +76,6 @@ export default class SceneManager {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		this.scene.set((this.get[scene] as any)(...args));
 		this.current.set(scene);
-
-		switch(scene) {
-			case SCENE.INTRO:
-			case SCENE.GAME:
-			case SCENE.RESULT:
-			case SCENE.SELECT:
-			case SCENE.ADDONS:
-			case SCENE.SKINS:
-				this.displayAlpha.set(false);
-				return;
-			default:
-				this.displayAlpha.set(true);
-		}
 	}
 
 }

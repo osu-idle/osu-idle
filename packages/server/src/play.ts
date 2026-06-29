@@ -32,6 +32,8 @@ import type {
 import Memory from '@osu-idle/shared/sim/skills/memory';
 import { calculatePP } from './pp';
 import { getBeatmap } from './beatmaps';
+import { update as updatePresence } from './ws/presence';
+import { STATUS } from '@osu-idle/shared/community/presence';
 import { getPlays } from './db/schema/beatmaps_played';
 import {
 	mindblockFactor,
@@ -449,6 +451,12 @@ async function simulateAndStore(
 	// Promote the provisional lock to the real end time (drives the sweep + count).
 	await redis.zadd(PLAYING_KEY, endsAt, String(character.id));
 
+	// Reflect the play on the community overlay (no-op if they have no live socket).
+	void updatePresence(character.id, {
+		status: STATUS.playing,
+		nowPlaying: `${beatmap.artist} - ${beatmap.title}`,
+	});
+
 	return {
 		status: 'ranked',
 		joined: false,
@@ -526,6 +534,11 @@ export async function finalizePlay(
 
 	// Free up the character slot for playing again
 	await redis.zrem(PLAYING_KEY, String(characterId));
+
+	// Back to idle on the community overlay (no-op without a live socket).
+	void updatePresence(characterId, {
+		status: STATUS.idle, nowPlaying: undefined,
+	});
 
 	const result = await parsePlayResult(play, serverSide);
 

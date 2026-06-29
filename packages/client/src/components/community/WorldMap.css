@@ -1,0 +1,44 @@
+.community-map {
+	/* osu! land tone; override to retheme. */
+	--map-land: #333;
+
+	position: relative;
+	overflow: hidden;
+
+	/* Height is driven by the available row; width follows from this ratio (the
+	   widest allowed). When the row is short we shrink at this ratio rather than
+	   going short-and-wide; when it's narrow, max-width clamps and the map
+	   squeezes horizontally instead. Matches the cropped 360x150 viewBox. */
+	flex: 1;
+	min-height: 0;
+	max-height: 500px;
+	aspect-ratio: 12 / 5;
+	max-width: min(1250px, 100%);
+	align-self: center;
+	margin: 14px auto;
+	border: 1px solid rgba(255, 255, 255, 0.66);
+}
+
+.community-map__svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.community-map__svg path {
+	fill: var(--map-land);
+	stroke: #fff;
+	stroke-opacity: 0.66;
+	stroke-width: 1px;
+	/* keep the outline a constant 1px no matter how the viewBox is scaled */
+	vector-effect: non-scaling-stroke;
+}
+
+.community-map__dot {
+	position: absolute;
+	width: 6px;
+	height: 6px;
+	transform: translate(-50%, -50%);
+	background: var(--osu-pink);
+}

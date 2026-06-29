@@ -7,14 +7,23 @@ import { redis } from './redis';
 import { sweepDuePlays } from './play';
 import { sweepRankedMaps } from './beatmaps/sweep';
 import { ensureRankings } from './rankings';
+import { registerWs } from './ws/routes';
+import { hub } from './ws/hub';
+import { sweepPresence } from './ws/presence';
 
 Logfile.setWriter(lines => appendFile('runtime.log', lines.join('\n') + '\n'));
 
+// Community WebSocket: mount the route on the app and start the pub/sub fan-out.
+const { injectWebSocket } = registerWs(app);
+hub.init();
+
 const server = serve({
-	fetch: app.fetch, port, 
+	fetch: app.fetch, port,
 }, info => {
 	console.log(`🎵 osu! idle API listening on http://localhost:${info.port}`);
 });
+
+injectWebSocket(server);
 
 // Build the Redis ranking index from MySQL once per deploy (one cluster worker
 // wins the lock; the rest return immediately).
@@ -29,6 +38,10 @@ sweep.unref();
 // Announce scheduled maps whose rank time has passed (no redeploy needed).
 const rankSweep = setInterval(() => void sweepRankedMaps(), 30_000);
 rankSweep.unref();
+
+// Prune presence entries left behind by a crashed worker / unclean disconnect.
+const presenceSweep = setInterval(() => void sweepPresence(), 30_000);
+presenceSweep.unref();
 
 /**
  * Drain on a clean shutdown (systemd stop / restart, Ctrl-C, tsx-watch reload,

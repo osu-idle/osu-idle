@@ -1,6 +1,9 @@
 import clamp from './clamp.js';
 import cubic_bezier from './cubic_bezier.js';
 
+/**
+ * Transforms a number from a clamped range into a [0, 1] linear
+ */
 const normalize = (n: number, range: [number, number]) => 
 	clamp((clamp(n, range[0], range[1]) - range[0]) / (range[1] - range[0]), 0, 1);
 

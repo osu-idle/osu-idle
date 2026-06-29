@@ -304,10 +304,24 @@ export class MusicPlayer {
 		this.playing.set(false);
 	}
 
+	// Recently played tracks, so `previous()` can step back through the shuffle.
+	private history: LightBeatmap[] = [];
+
 	async next() {
 		const all = (await BeatmapStore.getAllSets()).flatMap(set => set.beatmaps);
 		if (!all.length) return;
+		const current = music.beatmap.get();
+		if (current) this.history = [...this.history, current].slice(-50);
 		await music.beatmap.set(all[Math.floor(Math.random() * all.length)]);
+		await music.play(0);
+	}
+
+	/** Step back to the previously played track, or restart the current one if
+	 *  there's no history (matching osu!'s previous button). */
+	async previous() {
+		const prev = this.history.pop();
+		if (!prev) return this.restart();
+		await music.beatmap.set(prev);
 		await music.play(0);
 	}
 

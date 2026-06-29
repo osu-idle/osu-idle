@@ -7,6 +7,7 @@ import {
 	isStandalone,
 	message,
 } from '../globals';
+import { showChat } from '../components/community/state';
 
 type KeyCallback = (press: boolean, release: boolean) => void;
 
@@ -58,6 +59,7 @@ export default class Controls {
 	public static decreaseScrollSpeed = new KeyListener();
 	
 	public static openOptions = new KeyListener();
+	public static community = new KeyListener();
 
 	public static shift = new KeyListener();
 	public static control = new KeyListener();
@@ -140,6 +142,10 @@ export default class Controls {
 						await this.openOptions.trigger(press, release);
 					}
 					break;
+				case 'f9':
+					e.preventDefault();
+					await this.community.trigger(press, release);
+					break;
 			}
 		};
 		
@@ -163,7 +169,7 @@ export default class Controls {
 
 		window.addEventListener('wheel', (e) => {
 			if (this.mode_Alt.get() 
-				|| (SceneManager.current.get() === SCENE.MENU && !isOptionsOpen.get())
+				|| (SceneManager.current.get() === SCENE.MENU && !isOptionsOpen.get() && !showChat.get())
 			) {
 				if (e.deltaY > 0) {
 					this.volumeDown.trigger(false, false);

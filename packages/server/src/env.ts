@@ -42,6 +42,12 @@ const schema = z.object({
 	MAP_FEED_WEBHOOK: z.string(),
 	USER_FEED_WEBHOOK: z.string(),
 	ERROR_FEED_WEBHOOK: z.string(),
+
+	// MaxMind GeoLite2-City database, used to place online players on the world
+	// map (anonymous, coarse) and derive their timezone. Optional: without it the
+	// map/timezone features degrade to country-level. The file is provisioned out
+	// of band (download + periodic refresh from MaxMind).
+	GEOIP_DB: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

@@ -1,0 +1,67 @@
+/* now playing (top right of the header) */
+.community-music {
+	margin-left: auto;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 5px;
+	min-width: 240px;
+}
+
+.community-music__meta {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+
+.community-music__label {
+	font-size: 14px;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--osu-pink);
+}
+
+.community-music__title {
+	font-size: 24px;
+	color: var(--text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.community-music__transport {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.community-music__transport button {
+	display: grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	font-size: 24px;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	color: var(--text);
+	opacity: 0.85;
+	cursor: pointer;
+}
+
+.community-music__transport button:hover {
+	opacity: 1;
+	color: var(--osu-pink);
+}
+
+.community-music__bar {
+	width: 280px;
+	height: 6px;
+	background: rgba(255, 255, 255, 0.2);
+	cursor: pointer;
+}
+
+.community-music__fill {
+	height: 100%;
+	background: var(--osu-pink);
+}

@@ -25,6 +25,7 @@ import {
 import SkinIconField from './SkinIconField';
 import SkinReadMeta from './SkinReadMeta';
 import SkinCodePane from './SkinCodePane';
+import GameplayPreview from './GameplayPreview';
 
 /** Blank values for creating a new skin. */
 export const newSkin = (): SkinCreateBody => ({
@@ -126,6 +127,11 @@ export default function SkinView({
 				<div className='skin-view__meta'>
 					{editing ? (
 						<>
+							<div className='skin-view__preview'>
+								<span><Trans>Preview</Trans></span>
+								<GameplayPreview definition={definition} />
+							</div>
+					
 							<label className='skin-field'>
 								<span><Trans>Name</Trans></span>
 								<input value={name} onChange={e => setName(e.target.value)} maxLength={80} />
@@ -164,9 +170,17 @@ export default function SkinView({
 								</div>
 							)}
 						</>
-					) : <SkinReadMeta skin={skin} />}
+					) : <>
+						<SkinReadMeta skin={skin} />
+						
+						<div className='skin-view__preview'>
+							<span><Trans>Preview</Trans></span>
+							<GameplayPreview definition={definition} />
+						</div>
+					</>
+					}
 				</div>
-				
+
 				<div className='addon-field addon-field--code'>
 					<SkinCodePane
 						editing={editing} 

@@ -31,9 +31,7 @@ import {
 } from '../online/play';
 import Account from '../online/account';
 import Entities from '../entity/entities';
-import { drawHitErrorBar } from '../gameplay/hitError';
 import { Score } from '../db/schema/score';
-import Reading from '@osu-idle/shared/sim/skills/reading';
 import Memory from '@osu-idle/shared/sim/skills/memory';
 import { Beatmap } from 'osu-classes';
 import calculatePP from '../osu/pp';
@@ -64,28 +62,23 @@ import Controls from '../input/Controls';
 import { debugMode } from '../globals';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
-import Speed from '@osu-idle/shared/sim/skills/speed';
-import num from '@osu-idle/shared/display/num';
 import accuracy from '@osu-idle/shared/display/accuracy';
 import { getCharacter } from '../online/services/characters';
 import Autopilot from '../gameplay/autopilot';
 import {
-	SKILL,
 	Skills,
 	type SkillName,
 } from '@osu-idle/shared/skills';
 import { skillName } from '@osu-idle/shared/display/skills';
 import { type Grade } from '@osu-idle/shared/judgement';
 import { currentSkin } from '../osu/skin/Skin';
-import { drawHpBar } from '../gameplay/hpBar';
-import { MAX_HP } from '@osu-idle/shared/sim/scoring';
 import { SETTINGS } from '../db/settings';
 import { scrollSpeedToMs } from '@osu-idle/shared/osu/scroll_speed';
 import sleep from '@osu-idle/shared/helpers/sleep';
-import {
-	Color,
-	colorA,
-} from '@osu-idle/shared/types/color';
+import GameplayRenderer, {
+	type PlayfieldGeometry,
+	type StrainHud,
+} from '../gameplay/gameplayRenderer';
 
 type InnerProps = {
 	beatmapInfo: LightBeatmap,
@@ -96,11 +89,6 @@ type InnerProps = {
 	transition: Transition,
 };
 
-// --- playfield tuning (skinning will replace these later) ---
-const COLUMN_WIDTH = 74;
-const NOTE_HEIGHT = 24;
-const RECEPTOR_HEIGHT = 30;
-const JUDGE_LINE_FROM_BOTTOM = 100;
 /** approach time at base speed (ms a note is visible) lower = faster scroll */
 /** how far ahead hitsounds are queued onto the audio clock. Must exceed the
  *  background timer-throttle floor (~1s) so a blurred tab still queues the next
@@ -113,17 +101,7 @@ const HITSOUND_TICK_MS = 250;
  *  Well under the server's reveal buffer so the play never out-runs its data. */
 const STREAM_POLL_MS = 1500;
 
-// skills whose live strain is meaningful to watch - the rest are hidden from
-// the strain HUD (accuracy is a level constant; memory has no press strain of
-// its own - it only reduces SpeedJam's)
-const STRAIN_HUD_HIDDEN = new Set<SkillName>([
-	SKILL.accuracy, 
-	SKILL.memory, 
-	SKILL.consistency,
-]);
-const STRAIN_HUD_SKILLS = Skills.filter(s => !STRAIN_HUD_HIDDEN.has(s));
-
-function GameplayInner({ 
+function GameplayInner({
 	beatmapInfo, 
 	beatmap, 
 	play,
@@ -152,19 +130,14 @@ function GameplayInner({
 	const videoInfoRef = useRef<{ time: number } | null>(null);
 	const [done, setDone] = useState(false);
 	// live grade for the HUD badge - a DOM <img> overlaid on the canvas, so it is
-	// React state pushed from the render loop only when the grade actually changes
+	// React state pushed from the renderer only when the grade actually changes
 	const [grade, setGrade] = useState<Grade>('X');
-	const gradeRef = useRef<Grade>('X');
 	const savedRef = useRef(false);
 	const gameRef = useRef<ManiaGame | null>(null);
 	const botRef = useRef<Bot | null>(null);
 	// source of the strain HUD's per-skill values - the playing bot when the play
 	// is simulated locally, or a display-only side analysis for ranked replays
 	const strainBotRef = useRef<CharacterBot | null>(null);
-	// eased gauge values, so per-note strain jumps read as motion
-	const strainDisplay = useRef<Record<SkillName, number>>(
-		Object.fromEntries(Skills.map(s => [s, 0])) as Record<SkillName, number>,
-	);
 	const skillLabels = useMemo(
 		() => Object.fromEntries(Skills.map(s => 
 			[s, skillName(s)],
@@ -553,14 +526,15 @@ function GameplayInner({
 		const ctx = canvas.getContext('2d')!;
 		const setId = beatmapInfo.set.metadata.id;
 		const keys = game.keyCount;
-		const fieldWidth = keys * COLUMN_WIDTH;
+		const fieldWidth = keys * skin.data.playfield.columnWidth;
 		const mobile = window.innerWidth < 850;
 
 		let w = 0;
 		let h = 0;
-		let lineY = 0;
-		let pxPerUnit = 1;
 		const dpr = Math.min(window.devicePixelRatio || 1, 2);
+		// the whole gameplay frame (playfield + HUD) is drawn by the shared renderer;
+		// this scene keeps the clock/audio plumbing and the play-only chrome
+		const renderer = new GameplayRenderer(ctx, game, skin);
 
 		const resize = () => {
 			w = window.innerWidth;
@@ -570,8 +544,6 @@ function GameplayInner({
 			canvas.style.width = `${w}px`;
 			canvas.style.height = `${h}px`;
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-			lineY = h - JUDGE_LINE_FROM_BOTTOM;
-			pxPerUnit = lineY / scrollMsRef.current;
 		};
 		resize();
 		window.addEventListener('resize', resize);
@@ -683,12 +655,6 @@ function GameplayInner({
 			return music.gameTime();
 		};
 
-		const noteY = (time: number, now: number) =>
-			lineY 
-			- (game.scroll.positionAt(time) 
-			- game.scroll.positionAt(now)) * pxPerUnit
-		;
-
 		// Queue hitsounds onto the audio clock up to LOOKAHEAD ahead of the song
 		// position. Because they're scheduled (not played reactively), they fire on
 		// time even while the tab is blurred, and a tab that resumes after a gap
@@ -742,359 +708,68 @@ function GameplayInner({
 			}
 		};
 
-		// playfield backdrop + column separators
-		const drawPlayfield = (x0: number) => {
-			ctx.fillStyle = 'rgba(0,0,0,0.55)';
-			ctx.fillRect(x0, 0, fieldWidth, h);
-			ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-			ctx.lineWidth = 1;
-			for (let c = 0; c <= keys; c++) {
-				ctx.beginPath();
-				ctx.moveTo(x0 + c * COLUMN_WIDTH + 0.5, 0);
-				ctx.lineTo(x0 + c * COLUMN_WIDTH + 0.5, h);
-				ctx.stroke();
-			}
-		};
-
-		const drawBarlines = (x0: number, now: number) => {
-			ctx.strokeStyle = 'rgba(255,255,255,0.16)';
-			for (const bl of game.barlines) {
-				const y = noteY(bl.time, now);
-				if (y < -2 || y > h + 2) continue;
-				ctx.beginPath();
-				ctx.moveTo(x0, y);
-				ctx.lineTo(x0 + fieldWidth, y);
-				ctx.stroke();
-			}
-		};
-
-		type RenderNote = ManiaGame['notes'][number];
-
-		const drawHoldNote = (
-			note: RenderNote, 
-			cx: number, 
-			color: Color, 
-			now: number,
-		) => {
-			if (note.tailJudged) {
-				const broke = note.tailMissedAt;
-				if (broke !== undefined) {
-					// a dropped hold (tail miss - fumble or released way too soon): the
-					// body remaining past the break point stays on screen, dimmed, and
-					// scrolls off instead of vanishing instantly
-					if (broke >= note.endTime) return;
-					const yFrom = noteY(broke, now);
-					const yTail = noteY(note.endTime, now);
-					const top = Math.min(yFrom, yTail);
-					const bottom = Math.max(yFrom, yTail);
-					if (bottom < -2 || top > h + 2) return;
-					ctx.globalAlpha = 0.3;
-					ctx.fillStyle = colorA(color, 0.5);
-					ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
-					ctx.fillStyle = color;
-					ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-					ctx.globalAlpha = 1;
-					return;
-				}
-				// released cleanly but a touch early: keep drawing as if still held
-				// (head pinned to the line) until the tail reaches the line - the
-				// hold finishes its travel normally, no pop, no dimming
-				if (now >= note.endTime) return;
-				const yTail = noteY(note.endTime, now);
-				ctx.fillStyle = colorA(color, 0.85);
-				ctx.fillRect(
-					cx + 6, 
-					Math.min(lineY, yTail), 
-					COLUMN_WIDTH - 12, 
-					Math.abs(lineY - yTail),
-				);
-				ctx.fillStyle = color;
-				ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-				ctx.fillRect(cx + 4, lineY - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-				return;
-			}
-			const yHead = note.holding ? lineY : noteY(note.time, now);
-			const yTail = noteY(note.endTime, now);
-			const top = Math.min(yHead, yTail);
-			const bottom = Math.max(yHead, yTail);
-			if (bottom < -2 || top > h + 2) return;
-			// body
-			ctx.fillStyle = note.holding ? colorA(color, 0.85) : colorA(color, 0.5);
-			ctx.fillRect(cx + 6, top, COLUMN_WIDTH - 12, bottom - top);
-			// tail cap
-			ctx.fillStyle = color;
-			ctx.fillRect(cx + 4, yTail - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-			// head cap - pinned to the receptor while held (the base stays visible),
-			// otherwise tracking the head itself: approaching before the hit, and
-			// scrolling on past the receptors once it's been missed (an unpressed note)
-			ctx.fillRect(cx + 4, yHead - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT);
-		};
-
-		const drawTapNote = (
-			note: RenderNote, 
-			cx: number,
-			color: string, 
-			now: number,
-		) => {
-			if (note.headJudged) return;
-			const y = noteY(note.time, now);
-			if (y < -NOTE_HEIGHT || y > h + NOTE_HEIGHT) return;
-			ctx.fillStyle = color;
-			roundRect(ctx, cx + 4, y - NOTE_HEIGHT, COLUMN_WIDTH - 8, NOTE_HEIGHT, 4);
-			ctx.fill();
-
-			if (debug) {
-				ctx.font = '700 10px "Exo 2", sans-serif';
-				ctx.textAlign = 'center';
-				ctx.fillStyle = 'black';
-				ctx.fillText(`1/${note.snap}`, cx + 4 + (COLUMN_WIDTH - 8) / 2, y);
-				ctx.fillText(
-					Reading.countTransitions(
-						new Map(), 
-						game.visibleNotesAt(note.time),
-					).toString(), 
-					cx + 4 + (COLUMN_WIDTH - 8) / 2,
-					y + 9,
-				);
-			}
-		};
-
-		const drawNotes = (x0: number, now: number) => {
-			for (const note of game.notes) {
-				const cx = x0 + note.column * COLUMN_WIDTH;
-				const color = skin.data.hitObjects[note.column].color;
-				if (note.hold) drawHoldNote(note, cx, color, now);
-				else drawTapNote(note, cx, color, now);
-			}
-		};
-
-		const drawReceptors = (x0: number, now: number) => {
-			for (let c = 0; c < keys; c++) {
-				const cx = x0 + c * COLUMN_WIDTH;
-				const glow = Math.max(0, 1 - (now - game.columnFlash[c]) / 140);
-				ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-				ctx.lineWidth = 2;
-				ctx.strokeRect(
-					cx + 4, 
-					lineY - RECEPTOR_HEIGHT, 
-					COLUMN_WIDTH - 8, 
-					RECEPTOR_HEIGHT,
-				);
-				if (glow > 0) {
-					ctx.fillStyle = colorA(skin.data.hitObjects[c].color, 0.35 * glow);
-					ctx.fillRect(
-						cx + 4, 
-						lineY - RECEPTOR_HEIGHT, 
-						COLUMN_WIDTH - 8, 
-						RECEPTOR_HEIGHT,
-					);
-				}
-			}
-			// judgement line
-			// ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-			// ctx.lineWidth = 3;
-			// ctx.beginPath();
-			// ctx.moveTo(x0, lineY);
-			// ctx.lineTo(x0 + fieldWidth, lineY);
-			// ctx.stroke();
-		};
-
-		// strain meters (left side): one stress gauge per skill, 0-100%. Narrow
-		// screens drop the bars and show just the %, tinted the gauge's colour.
-		const drawStrainMeters = (now: number) => {
-			if (strainBotRef.current) {
-				const compact = w < 700;
-				const strains = strainBotRef.current.strainsAt(now);
-				const bx = 16;
-				const bw = 150;
-				const step = compact ? 30 : 26;
-				const by0 = Math.max(150, h * 0.24);
-				ctx.font = '600 11px "Exo 2", sans-serif';
-				STRAIN_HUD_SKILLS.forEach((skill, i) => {
-					// ease toward the live value so per-note jumps read as motion
-					const added = (strains[skill] - strainDisplay.current[skill]) * 0.2;
-					const v = strainDisplay.current[skill] += added;
-					const by = by0 + i * step;
-					// calm green → stressed red
-					const color = `hsl(${120 - v * 120}, 85%, 55%)`;
-					ctx.textAlign = 'left';
-					ctx.fillStyle = 'rgba(255,255,255,0.75)';
-					ctx.fillText(skillLabels[skill], bx, by);
-					if (compact) {
-						ctx.fillStyle = color;
-						ctx.fillText(`${Math.round(v * 100)}%`, bx, by + 13);
-						return;
-					}
-					ctx.textAlign = 'right';
-					ctx.fillText(`${Math.round(v * 100)}%`, bx + bw, by);
-					ctx.fillStyle = 'rgba(255,255,255,0.12)';
-					roundRect(ctx, bx, by + 5, bw, 8, 4);
-					ctx.fill();
-					if (v > 0.005) {
-						ctx.fillStyle = color;
-						roundRect(ctx, bx, by + 5, Math.max(8, bw * v), 8, 4);
-						ctx.fill();
-					}
-				});
-			}
-		};
-
-		// eased HP fraction for the bar, carried between frames so drains/heals glide
-		// instead of snapping (the canvas bar has no CSS transition to lean on)
-		let hpEased = game.score.hp / MAX_HP;
-		let hpLast = performance.now();
-
-		const drawHud = (x0: number, now: number) => {
-			const cxField = x0 + fieldWidth / 2;
-
-			// judgement popup
-			const flash = game.lastFlash;
-			if (flash) {
-				const age = now - flash.time;
-				if (age >= 0 && age < 400) {
-					ctx.globalAlpha = 1 - age / 400;
-					ctx.fillStyle = skin.data.judgements[flash.judgement].judge;
-					ctx.font = '700 26px "Exo 2", sans-serif';
-					ctx.textAlign = 'center';
-					ctx.fillText(skin.data.judgements[flash.judgement].text, cxField, lineY - 90);
-					ctx.globalAlpha = 1;
-				}
-			}
-			// combo
-			if (game.score.combo > 1) {
-				ctx.fillStyle = '#fff';
-				ctx.font = '800 44px "Exo 2", sans-serif';
-				ctx.textAlign = 'center';
-				ctx.fillText(`${game.score.combo}x`, cxField, h * 0.42);
-			}
-			// NPS
-			if (debug) {
-				ctx.fillStyle = '#fff';
-				ctx.font = '800 23px "Exo 2", sans-serif';
-				ctx.textAlign = 'center';
-				ctx.fillText(`${game.npsAt(now)}nps`, cxField, h * 0.32);
-				ctx.fillText(`${game.visibleNotesAt(now).length}v`, cxField, h * 0.28);
-				ctx.fillText(`${Reading.countTransitions(
-					new Map(), 
-					game.visibleNotesAt(now))}t`,
-				cxField,
-				h * 0.36,
-				);
-				ctx.fillText(
-					`${num(Speed.weightedGroups(
-						new Map(), 
-						game.recentNotes(now),
-					), 2)}g`,
-					cxField, 
-					h * 0.39,
-				);
-				ctx.textAlign = 'left';
-				ctx.fillText(
-					`x${Math.round(game.scroll.getSpeedAt(now) * 100) / 100}`, 
-					15, 
-					h * 0.1,
-				);
-			}
-
-			drawStrainMeters(now);
+		// play-only chrome the shared renderer doesn't draw: the skip prompt and the
+		// per-mode label, both centred on the playfield via the returned geometry
+		const drawChrome = (g: PlayfieldGeometry, now: number) => {
+			const cxField = g.x0 + g.fieldWidth / 2;
+			ctx.textAlign = 'center';
 
 			if (now < (game.songStartMs - 2000) && game.songStartMs > 5000) {
 				ctx.fillStyle = '#fff';
 				ctx.font = '800 23px "Exo 2", sans-serif';
-				ctx.textAlign = 'center';
 				ctx.fillText('SKIP', cxField, h * 0.62);
 				ctx.fillText('>>>>', cxField, h * 0.64);
 			}
 
-			if (play.mode === 'guest') {
-				ctx.fillStyle = '#ffffff';
+			const label = play.mode === 'guest'
+				? {
+					text: 'Offline play', color: '#ffffff', 
+				}
+				: play.mode === 'unranked'
+					? {
+						text: 'Unranked', color: '#bb2727', 
+					}
+					: play.mode === 'debug'
+						? {
+							text: 'Debug bot - no fail', color: '#63b3ff', 
+						}
+						: undefined;
+			if (label) {
+				ctx.fillStyle = label.color;
 				ctx.font = '800 23px "Exo 2", sans-serif';
-				ctx.textAlign = 'center';
-				ctx.fillText('Offline play', cxField, h * 0.66);
+				ctx.fillText(label.text, cxField, h * 0.66);
 			}
-
-			if (play.mode === 'unranked') {
-				ctx.fillStyle = '#bb2727';
-				ctx.font = '800 23px "Exo 2", sans-serif';
-				ctx.textAlign = 'center';
-				ctx.fillText('Unranked', cxField, h * 0.66);
-			}
-
-			if (play.mode === 'debug') {
-				ctx.fillStyle = '#63b3ff';
-				ctx.font = '800 23px "Exo 2", sans-serif';
-				ctx.textAlign = 'center';
-				ctx.fillText('Debug bot - no fail', cxField, h * 0.66);
-			}
-			// current grade badge (DOM <img>, top right)
-			if (game.score.grade !== gradeRef.current) {
-				gradeRef.current = game.score.grade;
-				setGrade(game.score.grade);
-			}
-			// accuracy + score (top right)
-			ctx.fillStyle = '#fff';
-			ctx.textAlign = 'right';
-			ctx.font = '700 30px "Exo 2", sans-serif';
-			ctx.fillText(
-				`${(game.score.accuracy * 100).toFixed(2)}%`,
-				w - 28,
-				mobile? 90 : 48,
-			);
-			ctx.font = '500 18px "Exo 2", sans-serif';
-			ctx.fillStyle = 'rgba(255,255,255,0.75)';
-			ctx.fillText(
-				Math.round(game.score.score).toLocaleString(),
-				w - 28, 
-				mobile? 120 : 76,
-			);
-
-			// progress bar
-			const prog = Math.max(0, Math.min(1, now / game.songEndMs));
-			ctx.fillStyle = 'rgba(255,255,255,0.12)';
-			ctx.fillRect(0, 0, w, 4);
-			ctx.fillStyle = '#ff66ab';
-			ctx.fillRect(0, 0, w * prog, 4);
-
-			// HP bar (right of the playfield) - eased toward the live value, drawn
-			// before the hit-error bar so that bar stays on top of it
-			const tNow = performance.now();
-			const transition = (1 - Math.exp(-(tNow - hpLast) / skin.data.hpBar.transitionMs));
-			hpEased += (game.score.hp / MAX_HP - hpEased) * transition;
-			hpLast = tNow;
-			drawHpBar(skin, ctx, { 
-				hp: hpEased, 
-				x: x0 + fieldWidth + skin.data.hpBar.gap, 
-				bottom: h - skin.data.hpBar.fromBottom, 
-			});
-
-			// hit-error bar (below the receptors)
-			drawHitErrorBar(skin, ctx, {
-				windows: game.windows,
-				hits: game.hits,
-				now,
-				cx: cxField,
-				y: lineY + 78,
-				halfWidth: Math.min(170, fieldWidth / 2),
-			});
 		};
+
+		// the strain HUD source: the playing bot's analysis (set on every play)
+		const strain = (): StrainHud | undefined =>
+			strainBotRef.current
+				? {
+					bot: strainBotRef.current, labels: skillLabels, 
+				}
+				: undefined;
 
 		const draw = () => {
 			const now = finished ? outroFrom + (performance.now() - outroAt) : songTime();
 			nowRef.current = now;
-			// pick up a live scroll-speed change (visual only - lineY set on resize)
-			pxPerUnit = lineY / scrollMsRef.current;
 			game.update(Math.max(0, now));
 			queueHitsounds();
 
-			const x0 = fieldX();
-
 			drawBackground();
 			syncVideo(now);
-			drawPlayfield(x0);
-			drawBarlines(x0, now);
-			drawNotes(x0, now);
-			drawReceptors(x0, now);
-			drawHud(x0, now);
+			// the renderer derives its own geometry (picks up a live scroll-speed
+			// change) and hands it back for the play-only chrome to align to
+			const g = renderer.draw(now, {
+				w,
+				h,
+				scrollMs: scrollMsRef.current,
+			}, {
+				debug,
+				mobile,
+				strain: strain(),
+				onGrade: setGrade,
+			});
+			drawChrome(g, now);
 
 			// end of map
 			if (!finished 
@@ -1371,22 +1046,4 @@ export default function Gameplay({
 		timesPlayed={boot.timesPlayed} 
 		transition={transition} 
 	/>;
-}
-
-// ---- tiny canvas helpers ----
-function roundRect(
-	ctx: CanvasRenderingContext2D, 
-	x: number, 
-	y: number,
-	w: number, 
-	h: number, 
-	r: number,
-) {
-	ctx.beginPath();
-	ctx.moveTo(x + r, y);
-	ctx.arcTo(x + w, y, x + w, y + h, r);
-	ctx.arcTo(x + w, y + h, x, y + h, r);
-	ctx.arcTo(x, y + h, x, y, r);
-	ctx.arcTo(x, y, x + w, y, r);
-	ctx.closePath();
 }

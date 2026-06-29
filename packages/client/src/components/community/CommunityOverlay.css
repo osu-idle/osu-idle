@@ -1,0 +1,41 @@
+/* osu!stable F9 overlay shell: a heavy black dim over the dimmed game, no
+   panels - everything floats directly on it. */
+
+.community {
+	position: fixed;
+	inset: 0;
+	z-index: 9500;
+	display: flex;
+	flex-direction: column;
+	pointer-events: none;
+}
+
+.community-panel {
+	flex: 1;
+	min-height: 0;
+	opacity: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	transition: opacity 0.5s ease;
+	background: rgba(0, 0, 0, 0.9);
+	pointer-events: none;
+}
+.community-panel.is-enabled {
+	opacity: 1;
+	pointer-events: all;
+}
+
+.community-chat-container {
+	height: 33.33%;
+	min-height: 150px;
+	width: 100%;
+	background: rgba(0, 0, 0, 0.9);
+	opacity: 0;
+	transition: opacity 0.5s ease;
+	pointer-events: none;
+}
+.community-chat-container.is-enabled {
+	opacity: 1;
+	pointer-events: all;
+}

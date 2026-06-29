@@ -27,6 +27,7 @@ packages/shared/src/locales/*.ts
 
 # misc
 osu!design
+geo/
 packages/client/osu!design
 packages/client/public/beatmaps
 packages/client/public/metadata

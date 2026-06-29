@@ -17,9 +17,11 @@ export const isStandalone = new Synced(!!desktop());
 
 export const isWebOpen = new Synced(false);
 export const isOptionsOpen = new Synced(false);
+export const isCommunityOpen = new Synced(false);
 export const webUrl = new Synced('/');
 
 export const isVolumeVisible = new Synced(false);
+export const displayAlpha = new Synced(false);
 
 export const message = new Synced('');
 

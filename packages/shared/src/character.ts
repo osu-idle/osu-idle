@@ -36,6 +36,16 @@ export const characterDTO = z.object({
 });
 export type CharacterDTO = z.infer<typeof characterDTO>;
 
+/** A character's headline stats - shown on community cards (and reusable by the
+ *  profile header). Aggregates that live on the character row / its totals. */
+export const characterStatsDTO = z.object({
+	pp: z.number().min(0),
+	accuracy: z.number().min(0).max(1),
+	playCount: z.number().int().min(0),
+	level: z.number().int().min(0),
+});
+export type CharacterStats = z.infer<typeof characterStatsDTO>;
+
 /** Number of personal-best plays achieving each grade (X … F). */
 export const gradeCountsDTO = z.object(
 	Object.fromEntries(Grades.map(g => [g, z.number().int().min(0)])) as Record<Grade, z.ZodNumber>,

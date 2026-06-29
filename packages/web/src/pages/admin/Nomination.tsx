@@ -66,7 +66,10 @@ export default function NominationPage() {
 				try {
 					await uploadBeatmap(list[i]);
 				} catch (e) {
-					failed.push(`${list[i].name}: ${String((e as Error).message ?? e)}`);
+					const msg = String((e as Error).message ?? e);
+					// Already-ranked sets are skipped, not a failure of the batch.
+					if (msg.includes('already ranked')) continue;
+					failed.push(`${list[i].name}: ${msg}`);
 				}
 			}
 			setProgress(null);

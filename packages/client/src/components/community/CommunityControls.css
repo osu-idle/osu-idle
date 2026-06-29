@@ -1,0 +1,41 @@
+/* bottom-right controls (always interactive) */
+.community-controls {
+	position: fixed;
+	right: 8px;
+	bottom: 0px;
+	z-index: 9700;
+	display: flex;
+	gap: 4px;
+}
+
+.community-controls__btn {
+	position: relative;
+	padding: 5px 12px;
+	border: none;
+	background: linear-gradient(180deg, #0f275e, #455b92);
+	color: white;
+	border: 1px solid white;
+	font: inherit;
+	font-size: 16px;
+	cursor: pointer;
+	opacity: 0.5;
+}
+
+.community-controls__btn::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	background: rgba(255, 105, 180, 0.3); /* Hot pink */
+	pointer-events: none;
+	mix-blend-mode: multiply; /* Try overlay, screen, soft-light, color */
+}
+
+.community-controls__btn:hover::after {
+	opacity: 1;
+}
+
+.community-controls__btn[data-on="true"] {
+	opacity: 1;
+}

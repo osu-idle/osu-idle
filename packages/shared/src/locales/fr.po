@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-25 13:17\n"
+"PO-Revision-Date: 2026-06-29 21:12\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -81,6 +81,10 @@ msgstr "Firmware GMMK 60 Hz"
 #: src/display/skills.ts
 msgid "Accuracy"
 msgstr "Précision"
+
+#: src/display/community.ts
+msgid "AFK"
+msgstr "AFK"
 
 #: src/skills.ts
 msgid "AirPods"
@@ -262,17 +266,21 @@ msgstr "Musculation, étirements + méditation"
 msgid "Hbada E3 Pro"
 msgstr "Hbada E3 Pro"
 
+#: src/display/community.ts
+msgid "Idle"
+msgstr "Idle"
+
 #: src/types/color.ts
 msgid "Invalid #hex color"
-msgstr ""
+msgstr "Couleur #hexa invalide"
 
 #: src/types/color.ts
 msgid "Invalid color: use a #hex (e.g. #63b3ff) or rgb()/rgba() value"
-msgstr ""
+msgstr "Couleur invalide : utilisez #hexa (comme 63b3ff) ou une valeur rgba()/rgba()"
 
 #: src/types/color.ts
 msgid "Invalid rgb()/rgba() color"
-msgstr ""
+msgstr "Couleur rgba()/rgba() invalide"
 
 #: src/skills.ts
 msgid "IRON165"
@@ -385,6 +393,10 @@ msgstr "En Traitement"
 #: src/skills.ts
 msgid "Per-map scroll speed setting"
 msgstr "Réglage de la scroll speed par map"
+
+#: src/display/community.ts
+msgid "Playing"
+msgstr "En jeu"
 
 #: src/skills.ts
 msgid "Post-it notes"

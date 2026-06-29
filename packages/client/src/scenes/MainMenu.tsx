@@ -4,7 +4,6 @@ import {
 } from 'react';
 import OsuLogo from '../components/OsuLogo';
 import LogoVisualizer from '../components/LogoVisualizer';
-import NowPlaying from '../components/NowPlaying';
 import {
 	music,
 	PLAYER_MODE,
@@ -276,7 +275,6 @@ export default function MainMenu({ flash = false }: Props) {
 				</div>
 			</div>
 
-			<NowPlaying />
 			<Announce />
 			<DesktopUpdate />
 

@@ -17,7 +17,10 @@ import {
 	beatmaps,
 	type NewBeatmapRow,
 } from '../db/schema/beatmap';
-import { beatmapset } from '../db/schema/beatmapset';
+import {
+	beatmapset,
+	getBeatmapsetById,
+} from '../db/schema/beatmapset';
 import {
 	BEATMAP_DIR,
 	PREVIEW_DIR,
@@ -71,6 +74,9 @@ export const ingestOsz = async (buffer: Buffer): Promise<IngestResult> => {
 
 	const setId = parsed[0].decoded.metadata.beatmapSetId;
 	if (!setId || setId <= 0) throw new Error('Beatmap set has no valid set id');
+
+	const existing = await getBeatmapsetById(setId);
+	if (existing?.status === 'ranked') throw new Error('Beatmap set is already ranked');
 
 	mkdirSync(BEATMAP_DIR, { recursive: true });
 	mkdirSync(PREVIEW_DIR, { recursive: true });

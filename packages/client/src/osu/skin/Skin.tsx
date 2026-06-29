@@ -61,6 +61,12 @@ const HpBarSchema = z.object({
 // The default skin defines everything; it's the source every loaded skin merges onto.
 const SkinDefinitionSchema = z.object({
 	judgements: z.record(z.enum(Judgements), JudgeConfigSchema),
+	playfield: z.object({ 
+		columnWidth: z.number(),
+		noteHeight: z.number(),
+		receptorHeight: z.number(),
+		hitPosition: z.number(),
+	}),
 	hitObjects: z.record(
 		z.number(),
 		z.object({ color: ColorSchema }),
@@ -96,6 +102,12 @@ export const defaultSkin: () => SkinDefinition = () => ({
 		1: { color: ColorSchema.parse('#63b3ff') },
 		2: { color: ColorSchema.parse('#63b3ff') },
 		3: { color: ColorSchema.parse('#e8e8f0') },
+	},
+	playfield: { 
+		columnWidth: 74,
+		noteHeight: 24,
+		receptorHeight: 30,
+		hitPosition: 100,
 	},
 	judgements: {
 		[JUDGEMENT.MARVELOUS]: getUniformJudgeConfig(ColorSchema.parse('#ffe88a'), 'MARVELOUS'),

@@ -1,0 +1,11 @@
+.community-grid {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(467px, 1fr));
+	grid-auto-rows: 110px;
+	align-content: start;
+	gap: 6px;
+	padding: 4px 14px;
+}
