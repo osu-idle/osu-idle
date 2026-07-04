@@ -9,7 +9,11 @@ import {
 	chatLineDTO,
 } from '@osu-idle/shared/community/wire';
 import { presenceEntryDTO } from '@osu-idle/shared/community/presence';
-import { firstPlaceMessage } from '@osu-idle/shared/community/announcements';
+import {
+	firstPlaceMessage,
+	isSkillLevelMilestone,
+	skillLevelMessage,
+} from '@osu-idle/shared/community/announcements';
 
 describe('community wire contract', () => {
 	it('round-trips a presence entry', () => {
@@ -76,6 +80,7 @@ describe('community wire contract', () => {
 		const msg = {
 			type: 'chat' as const,
 			line: {
+				id: 'm1',
 				kind: 'player' as const,
 				channel: '#osu!idle',
 				from: {
@@ -91,6 +96,7 @@ describe('community wire contract', () => {
 
 	it('round-trips a system chat message (no sender)', () => {
 		const line = {
+			id: 'm2',
 			kind: 'system' as const,
 			channel: '#osu!idle',
 			color: '#fa81c6',
@@ -98,6 +104,131 @@ describe('community wire contract', () => {
 			at: 1_700_000_000_000,
 		};
 		expect(chatLineDTO.parse(line)).toEqual(line);
+	});
+});
+
+describe('play wire contract', () => {
+	it('parses each play client message variant', () => {
+		expect(clientMessage.safeParse({
+			type: 'play:start', beatmapId: 42,
+		}).success).toBe(true);
+		// with a cursor = stream offsets; without = state checkpoints
+		expect(clientMessage.safeParse({
+			type: 'play:watch', token: 't', next: 3,
+		}).success).toBe(true);
+		expect(clientMessage.safeParse({
+			type: 'play:watch', token: 't',
+		}).success).toBe(true);
+		expect(clientMessage.safeParse({ type: 'play:unwatch' }).success).toBe(true);
+		expect(clientMessage.safeParse({
+			type: 'play:skip', token: 't',
+		}).success).toBe(true);
+		expect(clientMessage.safeParse({
+			type: 'play:abort', token: 't',
+		}).success).toBe(true);
+		expect(clientMessage.safeParse({
+			type: 'play:result', token: 't', forceSee: true,
+		}).success).toBe(true);
+		// a negative offsets cursor is rejected
+		expect(clientMessage.safeParse({
+			type: 'play:watch', token: 't', next: -1,
+		}).success).toBe(false);
+	});
+
+	it('round-trips a ranked start result', () => {
+		const msg = {
+			type: 'play:start' as const,
+			result: {
+				status: 'ranked' as const,
+				joined: false,
+				token: 't',
+				beatmapId: 42,
+				startedAt: 1_700_000_000_000,
+				endsAt: 1_700_000_120_000,
+				serverNow: 1_700_000_000_050,
+				offsets: [
+					{ id: 'n1' },
+					{
+						id: 'n2', tail: true as const, offset: -12.5,
+					},
+				],
+				next: 2,
+				done: false,
+			},
+		};
+		expect(serverMessage.parse(msg)).toEqual(msg);
+	});
+
+	it('round-trips each play state phase', () => {
+		const active = {
+			type: 'play:state' as const,
+			state: {
+				phase: 'active' as const,
+				token: 't',
+				beatmapId: 42,
+				startedAt: 1_700_000_000_000,
+				endsAt: 1_700_000_120_000,
+				serverNow: 1_700_000_060_000,
+				accuracy: 0.987,
+				grade: 'S' as const,
+			},
+		};
+		expect(serverMessage.parse(active)).toEqual(active);
+		const finished = {
+			type: 'play:state' as const,
+			state: {
+				phase: 'finished' as const, token: 't', notify: true,
+			},
+		};
+		expect(serverMessage.parse(finished)).toEqual(finished);
+		const idle = {
+			type: 'play:state' as const,
+			state: { phase: 'idle' as const },
+		};
+		expect(serverMessage.parse(idle)).toEqual(idle);
+	});
+
+	it('round-trips a play result (ok and refusal)', () => {
+		const refused = {
+			type: 'play:result' as const,
+			token: 't',
+			result: {
+				ok: false as const, reason: 'tooSoon' as const,
+			},
+		};
+		expect(serverMessage.parse(refused)).toEqual(refused);
+		expect(serverMessage.safeParse({
+			type: 'play:result',
+			token: 't',
+			result: {
+				ok: false, reason: 'not-a-reason',
+			},
+		}).success).toBe(false);
+	});
+
+	it('accepts profile deltas on an ok result', () => {
+		const ok = {
+			type: 'play:result' as const,
+			token: 't',
+			result: {
+				ok: true as const,
+				failed: false,
+				deltas: {
+					rank: 3, rankedScore: 123456, pp: 12.34,
+				},
+			},
+		};
+		expect(serverMessage.parse(ok)).toEqual(ok);
+		// rank must be an integer
+		expect(serverMessage.safeParse({
+			...ok,
+			result: {
+				...ok.result,
+				deltas: {
+					rank: 1.5, rankedScore: 0, pp: 0,
+				},
+			},
+		}).success).toBe(false);
 	});
 });
 
@@ -114,5 +245,22 @@ describe('first-place announcement', () => {
 	it('formats a perfect (1M) #1', () => {
 		expect(firstPlaceMessage('Adri', beatmap, true))
 			.toBe('Adri achieved a perfect rank #1 on Camellia - Ghost [Insane]');
+	});
+});
+
+describe('skill level announcement', () => {
+	it('formats a milestone', () => {
+		expect(skillLevelMessage('Adri', 'Jack Speed', 40))
+			.toBe('Adri has reached Jack Speed level 40 !');
+	});
+
+	it('announces every 10th level, then every level from 100', () => {
+		const milestones = [];
+		for (let level = 1; level <= 105; level++) {
+			if (isSkillLevelMilestone(level)) milestones.push(level);
+		}
+		expect(milestones).toEqual([
+			10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 101, 102, 103, 104, 105,
+		]);
 	});
 });

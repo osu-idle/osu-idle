@@ -12,7 +12,7 @@ export function SkillBar({ skill, progress: { level, xp } }: {
 	const toNext = xpForLevel(level);
 	const percent = toNext > 0 ? Math.min(1, xp / toNext) : 0;
 	return (
-		<li key={skill} className='skill'>
+		<li className='skill'>
 			<span className='skill__name'>{skillName(skill)}</span>
 			<div
 				className='skill__track'

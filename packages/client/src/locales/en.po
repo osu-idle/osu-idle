@@ -50,6 +50,10 @@ msgstr "{min}-{0} min"
 msgid "{months, plural, one {# month ago} other {# months ago}}"
 msgstr "{months, plural, one {# month ago} other {# months ago}}"
 
+#: src/logs.ts
+msgid "{name} played {map} and got a {accuracy} {grade}. {gains}"
+msgstr "{name} played {map} and got a {accuracy} {grade}. {gains}"
+
 #: src/components/PlaylistOverlay.tsx
 msgid "{nbMaps} maps"
 msgstr "{nbMaps} maps"
@@ -66,6 +70,11 @@ msgstr "{result} on {map}"
 msgid "{totalCount, plural, one {that's all # difficulty} other {that's all # difficulties}}"
 msgstr "{totalCount, plural, one {that's all # difficulty} other {that's all # difficulties}}"
 
+#: src/scenes/Gameplay.tsx
+#: src/scenes/Gameplay.tsx
+msgid "1. Abort"
+msgstr "1. Abort"
+
 #: src/components/songselect/CardContextMenu.tsx
 msgid "1. Manage Playlists"
 msgstr "1. Manage Playlists"
@@ -74,6 +83,10 @@ msgstr "1. Manage Playlists"
 msgid "10+ min"
 msgstr "10+ min"
 
+#: src/scenes/Gameplay.tsx
+msgid "2. Cancel"
+msgstr "2. Cancel"
+
 #: src/components/songselect/CardContextMenu.tsx
 msgid "2. Click again to delete"
 msgstr "2. Click again to delete"
@@ -81,6 +94,14 @@ msgstr "2. Click again to delete"
 #: src/components/songselect/CardContextMenu.tsx
 msgid "2. Delete..."
 msgstr "2. Delete..."
+
+#: src/scenes/Gameplay.tsx
+msgid "2. Quit, keep playing"
+msgstr "2. Quit, keep playing"
+
+#: src/scenes/Gameplay.tsx
+msgid "3. Cancel"
+msgstr "3. Cancel"
 
 #: src/components/songselect/CardContextMenu.tsx
 msgid "3. Clear local scores"
@@ -101,6 +122,18 @@ msgstr "A game is already in progress. Play locally instead? It won't be submitt
 #: src/components/DesktopUpdate.tsx
 msgid "A new update is available. Click here to download it !"
 msgstr "A new update is available. Click here to download it !"
+
+#: src/scenes/Gameplay.tsx
+msgid "abort"
+msgstr "abort"
+
+#: src/scenes/Gameplay.tsx
+msgid "Abort it"
+msgstr "Abort it"
+
+#: src/scenes/Gameplay.tsx
+msgid "Abort the play?"
+msgstr "Abort the play?"
 
 #: src/scenes/Result.tsx
 msgid "Accuracy"
@@ -157,6 +190,10 @@ msgstr "All"
 msgid "All beatmaps deleted."
 msgstr "All beatmaps deleted."
 
+#: src/scenes/Gameplay.tsx
+msgid "Already playing"
+msgstr "Already playing"
+
 #: src/scenes/MainMenu.tsx
 msgid "Are you sure you want to quit?"
 msgstr "Are you sure you want to quit?"
@@ -204,11 +241,6 @@ msgstr "Back"
 #: src/scenes/SongSelect.tsx
 msgid "BACK"
 msgstr "BACK"
-
-#: src/scenes/Addons.tsx
-#: src/scenes/Skins.tsx
-msgid "Back to Menu"
-msgstr "Back to Menu"
 
 #: src/components/options/BackgroundDim.tsx
 msgid "Background dim"
@@ -311,6 +343,7 @@ msgstr "By Title"
 #: src/components/ConfirmMenu.tsx
 #: src/components/skins/SkinView.tsx
 #: src/scenes/Gameplay.tsx
+#: src/scenes/Gameplay.tsx
 #: src/scenes/MainMenu.tsx
 msgid "Cancel"
 msgstr "Cancel"
@@ -346,6 +379,10 @@ msgstr "Click here to login!"
 #: src/scenes/IntroScreen.tsx
 msgid "click to play..."
 msgstr "click to play..."
+
+#: src/components/songselect/SpectateBanner.tsx
+msgid "Click to resume spectating"
+msgstr "Click to resume spectating"
 
 #: src/components/PlaylistOverlay.tsx
 msgid "Close"
@@ -389,6 +426,10 @@ msgstr "Couldn't load beatmaps: {error}"
 #: src/scenes/Gameplay.tsx
 msgid "Couldn't start play"
 msgstr "Couldn't start play"
+
+#: src/scenes/Gameplay.tsx
+msgid "Couldn't take over the running play."
+msgstr "Couldn't take over the running play."
 
 #: src/components/Onboarding.tsx
 msgid "Create character"
@@ -460,9 +501,10 @@ msgstr "Download the beatmap first"
 msgid "Downloaded"
 msgstr "Downloaded"
 
+#. placeholder {0}: status.percent
 #: src/components/DesktopUpdate.tsx
-msgid "Downloading update…"
-msgstr "Downloading update…"
+msgid "Downloading update… {0}%"
+msgstr "Downloading update… {0}%"
 
 #: src/components/Tutorial.tsx
 msgid "Each completed play earns your character <0>XP</0> and <1>levels</1> across various skillsets, making it perform better on future plays."
@@ -562,6 +604,10 @@ msgstr "GRAPHICS"
 msgid "Group"
 msgstr "Group"
 
+#: src/logs.ts
+msgid "Guest"
+msgstr "Guest"
+
 #: src/components/community/CommunityControls.tsx
 msgid "Hide chat"
 msgstr "Hide chat"
@@ -617,6 +663,10 @@ msgstr "Last week"
 #: src/scenes/Options.tsx
 msgid "Layout"
 msgstr "Layout"
+
+#: src/scenes/Gameplay.tsx
+msgid "Leave - your character keeps playing"
+msgstr "Leave - your character keeps playing"
 
 #. placeholder {0}: version.metadata.objects
 #: src/components/songselect/TopBar.tsx
@@ -797,6 +847,10 @@ msgstr "No skins found."
 msgid "No skins installed. Browse the catalog to find some."
 msgstr "No skins installed. Browse the catalog to find some."
 
+#: src/logs.ts
+msgid "No XP gained."
+msgstr "No XP gained."
+
 #: src/components/community/MusicControls.tsx
 msgid "Now playing"
 msgstr "Now playing"
@@ -855,9 +909,6 @@ msgid "Performance"
 msgstr "Performance"
 
 #: src/components/community/PlayerCard.tsx
-msgid "Performance: {pp}"
-msgstr "Performance: {pp}"
-
 #: src/components/songselect/UserCard.tsx
 msgid "Performance: {pp}pp"
 msgstr "Performance: {pp}pp"
@@ -1125,6 +1176,10 @@ msgstr "Star Rating: {0}★"
 msgid "Stop"
 msgstr "Stop"
 
+#: src/scenes/Gameplay.tsx
+msgid "Stop the play (Esc)"
+msgstr "Stop the play (Esc)"
+
 #: src/scenes/SongSelect.tsx
 msgid "Strain debug"
 msgstr "Strain debug"
@@ -1179,6 +1234,11 @@ msgstr "Time Zone"
 #: src/osu/beatmap/grouping.ts
 msgid "Today"
 msgstr "Today"
+
+#. placeholder {0}: bignum(insight.total)
+#: src/components/BeatmapCardXP.tsx
+msgid "Total {0}xp"
+msgstr "Total {0}xp"
 
 #: src/scenes/Options.tsx
 #: src/scenes/SongSelect.tsx
@@ -1242,13 +1302,13 @@ msgstr "Validation errors"
 msgid "Version"
 msgstr "Version"
 
-#: src/globals.ts
-msgid "Version {currentVersion} is available ! Refresh the page to update."
-msgstr "Version {currentVersion} is available ! Refresh the page to update."
+#: src/online/versionWatch.ts
+msgid "Version {version} is available ! Refresh the page to update."
+msgstr "Version {version} is available ! Refresh the page to update."
 
-#: src/globals.ts
-msgid "Version {currentVersion} is available ! Update in the main menu."
-msgstr "Version {currentVersion} is available ! Update in the main menu."
+#: src/online/versionWatch.ts
+msgid "Version {version} is available ! Update in the main menu."
+msgstr "Version {version} is available ! Update in the main menu."
 
 #: src/online/presence.ts
 #: src/online/presence.ts
@@ -1286,6 +1346,10 @@ msgstr "What do you want to do with this beatmap?"
 msgid "World Map"
 msgstr "World Map"
 
+#: src/components/BeatmapXPBreakdown.tsx
+msgid "XP gained last play"
+msgstr "XP gained last play"
+
 #: src/osu/beatmap/grouping.ts
 msgid "Yesterday"
 msgstr "Yesterday"
@@ -1309,6 +1373,14 @@ msgstr "Your character can play <0>on-repeat</0>, automatically, on playlists yo
 #: src/components/Tutorial.tsx
 msgid "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1> Righ-click</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."
 msgstr "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1> Righ-click</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."
+
+#: src/components/songselect/SpectateBanner.tsx
+msgid "Your character is playing"
+msgstr "Your character is playing"
+
+#: src/scenes/Gameplay.tsx
+msgid "Your character is still playing another map. Abort that play to start this one?"
+msgstr "Your character is still playing another map. Abort that play to start this one?"
 
 #. placeholder {0}: a.name
 #: src/components/addons/ManageAddonsView.tsx

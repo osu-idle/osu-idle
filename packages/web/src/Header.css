@@ -95,11 +95,24 @@ header:has(.shrunk) {
 	padding: 10px;
 }
 
+.topbar__link-anchor {
+	align-items: center;
+	color: inherit;
+	display: flex;
+	height: 100%;
+	width: 100%;
+}
+
+.topbar__link-anchor:hover {
+	color: inherit;
+	text-decoration: none;
+}
+
 .topbar__menu {
 	background-color: hsla(0, 0%, 7%, 0.9);
 	border-bottom: 1px solid hsl(var(--hsl-h1));
-	height: 100%;
-	height: 215px;
+	/* Floor for short menus; JS grows `height` to fit the hovered submenu. */
+	min-height: 215px;
 	left: 0;
 	position: absolute;
 	top: 0;

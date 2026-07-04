@@ -4,7 +4,6 @@ import {
 	useState,
 } from 'react';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
-import Controls from '../../input/Controls';
 import { isCommunityOpen } from '../../globals';
 import SceneManager, { SCENE } from '../../scenes/SceneManager';
 import CommunityHeader from './CommunityHeader';
@@ -30,9 +29,6 @@ export default function CommunityOverlay() {
 	const [chat = true] = useSynced(showChat);
 	const [users = true] = useSynced(showUsers);
 	const [ticker = true] = useSynced(showTicker);
-
-	Controls.community.usePress(() => void isCommunityOpen.set(!isCommunityOpen.get()));
-	Controls.back.usePress(() => { if (isCommunityOpen.get()) void isCommunityOpen.set(false); });
 
 	// Auto-hide: close during gameplay, reopen afterwards - only if it was open
 	// and the toggle is on, so a manual close during play isn't undone.

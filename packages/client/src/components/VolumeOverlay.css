@@ -2,7 +2,7 @@
 	position: fixed;
 	right: 32px;
 	bottom: 32px;
-	z-index: 900;
+	z-index: 5100; /* above the page overlay (5000) */
 	pointer-events: none; /* never steal clicks while hidden */
 	opacity: 0;
 	transform: translateY(14px);

@@ -1,10 +1,12 @@
 import Synced from '@osu-idle/shared/helpers/synced';
 import { desktop } from '@osu-idle/shared/desktop';
+import { VERSION } from '@osu-idle/shared/version';
 import {
 	type ChatLine,
 	type ClientMessage,
 	DEFAULT_CHANNEL,
 	serverMessage,
+	type ServerMessage,
 } from '@osu-idle/shared/community/wire';
 import {
 	type ClientStatus,
@@ -26,6 +28,9 @@ const CHAT_LIMIT = 200;
 const WS_OPEN = 1;
 const WS_CONNECTING = 0;
 
+type MessageType = ServerMessage['type'];
+type MessageOf<T extends MessageType> = Extract<ServerMessage, { type: T }>;
+
 /**
  * The single community WebSocket. A typed message bus shared with the server
  * (`serverMessage`/`clientMessage`): presence, the online count and chat travel
@@ -40,7 +45,11 @@ export default class Socket {
 	public static readonly online = new Synced(0);
 	public static readonly chat = new Synced<ChatLine[]>([]);
 	public static readonly connected = new Synced(false);
+	/** The server's running version, pushed on every (re)connect. Defaults to our
+	 *  own build so it never signals an update before the server has spoken. */
+	public static readonly serverVersion = new Synced(VERSION);
 
+	private static readonly listeners = new Map<string, Set<(msg: ServerMessage) => void>>();
 	private static ws?: WebSocket;
 	private static started = false;
 	private static wanted = false;
@@ -68,8 +77,82 @@ export default class Socket {
 		});
 	}
 
-	private static send(msg: ClientMessage): void {
-		if (this.ws?.readyState === WS_OPEN) this.ws.send(JSON.stringify(msg));
+	/** Send now if the socket is open. Returns whether it was sent. */
+	public static send(msg: ClientMessage): boolean {
+		if (this.ws?.readyState !== WS_OPEN) return false;
+		this.ws.send(JSON.stringify(msg));
+		return true;
+	}
+
+	/** Send now, or as soon as the socket (re)connects; dropped (false) after
+	 *  `timeoutMs` without a connection. */
+	public static async sendSoon(msg: ClientMessage, timeoutMs = 10_000): Promise<boolean> {
+		try {
+			await this.whenConnected(timeoutMs);
+		} catch {
+			return false;
+		}
+		return this.send(msg);
+	}
+
+	/** Subscribe to one server message type. Returns the unsubscribe. */
+	public static on<T extends MessageType>(
+		type: T,
+		handler: (msg: MessageOf<T>) => void,
+	): () => void {
+		let set = this.listeners.get(type);
+		if (!set) this.listeners.set(type, set = new Set());
+		const h = handler as (msg: ServerMessage) => void;
+		set.add(h);
+		return () => set.delete(h);
+	}
+
+	/** Send `msg` and resolve with the first `type` message (matching `accept`,
+	 *  when given). Waits for the socket to connect first; rejects on timeout. */
+	public static async request<T extends MessageType>(
+		msg: ClientMessage,
+		type: T,
+		timeoutMs = 10_000,
+		accept?: (res: MessageOf<T>) => boolean,
+	): Promise<MessageOf<T>> {
+		await this.whenConnected(timeoutMs);
+		return new Promise((resolve, reject) => {
+			const off = this.on(type, res => {
+				if (accept && !accept(res)) return;
+				done();
+				resolve(res);
+			});
+			const timer = setTimeout(() => {
+				done();
+				reject(new Error(`${msg.type} timed out`));
+			}, timeoutMs);
+			const done = () => {
+				off();
+				clearTimeout(timer);
+			};
+			if (!this.send(msg)) {
+				done();
+				reject(new Error('socket not connected'));
+			}
+		});
+	}
+
+	/** Resolves once the socket is open; rejects after `timeoutMs`. */
+	private static whenConnected(timeoutMs: number): Promise<void> {
+		if (this.connected.get()) return Promise.resolve();
+		return new Promise((resolve, reject) => {
+			const timer = setTimeout(() => {
+				this.connected.desync(onChange);
+				reject(new Error('socket not connected'));
+			}, timeoutMs);
+			const onChange = (open: boolean) => {
+				if (!open) return;
+				clearTimeout(timer);
+				this.connected.desync(onChange);
+				resolve();
+			};
+			void this.connected.sync(onChange);
+		});
 	}
 
 	private static open(): void {
@@ -85,6 +168,9 @@ export default class Socket {
 			this.attempt = 0;
 			this.connected.set(true);
 			this.status = 'idle';
+			this.send({
+				type: 'version', version: VERSION, platform: desktop() ? 'desktop' : 'web',
+			});
 		};
 		ws.onmessage = e => this.receive(e);
 		ws.onclose = () => {
@@ -126,6 +212,9 @@ export default class Socket {
 		if (!parsed.success) return;
 		const msg = parsed.data;
 
+		// feature consumers (play, ...) subscribe by type; community is below
+		this.listeners.get(msg.type)?.forEach(h => h(msg));
+
 		switch (msg.type) {
 			case 'presence:init':
 				void this.presence.set(msg.entries);
@@ -144,9 +233,22 @@ export default class Socket {
 			case 'online':
 				void this.online.set(msg.count);
 				break;
+			case 'version':
+				void this.serverVersion.set(msg.version);
+				break;
 			case 'chat':
 				void this.chat.set([...this.chat.get(), msg.line].slice(-CHAT_LIMIT));
 				break;
+			case 'chat:delete': {
+				const ids = new Set(msg.ids);
+				void this.chat.set(this.chat.get().map(l =>
+					l.channel === msg.channel && ids.has(l.id)
+						? {
+							...l, text: '<deleted>',
+						}
+						: l));
+				break;
+			}
 			case 'error':
 				console.warn('Community:', msg.message);
 				break;

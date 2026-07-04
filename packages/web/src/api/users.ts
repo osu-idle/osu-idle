@@ -23,3 +23,8 @@ export async function uploadAvatar(file: File): Promise<CharacterDTO> {
 
 /** Remove the custom profile picture, reverting to the osu! avatar. */
 export const resetAvatar = () => unwrap(rpc.v1.me.avatar.$delete());
+
+/** Rename the signed-in character (same rules as creation); returns the
+ *  updated character. The old name joins its permanent name history. */
+export const renameCharacter = (name: string) =>
+	unwrap(rpc.v1.me.username.$post({ json: { name } }));

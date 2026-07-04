@@ -9,6 +9,7 @@ import {
 	showTicker,
 	showUsers,
 } from './state';
+import Controls from '../../input/Controls';
 
 /**
  * The bottom-right control strip, present open or closed. Mirrors osu!stable's
@@ -19,6 +20,39 @@ export default function CommunityControls() {
 	const [open] = useSynced(isCommunityOpen);
 	const [chat] = useSynced(showChat);
 
+	const toggleCommunity = () => {
+		const current = showUsers.get();
+		const isOpen = isCommunityOpen.get();
+		// if overlay is open and state is on, only set to false
+		if (isOpen) {
+			showUsers.set(!current);
+			return;
+		}
+		// if overlay is closed and state is off, open everything
+		if (!isOpen && !current) {
+			isCommunityOpen.set(true);
+			showChat.set(true);
+			showUsers.set(true);
+		}
+	};
+
+	const toggleChat = () => {
+		const isOpen = isCommunityOpen.get();
+		isCommunityOpen.set(!isOpen);
+		showChat.set(!isOpen);
+		if (isOpen) {
+			showUsers.set(false);
+		}
+	};
+	
+	Controls.chat.usePress(toggleChat);
+	Controls.community.usePress(toggleCommunity);
+	Controls.back.usePress(() => {
+		isCommunityOpen.set(false);
+		showChat.set(false);
+		showUsers.set(false);
+	});
+
 	return (
 		<div className="community-controls">
 			{open && (<>
@@ -28,33 +62,12 @@ export default function CommunityControls() {
 			<CommunityToggle 
 				value={showUsers}
 				label={t`Online users`} 
-				onClick={() => {
-					const current = showUsers.get();
-					const isOpen = isCommunityOpen.get();
-					// if overlay is open and state is on, only set to false
-					if (isOpen) {
-						showUsers.set(!current);
-						return;
-					}
-					// if overlay is closed and state is off, open everything
-					if (!isOpen && !current) {
-						isCommunityOpen.set(true);
-						showChat.set(true);
-						showUsers.set(true);
-					}
-				}}
+				onClick={toggleCommunity}
 			/>
 			<CommunityToggle
 				value={showChat}
 				label={chat ? t`Hide chat` : t`Show chat`}
-				onClick={() => {
-					const isOpen = isCommunityOpen.get();
-					isCommunityOpen.set(!isOpen);
-					showChat.set(!isOpen);
-					if (isOpen) {
-						showUsers.set(false);
-					}
-				}}
+				onClick={toggleChat}
 			/>
 		</div>
 	);

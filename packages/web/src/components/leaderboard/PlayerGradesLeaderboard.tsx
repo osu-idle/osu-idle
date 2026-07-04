@@ -73,6 +73,7 @@ export default function PlayerGradesLeaderboard({ sort, country, page, players }
 		<div className='player__lb_sort'>
 			<span><Trans>Sort by</Trans></span>
 			{sorts.map(type => <Link
+				key={type}
 				to='/rankings/grades/$grade'
 				params={{ grade: type }}
 				search={{
@@ -83,37 +84,41 @@ export default function PlayerGradesLeaderboard({ sort, country, page, players }
 			</Link>)}
 		</div>
 
-		<table className='player__lb_listing'>
-			<thead>
-				<th></th>
-				<th></th>
-				<th><Trans>Accuracy</Trans></th>
-				<th><Trans>Play Count</Trans></th>
-				<th><Trans>Ranked Score</Trans></th>
-				<th><Trans>Performance</Trans></th>
-				{...sorts.map(type => <th className={sort === type ? 'current' : ''}>
-					{sortLabel(type)}
-				</th>)}
-			</thead>
-			<tbody>
-				{sortedPlayers.map((player, r) => <tr>
-					<td>{rank(r+1+((page - 1) * 50))}</td>
-					<td className='main'><div className='player__lb_listing_main'>
-						<Flag country={player.user.country} />
-						<Link to='/c/$id' params={{ id: String(player.character.id) }}>{player.character.name}</Link>
-					</div></td>
-					<td className='dimmed'>{accuracy(hitAccuracy(player.character_totals))}</td>
-					<td className='dimmed'>{num(player.character_totals.playCount)}</td>
-					<td className='dimmed'>{num(player.character_totals.rankedScore)}</td>
-					<td className='dimmed'>{num(int(player.character.pp) ?? 0)}</td>
-					{...GoodGrades.map(type => <td className={sort === type ? '' : 'dimmed'}>
-						{num(player.character_totals[type])}
-					</td>)}
-					<td className={sort === 'all' ? '' : 'dimmed'}>
-						{num(sum(GoodGrades.map(g => player.character_totals[g])))}
-					</td>
-				</tr>)}
-			</tbody>
-		</table>
+		<div className='player__lb_scroll'>
+			<table className='player__lb_listing'>
+				<thead>
+					<tr>
+						<th></th>
+						<th></th>
+						<th className='extra'><Trans>Accuracy</Trans></th>
+						<th className='extra'><Trans>Play Count</Trans></th>
+						<th className='extra'><Trans>Ranked Score</Trans></th>
+						<th className='extra'><Trans>Performance</Trans></th>
+						{...sorts.map(type => <th key={type} className={sort === type ? 'current' : ''}>
+							{sortLabel(type)}
+						</th>)}
+					</tr>
+				</thead>
+				<tbody>
+					{sortedPlayers.map((player, r) => <tr key={player.character.id}>
+						<td>{rank(r+1+((page - 1) * 50))}</td>
+						<td className='main'><div className='player__lb_listing_main'>
+							<Flag country={player.user.country} />
+							<Link to='/c/$id' params={{ id: String(player.character.id) }}>{player.character.name}</Link>
+						</div></td>
+						<td className='dimmed extra'>{accuracy(hitAccuracy(player.character_totals))}</td>
+						<td className='dimmed extra'>{num(player.character_totals.playCount)}</td>
+						<td className='dimmed extra'>{num(player.character_totals.rankedScore)}</td>
+						<td className='dimmed extra'>{num(int(player.character.pp) ?? 0)}</td>
+						{...GoodGrades.map(type => <td key={type} className={sort === type ? 'current' : 'dimmed'}>
+							{num(player.character_totals[type])}
+						</td>)}
+						<td className={sort === 'all' ? 'current' : 'dimmed'}>
+							{num(sum(GoodGrades.map(g => player.character_totals[g])))}
+						</td>
+					</tr>)}
+				</tbody>
+			</table>
+		</div>
 	</div>);
 }

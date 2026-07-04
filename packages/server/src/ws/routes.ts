@@ -6,7 +6,7 @@ import {
 	type NodeWebSocket,
 } from '@hono/node-ws';
 import { clientMessage } from '@osu-idle/shared/community/wire';
-import { isAdmin } from '@osu-idle/shared/admin';
+import { VERSION } from '@osu-idle/shared/version';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/client';
 import {
@@ -28,14 +28,23 @@ import {
 	join,
 	leave,
 	presenceSnapshot,
+	recordAdoption,
 	touch,
 	update,
 } from './presence';
-import { handleChat } from './chat';
-
-/** Chat username colours: a soft pink for players, purple for admins. */
-const PLAYER_NAME_COLOR = '#fff09a';
-const ADMIN_NAME_COLOR = '#b06cff';
+import {
+	handleChat,
+	nameColor,
+} from './chat';
+import {
+	isPlaying,
+	livePlayPresence,
+	playState,
+} from '../play';
+import {
+	handlePlay,
+	PlayFeed,
+} from './play';
 
 /** How often a live connection refreshes its presence last-seen (well under the
  *  sweep TTL) so a clean session is never pruned. */
@@ -79,27 +88,41 @@ export const registerWs = (app: Hono): Pick<NodeWebSocket, 'injectWebSocket'> =>
 		const session = token ? await verifySession(token).catch(() => undefined) : undefined;
 		const resolved = session ? await resolveCharacter(session.uid) : undefined;
 
-		if (!resolved) {
+		if (!session || !resolved) {
 			return { onOpen: (_e, ws) => ws.close(1008, 'unauthorized') };
 		}
 
 		const { character, user } = resolved;
+		const userId = session.uid;
 		const geo = await geoLookup(clientIp(c), user.country);
 		let beat: ReturnType<typeof setInterval> | undefined;
+		let feed: PlayFeed | undefined;
 
 		return {
 			onOpen: async (_e, ws) => {
 				hub.add(character.id, ws);
+				feed = new PlayFeed(character.id, ws);
 				// join() broadcasts our entry; the snapshot below already includes it.
 				await join({
 					character, user, geo,
 				});
+				// join() resets status to idle; restore `playing` if mid-play so a
+				// reconnect during gameplay doesn't show the player as idle.
+				const live = await livePlayPresence(character.id);
+				if (live) await update(character.id, live);
 				hub.sendLocal(ws, {
 					type: 'presence:init', entries: await presenceSnapshot(),
 				});
+				hub.sendLocal(ws, {
+					type: 'version', version: VERSION,
+				});
+				// what (if anything) the character is playing, for resume/spectate
+				hub.sendLocal(ws, {
+					type: 'play:state', state: await playState(character.id),
+				});
 				beat = setInterval(() => void touch(character.id), TOUCH_MS);
 			},
-			onMessage: async evt => {
+			onMessage: async (evt, ws) => {
 				if (typeof evt.data !== 'string') return;
 				let raw: unknown;
 				try {
@@ -111,18 +134,35 @@ export const registerWs = (app: Hono): Pick<NodeWebSocket, 'injectWebSocket'> =>
 				if (!parsed.success) return;
 				const msg = parsed.data;
 
+				try {
+					if (feed && await handlePlay(msg, {
+						character,
+						ws,
+						feed,
+						freshCharacter: async () => (await resolveCharacter(userId))?.character,
+					})) return;
+				} catch (e) {
+					console.error('[play]', msg.type, 'failed for', character.id, e);
+					return;
+				}
+
 				if (msg.type === 'chat') {
 					await handleChat({
 						characterId: character.id,
 						name: character.name,
-						color: isAdmin(user.id) ? ADMIN_NAME_COLOR : PLAYER_NAME_COLOR,
-					}, msg.channel, msg.text);
+						color: nameColor(user.id),
+					}, user.id, msg.channel, msg.text);
 				} else if (msg.type === 'status') {
-					await update(character.id, { status: msg.status });
+					// The client reports idle/afk from input activity; ignore it while
+					// a play is live so it can't clobber the server-set `playing`.
+					if (!(await isPlaying(character.id))) await update(character.id, { status: msg.status });
+				} else if (msg.type === 'version') {
+					await recordAdoption(character.id, msg.version, msg.platform);
 				}
 			},
 			onClose: (_e, ws) => {
 				if (beat) clearInterval(beat);
+				feed?.stop();
 				hub.remove(character.id, ws);
 				void leave(character.id);
 			},

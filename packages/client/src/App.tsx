@@ -16,6 +16,9 @@ import Spectate from './online/spectate';
 import Presence from './online/presence';
 import Socket from './online/socket';
 import CommunityOverlay from './components/community/CommunityOverlay';
+import PageOverlay from './components/page/PageOverlay';
+import FloatingDeltas from './components/FloatingDeltas';
+import './online/versionWatch';
 
 Spectate.start();
 Presence.start();
@@ -28,6 +31,7 @@ export default function App() {
 		<>
 			<Alpha />
 			{scene}
+			<PageOverlay />
 			<TransitionOverlay />
 			<VolumeOverlay />
 			<Onboarding />
@@ -36,6 +40,7 @@ export default function App() {
 			<Options />
 			<WebBrowser />
 			<CommunityOverlay />
+			<FloatingDeltas />
 			<Popups />
 			<FpsCounter />
 			{!isMobile && <Cursor />}

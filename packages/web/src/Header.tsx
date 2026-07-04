@@ -30,11 +30,23 @@ export default function Header() {
 	const character = useCurrentCharacter();
 	const userMenu = useRef<HTMLDivElement>(null);
 	const [menuVisible, setMenuVisible] = useState(false);
+	const [menuHeight, setMenuHeight] = useState<number>();
 	const [userMenuActive, setUserMenuActive] = useState(false);
 	const [shrunk, setShrunk] = useState(false);
 
+	// Grow the hover backdrop to reach the bottom of whichever submenu is open,
+	// so it always fits the content (no more hardcoded pixel height).
 	const showSub = {
-		onMouseEnter: () => setMenuVisible(true), onMouseLeave: () => setMenuVisible(false), 
+		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+			setMenuVisible(true);
+			const sub = e.currentTarget.querySelector('.topbar__sub');
+			const header = e.currentTarget.closest('header');
+			if (sub && header) {
+				const top = header.getBoundingClientRect().top;
+				setMenuHeight(sub.getBoundingClientRect().bottom - top + 12);
+			}
+		},
+		onMouseLeave: () => setMenuVisible(false),
 	};
 
 	useEffect(() => {
@@ -61,7 +73,11 @@ export default function Header() {
 	return (<>
 		<div className='topbar__menu-backdrop'></div>
 		<header>
-			<div className='topbar__menu' data-visibility={menuVisible ? 'visible' : 'hidden'}></div>
+			<div
+				className='topbar__menu'
+				data-visibility={menuVisible ? 'visible' : 'hidden'}
+				style={menuHeight ? { height: menuHeight } : undefined}
+			></div>
 			<div className='topbar__menu-background'></div>
 			<div className={`topbar ${shrunk ? 'shrunk' : ''}`}>
 				<nav className='topbar__group left'>
@@ -72,40 +88,42 @@ export default function Header() {
 						</div>
 					</Link>
 
-					<Link to='/' className="topbar__link regular" {...showSub}>
-						<span>{t`home`}</span>
+					<div className="topbar__link regular" {...showSub}>
+						<Link to='/' className="topbar__link-anchor"><span>{t`home`}</span></Link>
 						<div className='topbar__sub'>
 							<Link to='/news' className="topbar__sublink"><span>{t`news`}</span></Link>
 							<OutLink href='https://osu.ppy.sh' target='_blank' className="topbar__sublink"><span>{t`play osu!`}</span></OutLink>
 							<Link to='/download' className="topbar__sublink"><span>{t`play osu!idle`}</span></Link>
 						</div>
-					</Link>
+					</div>
 
-					<Link to='/maps' className="topbar__link regular" {...showSub}>
-						<span>{t`beatmaps`}</span>
+					<div className="topbar__link regular" {...showSub}>
+						<Link to='/maps' className="topbar__link-anchor"><span>{t`beatmaps`}</span></Link>
 						<div className='topbar__sub'>
 							<Link to='/maps' className="topbar__sublink"><span>{t`beatmap listing`}</span></Link>
 						</div>
-					</Link>
+					</div>
 
-					<Link to='/rankings/global' search={{ page: 1 }} className="topbar__link regular" {...showSub}>
-						<span>{t`rankings`}</span>
+					<div className="topbar__link regular" {...showSub}>
+						<Link to='/rankings/global' search={{ page: 1 }} className="topbar__link-anchor">
+							<span>{t`rankings`}</span>
+						</Link>
 						<div className='topbar__sub'>
 							<Link to='/rankings/global' search={{ page: 1 }} className="topbar__sublink">
 								<span>{t`global`}</span>
 							</Link>
-							<Link 
+							<Link
 								to='/rankings/skills/$skill'
 								params={{ skill: SKILL_SORT.overall }}
-								search={{ page: 1 }} 
+								search={{ page: 1 }}
 								className="topbar__sublink"
 							>
 								<span>{t`skills`}</span>
 							</Link>
 							<Link
-								to='/rankings/grades/$grade' 
-								params={{ grade: GOOD_GRADE.X }} 
-								search={{ page: 1 }} 
+								to='/rankings/grades/$grade'
+								params={{ grade: GOOD_GRADE.X }}
+								search={{ page: 1 }}
 								className="topbar__sublink"
 							>
 								<span>{t`grades`}</span>
@@ -117,25 +135,26 @@ export default function Header() {
 								<span>{t`top plays`}</span>
 							</Link>
 						</div>
-					</Link>
+					</div>
 
-					<Link to='/help/faq' className="topbar__link regular" {...showSub}>
-						<span>{t`help`}</span>
+					<div className="topbar__link regular" {...showSub}>
+						<Link to='/help/faq' className="topbar__link-anchor"><span>{t`help`}</span></Link>
 						<div className='topbar__sub'>
 							<Link to='/help/faq' className="topbar__sublink"><span>{t`faq`}</span></Link>
 						</div>
-					</Link>
+					</div>
 
 					{admin && (
-						<Link to='/admin' className="topbar__link regular" {...showSub}>
-							<span>{t`admin`}</span>
+						<div className="topbar__link regular" {...showSub}>
+							<Link to='/admin' className="topbar__link-anchor"><span>{t`admin`}</span></Link>
 							<div className='topbar__sub'>
+								<Link to='/admin/chat' className="topbar__sublink"><span>{t`chat console`}</span></Link>
 								<Link to='/admin/balancing' className="topbar__sublink"><span>{t`balancing`}</span></Link>
 								<Link to='/admin/nomination' className="topbar__sublink"><span>{t`map nomination`}</span></Link>
 								<Link to='/admin/addons' className="topbar__sublink"><span>{t`add-ons`}</span></Link>
 								<Link to='/admin/skins' className="topbar__sublink"><span>{t`skins`}</span></Link>
 							</div>
-						</Link>
+						</div>
 					)}
 				</nav>
 				<div className='topbar__group right'>

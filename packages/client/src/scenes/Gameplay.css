@@ -41,24 +41,36 @@
 	height: 100%;
 }
 
-.play__back {
+/* play actions: abort (default, Esc) stops the play; quit (ranked) leaves it
+   running server-side. Popup-styled (see Popups.css). */
+.play__actions {
 	position: absolute;
 	top: 1rem;
 	left: 1.2rem;
 	z-index: 10;
 	display: flex;
 	align-items: center;
-	gap: 0.3rem;
-	padding: 0.45rem 1rem;
-	border-radius: 999px;
-	font-weight: 700;
-	color: #fff;
-	background: rgba(255, 102, 171, 0.16);
-	border: 1px solid rgba(255, 102, 171, 0.35);
-	transition: background 0.2s ease;
+	gap: 0.6rem;
 }
-.play__back:hover {
-	background: rgba(255, 102, 171, 0.3);
+
+.play__abort,
+.play__quit {
+	padding: 8px 18px;
+	border-radius: 10px;
+	font-weight: 100;
+	font-size: 16px;
+	color: #fff;
+	background: #000000a2;
+	border: 1px solid #ff4c4c;
+	transition: border-color 0.15s ease;
+}
+.play__abort:hover,
+.play__quit:hover {
+	border-color: white;
+}
+
+.play__quit {
+	border-color: rgba(255, 102, 171, 0.85);
 }
 
 .play__title {

@@ -11,10 +11,14 @@ import { DEFAULT_CHANNEL } from '@osu-idle/shared/community/wire';
 import Socket from '../../../online/socket';
 import Tabs, { Tab } from '../../tabs/Tabs';
 import { music } from '../../../audio/MusicPlayer';
+import {
+	LOGS_CHANNEL,
+	logLines,
+} from '../../../logs';
 
 export default function Chat() {
 	const { t } = useLingui();
-	const [channels, setChannels] = useState<string[]>([DEFAULT_CHANNEL]);
+	const [channels, setChannels] = useState<string[]>([DEFAULT_CHANNEL, LOGS_CHANNEL]);
 	const [active, setActive] = useState(DEFAULT_CHANNEL);
 	const [activeTab, activeId] = useSync<string>();
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -35,20 +39,23 @@ export default function Chat() {
 		setActive(DEFAULT_CHANNEL);
 	};
 
+	// a span, not a button: the tab label already sits inside the Tabs <button>,
+	// and nested buttons are invalid DOM
 	const ChatTabButton = ({ channel } : { channel: string }) => <>
 		{channel}
-		<button
+		<span
+			role="button"
 			className="chat__close"
 			aria-label={t`Close channel`}
 			onClick={e => {
 				e.stopPropagation();
 				closeChannel(channel);
 			}}
-		></button>
+		/>
 	</>;
 
 	const ChatTabContents = ({ channel } : { channel: string }) => {
-		const [lines = []] = useSynced(Socket.chat);
+		const [lines = []] = useSynced(channel === LOGS_CHANNEL ? logLines : Socket.chat);
 		const [draft, setDraft] = useState('');
 		const logRef = useRef<HTMLDivElement>(null);
 
@@ -102,17 +109,19 @@ export default function Chat() {
 				})}
 			</div>
 
-			<form className="chat__compose" onSubmit={submit}>
-				<span>
-					{'>'}
-				</span>
-				<input
-					ref={inputRef}
-					type="text"
-					value={draft}
-					onChange={e => setDraft(e.target.value)}
-				/>
-			</form>
+			{channel !== LOGS_CHANNEL && (
+				<form className="chat__compose" onSubmit={submit}>
+					<span>
+						{'>'}
+					</span>
+					<input
+						ref={inputRef}
+						type="text"
+						value={draft}
+						onChange={e => setDraft(e.target.value)}
+					/>
+				</form>
+			)}
 		</>);
 	};
 

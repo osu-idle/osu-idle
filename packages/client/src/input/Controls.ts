@@ -3,11 +3,16 @@ import Synced from '@osu-idle/shared/helpers/synced';
 import SceneManager, { SCENE } from '../scenes/SceneManager';
 import { SETTINGS } from '../db/settings';
 import {
+	isCommunityOpen,
 	isOptionsOpen,
 	isStandalone,
 	message,
+	openPage,
 } from '../globals';
-import { showChat } from '../components/community/state';
+import {
+	showChat,
+	showUsers,
+} from '../components/community/state';
 
 type KeyCallback = (press: boolean, release: boolean) => void;
 
@@ -59,6 +64,7 @@ export default class Controls {
 	public static decreaseScrollSpeed = new KeyListener();
 	
 	public static openOptions = new KeyListener();
+	public static chat = new KeyListener();
 	public static community = new KeyListener();
 
 	public static shift = new KeyListener();
@@ -107,6 +113,16 @@ export default class Controls {
 				case 'browserback':
 					e.preventDefault();
 				case 'escape':
+					if (isCommunityOpen.get()) {
+						isCommunityOpen.set(false);
+						showChat.set(false);
+						showUsers.set(false);
+						break;
+					}
+					if (openPage.get()) {
+						openPage.set(undefined);
+						break;
+					}
 					this.back.trigger(press, release);
 					break;
 				case 'enter':
@@ -142,6 +158,10 @@ export default class Controls {
 						await this.openOptions.trigger(press, release);
 					}
 					break;
+				case 'f8':
+					e.preventDefault();
+					await this.chat.trigger(press, release);
+					break;
 				case 'f9':
 					e.preventDefault();
 					await this.community.trigger(press, release);
@@ -169,7 +189,8 @@ export default class Controls {
 
 		window.addEventListener('wheel', (e) => {
 			if (this.mode_Alt.get() 
-				|| (SceneManager.current.get() === SCENE.MENU && !isOptionsOpen.get() && !showChat.get())
+				|| (SceneManager.current.get() === SCENE.MENU
+					&& !isOptionsOpen.get() && !openPage.get() && !showChat.get())
 			) {
 				if (e.deltaY > 0) {
 					this.volumeDown.trigger(false, false);

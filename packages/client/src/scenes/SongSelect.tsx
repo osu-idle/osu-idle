@@ -24,6 +24,7 @@ import {
 	type PlaylistsByBeatmap,
 } from '../osu/beatmap/grouping';
 import TopBar from '../components/songselect/TopBar';
+import SpectateBanner from '../components/songselect/SpectateBanner';
 import UserCard from '../components/songselect/UserCard';
 import CardContextMenu from '../components/songselect/CardContextMenu';
 import StrainDebug from './StrainDebug';
@@ -63,8 +64,14 @@ import {
 } from '../db/schema/playlist';
 import PlaylistOverlay from '../components/PlaylistOverlay';
 import Autopilot, { AUTOPILOT_MODE } from '../gameplay/autopilot';
-import Spectate from '../online/spectate';
+import Log from '@osu-idle/shared/helpers/log';
 import { launchPlay } from './launchPlay';
+import { xpGainsVersion } from '../db/schema/score_xp';
+import { getXPInsights } from '../xpInsights';
+import {
+	UNLOCKS,
+	XP_INSIGHT_TIER,
+} from '../unlocks';
 
 /** Dev-only: the diff id the strain debug overlay is open on, stashed in
  *  sessionStorage so a full dev-server reload (a skill edit forces one) reopens
@@ -225,10 +232,6 @@ export default function SongSelect() {
 	// session here so a stale one can never chain plays later.
 	useEffect(() => { Autopilot.stop(); }, []);
 
-	useEffect(() => {
-		Spectate.tick();
-	}, []);
-
 	const onBack = () => {
 		if (playlistItem) { setPlaylistItem(null); return; }
 		if (menuItem) { setMenuItem(null); return; }
@@ -261,8 +264,6 @@ export default function SongSelect() {
 	const [version] = useSynced(music.beatmap);
 	const [downloads, setDownloads] = useState<Record<number, DownloadState>>({});
 	const [hasDownloaded, setHasDownloaded] = useState(false);
-	const [toast, setToast] = useState<string | null>(null);
-	const toastTimer = useRef<number>(0);
 	const [debugBeatmap, setDebugBeatmap] = useState<LightBeatmap>();
 	const [search] = useSynced(SETTINGS.search);
 	const searchRef = useRef<HTMLInputElement>(null);
@@ -351,6 +352,17 @@ export default function SongSelect() {
 	// history-based sorts. A score's `beatmapId` matches `beatmap.metadata.id`
 	// (the same key the leaderboard queries by).
 	const history = useAsync(() => getHistory(character), [character]);
+
+	// per-beatmap XP gain indicators, bulk-loaded so future group/sort modes can
+	// read the same map. Gated by the feature's unlock tier.
+	const [xpTier] = useSynced(UNLOCKS.xpInsight);
+	const [xpVersion] = useSynced(xpGainsVersion);
+	const xpInsights = useAsync(
+		async () => xpTier === XP_INSIGHT_TIER.LOCKED
+			? undefined
+			: getXPInsights(character.id),
+		[character, xpTier, xpVersion],
+	);
 
 	// the carousel shows the search-filtered, sort-ordered subset; selection logic
 	// keeps using the full `items` so a search never loses the current selection
@@ -477,12 +489,6 @@ export default function SongSelect() {
 		}
 	});
 
-	const flashToast = useCallback((msg: string) => {
-		setToast(msg);
-		window.clearTimeout(toastTimer.current);
-		toastTimer.current = window.setTimeout(() => setToast(null), 3500);
-	}, []);
-
 	/**
 	 * Launch gameplay for a downloaded difficulty (see {@link launchPlay}) and
 	 * arm the autopilot per the selected mode (debug launches never chain):
@@ -582,9 +588,9 @@ export default function SongSelect() {
 	const deleteSet = useCallback((item: CarouselItem) => {
 		setMenuItem(null);
 		BeatmapStore.deleteSet(item.set.metadata.id)
-			.then(() => flashToast(t`Beatmap deleted`))
-			.catch((e) => flashToast(String(e)));
-	}, [flashToast, t]);
+			.then(() => Log.popup(t`Beatmap deleted`))
+			.catch((e) => Log.errorPopup(String(e)));
+	}, [t]);
 
 	const openDebug = useCallback((beatmap: LightBeatmap) => {
 		sessionStorage.setItem(STRAIN_DEBUG_KEY, String(beatmap.metadata.id));
@@ -601,11 +607,11 @@ export default function SongSelect() {
 		const item = items.find((i) => i.beatmap.is(version));
 		if (!item) return;
 		if (!item.beatmap.metadata.runtime) {
-			flashToast(t`Download the beatmap first`);
+			Log.popup(t`Download the beatmap first`);
 			return;
 		}
 		openDebug(item.beatmap);
-	}, [version, items, flashToast, openDebug, t]);
+	}, [version, items, openDebug, t]);
 
 	// reopen the strain debug after a full dev-server reload (skill edits force
 	// one, which wipes in-memory scene state)
@@ -653,6 +659,7 @@ export default function SongSelect() {
 						onToggleGroup={toggleGroup}
 						loading={loading}
 						downloads={downloads}
+						xpInsights={xpInsights}
 						totalCount={filteredItems.length}
 					/>
 				)}
@@ -686,6 +693,8 @@ export default function SongSelect() {
 				</div>
 			</main>
 
+			<SpectateBanner />
+
 			<div className="game__botbar">
 				<button className="game__exit" onClick={onBack}>
 					<Trans>BACK</Trans>
@@ -696,8 +705,6 @@ export default function SongSelect() {
 					online_stats={online_stats}
 				/>
 			</div>
-
-			{toast && <div className="game__toast">{toast}</div>}
 
 			{debug && (
 				<button 
@@ -723,9 +730,9 @@ export default function SongSelect() {
 					onClose={() => setMenuItem(null)}
 					onManagePlaylists={() => { setPlaylistItem(menuItem); setMenuItem(null); }}
 					onDelete={() => deleteSet(menuItem)}
-					onClearScores={() => { 
-						setMenuItem(null); 
-						flashToast(t`Clearing local scores is not available yet`);
+					onClearScores={() => {
+						setMenuItem(null);
+						Log.popup(t`Clearing local scores is not available yet`);
 					}}
 				/>
 			)}

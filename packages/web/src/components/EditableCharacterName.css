@@ -1,0 +1,62 @@
+.editable-name {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.editable-name__edit {
+	padding: 0;
+	border: none;
+	background: none;
+	color: inherit;
+	font-size: 0.6em;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.12s ease;
+}
+.editable-name:hover .editable-name__edit {
+	opacity: 0.6;
+}
+.editable-name__edit:hover {
+	opacity: 1;
+}
+
+.editable-name__input {
+	font: inherit;
+	color: inherit;
+	background: rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 4px;
+	padding: 0 6px;
+	min-width: 0;
+	width: 12em;
+}
+
+.editable-name__btn {
+	border: none;
+	border-radius: 4px;
+	padding: 2px 10px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #fff;
+	background: hsl(var(--hsl-l1, 330 80% 65%));
+	cursor: pointer;
+}
+.editable-name__btn--cancel {
+	background: rgba(255, 255, 255, 0.15);
+}
+.editable-name__btn:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+.editable-name__error {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	margin-top: 4px;
+	white-space: nowrap;
+	font-size: 12px;
+	color: #ff8aa6;
+}

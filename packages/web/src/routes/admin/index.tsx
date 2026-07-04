@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { msg } from '@lingui/core/macro';
-import FAQ from '../../pages/help/FAQ';
+import Dashboard from '../../pages/admin/Dashboard';
 
 export const Route = createFileRoute('/admin/')({
-	component: FAQ,
+	component: Dashboard,
 	staticData: { title: msg`admin dashboard` },
 });

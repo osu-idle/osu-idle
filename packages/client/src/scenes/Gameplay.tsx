@@ -21,17 +21,20 @@ import { DEBUG_BOT_LEVEL } from '../gameplay/strainDebug';
 import ReplayBot from '../gameplay/replayBot';
 import {
 	abortPlaySession,
-	fetchPlayOffsets,
 	fetchPlayResult,
-	playSessionHeartbeat,
 	PlayResultError,
 	skipPlaySession,
 	startPlaySession,
 	type PlayContext,
 } from '../online/play';
 import Account from '../online/account';
+import Socket from '../online/socket';
+import Spectate from '../online/spectate';
+import ContextMenu from '../components/ContextMenu';
 import Entities from '../entity/entities';
 import { Score } from '../db/schema/score';
+import { ScoreXP } from '../db/schema/score_xp';
+import { logPlayFinished } from '../logs';
 import Memory from '@osu-idle/shared/sim/skills/memory';
 import { Beatmap } from 'osu-classes';
 import calculatePP from '../osu/pp';
@@ -97,9 +100,6 @@ const HITSOUND_LOOKAHEAD_MS = 1500;
 /** keep the scheduler ticking off the rAF loop so it runs while the tab is
  *  hidden (rAF is paused then; timers are merely throttled). */
 const HITSOUND_TICK_MS = 250;
-/** how often a ranked play pulls the next slice of its streamed replay offsets.
- *  Well under the server's reveal buffer so the play never out-runs its data. */
-const STREAM_POLL_MS = 1500;
 
 function GameplayInner({
 	beatmapInfo, 
@@ -114,7 +114,7 @@ function GameplayInner({
 	const [scrollSpeed] = useSynced(SETTINGS.scrollspeed);
 	const SCROLL_MS = scrollSpeedToMs(scrollSpeed);
 	const [debug] = useSynced(debugMode);
-	const { i18n } = useLingui();
+	const { i18n, t } = useLingui();
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	// background, storyboard video and the dim overlay are stacked DOM layers
 	// behind the (transparent) playfield canvas: bg → video → dim → canvas. This
@@ -179,6 +179,25 @@ function GameplayInner({
 		character.id > 1 ? getCharacter(character.id) : undefined
 	, [character]);
 
+	// stop the play server-side and leave (reached through the confirm menu)
+	const abortPlay = () => {
+		if (play.mode === 'ranked') void abortPlaySession(play.token);
+		onExit();
+	};
+
+	// quit (ranked only): leave while the bot keeps playing server-side; dismiss
+	// the play so the song-select spectate poll doesn't drag us straight back in
+	const onQuit = () => {
+		if (play.mode === 'ranked') Spectate.dismiss(play.token);
+		onExit();
+	};
+
+	// abort (default, Esc) asks for confirmation first; Esc again cancels
+	const [confirmAbort, setConfirmAbort] = useState(false);
+	const onAbort = () => setConfirmAbort(c => !c);
+
+	Controls.back.usePress(onAbort);
+
 	// build the game once; a freshly-built game starts a fresh clock so the two
 	// always stay in lock-step (HMR preserves both refs → seamless resume)
 	const ensureGame = () => {
@@ -232,11 +251,6 @@ function GameplayInner({
 	const onExit = () => {
 		releaseAudio();
 		SceneManager.set(SCENE.SELECT);
-	};
-
-	const onQuit = () => {
-		if (play.mode === 'ranked') void abortPlaySession(play.token);
-		onExit();
 	};
 
 	// debug: resolve the whole map instantly and jump to the result screen
@@ -388,17 +402,21 @@ function GameplayInner({
 						// mirror the authoritative server score into the local DB so it
 						// shows up in local history / leaderboards (keyed by its onlineId)
 						const score = Score.fromDTO(result.score);
+						logPlayFinished(score, beatmapInfo, result.gains);
 						void score.add()
-							.then(saved => SceneManager.set(SCENE.RESULT, saved, game, result.gains, false))
+							.then(saved => {
+								void ScoreXP.record(saved, result.gains);
+								SceneManager.set(SCENE.RESULT, saved, game, result.gains, false);
+							})
 							.catch(e => {
 								console.warn('[score] local mirror failed', e);
 								SceneManager.set(SCENE.RESULT, score, game, result.gains, false);
 							});
 						return;
 					} catch (e) {
-						// 404: the result is gone (finalised then TTL-expired, or a long
+						// unknown: the result is gone (finalised then TTL-expired, or a long
 						// AFK at the end of the play) - fall back to the in-memory replay.
-						if (e instanceof PlayResultError && e.status === 404) {
+						if (e instanceof PlayResultError && e.reason === 'unknown') {
 							showLocal();
 							return;
 						}
@@ -429,64 +447,60 @@ function GameplayInner({
 					let progression;
 					if (play.mode === 'guest' && botRef.current instanceof CharacterBot) {
 						progression = botRef.current.applyProgression(
-							beatmapInfo.metadata.total_length, 
+							beatmapInfo.metadata.total_length,
 							saved,
 						);
 						void Entities.character.get().persistSkills();
+						void ScoreXP.record(saved, progression);
 					}
+					logPlayFinished(saved, beatmapInfo, progression);
 					SceneManager.set(SCENE.RESULT, saved, game, progression, false);
 				})
 				.catch((e) => { console.warn('[score] save failed', e); onExit(); });
 		});
 	}, [done]);
 
-	// Watch for a remote abort (another tab/device quitting this play). Only
-	// meaningful while the play is still live: once we're past its end the record
-	// is gone because the server finalised it (the sweep), not because it was
-	// aborted - polling then would misread the finished play as aborted and eject
-	// us to song select instead of letting us reach our own result.
+	// A remote abort (another tab/device quitting this play) is pushed over the
+	// socket - stop spectating and leave.
 	useEffect(() => {
 		if (play.mode !== 'ranked') return;
-
-		const watch = setInterval(async () => {
-			if (savedRef.current || Date.now() > play.endsAt) return;
-			const state = await playSessionHeartbeat(play.token);
-			if (state && 'aborted' in state) {
-				clearInterval(watch);
-				onExit();
-			}
-		}, 2500);
-		return () => clearInterval(watch);
+		return Socket.on('play:aborted', msg => {
+			if (msg.token !== play.token || savedRef.current) return;
+			onExit();
+		});
 	}, []);
 
 	// Stream the rest of the replay in. The server only revealed the first few
-	// seconds at start (anti-cheat: the client must not know the outcome up front),
-	// so keep pulling the next slices and fold them into the live play until every
-	// offset has arrived.
+	// seconds at start (anti-cheat: the client must not know the outcome up
+	// front); a `play:watch` arms the server-side feed that pushes the next
+	// slices as they clear the reveal buffer, until every offset has arrived.
+	// The feed dies with the socket, so it re-arms on every (re)connect from the
+	// live cursor.
 	useEffect(() => {
 		if (play.mode !== 'ranked' || play.done) return;
 		const bot = botRef.current;
 		if (!(bot instanceof ReplayBot)) return;
 
-		let alive = true;
 		let cursor = play.next;
-		void (async () => {
-			while (alive) {
-				try {
-					const chunk = await fetchPlayOffsets(play.token, cursor);
-					if (!alive) return;
-					if (chunk.offsets.length) {
-						gameRef.current?.appendReplay(bot.addOffsets(chunk.offsets));
-					}
-					cursor = chunk.next;
-					if (chunk.done) return;
-				} catch (e) {
-					console.warn('[play] offset stream failed', e);
-				}
-				await sleep(STREAM_POLL_MS);
+		let done = false;
+		const offOffsets = Socket.on('play:offsets', msg => {
+			if (msg.token !== play.token || done) return;
+			if (msg.offsets.length) {
+				gameRef.current?.appendReplay(bot.addOffsets(msg.offsets));
 			}
-		})();
-		return () => { alive = false; };
+			cursor = msg.next;
+			done = msg.done;
+		});
+		const rewatch = (open: boolean) => {
+			if (open && !done) Socket.send({
+				type: 'play:watch', token: play.token, next: cursor,
+			});
+		};
+		void Socket.connected.sync(rewatch);
+		return () => {
+			offOffsets();
+			Socket.connected.desync(rewatch);
+		};
 	}, []);
 
 	// decode + preload the map's keysounds and storyboard samples (effects channel)
@@ -815,11 +829,6 @@ function GameplayInner({
 		};
 		raf = requestAnimationFrame(draw);
 
-		const onKey = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') onQuit();
-		};
-		window.addEventListener('keydown', onKey);
-
 		// tap/click the on-canvas "SKIP" prompt to jump to the song start. The
 		// prompt is only live while it's actually drawn (before songStart - 2s),
 		// matching the keyboard skip binding's gate.
@@ -842,7 +851,6 @@ function GameplayInner({
 			// firing after we leave (quit mid-play leaves up to LOOKAHEAD queued)
 			stopScheduledHitsounds();
 			window.removeEventListener('resize', resize);
-			window.removeEventListener('keydown', onKey);
 			canvas.removeEventListener('pointerdown', onPointerDown);
 			videoRef.current?.pause();
 			if (bgUrl) URL.revokeObjectURL(bgUrl);
@@ -864,12 +872,27 @@ function GameplayInner({
 					<Trans>Submitting score…</Trans>
 				</div>
 			)}
-			<button className="play__back" onClick={onQuit}>
-				<span className="game__back-arrow">‹</span> <Trans>quit</Trans>
-			</button>
+			<div className="play__actions">
+				<button
+					className="play__abort"
+					onClick={onAbort}
+					title={t`Stop the play (Esc)`}
+				>
+					<Trans>abort</Trans>
+				</button>
+				{play.mode === 'ranked' && (
+					<button
+						className="play__quit"
+						onClick={onQuit}
+						title={t`Leave - your character keeps playing`}
+					>
+						<Trans>quit</Trans>
+					</button>
+				)}
+			</div>
 			<div className="play__title">
 				{beatmap.metadata.artist} - {beatmap.metadata.title}
-				<span>[{beatmap.metadata.version}]</span>
+				<span> [{beatmap.metadata.version}]</span>
 			</div>
 
 			{autopilot && (
@@ -878,7 +901,7 @@ function GameplayInner({
 						<Trans>Next up:</Trans> {nextUp
 							? <>
 								{nextUp.set.metadata.artist} - {nextUp.set.metadata.title}
-								<span>[{nextUp.metadata.version}]</span>
+								<span> [{nextUp.metadata.version}]</span>
 							</>
 							: '-'}
 					</div>
@@ -894,6 +917,34 @@ function GameplayInner({
 				<button className="play__skip" onClick={skipToEnd}>
 					skip to end ⏭
 				</button>
+			)}
+
+			{confirmAbort && (
+				<ContextMenu
+					title={t`Abort the play?`}
+					sub={`${beatmap.metadata.artist} - ${beatmap.metadata.title}`}
+					onClose={() => setConfirmAbort(false)}
+					options={play.mode === 'ranked'
+						? [
+							{
+								label: t`1. Abort`, color: '#e93100', onClick: abortPlay,
+							},
+							{
+								label: t`2. Quit, keep playing`, color: '#85b81e', onClick: onQuit,
+							},
+							{
+								label: t`3. Cancel`, color: '#6b6b6b', onClick: () => setConfirmAbort(false),
+							},
+						]
+						: [
+							{
+								label: t`1. Abort`, color: '#e93100', onClick: abortPlay,
+							},
+							{
+								label: t`2. Cancel`, color: '#6b6b6b', onClick: () => setConfirmAbort(false),
+							},
+						]}
+				/>
 			)}
 		</div>
 	);
@@ -994,11 +1045,39 @@ export default function Gameplay({
 			// not be mis-scored. During server downtime this waits rather than guessing.
 			await Account.ready();
 			const character = Entities.character.get();
-			const session = await startPlaySession(
-				character, 
-				live.metadata.beatmapId, 
-				live.metadata.beatmapSetId,
-			);
+			let session = await startPlaySession(character, live.metadata.beatmapId);
+
+			// start-or-join can hand back a play on a *different* map (quit without
+			// abort, then launched another) - its replay wouldn't match this chart.
+			// Offer to abort the running play or back out.
+			if (session.mode === 'ranked' && session.beatmapId !== live.metadata.beatmapId) {
+				const choice = await dialog<'abort' | 'cancel'>(resolve => (
+					<DialogPanel
+						title={t`Already playing`}
+						message={
+							t`Your character is still playing another map. Abort that play to start this one?`
+						}
+						actions={[
+							{
+								label: t`Abort it`, primary: true, onClick: () => resolve('abort'),
+							},
+							{
+								label: t`Cancel`, onClick: () => resolve('cancel'),
+							},
+						]}
+					/>
+				));
+				if (choice === 'cancel') {
+					await backToSelect();
+					return;
+				}
+				await abortPlaySession(session.token);
+				session = await startPlaySession(character, live.metadata.beatmapId);
+				if (session.mode === 'ranked' && session.beatmapId !== live.metadata.beatmapId) {
+					await fail(t`Couldn't take over the running play.`);
+					return;
+				}
+			}
 
 			let play: PlayContext;
 			if (session.mode === 'refused') {

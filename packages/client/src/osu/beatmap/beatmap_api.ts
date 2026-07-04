@@ -17,7 +17,7 @@ export type VersionMetadata = Metadata['versions'][number];
 
 export default class BeatmapAPI {
 
-	private static manifest: Manifest;
+	private static manifest?: Promise<Manifest>;
 
 	/** Resolve a catalog asset path (preview audio/background, already
 	 *  server-rooted as `/v1/beatmap/preview/...`) to a full URL on the API. */
@@ -26,8 +26,17 @@ export default class BeatmapAPI {
 		return `${BASE_URL}${path}`;
 	}
 
-	public static async getManifest(): Promise<Manifest> {
-		return this.manifest ??= await (await rpc.v1.beatmap.catalog.$get()).json();
+	public static getManifest(): Promise<Manifest> {
+		return this.manifest ??= (async () => {
+			const manifest = await (await rpc.v1.beatmap.catalog.$get()).json();
+			// Diffs unranked since the last download must vanish locally too.
+			await BeatmapStore.pruneToManifest(manifest).catch(console.error);
+			return manifest;
+		})().catch(err => {
+			// don't cache a failed fetch - the next call retries
+			this.manifest = undefined;
+			throw err;
+		});
 	}
 
 	public static async downloadOsz(

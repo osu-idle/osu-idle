@@ -21,10 +21,20 @@ import {
 	compareGradeGTE,
 	GRADE,
 	Judgements,
+	type Grade,
 	type Judgement,
 } from '@osu-idle/shared/judgement';
 import type { ScoreDTO } from '@osu-idle/shared/score';
-import type { CharacterRow } from './db/schema/character';
+import type {
+	PlayDeltas,
+	PlayResult,
+	PlayState,
+} from '@osu-idle/shared/play';
+import {
+	getCharacterById,
+	type CharacterRow,
+} from './db/schema/character';
+import { getCharacterTotals } from './db/schema/character_totals';
 import type {
 	NewScoreRow,
 	ScoreRow,
@@ -33,7 +43,11 @@ import Memory from '@osu-idle/shared/sim/skills/memory';
 import { calculatePP } from './pp';
 import { getBeatmap } from './beatmaps';
 import { update as updatePresence } from './ws/presence';
-import { STATUS } from '@osu-idle/shared/community/presence';
+import { hub } from './ws/hub';
+import {
+	STATUS,
+	type Status,
+} from '@osu-idle/shared/community/presence';
 import { getPlays } from './db/schema/beatmaps_played';
 import {
 	mindblockFactor,
@@ -44,6 +58,7 @@ import {
 	submitScore,
 } from './scores';
 import {
+	globalRank,
 	reindexBeatmap,
 	reindexCharacter,
 } from './rankings';
@@ -69,6 +84,9 @@ const decoder = new BeatmapDecoder();
  *  window of the live position, so a cheater can't read the whole outcome up front. */
 const STREAM_BUFFER_MS = 5000;
 
+/** Song-time gap between the accuracy/grade checkpoints kept for the live poll. */
+const SAMPLE_STEP_MS = 5000;
+
 /** A play's full server-side state. `offsets`/`reveals` are parallel and sorted by
  *  reveal time (the offset's note nominal time), so streaming is a simple cursor. */
 type Pending = {
@@ -82,6 +100,8 @@ type Pending = {
 	songStartMs: number,
 	draft: NewScoreRow,
 	skillXp: Record<SkillName, number>,
+	/** [song time, accuracy, grade] checkpoints for the live-state poll */
+	samples?: [number, number, Grade][],
 	skipped?: true,
 	failedAt?: number,
 };
@@ -94,7 +114,14 @@ type Gains = Awaited<ReturnType<typeof applySkillXp>>;
  *  its own result screen isn't re-surfaced as a "missed" score. */
 type StoredResult =
 	| { token: string; failed: true; notify: boolean }
-	| { token: string; failed: false; score: ScoreDTO; gains: Gains; notify: boolean };
+	| {
+		token: string;
+		failed: false;
+		score: ScoreDTO;
+		gains: Gains;
+		deltas: PlayDeltas;
+		notify: boolean;
+	};
 
 type PlayTime = {
 	characterId: number,
@@ -218,8 +245,11 @@ type RankedStartPlayResult = {
 	status: 'ranked',
 	joined: boolean,
 	token: string,
+	/** what is actually being played - a join can differ from the requested map */
+	beatmapId: number,
 	startedAt: number,
 	endsAt: number,
+	serverNow: number,
 } & OffsetChunk;
 
 /** The offsets revealed so far: every one whose note is within the buffer window
@@ -258,12 +288,38 @@ async function readPlay(characterId: number): Promise<Pending | undefined> {
 	return raw ? (JSON.parse(raw) as Pending) : undefined;
 }
 
+/** True while the character has a live (not-yet-ended) play. */
+export const isPlaying = async (characterId: number): Promise<boolean> => {
+	const endsAt = Number(await redis.zscore(PLAYING_KEY, String(characterId)));
+	return endsAt > Date.now();
+};
+
+/** The presence patch reflecting a character's in-progress play, or null when
+ *  they aren't mid-play. Lets the socket restore `playing` on (re)connect - a
+ *  fresh join() otherwise stores an idle entry and clobbers the server-set
+ *  `playing`, so a player who reconnects mid-play shows idle. */
+export const livePlayPresence = async (
+	characterId: number,
+): Promise<{ status: Status; nowPlaying: string } | null> => {
+	if (!(await isPlaying(characterId))) return null;
+	const play = await readPlay(characterId);
+	if (!play) return null;
+	const beatmap = await getBeatmap(play.beatmapId);
+	if (!beatmap) return null;
+	return {
+		status: STATUS.playing,
+		nowPlaying: `${beatmap.artist} - ${beatmap.title}`,
+	};
+};
+
 const joinResult = (p: Pending): StartPlayResult => ({
 	status: 'ranked',
 	joined: true,
 	token: p.token,
+	beatmapId: p.beatmapId,
 	startedAt: p.startedAt,
 	endsAt: p.endsAt,
+	serverNow: Date.now(),
 	...chunkFrom(p, 0),
 });
 
@@ -321,7 +377,8 @@ export async function startPlay(
 		return { status: 'refused' };
 	}
 	const beatmap = await getBeatmap(beatmapId);
-	if (!beatmap) {
+	// An unranked diff plays like an unknown map: local play, no submit.
+	if (!beatmap || !beatmap.ranked) {
 		await redis.zrem(PLAYING_KEY, String(character.id));
 		return { status: 'unranked' };
 	}
@@ -369,7 +426,15 @@ async function simulateAndStore(
 	const chart = decoder.decodeFromString(beatmap.chart);
 	const bot = new CharacterBot(skills, chart.difficulty.overallDifficulty);
 	const game = new ManiaGame(chart, bot);
-	game.update(game.songEndMs + 1000); // advance past the end so every note is judged
+	// advance to the end in steps, checkpointing accuracy/grade along the way
+	// (update judges incrementally, so stepping does no extra work) - the live
+	// state poll reads these back for the resume banner
+	const samples: [number, number, Grade][] = [];
+	for (let t = 0; t <= game.songEndMs; t += SAMPLE_STEP_MS) {
+		game.update(t);
+		samples.push([t, game.score.accuracy, game.score.grade]);
+	}
+	game.update(game.songEndMs + 1000); // past the end so every note is judged
 
 	const session = (await getPlayTime(character.id)) ?? {
 		characterId: character.id,
@@ -434,6 +499,7 @@ async function simulateAndStore(
 		endsAt,
 		songStartMs: game.songStartMs,
 		draft,
+		samples,
 		skillXp: await getServerXP(
 			character,
 			session,
@@ -457,12 +523,19 @@ async function simulateAndStore(
 		nowPlaying: `${beatmap.artist} - ${beatmap.title}`,
 	});
 
+	// Every device of this character learns the play started (resume / spectate).
+	hub.sendTo(character.id, {
+		type: 'play:state', state: activeState(entry),
+	});
+
 	return {
 		status: 'ranked',
 		joined: false,
 		token,
+		beatmapId,
 		startedAt,
 		endsAt,
+		serverNow: Date.now(),
 		...chunkFrom(entry, 0),
 	};
 }
@@ -492,11 +565,34 @@ const parsePlayResult = async (play: Pending, notify: boolean): Promise<StoredRe
 		};
 	}
 
+	// Unranked mid-play (admin toggle): drop the result instead of resurrecting
+	// a score for a map whose progression was just purged.
+	const beatmap = await getBeatmap(play.draft.beatmapId);
+	if (!beatmap?.ranked) {
+		return {
+			token: play.token,
+			failed: true,
+			notify,
+		};
+	}
+
+	const before = await profileSnapshot(characterId);
+
 	play.draft.playedAt = new Date();
 	const row = await submitScore(play.draft);
 	const gains = await applySkillXp(characterId, play.skillXp);
 	await reindexCharacter(characterId);
 	await reindexBeatmap(characterId, play.draft.beatmapId);
+
+	const after = await profileSnapshot(characterId);
+	const deltas: PlayDeltas = {
+		// positive = climbed; unknown before/after (fresh index) counts as no move
+		rank: before.rank !== undefined && after.rank !== undefined
+			? before.rank - after.rank
+			: 0,
+		rankedScore: after.rankedScore - before.rankedScore,
+		pp: Math.round((after.pp - before.pp) * 100) / 100,
+	};
 
 	const session = (await getPlayTime(characterId)) ?? {
 		characterId,
@@ -515,7 +611,23 @@ const parsePlayResult = async (play: Pending, notify: boolean): Promise<StoredRe
 		failed: false,
 		score: scoreRowToDTO(row),
 		gains,
+		deltas,
 		notify,
+	};
+};
+
+/** The profile metrics a play can move, read around a submit to compute the
+ *  result-screen deltas. */
+const profileSnapshot = async (characterId: number) => {
+	const [character, totals, rank] = await Promise.all([
+		getCharacterById(characterId),
+		getCharacterTotals(characterId),
+		globalRank('pp', characterId),
+	]);
+	return {
+		rankedScore: totals.rankedScore,
+		pp: Number(character?.pp ?? 0),
+		rank,
 	};
 };
 
@@ -544,41 +656,43 @@ export async function finalizePlay(
 
 	await redis.set(resultKey(characterId), JSON.stringify(result), 'PX', RESULT_TTL_MS);
 
+	// Every device learns the play ended (clears banners, surfaces the result).
+	hub.sendTo(characterId, {
+		type: 'play:state',
+		state: {
+			phase: 'finished', token: result.token, notify: result.notify,
+		},
+	});
+
 	console.log(characterId, 'finished. playing users:', await getPlaying());
 	return result;
 }
 
 const UnknownResult = {
-	ok: false, reason: 'unknown', code: 404, 
+	ok: false, reason: 'unknown',
 } as const;
 const CacheMissResult = {
-	ok: false, reason: 'cache-miss', code: 410, 
+	ok: false, reason: 'cache-miss',
 } as const;
 const UnfinalizedResult = {
-	ok: false, reason: 'unfinalized', code: 432, 
+	ok: false, reason: 'unfinalized',
 } as const;
 const TooSoonResult = {
-	ok: false, reason: 'tooSoon', code: 425, 
+	ok: false, reason: 'tooSoon',
 } as const;
-const ScoreResult = (result: StoredResult) => ({
+const ScoreResult = (result: StoredResult): PlayResult => ({
 	ok: true,
 	failed: result.failed,
 	score: result.failed ? undefined : result.score,
 	gains: result.failed ? undefined : result.gains,
-} as const);
-
-export type FetchResultOutcome =
-	| typeof UnknownResult
-	| typeof CacheMissResult
-	| typeof UnfinalizedResult
-	| typeof TooSoonResult
-	| ReturnType<typeof ScoreResult>;
+	deltas: result.failed ? undefined : result.deltas,
+});
 
 export async function fetchResult(
 	characterId: number,
-	token: string, 
+	token: string,
 	forceSee: boolean = false,
-): Promise<FetchResultOutcome> {
+): Promise<PlayResult> {
 
 	const cached = await redis.get(resultKey(characterId));
 	if (cached) {
@@ -603,16 +717,22 @@ export async function fetchResult(
 	return result ? ScoreResult(result) : UnfinalizedResult;
 }
 
-/** Player quit: drop the play without submitting (token must match). */
+/** Player quit: drop the play without submitting (token must match). Every
+ *  device is told, so spectating tabs stop too. */
 export async function abortPlay(characterId: number, token: string): Promise<{ ok: boolean }> {
 	const raw = await redis.eval(
 		ABORT_PLAY,
 		1,
 		playKey(characterId),
-		String(characterId), 
+		String(characterId),
 		token,
 	) as string | null;
-	if (raw) await redis.zrem(PLAYING_KEY, String(characterId));
+	if (raw) {
+		await redis.zrem(PLAYING_KEY, String(characterId));
+		hub.sendTo(characterId, {
+			type: 'play:aborted', token,
+		});
+	}
 	return { ok: raw !== null };
 }
 
@@ -624,21 +744,6 @@ export async function skipPlay(characterId: number, token: string): Promise<{ ok
 		String(characterId), token, String(Date.now()), String(LEAD_IN_MS),
 	) as string | null;
 	return { ok: raw !== null };
-}
-
-/** Player skipped the lead-in: shift the play's timeline so it finalises earlier
- *  (token must match). */
-export async function playStatus(
-	characterId: number, 
-	token: string,
-): Promise<{ ok: true } | { aborted: true } | { ok: true, startedAt: number, endsAt: number }> {
-	const play = await readPlay(characterId);
-	if (!play || play.token !== token) return { aborted: true };
-
-	if (play.skipped) return {
-		ok: true, startedAt: play.startedAt, endsAt: play.endsAt, 
-	};
-	return { ok: true };
 }
 
 /** Stream the next slice of replay offsets, gated to the buffer window so the
@@ -658,30 +763,47 @@ export async function streamOffsets(
 	return chunkFrom(play, from);
 }
 
-/** Current play descriptor for resume-after-refresh / cross-tab spectating. */
-export async function getActivePlay(characterId: number) {
+/** The live-play descriptor: score checkpoint at the live position (see
+ *  `samples` in Pending) + timing; `serverNow` lets the client absorb clock
+ *  skew. Primitives only - never spread the whole Pending (heavy offsets). */
+const activeState = (play: Pending): Extract<PlayState, { phase: 'active' }> => {
+	const pos = Date.now() - play.startedAt - LEAD_IN_MS;
+	let accuracy: number | undefined;
+	let grade: Grade | undefined;
+	for (const [t, a, g] of play.samples ?? []) {
+		if (t > pos) break;
+		accuracy = a;
+		grade = g;
+	}
+	return {
+		phase: 'active',
+		token: play.token,
+		beatmapId: play.beatmapId,
+		startedAt: play.startedAt,
+		endsAt: play.endsAt,
+		serverNow: Date.now(),
+		accuracy,
+		grade,
+	};
+};
+
+/** Current play state for resume-after-refresh / cross-tab spectating. */
+export async function playState(characterId: number): Promise<PlayState> {
 	const play = await readPlay(characterId);
 	// While the play record exists it's still live (or overdue awaiting finalise).
-	// Never finalise here: this is a poll, and finalising would terminate the play
-	// out from under its spectator, ejecting it before the result screen. An
-	// overdue play is finalised server-side by the sweep (ephemeral result) or by
-	// the finishing client itself via fetchResult.
-	// primitives only - never spread the whole Pending (heavy offsets/draft/xp)
-	if (play) {
-		return {
-			active: true, token: play.token, beatmapId: play.beatmapId, 
-		};
-	}
+	// Never finalise here: finalising would terminate the play out from under its
+	// spectator, ejecting it before the result screen. An overdue play is
+	// finalised server-side by the sweep (ephemeral result) or by the finishing
+	// client itself via fetchResult.
+	if (play) return activeState(play);
 	const result = await redis.get(resultKey(characterId));
 	if (result) {
 		const stored = JSON.parse(result) as StoredResult;
 		return {
-			active: false, finished: true, token: stored.token, notify: stored.notify, 
-		} as const;
+			phase: 'finished', token: stored.token, notify: stored.notify,
+		};
 	}
-	return {
-		active: false, finished: false, 
-	} as const;
+	return { phase: 'idle' };
 }
 
 /** Finalise every play whose end time has passed, so abandoned plays still

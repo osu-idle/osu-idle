@@ -1,0 +1,32 @@
+.xp-breakdown {
+	position: fixed;
+	z-index: 2000;
+	min-width: 180px;
+	padding: 0.45rem 0.6rem;
+	border-radius: 8px;
+	background: rgba(0, 0, 0, 0.82);
+	border: 1px solid rgba(255, 138, 183, 0.35);
+	color: #fff;
+	font-size: 0.78rem;
+	white-space: nowrap;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+.xp-breakdown__title {
+	font-size: 0.68rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: rgba(255, 255, 255, 0.6);
+	margin-bottom: 0.3rem;
+}
+.xp-breakdown__row {
+	display: flex;
+	justify-content: space-between;
+	gap: 1.2rem;
+	line-height: 1.5;
+}
+.xp-breakdown__row em {
+	font-style: normal;
+	font-weight: 800;
+	color: var(--osu-pink);
+}

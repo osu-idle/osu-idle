@@ -1,4 +1,5 @@
 import {
+	boolean,
 	decimal,
 	int,
 	longtext,
@@ -33,6 +34,10 @@ export const beatmaps = mysqlTable('beatmap', {
 	mode: int().notNull().default(3),
 	audio: text(),
 	background: text(),
+	// Per-difficulty inclusion: the set's status/rankedAt still drive *when* the
+	// set goes live, but only ranked diffs are listed, downloadable and playable
+	// ranked. Toggled from the nomination page, before or after the set is live.
+	ranked: boolean().notNull().default(true),
 });
 
 export type BeatmapRow = typeof beatmaps.$inferSelect;

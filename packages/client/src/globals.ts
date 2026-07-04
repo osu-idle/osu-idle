@@ -1,11 +1,7 @@
 import Synced from '@osu-idle/shared/helpers/synced';
-import { VERSION } from '@osu-idle/shared/version';
 import { desktop } from '@osu-idle/shared/desktop';
-import { getVersion } from './online/services/stats';
-import { checkForDesktopUpdate } from './online/desktopUpdate';
-import Log, { POPUP_TYPE } from '@osu-idle/shared/helpers/log';
-import { t } from '@lingui/core/macro';
 import { ScoreDTO } from '@osu-idle/shared/score';
+import type { PlayDeltas } from '@osu-idle/shared/play';
 import { Score } from './db/schema/score';
 
 export const debugMode = new Synced(import.meta.env.DEV);
@@ -20,6 +16,13 @@ export const isOptionsOpen = new Synced(false);
 export const isCommunityOpen = new Synced(false);
 export const webUrl = new Synced('/');
 
+/** The full-screen page overlay (skins / add-ons); undefined = closed. */
+export type OpenPage = {
+	page: 'skins' | 'addons',
+	view: 'manage' | 'browse',
+};
+export const openPage = new Synced<OpenPage | undefined>(undefined);
+
 export const isVolumeVisible = new Synced(false);
 export const displayAlpha = new Synced(false);
 
@@ -27,30 +30,14 @@ export const message = new Synced('');
 
 export const currentScore = new Synced<Score | ScoreDTO | undefined>(undefined);
 
-let lastVersion = VERSION;
-let awaitingUpdate = false;
-let lock = false;
-setInterval(async () => {
-	const currentVersion = await getVersion();
-	if (currentVersion !== lastVersion) {
-		lastVersion = currentVersion;
-		if (desktop()) {
-			awaitingUpdate = currentVersion !== VERSION;
-		} else {
-			Log.popup(
-				t`Version ${currentVersion} is available ! Refresh the page to update.`, 
-				POPUP_TYPE.neutral, true);
-		}
-	}
-	if (awaitingUpdate && !lock) {
-		lock = true;
-		const status = await checkForDesktopUpdate();
-		if (status && status.state !== 'none' && status.state !== 'checking') {
-			awaitingUpdate = false;
-			Log.popup(
-				t`Version ${currentVersion} is available ! Update in the main menu.`, 
-				POPUP_TYPE.neutral, true);
-		}
-		lock = false;
-	}
-}, 1000);
+/** The latest ranked score's profile movement, floated app-wide by
+ *  FloatingDeltas; `at` keys each showing so a new score restarts the
+ *  animation. */
+export const playDeltas = new Synced<{ deltas: PlayDeltas; at: number } | undefined>(undefined);
+
+export const showDeltas = (deltas: PlayDeltas): void => {
+	if (!deltas.rank && !deltas.rankedScore && !deltas.pp) return;
+	void playDeltas.set({
+		deltas, at: Date.now(),
+	});
+};

@@ -6,23 +6,23 @@ import SceneManager, { SCENE } from '../scenes/SceneManager';
 import {
 	displayAlpha,
 	isCommunityOpen,
+	openPage,
 } from '../globals';
 
 export default function Alpha() {
 	const [alpha] = useSynced(displayAlpha);
 	const [users] = useSynced(showUsers);
 	const [community] = useSynced(isCommunityOpen);
+	const [page] = useSynced(openPage);
 
 	SceneManager.current.use(scene => {
-	
-	
+
+
 		switch(scene) {
 			case SCENE.INTRO:
 			case SCENE.GAME:
 			case SCENE.RESULT:
 			case SCENE.SELECT:
-			case SCENE.ADDONS:
-			case SCENE.SKINS:
 				displayAlpha.set(false);
 				return;
 			default:
@@ -30,7 +30,7 @@ export default function Alpha() {
 		}
 	});
 
-	if (!alpha || (users && community)) return null;
+	if (!alpha || page || (users && community)) return null;
 	
 	return (
 		<div className='alpha__warning'>

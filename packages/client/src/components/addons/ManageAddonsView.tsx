@@ -7,6 +7,7 @@ import {
 	useLingui,
 } from '@lingui/react/macro';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
+import compareVersions from '@osu-idle/shared/helpers/compareVersions';
 import Auth from '../../online/auth';
 import {
 	Addon as InstalledAddon,
@@ -37,15 +38,6 @@ import PageBarActions from '../page/PageBarActions';
 
 /** What the editor is editing: a blank draft (`{}`) or an existing add-on. */
 type Editing = { addon?: Addon };
-
-/** Compare two `1.2.3` strings: true when `b` is strictly newer than `a`. */
-const isNewer = (a: string, b: string): boolean => {
-	const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
-	for (let i = 0; i < 3; i++) {
-		if ((pb[i] ?? 0) !== (pa[i] ?? 0)) return (pb[i] ?? 0) > (pa[i] ?? 0);
-	}
-	return false;
-};
 
 const detailOfInstalled = (a: InstalledAddon): AddonDetail => ({
 	name: a.name,
@@ -230,7 +222,7 @@ export default function ManageAddonsView() {
 						key={a.id}
 						addon={a}
 						busy={busy}
-						hasUpdate={latest[a.id] !== undefined && isNewer(a.version, latest[a.id])}
+						hasUpdate={latest[a.id] !== undefined && compareVersions(latest[a.id], a.version) > 0}
 						onToggle={enabled => run(() => enabled ? enableAddon(a) : disableAddon(a))}
 						onDetails={() => setDetails(detailOfInstalled(a))}
 						onUpdate={() => openUpdate(a)}

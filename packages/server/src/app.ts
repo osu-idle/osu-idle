@@ -23,9 +23,9 @@ import { newsRoutes } from './routes/news';
 import { scoresRoutes } from './routes/scores';
 import { charactersRoutes } from './routes/characters';
 import { statsRoutes } from './routes/stats';
+import { chatRoutes } from './routes/chat';
 import { rankingRoutes } from './routes/ranking';
 import { beatmapsRoutes } from './routes/beatmap';
-import { playRoutes } from './routes/play';
 import { addonsRoutes } from './routes/addons';
 import { skinsRoutes } from './routes/skins';
 
@@ -48,8 +48,8 @@ const v1 = new Hono()
 	.route('/scores', scoresRoutes)
 	.route('/auth', authRoutes)
 	.route('/me', meRoutes)
-	.route('/play', playRoutes)
 	.route('/news', newsRoutes)
+	.route('/chat', chatRoutes)
 	.route('/addons', addonsRoutes)
 	.route('/skins', skinsRoutes)
 ;

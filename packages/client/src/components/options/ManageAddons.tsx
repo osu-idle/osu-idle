@@ -1,11 +1,16 @@
 import { Trans } from '@lingui/react/macro';
 import Button from './controls/Button';
-import { isOptionsOpen } from '../../globals';
-import SceneManager, { SCENE } from '../../scenes/SceneManager';
+import {
+	isOptionsOpen,
+	openPage,
+} from '../../globals';
 
 const open = () => {
 	isOptionsOpen.set(false);
-	SceneManager.set(SCENE.ADDONS, 'manage');
+	openPage.set({
+		page: 'addons',
+		view: 'manage',
+	});
 };
 
 export default function ManageAddons() {

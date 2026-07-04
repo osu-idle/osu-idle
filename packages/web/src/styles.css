@@ -237,6 +237,21 @@ h1.page-title {
 	font-weight: 700;
 }
 
+@media (max-width: 760px) {
+	.page {
+		width: calc(100% - 20px);
+	}
+
+	.page-contents {
+		padding: 20px 10px 40px;
+	}
+
+	h1.page-title,
+	.page-header {
+		padding: 0 15px;
+	}
+}
+
 .page-text .center {
 	margin-left: auto;
 	margin-right: auto;

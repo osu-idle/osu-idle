@@ -1,11 +1,20 @@
-import { rpc } from './client';
+import Synced from '@osu-idle/shared/helpers/synced';
+import type { PlayState } from '@osu-idle/shared/play';
+import type { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
 import type Character from '../db/schema/character';
-import { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
+import { showDeltas } from '../globals';
+import Socket from './socket';
+
+/** Generous: a start awaits the server-side simulation of the whole map. */
+const START_TIMEOUT_MS = 20_000;
+const RESULT_TIMEOUT_MS = 10_000;
 
 export type RankedPlayContext = {
 	mode: 'ranked';
 	token: string;
-	/** the offsets revealed so far; the rest stream in via {@link fetchPlayOffsets} */
+	/** what the server is actually playing - a join can differ from the request */
+	beatmapId: number;
+	/** the offsets revealed so far; the rest are pushed while `play:watch`ed */
 	offsets: ReplayOffset[];
 	/** resume cursor + whether every offset has already been delivered */
 	next: number;
@@ -38,124 +47,110 @@ export type PlayContext =
  * if the player accepts, retries as an `unranked` local play. */
 export type PlaySession = PlayContext | { mode: 'refused' };
 
+/**
+ * The character's server-side play state, pushed over the socket: on connect,
+ * on every play start/finish/abort, and live while a state watch is armed.
+ * Undefined while disconnected.
+ */
+export const playState = new Synced<PlayState | undefined>(undefined);
+Socket.on('play:state', msg => void playState.set(msg.state));
+Socket.on('play:aborted', msg => clearActivePlayState(msg.token));
+void Socket.connected.sync(open => {
+	if (!open) void playState.set(undefined);
+});
+
+/** An aborted play leaves no record and no result: drop the (now stale) active
+ *  state so song select doesn't spectate-relaunch it - which would start a
+ *  fresh play - or keep showing its banner. */
+const clearActivePlayState = (token: string) => {
+	const state = playState.get();
+	if (state?.phase === 'active' && state.token === token) {
+		void playState.set({ phase: 'idle' });
+	}
+};
+
 /** Decide (and, when ranked, start or join) how a play should be scored. */
 export async function startPlaySession(
 	character: Character,
 	beatmapId: number,
-	setId: number,
 ): Promise<PlaySession> {
 	if (character.isGuest()) return { mode: 'guest' };
 	try {
 		const sentAt = Date.now();
-		const res = await rpc.v1.play.start.$post({
-			json: {
-				beatmapId, setId, 
-			}, 
-		});
-		// a transport/HTTP failure loses a ranked play silently if we fall back to
-		// local - surface it so the player can retry instead of unknowingly playing unranked
-		if (!res.ok) return { mode: 'refused' };
-		const data = await res.json();
-		if (data.ranked) {
+		const res = await Socket.request(
+			{
+				type: 'play:start', beatmapId,
+			},
+			'play:start',
+			START_TIMEOUT_MS,
+		);
+		const play = res.result;
+		if (play.status === 'ranked') {
 			// startedAt/endsAt are server-clock ms; the player's clock can differ by
 			// seconds. Estimate the server clock at round-trip midpoint and shift the
 			// timestamps into our own clock, so anchoring with our Date.now() is exact.
-			const skew = (sentAt + Date.now()) / 2 - data.serverNow;
+			const skew = (sentAt + Date.now()) / 2 - play.serverNow;
 			return {
 				mode: 'ranked',
-				token: data.token,
-				offsets: data.offsets,
-				next: data.next,
-				done: data.done,
-				startedAt: data.startedAt + skew,
-				endsAt: data.endsAt + skew,
+				token: play.token,
+				beatmapId: play.beatmapId,
+				offsets: play.offsets,
+				next: play.next,
+				done: play.done,
+				startedAt: play.startedAt + skew,
+				endsAt: play.endsAt + skew,
 			};
 		}
-		return data.status === 'refused' ? { mode: 'refused' } : { mode: 'unranked' };
+		return play.status === 'refused' ? { mode: 'refused' } : { mode: 'unranked' };
 	} catch {
+		// no connection / timeout: surface it so the player can retry instead of
+		// unknowingly playing unranked
 		return { mode: 'refused' };
 	}
 }
 
-/** What this character is currently playing (for resume / cross-tab spectating)
- *  or null if the server can't be reached. */
-export async function getActivePlay() {
-	try {
-		const res = await rpc.v1.play.state.$get();
-		if (!res.ok) return null;
-		return await res.json();
-	} catch {
-		return null;
-	}
-}
-
-/** Thrown by {@link fetchPlayResult} on a non-OK response, carrying the HTTP
- *  status so the caller can branch (404 = the result is gone server-side). */
+/** Thrown by {@link fetchPlayResult} when the server has no result to give,
+ *  carrying its reason so the caller can branch (`unknown` = gone server-side). */
 export class PlayResultError extends Error {
-	constructor(public readonly status: number) {
-		super(`play result failed (${status})`);
+	constructor(public readonly reason: 'unknown' | 'cache-miss' | 'unfinalized' | 'tooSoon') {
+		super(`play result failed (${reason})`);
 		this.name = 'PlayResultError';
 	}
 }
 
 /** Try to get an already finalized play if not already read */
 export async function fetchPlayResult(
-	token: string, 
+	token: string,
 	forceSee: boolean = false,
 ) {
-	const res = await rpc.v1.play[':token'].result[':forceSee']
-		.$get({
-			param: {
-				token, forceSee: forceSee ? 'true' : 'false', 
-			}, 
-		});
-	if (!res.ok) {
-		throw new PlayResultError(res.status);
-	}
-	return res.json();
-}
-
-/** Pull the next slice of replay offsets the server has revealed (from cursor
- *  `from`). The server gates this to a few seconds ahead of the live position. */
-export async function fetchPlayOffsets(token: string, from: number) {
-	const res = await rpc.v1.play[':token'].offsets[':from']
-		.$get({
-			param: {
-				token, from: String(from),
-			},
-		});
-	if (!res.ok) {
-		throw new PlayResultError(res.status);
-	}
-	return res.json();
+	const res = await Socket.request(
+		{
+			type: 'play:result', token, forceSee,
+		},
+		'play:result',
+		RESULT_TIMEOUT_MS,
+		msg => msg.token === token,
+	);
+	if (!res.result.ok) throw new PlayResultError(res.result.reason);
+	// a freshly received score: float its profile movement, wherever we are
+	if (res.result.deltas) showDeltas(res.result.deltas);
+	return res.result;
 }
 
 /** Tell the server the player skipped the lead-in so its timeline moves forward
  *  with the client (otherwise the play finalises late). */
 export async function skipPlaySession(token: string) {
-	try {
-		await rpc.v1.play[':token'].skip.$post({ param: { token } });
-	} catch (e) {
-		console.warn('[play] skip failed', e);
-	}
+	if (!(await Socket.sendSoon({
+		type: 'play:skip', token,
+	}))) console.warn('[play] skip not delivered');
 }
 
 /** Quit: tell the server to drop the play without submitting. */
 export async function abortPlaySession(token: string) {
-	try {
-		await rpc.v1.play[':token'].abort.$post({ param: { token } });
-	} catch (e) {
-		console.warn('[play] abort failed', e);
-	}
-}
-
-
-/** Quit: tell the server to drop the play without submitting. */
-export async function playSessionHeartbeat(token: string) {
-	try {
-		return (await rpc.v1.play[':token'].heartbeat
-			.$get({ param: { token } })).json();
-	} catch (e) {
-		console.warn('[play] heartbeat failed', e);
-	}
+	// optimistic: the scene lands back on song select before the server's
+	// `play:aborted` returns, and the stale active state must not act there
+	clearActivePlayState(token);
+	if (!(await Socket.sendSoon({
+		type: 'play:abort', token,
+	}))) console.warn('[play] abort not delivered');
 }

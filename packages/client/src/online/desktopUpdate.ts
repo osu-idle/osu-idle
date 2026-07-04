@@ -30,6 +30,11 @@ export const checkForDesktopUpdate =
 	};
 
 export const downloadDesktopUpdate = async () => {
+	// Flip to the progress bar right away - the first real progress event lags, so
+	// without this the click looks like it did nothing.
+	void updateStatus.set({
+		state: 'downloading', percent: 0,
+	});
 	await desktop()?.update.download();
 	desktop()?.update.install();
 };

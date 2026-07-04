@@ -14,9 +14,13 @@ import { beatmapset } from '../db/schema/beatmapset';
  *  sets are excluded (null <= now() is null, so they drop out). Reused by the
  *  public listing routes so the whole site shares one definition of "live". */
 export const liveCondition = and(
-	eq(beatmapset.status, 'ranked'), 
+	eq(beatmapset.status, 'ranked'),
 	lte(beatmapset.rankedAt, sql`now()`),
 );
+
+/** Per-difficulty gate on top of `liveCondition`: a diff is live only when its
+ *  set is live AND the diff itself is ranked. For queries joining `beatmaps`. */
+export const liveDiffCondition = and(liveCondition, eq(beatmaps.ranked, true));
 
 const previewUrl = (setId: number, file: string | null) =>
 	file ? `/v1/beatmap/preview/${setId}/${file}` : undefined;
@@ -78,7 +82,7 @@ export const buildCatalog = async (): Promise<Catalog> => {
 		})
 		.from(beatmapset)
 		.innerJoin(beatmaps, eq(beatmapset.id, beatmaps.setId))
-		.where(liveCondition);
+		.where(liveDiffCondition);
 
 	const sets = new Map<number, CatalogSet>();
 	for (const row of rows) {

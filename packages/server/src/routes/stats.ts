@@ -9,6 +9,11 @@ import { max } from 'drizzle-orm';
 import { characters } from '../db/schema/character';
 import { getStats } from '../stats';
 import { VERSION } from '@osu-idle/shared/version';
+import { requireAdmin } from '../auth/admin';
+import {
+	adoptionBreakdown,
+	presenceCount,
+} from '../ws/presence';
 
 export const statsRoutes = new Hono()
 	.get('/general', async c => c.json({
@@ -19,4 +24,12 @@ export const statsRoutes = new Hono()
 	}))
 	.get('/recent', async c => c.json(await getStats()))
 	.get('/version', async c => c.json(VERSION))
+	.get('/admin', requireAdmin, async c => c.json({
+		serverVersion: VERSION,
+		online: await presenceCount(),
+		playing: await getPlaying(),
+		players: (await db.select({ nb: max(characters.id) }).from(characters))[0].nb ?? 0,
+		scores: (await db.select({ nb: max(scores.id) }).from(scores))[0].nb ?? 0,
+		adoption: await adoptionBreakdown(),
+	}))
 ;

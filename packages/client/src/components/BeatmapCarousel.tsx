@@ -16,6 +16,7 @@ import LightBeatmapSet from '../osu/beatmap/LightBeatmapSet';
 import { music } from '../audio/MusicPlayer';
 import Controls from '../input/Controls';
 import RightClick from '../input/RightClick';
+import type { BeatmapXPInsight } from '../xpInsights';
 
 export type DownloadStatus = 'idle' | 'downloading' | 'done';
 
@@ -60,6 +61,8 @@ interface Props {
 	loading: boolean
 	/** download state keyed by set .osz stem */
 	downloads: Record<number, DownloadState>
+	/** per-difficulty XP gain indicators; undefined while loading or locked */
+	xpInsights?: Map<number, BeatmapXPInsight>
 	/** total difficulties matching the search (for the footer; ignores collapse) */
 	totalCount: number
 }
@@ -140,6 +143,7 @@ export default function BeatmapCarousel({
 	hasDownloaded,
 	loading,
 	downloads,
+	xpInsights,
 	totalCount,
 }: Props) {
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -464,6 +468,7 @@ export default function BeatmapCarousel({
 							onCardDoubleClick={onCardDoubleClick}
 							hasDownloaded={hasDownloaded}
 							downloads={downloads}
+							xpInsight={xpInsights?.get(row.item.beatmap.metadata.id)}
 						/>,
 				)}
 

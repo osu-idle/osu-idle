@@ -14,6 +14,7 @@ import { getUser } from '../../api/users';
 import Flag from '../../components/Flag';
 import ProfilePicture from '../../components/ProfilePicture';
 import EditableProfilePicture from '../../components/EditableProfilePicture';
+import CharacterName from '../../components/character/CharacterName';
 import {
 	refreshCurrentUser,
 	useCurrentUser,
@@ -79,7 +80,12 @@ export default function CharacterPage({ id, character, stats }: {
 					: <ProfilePicture avatarUrl={character.avatarUrl} className='character__avatar' />}
 				<div className='character__meta'>
 					<div className='character__meta-up'>
-						<div className='character__meta-name'>{character.name}</div>
+						<CharacterName
+							key={id}
+							name={character.name}
+							formerNames={character.formerNames}
+							editable={isSelf}
+						/>
 					</div>
 					<div className='character__meta-down'>
 						<div className='character__meta-flag'><Flag country={user.country} /></div>
@@ -151,9 +157,10 @@ export default function CharacterPage({ id, character, stats }: {
 					}} /></div>
 					<ul className='skills'>
 						{Object.entries(extractSkills(character))
-							.map(([skill, progress]) => <SkillBar 
+							.map(([skill, progress]) => <SkillBar
+								key={skill}
 								skill={skill as SkillName}
-								progress={progress} 
+								progress={progress}
 							/>)}
 					</ul>
 				</div>
@@ -167,7 +174,9 @@ export default function CharacterPage({ id, character, stats }: {
 							</div>
 						</div>
 						<div className='character__best_pp'>
-							{bestpp?.map(score => <ScoreRow score={score.best_pp} beatmap={score.beatmap} />)}
+							{bestpp?.map(score => (
+								<ScoreRow key={score.best_pp.id} score={score.best_pp} beatmap={score.beatmap} />
+							))}
 						</div>
 					</div>
 					<div className='character__block-section'>
@@ -178,7 +187,9 @@ export default function CharacterPage({ id, character, stats }: {
 							</div>
 						</div>
 						<div className='character__first_places'>
-							{firstplaces?.map(score => <ScoreRow score={score.first_place} beatmap={score.beatmap} />)}
+							{firstplaces?.map(score => (
+								<ScoreRow key={score.first_place.id} score={score.first_place} beatmap={score.beatmap} />
+							))}
 						</div>
 					</div>
 					<div className='character__block-section'>
@@ -189,7 +200,9 @@ export default function CharacterPage({ id, character, stats }: {
 							</div>
 						</div>
 						<div className='character__first_places'>
-							{recentscores?.map(score => <ScoreRow score={score.score} beatmap={score.beatmap} />)}
+							{recentscores?.map(score => (
+								<ScoreRow key={score.score.id} score={score.score} beatmap={score.beatmap} />
+							))}
 						</div>
 					</div>
 				</div>
@@ -202,7 +215,7 @@ export default function CharacterPage({ id, character, stats }: {
 							</div>
 						</div>
 						<div className='character__mostplayed'>
-							{mostplayed?.map(mp => <div className='mostplayed__container'>
+							{mostplayed?.map(mp => <div key={mp.beatmap.id} className='mostplayed__container'>
 								<div className='mostplayed__bg' style={{ backgroundImage: `url('https://assets.ppy.sh/beatmaps/${mp.beatmapset.id}/covers/list.jpg')` }}></div>
 								<div className='mostplayed__bm'>
 									<div className='mostplayed__bminfo'>

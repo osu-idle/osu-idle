@@ -87,6 +87,14 @@ msgstr "Best Performance"
 msgid "by {0}"
 msgstr "by {0}"
 
+#: src/components/EditableCharacterName.tsx
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/components/EditableCharacterName.tsx
+msgid "Change username"
+msgstr "Change username"
+
 #: src/routes/c/$id.tsx
 msgid "character info"
 msgstr "character info"
@@ -94,6 +102,11 @@ msgstr "character info"
 #: src/pages/PublicLanding.tsx
 msgid "characters"
 msgstr "characters"
+
+#: src/Header.tsx
+#: src/routes/admin/chat.tsx
+msgid "chat console"
+msgstr "chat console"
 
 #: src/pages/Login.tsx
 msgid "Connect your osu! account to appear in the leaderboards."
@@ -145,6 +158,11 @@ msgstr "FAQ"
 #: src/pages/characters/CharacterPage.tsx
 msgid "First Place Ranks"
 msgstr "First Place Ranks"
+
+#. placeholder {0}: names.join(', ')
+#: src/components/FormerNames.tsx
+msgid "formerly known as {0}"
+msgstr "formerly known as {0}"
 
 #: src/Header.tsx
 #: src/pages/rankings/RankingsNav.tsx
@@ -361,6 +379,10 @@ msgstr "Return to osu!idle"
 #: src/Footer.tsx
 msgid "Rules"
 msgstr "Rules"
+
+#: src/components/EditableCharacterName.tsx
+msgid "Save"
+msgstr "Save"
 
 #: src/components/character/CharacterRanks.tsx
 msgid "Score Ranking"

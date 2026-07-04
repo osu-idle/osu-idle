@@ -184,6 +184,87 @@
 	pointer-events: none;
 }
 
+/* background-play banner: a play left running after quitting without abort.
+   Popup-styled (see Popups.css); click anywhere on it to resume spectating.
+   Top-center, over the top bar (its middle is empty between the metadata on
+   the left and the sort/group controls on the right). */
+.spectate-banner {
+	position: absolute;
+	left: 50%;
+	top: 0.8rem;
+	z-index: 50;
+	max-width: 380px;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	text-align: left;
+	border-radius: 10px;
+	padding: 8px 12px 12px;
+	background: #000000c0;
+	font-weight: 100;
+	border: 1px solid var(--osu-pink);
+	box-shadow: 0 0 20px rgba(255, 102, 171, 0.4);
+	cursor: pointer;
+	transform: translateX(-50%);
+	animation: spectate-banner-in 0.28s ease both;
+}
+.spectate-banner:hover {
+	border-color: white;
+}
+@keyframes spectate-banner-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -20px);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
+}
+
+.spectate-banner__label {
+	font-size: 20px;
+}
+
+.spectate-banner__map {
+	font-size: 14px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.spectate-banner__map span {
+	color: var(--osu-pink-light);
+}
+
+.spectate-banner__stats {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 16px;
+	padding: 2px 0;
+}
+.spectate-banner__grade {
+	height: 26px;
+	width: auto;
+	filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6));
+}
+
+.spectate-banner__hint {
+	font-size: 12px;
+	color: var(--text-dim);
+}
+
+.spectate-banner__progress {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	height: 3px;
+	background: var(--osu-pink, #ff66ab);
+	box-shadow: 0 0 8px rgba(255, 102, 171, 0.8);
+	transition: width 1s linear;
+}
+
 .game__botbar {
 	position: relative;
 	width: 100%;
@@ -507,31 +588,6 @@
 	border-color: rgba(255, 102, 171, 0.5);
 }
 
-.game__toast {
-	position: absolute;
-	left: 50%;
-	bottom: 6.5rem;
-	transform: translateX(-50%);
-	z-index: 40;
-	padding: 0.8rem 1.4rem;
-	border-radius: 999px;
-	background: rgba(255, 102, 171, 0.92);
-	color: #fff;
-	font-weight: 700;
-	font-size: 0.95rem;
-	box-shadow: 0 10px 36px rgba(255, 102, 171, 0.5);
-	animation: toast-in 0.3s ease both;
-}
-@keyframes toast-in {
-	from {
-		opacity: 0;
-		transform: translate(-50%, 12px);
-	}
-	to {
-		opacity: 1;
-		transform: translate(-50%, 0);
-	}
-}
 .game__exit {
 	height: 110px;
 	justify-self: start;

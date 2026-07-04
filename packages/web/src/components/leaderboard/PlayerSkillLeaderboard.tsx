@@ -28,6 +28,7 @@ export default function PlayerSkillLeaderboard({ page, sort, country, players }:
 		<div className='player__lb_sort'>
 			<span><Trans>Sort by</Trans></span>
 			{SkillSorts.map(type => <Link
+				key={type}
 				to='/rankings/skills/$skill'
 				params={{ skill: type }}
 				search={{
@@ -38,24 +39,30 @@ export default function PlayerSkillLeaderboard({ page, sort, country, players }:
 			</Link>)}
 		</div>
 
-		<table className='player__lb_listing player__lb_listing_skill'>
-			<thead>
-				<th></th>
-				<th></th>
-				{SkillSorts.map(s => <th className={sort === SKILL_SORT[s] ? 'current' : ''}>{skillName(s)}</th>)}
-			</thead>
-			<tbody>
-				{players.map((player, r) => <tr>
-					<td>{rank(r+1+((page - 1) * 50))}</td>
-					<td className='main'><div className='player__lb_listing_main'>
-						<Flag country={player.user.country} />
-						<Link to='/c/$id' params={{ id: String(player.character.id) }}>{player.character.name}</Link>
-					</div></td>
-					{SkillSorts.map(s => <td className={sort === SKILL_SORT[s] ? '' : 'dimmed'}>
-						{level(player.character[`${s}Level`], player.character[`${s}Xp`])}
-					</td>)}
-				</tr>)}
-			</tbody>
-		</table>
+		<div className='player__lb_scroll'>
+			<table className='player__lb_listing player__lb_listing_skill'>
+				<thead>
+					<tr>
+						<th></th>
+						<th></th>
+						{SkillSorts.map(s => <th key={s} className={sort === SKILL_SORT[s] ? 'current' : ''}>
+							{skillName(s)}
+						</th>)}
+					</tr>
+				</thead>
+				<tbody>
+					{players.map((player, r) => <tr key={player.character.id}>
+						<td>{rank(r+1+((page - 1) * 50))}</td>
+						<td className='main'><div className='player__lb_listing_main'>
+							<Flag country={player.user.country} />
+							<Link to='/c/$id' params={{ id: String(player.character.id) }}>{player.character.name}</Link>
+						</div></td>
+						{SkillSorts.map(s => <td key={s} className={sort === SKILL_SORT[s] ? 'current' : 'dimmed'}>
+							{level(player.character[`${s}Level`], player.character[`${s}Xp`])}
+						</td>)}
+					</tr>)}
+				</tbody>
+			</table>
+		</div>
 	</div>);
 }

@@ -3,26 +3,23 @@ import {
 	Trans,
 	useLingui,
 } from '@lingui/react/macro';
-import Controls from '../input/Controls';
-import SceneManager, { SCENE } from './SceneManager';
+import { openPage } from '../globals';
 import Page from '../components/page/Page';
 import ManageAddonsView from '../components/addons/ManageAddonsView';
 import BrowseAddonsView from '../components/addons/BrowseAddonsView';
 
 export type AddonsView = 'manage' | 'browse';
 
-/** The add-ons scene: manage installed / authored add-ons, or browse the catalog. */
+/** The add-ons page: manage installed / authored add-ons, or browse the catalog. */
 export default function Addons({ view: initial }: { view: AddonsView }) {
 	const { t } = useLingui();
 
-	const back = () => SceneManager.set(SCENE.MENU);
-	Controls.back.usePress(back);
+	const back = () => openPage.set(undefined);
 
 	return (
 		<Page
 			title={<Trans>Add-ons</Trans>}
 			onBack={back}
-			backLabel={<Trans>Back to Menu</Trans>}
 			initialTab={initial}
 			tabs={[
 				{

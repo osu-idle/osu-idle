@@ -1,7 +1,12 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { eq } from 'drizzle-orm';
-import { onboardingBody } from '@osu-idle/shared/onboarding';
+import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
+import {
+	characterNameBody,
+	onboardingBody,
+} from '@osu-idle/shared/onboarding';
 import {
 	db,
 	farmPool,
@@ -19,6 +24,13 @@ import { env } from '../env';
 import { publish } from '../discord/publish';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 import { reindexCharacter } from '../rankings';
+import { characterNameHistory } from '../db/schema/name_history';
+
+// Re-throw the ZodError so the app's onError returns the standard shape.
+const jsonBody = <T extends z.ZodType>(schema: T) =>
+	zValidator('json', schema, result => {
+		if (!result.success) throw result.error;
+	});
 
 /** The signed-in account's own character (created during first-login onboarding). */
 export const meRoutes = new Hono()
@@ -48,23 +60,7 @@ export const meRoutes = new Hono()
 			.limit(1);
 		if (existing) throw new HTTPException(409, { message: 'Character already exists' });
 
-		const [existingName] = await db
-			.select({ name: characters.name })
-			.from(characters)
-			.where(eq(characters.name, body.name))
-			.limit(1);
-		if (existingName) throw new HTTPException(409, { message: 'Name already taken' });
-
-		const [results1] = await statsPool.promise().query<RowDataPacket[]>(
-			'SELECT * FROM osu_user WHERE osu_id != ? AND username = ?', 
-			[userId, body.name]);
-		const [results2] = await farmPool.promise().query<RowDataPacket[]>(
-			'SELECT * FROM user WHERE osu_id != ? AND username = ?', 
-			[userId, body.name]);
-
-		if ((results1 && results1.length) || (results2 && results2.length)) {
-			throw new HTTPException(403, { message: 'Name is reserved' });
-		}
+		await assertNameAvailable(userId, body.name);
 
 		// Always a fresh character - skill/profile columns default to zero, and
 		// local Guest progress is no longer migrated online.
@@ -101,6 +97,34 @@ export const meRoutes = new Hono()
 		return c.json(characterToDTO(row!, user.avatarUrl, user.country), 201);
 	})
 
+	// Rename the account's current character (same rules as creation). The old
+	// name is kept permanently in the character's name history.
+	.post('/username', requireAuth, jsonBody(characterNameBody), async c => {
+		const userId = c.get('userId');
+		const { name } = c.req.valid('json');
+
+		const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+		if (!user?.currentCharacter) throw new HTTPException(409, { message: 'No character' });
+
+		const [row] = await db
+			.select()
+			.from(characters)
+			.where(eq(characters.id, user.currentCharacter))
+			.limit(1);
+		if (!row) throw new HTTPException(409, { message: 'No character' });
+
+		if (name !== row.name) {
+			await assertNameAvailable(userId, name, row.id);
+			await db.insert(characterNameHistory).values({
+				characterId: row.id, name: row.name,
+			});
+			await db.update(characters).set({ name }).where(eq(characters.id, row.id));
+			row.name = name;
+		}
+
+		return c.json(characterToDTO(row, user.avatarUrl, user.country));
+	})
+
 	// Upload a custom profile picture for the account's current character,
 	// overriding its osu! avatar. Returns the updated character.
 	.post('/avatar', requireAuth, async c => {
@@ -114,6 +138,30 @@ export const meRoutes = new Hono()
 		return c.json(await setCurrentCharacterAvatar(c.get('userId'), null));
 	})
 ;
+
+/** Reject a name already used by another character (`excludeCharacterId` is the
+ *  caller's own, for renames) or reserved by another osu! account. */
+const assertNameAvailable = async (userId: number, name: string, excludeCharacterId?: number) => {
+	const [existingName] = await db
+		.select({ id: characters.id })
+		.from(characters)
+		.where(eq(characters.name, name))
+		.limit(1);
+	if (existingName && existingName.id !== excludeCharacterId) {
+		throw new HTTPException(409, { message: 'Name already taken' });
+	}
+
+	const [results1] = await statsPool.promise().query<RowDataPacket[]>(
+		'SELECT * FROM osu_user WHERE osu_id != ? AND username = ?',
+		[userId, name]);
+	const [results2] = await farmPool.promise().query<RowDataPacket[]>(
+		'SELECT * FROM user WHERE osu_id != ? AND username = ?',
+		[userId, name]);
+
+	if ((results1 && results1.length) || (results2 && results2.length)) {
+		throw new HTTPException(403, { message: 'Name is reserved' });
+	}
+};
 
 /** Set the account's current character avatar and return the resolved character DTO. */
 async function setCurrentCharacterAvatar(userId: number, url: string | null) {

@@ -15,3 +15,18 @@ export const billionsMessage = (
 	name: string,
 	score: number,
 ): string => `${name} achieved a total ranked score of ${num(score)} !`;
+
+export const ppsMessage = (
+	name: string,
+	pp: number,
+): string => `${name} has reached ${num(pp)}pp !`;
+
+export const skillLevelMessage = (
+	name: string,
+	skill: string,
+	level: number,
+): string => `${name} has reached ${skill} level ${level} !`;
+
+/** Announced skill levels: every 10th, then every one from 100 up. */
+export const isSkillLevelMilestone = (level: number): boolean =>
+	level >= 100 || (level > 0 && level % 10 === 0);

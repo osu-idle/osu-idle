@@ -42,7 +42,7 @@ export default function DesktopUpdate() {
 		case 'downloading':
 			body = <>
 				<div className="dupdate__bar-fill" style={{ width: `${status.percent}%` }} />
-				<span><Trans>Downloading update…</Trans></span>
+				<span><Trans>Downloading update… {status.percent}%</Trans></span>
 			</>;
 			break;
 		case 'error':

@@ -7,6 +7,10 @@ import {
 	CLIENT_STATUS,
 	presenceEntryDTO,
 } from './presence.js';
+import {
+	playClientMessages,
+	playServerMessages,
+} from '../play.js';
 
 /** The default channel every signed-in player joins. */
 export const DEFAULT_CHANNEL = '#osu!idle';
@@ -15,6 +19,7 @@ export const DEFAULT_CHANNEL = '#osu!idle';
 export const MAX_CHAT_LENGTH = 2000;
 
 const chatLineBase = {
+	id: z.string(), // server-assigned, stable across history + live so a delete can target it
 	channel: z.string(),
 	text: z.string(),
 	at: z.number().int(), // epoch ms
@@ -56,6 +61,13 @@ export const clientMessage = z.discriminatedUnion('type', [
 		type: z.literal('status'),
 		status: z.enum(values(CLIENT_STATUS)),
 	}),
+	// The client's own build and platform, reported on connect so the server can
+	// tally live version adoption (and web vs desktop split) across clients.
+	z.object({
+		type: z.literal('version'),
+		version: z.string().max(32),
+		platform: z.enum(['web', 'desktop']).optional(),
+	}),
 	z.object({
 		type: z.literal('subscribe'),
 		channel: z.string(),
@@ -64,6 +76,7 @@ export const clientMessage = z.discriminatedUnion('type', [
 		type: z.literal('unsubscribe'),
 		channel: z.string(),
 	}),
+	...playClientMessages,
 ]);
 export type ClientMessage = z.infer<typeof clientMessage>;
 export type ClientMessageType = ValueIn<{ [M in ClientMessage as M['type']]: M['type'] }>;
@@ -93,13 +106,28 @@ export const serverMessage = z.discriminatedUnion('type', [
 		type: z.literal('chat'),
 		line: chatLineDTO,
 	}),
+	// Moderation: replace these lines' text with a deleted marker, live. Sent when
+	// an admin deletes messages (or times out / bans, which also deletes).
+	z.object({
+		type: z.literal('chat:delete'),
+		channel: z.string(),
+		ids: z.array(z.string()),
+	}),
 	z.object({
 		type: z.literal('online'),
 		count: z.number().int().min(0),
+	}),
+	// The server's running version, pushed on connect. A version bump only ships
+	// by restarting the server (which drops the socket), so a reconnect carrying
+	// a different version is itself the "update available" signal - no polling.
+	z.object({
+		type: z.literal('version'),
+		version: z.string(),
 	}),
 	z.object({
 		type: z.literal('error'),
 		message: z.string(),
 	}),
+	...playServerMessages,
 ]);
 export type ServerMessage = z.infer<typeof serverMessage>;

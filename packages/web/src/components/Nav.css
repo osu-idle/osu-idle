@@ -26,6 +26,23 @@
 	cursor: pointer;
 }
 
+@media (max-width: 760px) {
+	.nav__container {
+		height: auto;
+		min-height: 48px;
+	}
+
+	.nav__list {
+		flex-wrap: wrap;
+		column-gap: 15px;
+		row-gap: 0;
+	}
+
+	.nav__item {
+		padding: 12px 0;
+	}
+}
+
 .nav__item:hover::before,
 .nav__item.current::before {
 	background-color: hsl(var(--hsl-h1));

@@ -152,6 +152,9 @@ export const ingestOsz = async (buffer: Buffer): Promise<IngestResult> => {
 		rows.push({
 			id: decoded.metadata.beatmapId,
 			setId,
+			// Only 4K is playable - anything else lands (and stays) unranked. The
+			// intro is standard-mode and must be live, so it's exempt.
+			ranked: keys === 4 || setId === INTRO_SET_ID,
 			sr: String(Math.round(sr * 1000) / 1000),
 			artist: decoded.metadata.artist,
 			title: decoded.metadata.title,

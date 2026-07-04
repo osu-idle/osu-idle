@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Nomination } from '../../api/maps';
+import NominationDiffs from './NominationDiffs';
 import { phaseOf } from './nominationStatus';
 
 /** ISO timestamp -> value for an <input type="datetime-local"> (local time). */
@@ -24,16 +25,17 @@ const WINDOWS: [label: string, ms: number][] = [
 	['month', 30 * 24 * HOUR],
 ];
 
-export default function NominationRow({ row, busy, onPatch, onDelete }: {
+export default function NominationRow({ row, busy, onPatch, onToggleDiff, onDelete }: {
 	row: Nomination;
 	busy: boolean;
 	onPatch: (
-		setId: number, 
-		body: { 
-			rankedAt?: string | null; 
+		setId: number,
+		body: {
+			rankedAt?: string | null;
 			status?: 'pending' | 'ranked' | 'rejected'
 		}
 	) => void;
+	onToggleDiff: (setId: number, beatmapId: number, ranked: boolean) => void;
 	onDelete: (setId: number) => void;
 }) {
 	const [date, setDate] = useState(toLocalInput(row.rankedAt));
@@ -51,9 +53,12 @@ export default function NominationRow({ row, busy, onPatch, onDelete }: {
 		onPatch(row.id, {
 			rankedAt: new Date(Date.now() + Math.random() * ms).toISOString(), status: 'ranked', 
 		});
-	const unrank = () => onPatch(row.id, {
-		status: 'pending', rankedAt: null, 
-	});
+	const unrank = () =>
+		confirm('Unrank this set? All scores and progression earned on its '
+			+ 'difficulties will be permanently deleted.')
+		&& onPatch(row.id, {
+			status: 'pending', rankedAt: null,
+		});
 	const reject = () => onPatch(row.id, { status: 'rejected' });
 
 	return (
@@ -71,7 +76,7 @@ export default function NominationRow({ row, busy, onPatch, onDelete }: {
 
 				<div className='nomination__stat'>
 					<span className='nomination__label'>Diffs</span>
-					<span>{row.difficulties}</span>
+					<span>{row.diffs.filter(d => d.ranked).length}/{row.diffs.length}</span>
 				</div>
 				<div className='nomination__stat'>
 					<span className='nomination__label'>Plays</span>
@@ -94,6 +99,14 @@ export default function NominationRow({ row, busy, onPatch, onDelete }: {
 						/>}
 				</div>
 			</div>
+
+			<NominationDiffs
+				setId={row.id}
+				diffs={row.diffs}
+				busy={busy}
+				live={live}
+				onToggle={(beatmapId, ranked) => onToggleDiff(row.id, beatmapId, ranked)}
+			/>
 
 			<div className='nomination__actions'>
 				{!live && (

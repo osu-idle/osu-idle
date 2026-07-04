@@ -1,7 +1,10 @@
 import '@osu-idle/shared/osu/controlPointPatch';
 import Synced from '@osu-idle/shared/helpers/synced';
 import { Unzipped } from 'fflate';
-import { Metadata } from './beatmap_api';
+import {
+	Manifest,
+	Metadata,
+} from './beatmap_api';
 import { Beatmap } from 'osu-classes';
 import { BeatmapDecoder } from 'osu-parsers';
 import type LightBeatmap from './LightBeatmap';
@@ -32,9 +35,28 @@ function mime(name: string): string {
 // separator, while zip entries use /. Normalize both when storing and reading so
 // a reference resolves regardless of separator/case - this only matches keys, it
 // never alters the stored bytes or the path inside the chart.
+const normalizeName = (name: string) => name.toLowerCase().replace(/\\/g, '/');
+
 function fileKey(setId: number, name: string): string {
-	return `${setId}/${name.toLowerCase().replace(/\\/g, '/')}`;
+	return `${setId}/${normalizeName(name)}`;
 }
+
+/** Audio names (normalized) among `candidates` that nothing kept still uses:
+ *  not a kept version's song audio, and not mentioned by name in any kept chart
+ *  or storyboard text (keysounds / storyboard samples). Those need not be
+ *  stored - song audio is the heaviest asset and mobile storage is tight. */
+const orphanedAudio = (
+	candidates: Iterable<string>,
+	keptAudio: Set<string>,
+	texts: string[],
+): string[] => {
+	const lower = texts.map(text => text.toLowerCase());
+	return [...new Set(candidates)].filter(audio => {
+		if (!audio || keptAudio.has(audio)) return false;
+		const bare = audio.split('/').pop()!;
+		return !lower.some(text => text.includes(bare));
+	});
+};
 
 // Discriminate a LightBeatmap from a decoded Beatmap structurally rather than
 // with `instanceof`, which is fragile across dev HMR / circular imports: a stale
@@ -316,16 +338,22 @@ export default class BeatmapStore {
 			background: metadata.background ?? '',
 		};
 
+		const keptAudio = new Set<string>();
+		const droppedAudio = new Set<string>();
+
 		const osu = Object.keys(files)
 			.filter(file => file.toLowerCase().endsWith('.osu'))
 			.reduce((set, file) => {
 				const text = decoder.decode(files[file]);
 				const beatmap = (new BeatmapDecoder()).decodeFromString(text);
 				const meta = metadata.versions.find(v => v.id === beatmap.metadata.beatmapId);
+				const audio = beatmap.general.audioFilename;
 
 				if (!meta) {
+					if (audio) droppedAudio.add(normalizeName(audio));
 					return set;
 				}
+				if (audio) keptAudio.add(normalizeName(audio));
 
 				set[beatmap.metadata.beatmapId] = text;
 
@@ -353,6 +381,14 @@ export default class BeatmapStore {
 				return set;
 			}, {} as Record<number, string>);
 
+		// Audio only the dropped (not in the catalog = unranked) charts use.
+		const osbTexts = Object.keys(files)
+			.filter(name => name.toLowerCase().endsWith('.osb'))
+			.map(name => decoder.decode(files[name]));
+		const skippedAudio = new Set(orphanedAudio(
+			droppedAudio, keptAudio, [...Object.values(osu), ...osbTexts],
+		));
+
 		const d = await db();
 		await new Promise<void>((resolve, reject) => {
 			const tx = d.transaction(['meta', 'charts', 'files'], 'readwrite');
@@ -363,11 +399,13 @@ export default class BeatmapStore {
 			tx.objectStore('charts').put(osu, metadata.id);
 
 			// store every bundled asset (keysounds, storyboard samples, video, .osb)
-			// except the charts, which live in `charts`. Paths are kept verbatim so
-			// references resolve against the original archive structure.
+			// except the charts, which live in `charts`, and audio no kept chart
+			// uses. Paths are kept verbatim so references resolve against the
+			// original archive structure.
 			const fs = tx.objectStore('files');
 			for (const name of Object.keys(files)) {
 				if (name.toLowerCase().endsWith('.osu')) continue;
+				if (skippedAudio.has(normalizeName(name))) continue;
 				fs.put(
 					new Blob([files[name]], { type: mime(name) }),
 					fileKey(metadata.id, name),
@@ -378,6 +416,73 @@ export default class BeatmapStore {
 		return {
 			setId: metadata.id, metadata: runtimeMetadata, osu, 
 		};
+	}
+
+	/** Drop stored versions the live catalog no longer lists (diffs unranked
+	 *  after download), so they disappear like they never existed. Sets absent
+	 *  from the catalog entirely are kept: that's the unranked-set local
+	 *  fallback, not a diff toggle. */
+	public static async pruneToManifest(manifest: Manifest): Promise<void> {
+		const listed = new Map<number, Set<number>>();
+		const index = (set: { id: number; versions: { id: number }[] } | undefined) =>
+			set && listed.set(set.id, new Set(set.versions.map(v => v.id)));
+		index(manifest.intro);
+		manifest.beatmaps.forEach(index);
+
+		const d = await db();
+		const metas = await withStore(d, 'meta', 'readonly',
+			(s) => s.getAll(),
+		) as RuntimeMetadata[];
+
+		let changed = false;
+		for (const meta of metas) {
+			const keep = listed.get(meta.id);
+			if (!keep) continue;
+
+			// The catalog lists a version we don't hold (a re-ranked diff whose
+			// chart/audio a past prune removed, or a diff added by re-upload):
+			// downloads early-return on stored sets, so drop the whole set and let
+			// it re-download complete on next selection.
+			const stored = new Set(meta.versions.map(v => v.id));
+			if ([...keep].some(id => !stored.has(id))) {
+				await this.deleteSet(meta.id);
+				continue;
+			}
+
+			if (meta.versions.every(v => keep.has(v.id))) continue;
+
+			const dropped = meta.versions.filter(v => !keep.has(v.id));
+			meta.versions = meta.versions.filter(v => keep.has(v.id));
+			const osu = await withStore(d, 'charts', 'readonly',
+				(s) => s.get(meta.id),
+			) as Record<number, string> | undefined;
+			if (osu) {
+				for (const id of Object.keys(osu)) {
+					if (!keep.has(Number(id))) delete osu[Number(id)];
+				}
+			}
+
+			// Audio only the dropped versions used goes too (mobile storage).
+			const texts = Object.values(osu ?? {});
+			const osb = await this.getOsbText(meta.id);
+			if (osb) texts.push(osb);
+			const staleAudio = orphanedAudio(
+				dropped.map(v => normalizeName(v.audio)),
+				new Set(meta.versions.map(v => normalizeName(v.audio))),
+				texts,
+			).map(name => fileKey(meta.id, name));
+
+			await new Promise<void>((resolve, reject) => {
+				const tx = d.transaction(['meta', 'charts', 'files'], 'readwrite');
+				tx.oncomplete = () => resolve();
+				tx.onerror = () => reject(tx.error);
+				tx.objectStore('meta').put(meta);
+				if (osu) tx.objectStore('charts').put(osu, meta.id);
+				for (const key of staleAudio) tx.objectStore('files').delete(key);
+			});
+			changed = true;
+		}
+		if (changed) void beatmapsVersion.set(beatmapsVersion.get() + 1);
 	}
 
 	public static async has(setId: number): Promise<boolean> {

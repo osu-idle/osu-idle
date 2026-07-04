@@ -3,26 +3,23 @@ import {
 	Trans,
 	useLingui,
 } from '@lingui/react/macro';
-import Controls from '../input/Controls';
-import SceneManager, { SCENE } from './SceneManager';
+import { openPage } from '../globals';
 import Page from '../components/page/Page';
 import ManageSkinsView from '../components/skins/ManageSkinsView';
 import BrowseSkinsView from '../components/skins/BrowseSkinsView';
 
 export type SkinsView = 'manage' | 'browse';
 
-/** The add-ons scene: manage installed / authored add-ons, or browse the catalog. */
+/** The skins page: manage installed / authored skins, or browse the catalog. */
 export default function Skins({ view: initial }: { view: SkinsView }) {
 	const { t } = useLingui();
 
-	const back = () => SceneManager.set(SCENE.MENU);
-	Controls.back.usePress(back);
+	const back = () => openPage.set(undefined);
 
 	return (
 		<Page
 			title={<Trans>Skins</Trans>}
 			onBack={back}
-			backLabel={<Trans>Back to Menu</Trans>}
 			initialTab={initial}
 			tabs={[
 				{

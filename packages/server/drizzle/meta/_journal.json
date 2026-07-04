@@ -211,6 +211,34 @@
       "when": 1782398457137,
       "tag": "0029_closed_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "5",
+      "when": 1783018494632,
+      "tag": "0030_past_gertrude_yorkes",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "5",
+      "when": 1783063252685,
+      "tag": "0031_careful_master_mold",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1783064536332,
+      "tag": "0032_unrank-non-4k",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1783200515569,
+      "tag": "0033_overjoyed_tag",
+      "breakpoints": true
     }
   ]
 }

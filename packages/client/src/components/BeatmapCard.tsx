@@ -20,6 +20,8 @@ import { currentSkin } from '../osu/skin/Skin';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { SETTINGS } from '../db/settings';
+import BeatmapCardXP from './BeatmapCardXP';
+import type { BeatmapXPInsight } from '../xpInsights';
 
 /** max gap between two clicks on the same card to count as a double-click */
 const DOUBLE_CLICK_MS = 300;
@@ -44,12 +46,14 @@ type Props = {
 	hasDownloaded: boolean
 
 	downloads: Record<number, DownloadState>
+	/** XP gained on the last play of this difficulty, when the feature is unlocked */
+	xpInsight?: BeatmapXPInsight
 };
 
 export default function BeatmapCard({
 	beatmap, set,
 	onCardClick, onCardDoubleClick, hasDownloaded,
-	downloads,
+	downloads, xpInsight,
 }: Props) {
 	const [skin] = useSynced(currentSkin);
 
@@ -134,6 +138,8 @@ export default function BeatmapCard({
 					</div>
 				</div>
 			</div>
+
+			<BeatmapCardXP insight={xpInsight} />
 
 			{downloading && (
 				<span

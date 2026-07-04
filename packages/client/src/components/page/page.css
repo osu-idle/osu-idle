@@ -11,15 +11,6 @@
 	background: radial-gradient(circle at 60% 22%, #1a1420 0%, #07060a 85%);
 	color: var(--text);
 	font-weight: 300;
-	animation: page-in 0.35s ease both;
-}
-@keyframes page-in {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
 }
 
 /* ---- skewed osu! tabs ---- */

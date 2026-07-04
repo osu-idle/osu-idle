@@ -4,6 +4,7 @@ import {
 } from 'react';
 import { Trans } from '@lingui/react/macro';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
+import compareVersions from '@osu-idle/shared/helpers/compareVersions';
 import Auth from '../../online/auth';
 import PageBarActions from '../page/PageBarActions';
 import { currentSkinDAO } from '../../osu/skin/Skin';
@@ -22,15 +23,6 @@ import { install } from './BrowseSkinsView';
 import SkinDAORow from './SkinDAORow';
 
 type Editing = { skin?: SkinDTO };
-
-/** Compare two `1.2.3` strings: true when `b` is strictly newer than `a`. */
-const isNewer = (a: string, b: string): boolean => {
-	const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
-	for (let i = 0; i < 3; i++) {
-		if ((pb[i] ?? 0) !== (pa[i] ?? 0)) return (pb[i] ?? 0) > (pa[i] ?? 0);
-	}
-	return false;
-};
 
 export default function ManageSkinsView() {
 	const [user] = useSynced(Auth.user);
@@ -118,7 +110,7 @@ export default function ManageSkinsView() {
 						key={a.id}
 						skin={a}
 						busy={busy}
-						hasUpdate={latest[a.id] !== undefined && isNewer(a.version, latest[a.id])}
+						hasUpdate={latest[a.id] !== undefined && compareVersions(latest[a.id], a.version) > 0}
 						onToggle={enabled => run(() => a.setEnabled(enabled))}
 						onDetails={() => setDetails(a)}
 						onUpdate={() => run(async () => {

@@ -1,0 +1,9 @@
+.former-names {
+	margin-left: 8px;
+	font-size: 0.55em;
+	opacity: 0.55;
+	cursor: help;
+}
+.former-names:hover {
+	opacity: 0.9;
+}

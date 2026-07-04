@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-06-29 21:04\n"
+"PO-Revision-Date: 2026-07-04 22:13\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -92,6 +92,14 @@ msgstr "Meilleure performance"
 msgid "by {0}"
 msgstr "par {0}"
 
+#: src/components/EditableCharacterName.tsx
+msgid "Cancel"
+msgstr "Annuler"
+
+#: src/components/EditableCharacterName.tsx
+msgid "Change username"
+msgstr "Changer de pseudo"
+
 #: src/routes/c/$id.tsx
 msgid "character info"
 msgstr "infos du personnnage"
@@ -99,6 +107,11 @@ msgstr "infos du personnnage"
 #: src/pages/PublicLanding.tsx
 msgid "characters"
 msgstr "personnages"
+
+#: src/Header.tsx
+#: src/routes/admin/chat.tsx
+msgid "chat console"
+msgstr "console de chat"
 
 #: src/pages/Login.tsx
 msgid "Connect your osu! account to appear in the leaderboards."
@@ -150,6 +163,11 @@ msgstr "FAQ"
 #: src/pages/characters/CharacterPage.tsx
 msgid "First Place Ranks"
 msgstr "Premières places"
+
+#. placeholder {0}: names.join(', ')
+#: src/components/FormerNames.tsx
+msgid "formerly known as {0}"
+msgstr "anciennement appelé {0}"
 
 #: src/Header.tsx
 #: src/pages/rankings/RankingsNav.tsx
@@ -366,6 +384,10 @@ msgstr "Retourner sur osu!idle"
 #: src/Footer.tsx
 msgid "Rules"
 msgstr "Règles"
+
+#: src/components/EditableCharacterName.tsx
+msgid "Save"
+msgstr "Sauvegarder"
 
 #: src/components/character/CharacterRanks.tsx
 msgid "Score Ranking"

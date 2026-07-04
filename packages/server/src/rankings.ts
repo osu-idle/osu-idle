@@ -285,6 +285,13 @@ export async function reindexBeatmap(characterId: number, beatmapId: number): Pr
 	await pipeline.exec();
 }
 
+/** Drop a beatmap's leaderboard sets (global, per-country and the reverse
+ *  index). For unranking: the map's scores are gone, so the index must go too. */
+export async function unindexBeatmap(beatmapId: number): Promise<void> {
+	await redis.del(beatmapKey(beatmapId));
+	for await (const key of scanKeys(`${PREFIX}bm:${beatmapId}:*`)) await redis.del(key);
+}
+
 /** Rebuild every set from MySQL. One DB pass, pipelined in chunks. */
 export async function rebuildAll(): Promise<void> {
 	for await (const key of scanKeys(`${PREFIX}*`)) await redis.del(key);

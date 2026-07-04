@@ -25,6 +25,7 @@ import {
 	getNbFirstPlaces,
 } from '../db/schema/first_place';
 import { getRecentCharacterScores } from '../db/schema/score';
+import { getFormerNames } from '../db/schema/name_history';
 import { getPlayTime } from '../play';
 import {
 	fatigueXPFactor,
@@ -49,11 +50,14 @@ export const charactersRoutes = new Hono()
 		);
 		const fatigue = fatigueXPFactor(strainTime / 1000);
 
+		const formerNames = (await getFormerNames(id)).filter(n => n !== row.name);
+
 		return c.json({
 			...row,
 			avatarUrl: resolveAvatarUrl(row.avatarUrl, user?.avatarUrl),
 			fatiguePercent: (1 - fatigue),
 			sessionTime: strainTime,
+			formerNames,
 		});
 	})
 

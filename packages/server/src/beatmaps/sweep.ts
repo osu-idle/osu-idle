@@ -34,10 +34,10 @@ export const sweepRankedMaps = async (): Promise<void> => {
 
 		const diffs = await db
 			.select({
-				version: beatmaps.version, sr: beatmaps.sr, 
+				version: beatmaps.version, sr: beatmaps.sr,
 			})
 			.from(beatmaps)
-			.where(eq(beatmaps.setId, set.id));
+			.where(and(eq(beatmaps.setId, set.id), eq(beatmaps.ranked, true)));
 
 		await announceRanked({
 			setId: set.id,

@@ -1,17 +1,38 @@
-import { eq } from 'drizzle-orm';
+import {
+	count,
+	eq,
+	sql,
+	sum,
+} from 'drizzle-orm';
 import { type SkillName } from '@osu-idle/shared/skills';
+import {
+	JUDGEMENT,
+	Judgements,
+} from '@osu-idle/shared/judgement';
 import { db } from './db/client';
 import {
 	characters,
 	getCharacterById,
+	type CharacterRow,
 } from './db/schema/character';
-import { getBeatmapById } from './db/schema/beatmap';
+import {
+	beatmaps,
+	getBeatmapById,
+} from './db/schema/beatmap';
 import { announce } from './ws/chat';
 import { DEFAULT_CHANNEL } from '@osu-idle/shared/community/wire';
 import {
 	billionsMessage,
 	firstPlaceMessage,
+	isSkillLevelMilestone,
+	ppsMessage,
+	skillLevelMessage,
 } from '@osu-idle/shared/community/announcements';
+import { skillName } from '@osu-idle/shared/display/skills';
+import {
+	getSkillMilestones,
+	setSkillMilestone,
+} from './db/schema/skill_milestone';
 import {
 	getScoreById,
 	scores,
@@ -19,6 +40,7 @@ import {
 	type ScoreRow,
 } from './db/schema/score';
 import {
+	best,
 	getBestPlay,
 	setNewBestPlay,
 } from './db/schema/best';
@@ -35,11 +57,19 @@ import {
 	getBestPPPlay,
 	setNewBestPPPlay,
 } from './db/schema/best_pp';
-import { addBeatmapPlayed } from './db/schema/beatmaps_played';
 import {
+	addBeatmapPlayed,
+	beatmaps_played,
+} from './db/schema/beatmaps_played';
+import {
+	firstPlace,
 	getFirstPlace,
 	setNewFirstPlace,
 } from './db/schema/first_place';
+import {
+	reindexCharacter,
+	unindexBeatmap,
+} from './rankings';
 import Overall from '@osu-idle/shared/sim/skills/overall';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 
@@ -61,6 +91,54 @@ export async function recomputePP(characterId: number): Promise<void> {
 		.update(characters)
 		.set({ pp: String(Math.round(pp * 1000) / 1000) })
 		.where(eq(characters.id, characterId));
+}
+
+/**
+ * Erase every trace of a beatmap from player progression: its scores, per-map
+ * bests, first places and play counts, with each affected character's totals,
+ * pp and ranking index rebalanced. Runs when a difficulty (or its whole set)
+ * is unranked. Skill XP is not reverted - there is no per-map XP ledger.
+ */
+export async function purgeBeatmapScores(beatmapId: number): Promise<void> {
+	const beatmap = await getBeatmapById(beatmapId);
+	// playTime accumulated per submitted score, in seconds (see addScoreToTotals)
+	const lengthSec = beatmap ? Math.round(beatmap.total_length / 1000) : 0;
+
+	const nonMiss = Judgements.filter(j => j !== JUDGEMENT.MISS);
+	const perCharacter = await db
+		.select({
+			characterId: scores.characterId,
+			plays: count(),
+			score: sum(scores.score),
+			hits: sql<string | null>`sum(${sql.join(nonMiss.map(j => sql`${scores[j]}`), sql` + `)})`,
+		})
+		.from(scores)
+		.where(eq(scores.beatmapId, beatmapId))
+		.groupBy(scores.characterId);
+
+	for (const row of perCharacter) {
+		const totals = await getCharacterTotals(row.characterId);
+		totals.playCount -= row.plays;
+		totals.totalScore -= Number(row.score ?? 0);
+		totals.hits -= Number(row.hits ?? 0);
+		totals.playTime -= row.plays * lengthSec;
+		const bestRow = await getBestPlay(row.characterId, beatmapId);
+		if (bestRow) removeBestScoreFromTotals(totals, bestRow);
+		await updateCharacterTotals(totals);
+	}
+
+	await db.delete(best).where(eq(best.beatmapId, beatmapId));
+	await db.delete(bestPP).where(eq(bestPP.beatmapId, beatmapId));
+	await db.delete(firstPlace).where(eq(firstPlace.beatmapId, beatmapId));
+	await db.delete(scores).where(eq(scores.beatmapId, beatmapId));
+	await db.delete(beatmaps_played).where(eq(beatmaps_played.beatmapId, beatmapId));
+	await db.update(beatmaps).set({ plays: 0 }).where(eq(beatmaps.id, beatmapId));
+
+	await unindexBeatmap(beatmapId);
+	for (const row of perCharacter) {
+		await recomputePP(row.characterId);
+		await reindexCharacter(row.characterId);
+	}
 }
 
 /** Insert a score and refresh the character's profile aggregates. The single
@@ -101,13 +179,14 @@ export const compareScoresPP = (s1: ScoreRow, s2: ScoreRow) => {
 };
 
 export const checkNewBest = async (totals: CharacterTotalsRow, score: ScoreRow) => {
+	const billionsBefore = Math.floor(totals.rankedScore / 1_000_000_000);
+
 	const best = await getBestPlay(score.characterId, score.beatmapId);
 	if (best) {
 		if (compareScores(best, score)) return;
 		removeBestScoreFromTotals(totals, best);
 	}
 
-	const billionsBefore = Math.floor(totals.rankedScore / 1_000_000_000);
 	addBestScoreToTotals(totals, score);
 	await setNewBestPlay(score);
 
@@ -123,7 +202,15 @@ export const checkNewBestPP = async (score: ScoreRow, recompute = true) => {
 	if (best && compareScoresPP(best, score)) return;
 
 	await setNewBestPPPlay(score);
-	if (recompute) await recomputePP(score.characterId);
+	if (recompute) {
+		const before = await getCharacterById(score.characterId);
+		await recomputePP(score.characterId);
+		const after = await getCharacterById(score.characterId);
+
+		if (Math.floor(Number(after.pp) / 1000) > Math.floor(Number(before.pp) / 1000)) {
+			announcePps(after);
+		}
+	}
 };
 
 export const checkNewFirstPlace = async (score: ScoreRow) => {
@@ -131,6 +218,8 @@ export const checkNewFirstPlace = async (score: ScoreRow) => {
 	if (best && compareScores(best, score)) return;
 
 	await setNewFirstPlace(score);
+	// Beating your own #1 is not news.
+	if (best?.characterId === score.characterId) return;
 	await announceFirstPlace(score);
 };
 
@@ -161,6 +250,50 @@ const announceBillions = async (score: ScoreRow, rankedScore: number) => {
 		billionsMessage(character.name, billions), 
 		'#81e2fa',
 	);
+};
+
+/** Server-announce a new #1 in chat (a "perfect" variant for a max score). */
+const announcePps = async (character: CharacterRow) => {
+	const pps = Math.floor(Number(character.pp) / 1_000) * 1_000;
+	announce(
+		DEFAULT_CHANNEL, 
+		ppsMessage(character.name, pps), 
+		'#fa9981',
+	);
+};
+
+/** Highest announceable level in (from, to], if any was crossed. */
+const highestMilestone = (from: number, to: number) => {
+	for (let level = to; level > from; level--) {
+		if (isSkillLevelMilestone(level)) return level;
+	}
+};
+
+/** Server-announce newly crossed skill level milestones in chat. Announced at
+ *  most once per character ever (tracked in `skill_milestone`), so a level
+ *  reset then re-climb stays silent. */
+const announceSkillLevels = async (
+	character: CharacterRow,
+	levels: { skill: SkillName | 'overall'; from: number; to: number }[],
+) => {
+	const reached = levels.flatMap(({ skill, from, to }) => {
+		const level = highestMilestone(from, to);
+		return level === undefined ? [] : [{
+			skill, level, 
+		}];
+	});
+	if (!reached.length) return;
+
+	const announced = await getSkillMilestones(character.id);
+	for (const { skill, level } of reached) {
+		if (level <= (announced.get(skill) ?? 0)) continue;
+		await setSkillMilestone(character.id, skill, level);
+		announce(
+			DEFAULT_CHANNEL,
+			skillLevelMessage(character.name, skillName(skill), level),
+			'#81fa9b',
+		);
+	}
 };
 
 /** Apply per-skill XP gains to a character, reusing the shared levelling curve.
@@ -220,5 +353,13 @@ export async function applySkillXp(
 	>;
 
 	await db.update(characters).set(updates).where(eq(characters.id, characterId));
+	await announceSkillLevels(row, [
+		...gains.map(g => ({
+			skill: g.skill as SkillName, from: g.fromLevel, to: g.toLevel,
+		})),
+		{
+			skill: 'overall', from: row.overallLevel, to: overall.level.get(),
+		},
+	]);
 	return gains;
 }

@@ -1,0 +1,1 @@
+ALTER TABLE `beatmap` ADD `ranked` boolean DEFAULT true NOT NULL;

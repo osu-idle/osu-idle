@@ -70,7 +70,7 @@ export default function PlayerCard({ character }: { character: PresenceEntry }) 
 				<span className="player-card__name">{character.name}</span>
 				<div className="player-card__meta">
 					<div className='player-card-side recto'>
-						<span className="player-card__sub"><Trans>Performance: {pp}</Trans></span>
+						<span className="player-card__sub"><Trans>Performance: {pp}pp</Trans></span>
 						<span className="player-card__sub"><Trans>Accuracy: {accuracy}</Trans></span>
 						<span className="player-card__sub"><Trans>Play Count: {playCount} (Lv{level})</Trans></span>
 					</div>

@@ -29,6 +29,7 @@ import { Route as AuthDesktopRouteImport } from './routes/auth/desktop'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AdminSkinsRouteImport } from './routes/admin/skins'
 import { Route as AdminNominationRouteImport } from './routes/admin/nomination'
+import { Route as AdminChatRouteImport } from './routes/admin/chat'
 import { Route as AdminBalancingRouteImport } from './routes/admin/balancing'
 import { Route as AdminAddonsRouteImport } from './routes/admin/addons'
 import { Route as RankingsSkillsSkillRouteImport } from './routes/rankings/skills/$skill'
@@ -134,6 +135,11 @@ const AdminNominationRoute = AdminNominationRouteImport.update({
   path: '/admin/nomination',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminChatRoute = AdminChatRouteImport.update({
+  id: '/admin/chat',
+  path: '/admin/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminBalancingRoute = AdminBalancingRouteImport.update({
   id: '/admin/balancing',
   path: '/admin/balancing',
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/maps': typeof MapsRoute
   '/admin/addons': typeof AdminAddonsRoute
   '/admin/balancing': typeof AdminBalancingRoute
+  '/admin/chat': typeof AdminChatRoute
   '/admin/nomination': typeof AdminNominationRoute
   '/admin/skins': typeof AdminSkinsRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/maps': typeof MapsRoute
   '/admin/addons': typeof AdminAddonsRoute
   '/admin/balancing': typeof AdminBalancingRoute
+  '/admin/chat': typeof AdminChatRoute
   '/admin/nomination': typeof AdminNominationRoute
   '/admin/skins': typeof AdminSkinsRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -216,6 +224,7 @@ export interface FileRoutesById {
   '/maps': typeof MapsRoute
   '/admin/addons': typeof AdminAddonsRoute
   '/admin/balancing': typeof AdminBalancingRoute
+  '/admin/chat': typeof AdminChatRoute
   '/admin/nomination': typeof AdminNominationRoute
   '/admin/skins': typeof AdminSkinsRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
     | '/maps'
     | '/admin/addons'
     | '/admin/balancing'
+    | '/admin/chat'
     | '/admin/nomination'
     | '/admin/skins'
     | '/auth/callback'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/maps'
     | '/admin/addons'
     | '/admin/balancing'
+    | '/admin/chat'
     | '/admin/nomination'
     | '/admin/skins'
     | '/auth/callback'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/maps'
     | '/admin/addons'
     | '/admin/balancing'
+    | '/admin/chat'
     | '/admin/nomination'
     | '/admin/skins'
     | '/auth/callback'
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   MapsRoute: typeof MapsRoute
   AdminAddonsRoute: typeof AdminAddonsRoute
   AdminBalancingRoute: typeof AdminBalancingRoute
+  AdminChatRoute: typeof AdminChatRoute
   AdminNominationRoute: typeof AdminNominationRoute
   AdminSkinsRoute: typeof AdminSkinsRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -484,6 +497,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNominationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/chat': {
+      id: '/admin/chat'
+      path: '/admin/chat'
+      fullPath: '/admin/chat'
+      preLoaderRoute: typeof AdminChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/balancing': {
       id: '/admin/balancing'
       path: '/admin/balancing'
@@ -523,6 +543,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapsRoute: MapsRoute,
   AdminAddonsRoute: AdminAddonsRoute,
   AdminBalancingRoute: AdminBalancingRoute,
+  AdminChatRoute: AdminChatRoute,
   AdminNominationRoute: AdminNominationRoute,
   AdminSkinsRoute: AdminSkinsRoute,
   AuthCallbackRoute: AuthCallbackRoute,

@@ -44,6 +44,15 @@ export const updateNomination = (
 		param: { setId: String(setId) }, json: body, 
 	}));
 
+/** Admin: toggle one difficulty in/out of the set's ranked lineup. */
+export const setDiffRanked = (setId: number, beatmapId: number, ranked: boolean) =>
+	unwrap(rpc.v1.beatmap.nomination[':setId'].beatmap[':beatmapId'].$patch({
+		param: {
+			setId: String(setId), beatmapId: String(beatmapId),
+		},
+		json: { ranked },
+	}));
+
 /** Admin: drop a set (rows + files) from the queue. */
 export const deleteNomination = (setId: number) =>
 	unwrap(rpc.v1.beatmap.nomination[':setId'].$delete({ param: { setId: String(setId) } }));

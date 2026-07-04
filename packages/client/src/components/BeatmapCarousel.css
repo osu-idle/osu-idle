@@ -224,6 +224,40 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+/* the XP section, top-right: main skill + total. The card is translated
+   toward (and past) the screen's right edge by --bow/--pop, so the section
+   counter-shifts by the same amount to stay visible; the matching transition
+   keeps it glued to the card's own transform animation. */
+.bm-card__xp {
+	position: absolute;
+	top: 7px;
+	right: calc(var(--bow) + var(--pop) + 49px);
+	z-index: 2;
+	display: flex;
+	gap: 5px;
+	transition: right 0.18s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.bm-card__xp-chip {
+	font-size: 0.78rem;
+	font-weight: 800;
+	white-space: nowrap;
+	padding: 0.12rem 0.55rem;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.6);
+	border: 1px solid rgba(255, 138, 183, 0.5);
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+.bm-card__xp-total {
+	color: var(--osu-pink);
+}
+.bm-card__xp-skill {
+	color: rgba(255, 255, 255, 0.85);
+}
+.bm-card__xp-skill em {
+	font-style: normal;
+	color: var(--osu-pink);
+	margin-left: 0.3rem;
+}
 
 /* group header row - reuses .bm-card (so it rides the arc + stride) but reads as
    a solid osu!-style bar: black, accent border, label + count, a collapse caret */

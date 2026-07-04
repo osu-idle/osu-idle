@@ -9,7 +9,10 @@ import { sweepRankedMaps } from './beatmaps/sweep';
 import { ensureRankings } from './rankings';
 import { registerWs } from './ws/routes';
 import { hub } from './ws/hub';
-import { sweepPresence } from './ws/presence';
+import {
+	sweepAdoption,
+	sweepPresence,
+} from './ws/presence';
 
 Logfile.setWriter(lines => appendFile('runtime.log', lines.join('\n') + '\n'));
 
@@ -42,6 +45,11 @@ rankSweep.unref();
 // Prune presence entries left behind by a crashed worker / unclean disconnect.
 const presenceSweep = setInterval(() => void sweepPresence(), 30_000);
 presenceSweep.unref();
+
+// Drop version reports from players who haven't reconnected within the adoption
+// window, so builds they've churned off stop being counted.
+const adoptionSweep = setInterval(() => void sweepAdoption(), 10 * 60_000);
+adoptionSweep.unref();
 
 /**
  * Drain on a clean shutdown (systemd stop / restart, Ctrl-C, tsx-watch reload,

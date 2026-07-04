@@ -10,6 +10,7 @@ import {
 	type Nomination,
 	deleteNomination,
 	listNominations,
+	setDiffRanked,
 	updateNomination,
 	uploadBeatmap,
 } from '../../api/maps';
@@ -78,6 +79,8 @@ export default function NominationPage() {
 	};
 	const patch = (setId: number, body: { rankedAt?: string | null; status?: BeatmapStatus }) =>
 		run(() => updateNomination(setId, body));
+	const toggleDiff = (setId: number, beatmapId: number, ranked: boolean) =>
+		run(() => setDiffRanked(setId, beatmapId, ranked));
 	const remove = (setId: number) => confirm('Delete this set and its files?') 
 		&& run(() => deleteNomination(setId));
 
@@ -139,7 +142,14 @@ export default function NominationPage() {
 
 			<div className='nomination__list'>
 				{rows.map(row => (
-					<NominationRow key={row.id} row={row} busy={busy} onPatch={patch} onDelete={remove} />
+					<NominationRow
+						key={row.id}
+						row={row}
+						busy={busy}
+						onPatch={patch}
+						onToggleDiff={toggleDiff}
+						onDelete={remove}
+					/>
 				))}
 			</div>
 
