@@ -4,6 +4,7 @@ import {
 	mysqlTable,
 	varchar,
 } from 'drizzle-orm/mysql-core';
+import { jsonColumn } from '../columns';
 import {
 	Skills,
 	type SkillName,
@@ -14,6 +15,15 @@ import { apiBaseUrl } from '../../env';
 import { db } from '../client';
 import { eq } from 'drizzle-orm';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
+
+/** Daily global pp rank samples, oldest first, capped at RANK_HISTORY_DAYS.
+ *  `date` is the UTC day (YYYY-MM-DD) of the latest sample. */
+export type RankHistory = {
+	date: string;
+	ranks: number[];
+};
+
+export const RANK_HISTORY_DAYS = 90;
 
 const skillColumn = () => int().notNull().default(0);
 
@@ -44,8 +54,9 @@ export const characters = mysqlTable('character', {
 	overallXp: skillColumn(),
 	overallTotalXp: skillColumn(),
 	pp: decimal({
-		precision: 10, scale: 3, 
+		precision: 10, scale: 3,
 	}).notNull().default('0'),
+	rankHistory: jsonColumn<RankHistory>(),
 });
 
 export type CharacterRow = typeof characters.$inferSelect;

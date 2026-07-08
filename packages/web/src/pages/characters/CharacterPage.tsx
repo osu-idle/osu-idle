@@ -31,6 +31,7 @@ import ScoreRow from '../../components/score/ScoreRow';
 import Grade from '../../components/score/Grade';
 import { SkillBar } from '../../components/character/SkillBar';
 import { CharacterRanks } from '../../components/character/CharacterRanks';
+import RankGraph from '../../components/character/RankGraph';
 import { SkillName } from '@osu-idle/shared/skills';
 import { extractSkills } from '@osu-idle/shared/osu/level';
 import { Trans } from '@lingui/react/macro';
@@ -97,6 +98,7 @@ export default function CharacterPage({ id, character, stats }: {
 				<div className='character__main_stats'>
 					<CharacterRanks stats={stats} />
 					<div className='character__graph'>
+						{stats.rankHistory.length > 0 && <RankGraph ranks={stats.rankHistory} />}
 					</div>
 					<div className='character__totals'>
 						<div className='character__totals_left'>

@@ -6,7 +6,10 @@ import { port } from './env';
 import { redis } from './redis';
 import { sweepDuePlays } from './play';
 import { sweepRankedMaps } from './beatmaps/sweep';
-import { ensureRankings } from './rankings';
+import {
+	ensureRankings,
+	sweepRankHistory,
+} from './rankings';
 import { registerWs } from './ws/routes';
 import { hub } from './ws/hub';
 import {
@@ -41,6 +44,12 @@ sweep.unref();
 // Announce scheduled maps whose rank time has passed (no redeploy needed).
 const rankSweep = setInterval(() => void sweepRankedMaps(), 30_000);
 rankSweep.unref();
+
+// Record every character's daily global rank sample (one worker wins the
+// per-day lock; later ticks return immediately).
+void sweepRankHistory();
+const rankHistorySweep = setInterval(() => void sweepRankHistory(), 15 * 60_000);
+rankHistorySweep.unref();
 
 // Prune presence entries left behind by a crashed worker / unclean disconnect.
 const presenceSweep = setInterval(() => void sweepPresence(), 30_000);

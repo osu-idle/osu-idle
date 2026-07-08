@@ -1,0 +1,1 @@
+ALTER TABLE `character` ADD `rank_history` json;

@@ -11,7 +11,11 @@ import {
 } from '@osu-idle/shared/skills';
 import { redis } from './redis';
 import { db } from './db/client';
-import { characters } from './db/schema/character';
+import {
+	characters,
+	RANK_HISTORY_DAYS,
+	type CharacterRow,
+} from './db/schema/character';
 import { character_totals } from './db/schema/character_totals';
 import { users } from './db/schema/user';
 import { best } from './db/schema/best';
@@ -130,6 +134,29 @@ export const reindexCharacter = async (id: number) => {
 	const pipeline = redis.pipeline();
 	index(pipeline, character);
 	await pipeline.exec();
+	await refreshTodayRank(character.character);
+};
+
+/** A pp change moves today's rank: rewrite the current day's history sample
+ *  (append it if the daily sweep hasn't reached this character yet). */
+const refreshTodayRank = async (row: Pick<CharacterRow, 'id' | 'rankHistory'>) => {
+	const rank = await globalRank('pp', row.id);
+	if (rank === undefined) return;
+	const today = new Date().toISOString().slice(0, 10);
+	const previous = row.rankHistory ?? {
+		date: '', ranks: [],
+	};
+	const ranks = previous.date === today
+		? [...previous.ranks.slice(0, -1), rank]
+		: [...previous.ranks, rank].slice(-RANK_HISTORY_DAYS);
+	await db
+		.update(characters)
+		.set({
+			rankHistory: {
+				date: today, ranks,
+			},
+		})
+		.where(eq(characters.id, row.id));
 };
 
 /** 1-based rank, or undefined when the character is not in the set. */
@@ -335,6 +362,47 @@ export async function rebuildAll(): Promise<void> {
 	}
 	await pipeline.exec();
 }
+
+/** Append today's global pp rank to every character's stored history, once
+ *  per UTC day (one worker wins the day's lock; the rest and later calls
+ *  return immediately). */
+export const sweepRankHistory = async (): Promise<void> => {
+	const today = new Date().toISOString().slice(0, 10);
+	const doneKey = `${META}rankhistory:${today}`;
+	if (await redis.exists(doneKey)) return;
+	const got = await redis.set(`${doneKey}:lock`, '1', 'EX', 600, 'NX');
+	if (got !== 'OK') return;
+	try {
+		const members = await redis.zrevrange(globalKey('pp'), 0, -1);
+		const rows = await db
+			.select({
+				id: characters.id, rankHistory: characters.rankHistory,
+			})
+			.from(characters);
+		const history = new Map(rows.map(row => [row.id, row.rankHistory]));
+
+		for (let rank = 1; rank <= members.length; rank++) {
+			const id = Number(members[rank - 1]);
+			if (!history.has(id)) continue;
+			const previous = history.get(id) ?? {
+				date: '', ranks: [],
+			};
+			if (previous.date === today) continue;
+			const ranks = [...previous.ranks, rank].slice(-RANK_HISTORY_DAYS);
+			await db
+				.update(characters)
+				.set({
+					rankHistory: {
+						date: today, ranks,
+					},
+				})
+				.where(eq(characters.id, id));
+		}
+		await redis.set(doneKey, '1', 'EX', 2 * 86_400);
+	} finally {
+		await redis.del(`${doneKey}:lock`);
+	}
+};
 
 async function* scanKeys(match: string): AsyncGenerator<string> {
 	let cursor = '0';

@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-07-04 22:13\n"
+"PO-Revision-Date: 2026-07-05 09:27\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -17,6 +17,11 @@ msgstr ""
 "X-Crowdin-Language: fr\n"
 "X-Crowdin-File: /packages/web/src/locales/en.po\n"
 "X-Crowdin-File-ID: 47\n"
+
+#. placeholder {0}: ranks.length - 1 - hover
+#: src/components/character/RankGraph.tsx
+msgid "{0, plural, =0 {today} one {# day ago} other {# days ago}}"
+msgstr ""
 
 #. placeholder {0}: mp.beatmap.title
 #. placeholder {1}: mp.beatmap.version
@@ -175,6 +180,7 @@ msgid "global"
 msgstr "global"
 
 #: src/components/character/CharacterRanks.tsx
+#: src/components/character/RankGraph.tsx
 msgid "Global Ranking"
 msgstr "Rang global"
 

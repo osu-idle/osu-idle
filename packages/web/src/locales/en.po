@@ -13,6 +13,11 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: ranks.length - 1 - hover
+#: src/components/character/RankGraph.tsx
+msgid "{0, plural, =0 {today} one {# day ago} other {# days ago}}"
+msgstr "{0, plural, =0 {today} one {# day ago} other {# days ago}}"
+
 #. placeholder {0}: mp.beatmap.title
 #. placeholder {1}: mp.beatmap.version
 #. placeholder {2}: mp.beatmap.artist
@@ -170,6 +175,7 @@ msgid "global"
 msgstr "global"
 
 #: src/components/character/CharacterRanks.tsx
+#: src/components/character/RankGraph.tsx
 msgid "Global Ranking"
 msgstr "Global Ranking"
 

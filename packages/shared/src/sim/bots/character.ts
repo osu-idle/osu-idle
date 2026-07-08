@@ -147,49 +147,44 @@ export const generalBasedScoreFactor = (
 	skillLevel: number, 
 	score: ScoreLike,
 ) => {
-	const normalized = transpose(score.accuracy, [
+	return transpose(score.accuracy, [
 		transpose(skillLevel, [0, 100], [0.7, 0.95]),
 		transpose(skillLevel, [0, 100], [0.9, 1.05]),
-	], [0, 2]);
-	return Math.min(1, Math.max(0, normalized));
+	], [0, 1.5]);
 };
 
 export const hardAccBasedScoreFactor = (
 	skillLevel: number, 
 	score: ScoreLike,
 ) => {
-	const normalized = transpose(score.accuracy, [
+	return transpose(score.accuracy, [
 		transpose(skillLevel, [0, 60], [0.7, 0.93]),
 		transpose(skillLevel, [40, 100], [0.98, 1.02]),
-	], [0, 2]);
-	return Math.min(1, Math.max(0, normalized));
+	], [0, 1.5]);
 };
 
 export const accBasedScoreFactor = (skillLevel: number, score: ScoreLike) => {
-	const normalized = transpose(score.accuracy, [
+	return transpose(score.accuracy, [
 		transpose(skillLevel, [0, 50], [0.7, 0.95]),
 		transpose(skillLevel, [30, 100], [1, 1.05]),
-	], [0, 2]);
-	return Math.min(1, Math.max(0, normalized));
+	], [0, 1.5]);
 };
 
 export const highAccBasedScoreFactor = (
 	skillLevel: number,
 	score: ScoreLike,
 ) => {
-	const normalized = transpose(score.accuracy, [
+	return transpose(score.accuracy, [
 		transpose(skillLevel, [0, 75], [0.7, 0.995]),
 		transpose(skillLevel, [50, 100], [1, 1.005]),
-	], [0, 2]);
-	return Math.min(1, Math.max(0, normalized));
+	], [0, 1.5]);
 };
 
 export const speedBasedScoreFactor = (skillLevel: number, score: ScoreLike) => {
-	const normalized = transpose(score.accuracy, [
+	return transpose(score.accuracy, [
 		transpose(skillLevel, [10, 100], [0.7, 0.9]),
 		transpose(skillLevel, [10, 100], [1, 0.96]),
-	], [0, 2]);
-	return Math.min(1, Math.max(0, normalized));
+	], [0, 1.5]);
 };
 
 export const levelFactorCB = cubic_bezier(0,.8,.4,1);
