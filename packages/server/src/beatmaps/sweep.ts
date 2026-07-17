@@ -8,6 +8,7 @@ import { db } from '../db/client';
 import { beatmaps } from '../db/schema/beatmap';
 import { beatmapset } from '../db/schema/beatmapset';
 import { announceRanked } from './announce';
+import { hub } from '../ws/hub';
 
 /**
  * Announce scheduled maps whose rank time has passed. Runs on the periodic
@@ -25,12 +26,14 @@ export const sweepRankedMaps = async (): Promise<void> => {
 			lte(beatmapset.rankedAt, sql`now()`),
 		));
 
+	let wentLive = false;
 	for (const set of due) {
 		const [claim] = await db
 			.update(beatmapset)
 			.set({ announced: true })
 			.where(and(eq(beatmapset.id, set.id), eq(beatmapset.announced, false)));
 		if (!claim.affectedRows) continue;
+		wentLive = true;
 
 		const diffs = await db
 			.select({
@@ -49,4 +52,7 @@ export const sweepRankedMaps = async (): Promise<void> => {
 			})),
 		});
 	}
+
+	// Tell connected clients the catalog grew, so song select refetches it.
+	if (wentLive) hub.broadcast({ type: 'catalog:invalidate' });
 };

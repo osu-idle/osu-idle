@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-07-04 22:13\n"
+"PO-Revision-Date: 2026-07-17 16:55\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -17,6 +17,15 @@ msgstr ""
 "X-Crowdin-Language: fr\n"
 "X-Crowdin-File: /packages/client/src/locales/en.po\n"
 "X-Crowdin-File-ID: 39\n"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid " · Overdrive {odText}"
+msgstr " · Overdrive {odText}"
+
+#. placeholder {0}: overdriveText(preview.overdrive)
+#: src/components/upgrades/UpgradeRow.tsx
+msgid " · Overdrive {odText} → {0}"
+msgstr " · Overdrive {odText} → {0}"
 
 #: src/components/options/RightClickHold.tsx
 msgid "(mobile) Tap duration to right click"
@@ -54,6 +63,11 @@ msgstr "{min}-{0} min"
 #: src/osu/beatmap/grouping.ts
 msgid "{months, plural, one {# month ago} other {# months ago}}"
 msgstr "{months, plural, one {il y a # mois} other {il y a # mois}}"
+
+#. placeholder {0}: preview.level
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "{name} Lv{level} → Lv{0} · Costs {spent}xp{odSegment} · XP boost x{boost}"
+msgstr "{name} Lv{level} → Lv{0} · Coûte {spent}xp{odSegment} · XP boost x{boost}"
 
 #: src/logs.ts
 msgid "{name} played {map} and got a {accuracy} {grade}. {gains}"
@@ -199,6 +213,10 @@ msgstr "Toutes les maps ont été supprimées."
 msgid "Already playing"
 msgstr "Déjà en jeu"
 
+#: src/components/upgrades/UpgradesView.tsx
+msgid "An upgrade costs {UPGRADE_LEVELS} raw levels of the skill and permanently boosts its XP gains by {bonus}%. Buying above the required level spends more XP and feeds Overdrive, which multiplies the boost."
+msgstr "Une amélioration coûte {UPGRADE_LEVELS} niveaux brutes de la compétence et améliore les gains d'XP de {bonus}%. Acheter avec un nouveau plus élevé consomme plus d'XP et ajoute de l'Overdrive, ce qui multiplie encore les gains."
+
 #: src/scenes/MainMenu.tsx
 msgid "Are you sure you want to quit?"
 msgstr "Êtes-vous sûr de vouloir quitter ?"
@@ -289,6 +307,18 @@ msgstr "Des maps sont disponibles par défaut dans <0>l'écran de sélection</0>
 #: src/components/Tutorial.tsx
 msgid "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to download it, then <2>single-tap</2> to start playing."
 msgstr "Des maps sont disponibles par défaut dans <0>l'écran de sélection</0>:<1> double-tappez</1> sur une map pour la télécharger, puis <2>tapez</2> dessus pour démarrer."
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Buy"
+msgstr "Acheter"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Buy {nextGear}?"
+msgstr "Acheter {nextGear}?"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Buy: {UPGRADE_LEVELS} levels"
+msgstr "Acheter pour {UPGRADE_LEVELS} niveaux"
 
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/addons/InstalledAddonRow.tsx
@@ -700,6 +730,11 @@ msgstr "Localisation"
 msgid "Loop"
 msgstr "En boucle"
 
+#. placeholder {0}: levelDisplay(level, xp)
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Lv{0}"
+msgstr "Lv{0}"
+
 #: src/components/songselect/UserCard.tsx
 msgid "Lv{level}"
 msgstr "Lv{level}"
@@ -745,6 +780,10 @@ msgstr "créé par {creator}"
 #: src/components/options/MasterVolume.tsx
 msgid "Master"
 msgstr "Principal"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Maxed"
+msgstr "Niveau max"
 
 #: src/components/addons/AddonView.tsx
 msgid "Moderator feedback"
@@ -897,6 +936,10 @@ msgstr "osu|musique|theme"
 msgid "Over 5 months ago"
 msgstr "Il y a plus de 5 mois"
 
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Overdrive +{ratioText}"
+msgstr "Overdrive +{ratioText}"
+
 #: src/scenes/Options.tsx
 msgid "parallax"
 msgstr "parallax"
@@ -1032,6 +1075,10 @@ msgstr "Renommer"
 #: src/scenes/Options.tsx
 msgid "Renderer"
 msgstr "Vidéo"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Requires Lv{minLevel}"
+msgstr "Nécessite Lv{minLevel}"
 
 #: src/components/result/ResultMeta.tsx
 msgid "Result"
@@ -1245,6 +1292,10 @@ msgstr "Aujourd'hui"
 msgid "Total {0}xp"
 msgstr "Total {0}xp"
 
+#: src/scenes/Upgrades.tsx
+msgid "Trade skill levels for permanent XP boosts"
+msgstr "Échange des niveaux de compétence contre des boosts d'XP"
+
 #: src/scenes/Options.tsx
 #: src/scenes/SongSelect.tsx
 msgid "Type to search!"
@@ -1284,6 +1335,11 @@ msgstr "Échec ({0}). Merci de redémarrer le jeu."
 #: src/components/skins/BrowseSkinsView.tsx
 msgid "Updated"
 msgstr "Mis à jour"
+
+#: src/scenes/SongSelect.tsx
+#: src/scenes/Upgrades.tsx
+msgid "Upgrades"
+msgstr "Améliorations"
 
 #: src/components/Onboarding.tsx
 msgid "Upload a profile picture"
@@ -1350,6 +1406,10 @@ msgstr "Que voulez-vous faire avec cette map ?"
 #: src/components/community/CommunityBody.tsx
 msgid "World Map"
 msgstr "Carte du Monde"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "x{multiplierText} XP"
+msgstr "x{multiplierText} XP"
 
 #: src/components/BeatmapXPBreakdown.tsx
 msgid "XP gained last play"

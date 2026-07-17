@@ -274,6 +274,8 @@ async function loadCharacterSkills(character: CharacterRow, beatmapId: number) {
 	for (const skill of skills) {
 		skill.level.set(character[`${skill.name}Level`]);
 		skill.xp.set(character[`${skill.name}Xp`]);
+		skill.upgrades.set(character[`${skill.name}Upgrades`]);
+		skill.overdrive.set(character[`${skill.name}Overdrive`]);
 
 		if (skill instanceof Memory) {
 			skill.timesPlayed.set(await getPlays(character.id, beatmapId));

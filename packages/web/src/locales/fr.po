@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-07-05 09:27\n"
+"PO-Revision-Date: 2026-07-17 16:55\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -21,7 +21,7 @@ msgstr ""
 #. placeholder {0}: ranks.length - 1 - hover
 #: src/components/character/RankGraph.tsx
 msgid "{0, plural, =0 {today} one {# day ago} other {# days ago}}"
-msgstr ""
+msgstr "{0, plural, =0 {aujourd'hui} one {il y a # jour} other {il y a # jours}}"
 
 #. placeholder {0}: mp.beatmap.title
 #. placeholder {1}: mp.beatmap.version

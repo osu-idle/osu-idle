@@ -42,7 +42,10 @@ import './SongSelect.css';
 import BeatmapStore, { beatmapsVersion } from '../osu/beatmap/beatmap_store';
 import Controls from '../input/Controls';
 import SceneManager, { SCENE } from './SceneManager';
-import { debugMode } from '../globals';
+import {
+	debugMode,
+	openPage,
+} from '../globals';
 import { useParallax } from '@osu-idle/shared/hooks/useParallax';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
@@ -699,9 +702,15 @@ export default function SongSelect() {
 				<button className="game__exit" onClick={onBack}>
 					<Trans>BACK</Trans>
 				</button>
+				<button
+					className="game__upgrades"
+					onClick={() => openPage.set({ page: 'upgrades' })}
+				>
+					<span><Trans>Upgrades</Trans></span>
+				</button>
 				<UserCard
-					character={character} 
-					online_character={online_character} 
+					character={character}
+					online_character={online_character}
 					online_stats={online_stats}
 				/>
 			</div>

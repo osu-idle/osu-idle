@@ -16,28 +16,25 @@ import {
 // independent of the Node process's local `TZ`. The DB stores UTC, so a
 // score's `playedAt.getTime()` is a true epoch and the client's relative
 // "time ago" stays correct everywhere.
+// `maxIdle` < `connectionLimit` so burst connections close after `idleTimeout`
+// instead of staying open forever - the process runs as a 12-worker pm2
+// cluster, so per-worker connections multiply against MySQL's global cap.
 const connection = {
 	host: env.DB_HOST,
 	port: env.DB_PORT,
 	user: env.DB_USER,
 	password: env.DB_PASSWORD,
 	timezone: 'Z',
-	connectionLimit: 10,
+	connectionLimit: 6,
+	maxIdle: 2,
+	idleTimeout: 60_000,
 } as const;
 
 // Explicit type annotations (rather than inferred) so the package can emit
 // portable .d.ts for its app type - inferred mysql2/drizzle types reference
 // deep internal paths that aren't nameable across packages.
 export const pool: Pool = createPool({
-	...connection, database: dbName, 
-});
-
-export const statsPool: Pool = createPool({
-	...connection, database: 'stats', 
-});
-
-export const farmPool: Pool = createPool({
-	...connection, database: 'farm', 
+	...connection, database: dbName,
 });
 
 // No relational `schema` is passed: the codebase uses the query-builder API

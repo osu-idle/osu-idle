@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-07-04 22:13\n"
+"PO-Revision-Date: 2026-07-17 16:55\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -53,6 +53,14 @@ msgstr "il y a {s} secondes"
 #: src/display/ago.ts
 msgid "{s}s"
 msgstr "{s}s"
+
+#: src/display/skills.ts
+msgid "{value} Scroll Speed"
+msgstr "Vitesse de défilement {value}"
+
+#: src/display/skills.ts
+msgid "{value}hz Monitor"
+msgstr "Écran {value}hz"
 
 #: src/display/ago.ts
 msgid "{y} years ago"
@@ -138,6 +146,10 @@ msgstr "Notes skin barres"
 msgid "Basic plastic chair"
 msgstr "Chaise en plastique"
 
+#: src/display/skills.ts
+msgid "Better audio and less noise to stay locked in"
+msgstr "Meilleur son et moins de bruits pour lock in"
+
 #: src/skills.ts
 msgid "Blank LN body with bar LN tail"
 msgstr "LN vide avec tail skin barre"
@@ -154,6 +166,10 @@ msgstr "LN tail ancrées en bas"
 msgid "Bruteforce learning"
 msgstr "Rejouer la map en boucle"
 
+#: src/display/skills.ts
+msgid "Build a better warmup routine to endure long maps"
+msgstr "Améliore ton warm up pour gérer des maps plus longues"
+
 #: src/skills.ts
 msgid "Cap"
 msgstr "Casquette"
@@ -161,6 +177,10 @@ msgstr "Casquette"
 #: src/skills.ts
 msgid "CENTERHALV Ikea mesh office chair"
 msgstr "Chaise de bureau Ikea CENTERHALV"
+
+#: src/display/skills.ts
+msgid "Change your way of learning SV maps"
+msgstr "Change ta façon de train les maps SV"
 
 #: src/skills.ts
 msgid "Circle skin LNs"
@@ -253,6 +273,14 @@ msgstr "Firmware de clavier embarqué"
 #: src/skills.ts
 msgid "Fade-out tail LNs"
 msgstr "LN tail en fondu"
+
+#: src/display/skills.ts
+msgid "Find the perfect LN skin"
+msgstr "Trouve le skin LN parfait"
+
+#: src/display/skills.ts
+msgid "Get accustomed to higher scroll speeds to perform better"
+msgstr "Habitue-toi à des vitesses de défilement plus élevées"
 
 #: src/skills.ts
 msgid "Glorious GMMK Pro"
@@ -451,6 +479,10 @@ msgstr "Secretlab TITAN Evo"
 msgid "Sennheiser Momentum 4"
 msgstr "Sennheiser Momentum 4"
 
+#: src/display/skills.ts
+msgid "Sharpen your note visuals to survive dense jams"
+msgstr "Optimise le rendu des notes pour survivre aux SV denses"
+
 #: src/skills.ts
 msgid "Sizzling speakers"
 msgstr "Haut-parleurs grésillants"
@@ -503,6 +535,14 @@ msgstr "Pilotes Synaptics"
 msgid "Thinks about warmup"
 msgstr "S'échauffer mentalement"
 
+#: src/display/skills.ts
+msgid "Try different layouts to increase finger independance"
+msgstr "Essaie différentes positions pour améliorer l'indépendance de tes doigts"
+
+#: src/display/skills.ts
+msgid "Tune drivers and firmware for faster repeated inputs"
+msgstr "Règle tes drivers et firmwares pour des inputs plus rapides"
+
 #: src/skills.ts
 msgid "Unbranded membrane keyboard"
 msgstr "Clavier à membrane premier prix"
@@ -511,6 +551,18 @@ msgstr "Clavier à membrane premier prix"
 #: src/display/skin.ts
 msgid "Unpublished"
 msgstr "Non publié"
+
+#: src/display/skills.ts
+msgid "Upgrade your chair to play more comfortably"
+msgstr "Améliore ta chaise pour jouer plus confortablement"
+
+#: src/display/skills.ts
+msgid "Upgrade your keyboard to increase your synergy"
+msgstr "Achète un nouveau clavier pour améliorer ta synergie"
+
+#: src/display/skills.ts
+msgid "Upgrade your monitor to see the notes more clearly"
+msgstr "Achète un meilleur écran pour mieux voir les notes"
 
 #: src/skills.ts
 msgid "Used earbuds"

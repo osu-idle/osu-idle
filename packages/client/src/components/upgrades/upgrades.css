@@ -1,0 +1,133 @@
+.upgrades {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	max-width: 920px;
+	margin: 0 auto;
+	padding: 8px 0 24px;
+}
+
+.upgrades__hint {
+	color: var(--text-dim);
+	font-size: 0.95rem;
+	margin: 0;
+}
+
+.upgrades__list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.upgrade__row {
+	display: grid;
+	grid-template-columns: 200px 1fr auto;
+	align-items: center;
+	gap: 16px;
+	padding: 10px 16px;
+	background: rgba(255, 255, 255, 0.04);
+	border-left: 3px solid rgba(255, 255, 255, 0.12);
+}
+.upgrade__row.is-ready {
+	border-left-color: var(--osu-pink);
+	background: rgba(255, 64, 137, 0.08);
+}
+.upgrade__row.is-maxed {
+	border-left-color: #9be48b;
+}
+
+.upgrade__meta {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+.upgrade__skill {
+	font-size: 1.05rem;
+	font-weight: 400;
+}
+.upgrade__level {
+	color: var(--text-dim);
+	font-size: 0.85rem;
+}
+.upgrade__mult {
+	color: #9be48b;
+	font-size: 0.85rem;
+}
+.upgrade__od {
+	color: var(--osu-pink-light);
+	font-size: 0.85rem;
+}
+
+.upgrade__info {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+}
+.upgrade__desc {
+	color: var(--text-dim);
+	font-size: 0.82rem;
+}
+
+.upgrade__gear {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	flex-wrap: wrap;
+}
+.upgrade__gear-current {
+	color: var(--text-dim);
+}
+.upgrade__gear-arrow {
+	color: var(--osu-pink);
+}
+.upgrade__gear-next {
+	color: var(--text);
+}
+.is-maxed .upgrade__gear-current {
+	color: #9be48b;
+}
+
+.upgrade__action {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	justify-self: end;
+}
+.upgrade__overdrive {
+	color: var(--osu-pink-light);
+	font-size: 0.9rem;
+}
+
+.upgrade__buy {
+	padding: 8px 18px;
+	background: rgba(255, 64, 137, 0.55);
+	color: #fff;
+	font-size: 0.95rem;
+	transform: skewX(-12deg);
+	transition: background 0.15s ease;
+}
+.upgrade__buy > * {
+	display: block;
+	transform: skewX(12deg);
+}
+.upgrade__buy:hover:not(:disabled) {
+	background: rgba(255, 64, 137, 0.8);
+}
+.upgrade__buy:disabled {
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--text-dim);
+	cursor: default;
+}
+
+@media (max-width: 720px) {
+	.upgrade__row {
+		grid-template-columns: 1fr;
+		gap: 8px;
+	}
+	.upgrade__action {
+		justify-self: start;
+	}
+}

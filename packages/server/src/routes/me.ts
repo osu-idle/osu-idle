@@ -1,6 +1,9 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { eq } from 'drizzle-orm';
+import {
+	and,
+	eq,
+} from 'drizzle-orm';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import {
@@ -9,8 +12,7 @@ import {
 } from '@osu-idle/shared/onboarding';
 import {
 	db,
-	farmPool,
-	statsPool,
+	pool,
 } from '../db/client';
 import {
 	characters,
@@ -25,6 +27,13 @@ import { publish } from '../discord/publish';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 import { reindexCharacter } from '../rankings';
 import { characterNameHistory } from '../db/schema/name_history';
+import {
+	applyUpgrade,
+	canUpgrade,
+	upgradeBody,
+} from '@osu-idle/shared/upgrades';
+import { xpGivesLevel } from '@osu-idle/shared/sim/skills/xp';
+import type { SkillName } from '@osu-idle/shared/skills';
 
 // Re-throw the ZodError so the app's onError returns the standard shape.
 const jsonBody = <T extends z.ZodType>(schema: T) =>
@@ -137,6 +146,77 @@ export const meRoutes = new Hono()
 	.delete('/avatar', requireAuth, async c => {
 		return c.json(await setCurrentCharacterAvatar(c.get('userId'), null));
 	})
+
+	// Buy the current character's next upgrade for a skill: spends levels
+	// (and their lifetime XP, so leaderboards drop too) per the shared math.
+	.post('/upgrade', requireAuth, jsonBody(upgradeBody), async c => {
+		const userId = c.get('userId');
+		const { skill } = c.req.valid('json');
+
+		const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+		if (!user?.currentCharacter) throw new HTTPException(409, { message: 'No character' });
+
+		const [row] = await db
+			.select()
+			.from(characters)
+			.where(eq(characters.id, user.currentCharacter))
+			.limit(1);
+		if (!row) throw new HTTPException(409, { message: 'No character' });
+
+		const state = {
+			level: row[`${skill}Level`],
+			xp: row[`${skill}Xp`],
+			upgrades: row[`${skill}Upgrades`],
+			overdrive: row[`${skill}Overdrive`],
+		};
+		if (!canUpgrade(state)) throw new HTTPException(409, { message: 'Upgrade not purchasable' });
+		const purchase = applyUpgrade(state);
+
+		// Spending is global: the spent XP also leaves the lifetime totals that
+		// rankings and the overall level are built on.
+		const spent = Math.round(purchase.spent);
+		const skillTotalXp = Math.max(0, row[`${skill}TotalXp`] - spent);
+		const overallTotalXp = Math.max(0, row.overallTotalXp - spent);
+		const overall = xpGivesLevel(overallTotalXp);
+
+		const updates = {
+			[`${skill}Level`]: purchase.level,
+			[`${skill}Xp`]: Math.round(purchase.xp),
+			[`${skill}TotalXp`]: skillTotalXp,
+			[`${skill}Upgrades`]: purchase.upgrades,
+			[`${skill}Overdrive`]: purchase.overdrive,
+			overallTotalXp,
+			overallLevel: overall.level,
+			overallXp: Math.round(overall.xp),
+		} as Record<`${SkillName}${'Level' | 'Xp' | 'TotalXp' | 'Upgrades' | 'Overdrive'}`
+		| `overall${'Level' | 'Xp' | 'TotalXp'}`, number>;
+
+		// Conditional write: lose the race against a concurrent purchase or a
+		// play finalise touching the same skill, instead of clobbering it.
+		const [written] = await db
+			.update(characters)
+			.set(updates)
+			.where(and(
+				eq(characters.id, row.id),
+				eq(characters[`${skill}Level`], state.level),
+				eq(characters[`${skill}Upgrades`], state.upgrades),
+			));
+		if (!written.affectedRows) throw new HTTPException(409, { message: 'Character changed, retry' });
+
+		await reindexCharacter(row.id);
+
+		const [updated] = await db
+			.select()
+			.from(characters)
+			.where(eq(characters.id, row.id))
+			.limit(1);
+
+		return c.json({
+			character: characterToDTO(updated!, user.avatarUrl, user.country),
+			spent,
+			ratio: purchase.ratio,
+		});
+	})
 ;
 
 /** Reject a name already used by another character (`excludeCharacterId` is the
@@ -151,11 +231,11 @@ const assertNameAvailable = async (userId: number, name: string, excludeCharacte
 		throw new HTTPException(409, { message: 'Name already taken' });
 	}
 
-	const [results1] = await statsPool.promise().query<RowDataPacket[]>(
-		'SELECT * FROM osu_user WHERE osu_id != ? AND username = ?',
+	const [results1] = await pool.promise().query<RowDataPacket[]>(
+		'SELECT * FROM stats.osu_user WHERE osu_id != ? AND username = ?',
 		[userId, name]);
-	const [results2] = await farmPool.promise().query<RowDataPacket[]>(
-		'SELECT * FROM user WHERE osu_id != ? AND username = ?',
+	const [results2] = await pool.promise().query<RowDataPacket[]>(
+		'SELECT * FROM farm.user WHERE osu_id != ? AND username = ?',
 		[userId, name]);
 
 	if ((results1 && results1.length) || (results2 && results2.length)) {

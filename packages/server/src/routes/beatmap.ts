@@ -40,6 +40,10 @@ import {
 	oszPath,
 	previewPath,
 } from '../beatmaps/storage';
+import { hub } from '../ws/hub';
+
+/** Nomination changed what the catalog lists: connected clients refetch. */
+const invalidateCatalog = () => hub.broadcast({ type: 'catalog:invalidate' });
 
 const idParam = z.coerce.number().int().positive();
 
@@ -223,6 +227,7 @@ export const beatmapsRoutes = new Hono()
 			for (const diff of diffs) await purgeBeatmapScores(diff.id);
 		}
 
+		invalidateCatalog();
 		return c.json({ ok: true });
 	})
 	// Toggle one difficulty in/out of the ranked set. Works before the set is
@@ -254,6 +259,7 @@ export const beatmapsRoutes = new Hono()
 
 			// Unranking a difficulty wipes all progression earned on it.
 			if (!ranked) await purgeBeatmapScores(beatmapId);
+			invalidateCatalog();
 			return c.json({ ok: true });
 		})
 	.delete('/nomination/:setId', requireAdmin, async c => {
@@ -277,6 +283,7 @@ export const beatmapsRoutes = new Hono()
 		);
 
 		if (!res.affectedRows) throw new HTTPException(404, { message: 'Beatmap set not found' });
+		invalidateCatalog();
 		return c.json({ ok: true });
 	})
 

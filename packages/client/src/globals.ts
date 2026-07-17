@@ -16,11 +16,13 @@ export const isOptionsOpen = new Synced(false);
 export const isCommunityOpen = new Synced(false);
 export const webUrl = new Synced('/');
 
-/** The full-screen page overlay (skins / add-ons); undefined = closed. */
-export type OpenPage = {
-	page: 'skins' | 'addons',
-	view: 'manage' | 'browse',
-};
+/** The full-screen page overlay (skins / add-ons / upgrades); undefined = closed. */
+export type OpenPage =
+	| {
+		page: 'skins' | 'addons',
+		view: 'manage' | 'browse',
+	}
+	| { page: 'upgrades' };
 export const openPage = new Synced<OpenPage | undefined>(undefined);
 
 export const isVolumeVisible = new Synced(false);

@@ -7,11 +7,14 @@ import type RuntimeNote from '../runtimeNote.js';
 import Synced from '../../helpers/synced.js';
 import type { SkillName } from '../../skills.js';
 import { xpForLevel } from './xp.js';
+import { upgradeXPMultiplier } from '../../upgrades.js';
 
 export default abstract class Skill {
 
 	public readonly level = new Synced(0);
 	public readonly xp = new Synced(0);
+	public readonly upgrades = new Synced(0);
+	public readonly overdrive = new Synced(0);
 
 	constructor(
 		public readonly name: SkillName,
@@ -31,6 +34,10 @@ export default abstract class Skill {
 
 	public static xpForLevel(level: number): number {
 		return xpForLevel(level);
+	}
+
+	public xpMultiplier(): number {
+		return upgradeXPMultiplier(this.upgrades.get(), this.overdrive.get());
 	}
 
 	gainXP(xp: number): number {

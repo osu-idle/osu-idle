@@ -11,6 +11,8 @@ import {
 export const skillProgressDTO = z.object({
 	level: z.number().int().min(0),
 	xp: z.number().int().min(0),
+	upgrades: z.number().int().min(0),
+	overdrive: z.number().min(0),
 });
 export type SkillProgressDTO = z.infer<typeof skillProgressDTO>;
 

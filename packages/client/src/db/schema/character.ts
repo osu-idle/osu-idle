@@ -8,6 +8,7 @@ import {
 	DAO,
 	Insert,
 	integer,
+	real,
 	table,
 	text,
 } from '../dao';
@@ -28,11 +29,21 @@ const xpColumns = Object.fromEntries(
 	makeOrderedSkills().map(s => s.name).map(j => [`${j}XP`, integer().default(0)]),
 ) as Record<`${SkillName}XP`, Column<number, true>>;
 
+const upgradeColumns = Object.fromEntries(
+	makeOrderedSkills().map(s => s.name).map(j => [`${j}Upgrades`, integer().default(0)]),
+) as Record<`${SkillName}Upgrades`, Column<number, true>>;
+
+const overdriveColumns = Object.fromEntries(
+	makeOrderedSkills().map(s => s.name).map(j => [`${j}Overdrive`, real().default(0)]),
+) as Record<`${SkillName}Overdrive`, Column<number, true>>;
+
 const t = table('character', {
 	id:          integer().primaryKey().autoincrement(),
 	name:        text(),
 	...skillColumns,
 	...xpColumns,
+	...upgradeColumns,
+	...overdriveColumns,
 });
 
 export type CharacterData = Insert<typeof t.columns>;
@@ -48,6 +59,8 @@ export default class Character extends DAO(t) {
 		this.skills.forEach(skill => {
 			skill.level.set(this[skill.name]);
 			skill.xp.set(this[`${skill.name}XP`]);
+			skill.upgrades.set(this[`${skill.name}Upgrades`]);
+			skill.overdrive.set(this[`${skill.name}Overdrive`]);
 		});
 	}
 
@@ -55,6 +68,8 @@ export default class Character extends DAO(t) {
 		for (const skill of this.skills) {
 			this[skill.name] = skill.level.get();
 			this[`${skill.name}XP`] = skill.xp.get();
+			this[`${skill.name}Upgrades`] = skill.upgrades.get();
+			this[`${skill.name}Overdrive`] = skill.overdrive.get();
 		}
 		await this.update();
 	}
@@ -74,8 +89,12 @@ export default class Character extends DAO(t) {
 	static fromDTO(dto: CharacterDTO): Character {
 		const { skills, ...rest } = dto;
 		const skillData = Object.fromEntries(
-			Object.entries(skills).flatMap(([name, { level, xp }]) => 
-				[ [name, level], [`${name}XP`, xp ] ]),
+			Object.entries(skills).flatMap(([name, { level, xp, upgrades, overdrive }]) => [
+				[name, level],
+				[`${name}XP`, xp],
+				[`${name}Upgrades`, upgrades],
+				[`${name}Overdrive`, overdrive],
+			]),
 		);
 		const char = new Character({
 			...rest, ...skillData, 

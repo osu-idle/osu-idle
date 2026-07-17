@@ -1,5 +1,6 @@
 import {
 	decimal,
+	double,
 	int,
 	mysqlTable,
 	varchar,
@@ -26,17 +27,22 @@ export type RankHistory = {
 export const RANK_HISTORY_DAYS = 90;
 
 const skillColumn = () => int().notNull().default(0);
+const overdriveColumn = () => double().notNull().default(0);
 
 type SkillColumns =
 	& { [K in SkillName as `${K}Level`]: ReturnType<typeof skillColumn> }
 	& { [K in SkillName as `${K}Xp`]: ReturnType<typeof skillColumn> }
-	& { [K in SkillName as `${K}TotalXp`]: ReturnType<typeof skillColumn> };
+	& { [K in SkillName as `${K}TotalXp`]: ReturnType<typeof skillColumn> }
+	& { [K in SkillName as `${K}Upgrades`]: ReturnType<typeof skillColumn> }
+	& { [K in SkillName as `${K}Overdrive`]: ReturnType<typeof overdriveColumn> };
 
 const skillColumns = Object.fromEntries(
 	Skills.flatMap(skill => [
 		[`${skill}Level`, skillColumn()],
 		[`${skill}Xp`, skillColumn()],
 		[`${skill}TotalXp`, skillColumn()],
+		[`${skill}Upgrades`, skillColumn()],
+		[`${skill}Overdrive`, overdriveColumn()],
 	]),
 ) as SkillColumns;
 
@@ -80,7 +86,10 @@ export function characterToDTO(
 ): CharacterDTO {
 	const skills = Object.fromEntries(
 		Skills.map(s => [s, {
-			level: row[`${s}Level`], xp: row[`${s}Xp`], 
+			level: row[`${s}Level`],
+			xp: row[`${s}Xp`],
+			upgrades: row[`${s}Upgrades`],
+			overdrive: row[`${s}Overdrive`],
 		}]),
 	) as CharacterDTO['skills'];
 

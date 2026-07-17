@@ -49,6 +49,14 @@ msgstr "{s} seconds ago"
 msgid "{s}s"
 msgstr "{s}s"
 
+#: src/display/skills.ts
+msgid "{value} Scroll Speed"
+msgstr "{value} Scroll Speed"
+
+#: src/display/skills.ts
+msgid "{value}hz Monitor"
+msgstr "{value}hz Monitor"
+
 #: src/display/ago.ts
 msgid "{y} years ago"
 msgstr "{y} years ago"
@@ -133,6 +141,10 @@ msgstr "Bar skin notes"
 msgid "Basic plastic chair"
 msgstr "Basic plastic chair"
 
+#: src/display/skills.ts
+msgid "Better audio and less noise to stay locked in"
+msgstr "Better audio and less noise to stay locked in"
+
 #: src/skills.ts
 msgid "Blank LN body with bar LN tail"
 msgstr "Blank LN body with bar LN tail"
@@ -149,6 +161,10 @@ msgstr "BottomCentered Anchored LN tails"
 msgid "Bruteforce learning"
 msgstr "Bruteforce learning"
 
+#: src/display/skills.ts
+msgid "Build a better warmup routine to endure long maps"
+msgstr "Build a better warmup routine to endure long maps"
+
 #: src/skills.ts
 msgid "Cap"
 msgstr "Cap"
@@ -156,6 +172,10 @@ msgstr "Cap"
 #: src/skills.ts
 msgid "CENTERHALV Ikea mesh office chair"
 msgstr "CENTERHALV Ikea mesh office chair"
+
+#: src/display/skills.ts
+msgid "Change your way of learning SV maps"
+msgstr "Change your way of learning SV maps"
 
 #: src/skills.ts
 msgid "Circle skin LNs"
@@ -248,6 +268,14 @@ msgstr "Embedded keyboard firmware"
 #: src/skills.ts
 msgid "Fade-out tail LNs"
 msgstr "Fade-out tail LNs"
+
+#: src/display/skills.ts
+msgid "Find the perfect LN skin"
+msgstr "Find the perfect LN skin"
+
+#: src/display/skills.ts
+msgid "Get accustomed to higher scroll speeds to perform better"
+msgstr "Get accustomed to higher scroll speeds to perform better"
 
 #: src/skills.ts
 msgid "Glorious GMMK Pro"
@@ -446,6 +474,10 @@ msgstr "Secretlab TITAN Evo"
 msgid "Sennheiser Momentum 4"
 msgstr "Sennheiser Momentum 4"
 
+#: src/display/skills.ts
+msgid "Sharpen your note visuals to survive dense jams"
+msgstr "Sharpen your note visuals to survive dense jams"
+
 #: src/skills.ts
 msgid "Sizzling speakers"
 msgstr "Sizzling speakers"
@@ -498,6 +530,14 @@ msgstr "Synaptics drivers"
 msgid "Thinks about warmup"
 msgstr "Thinks about warmup"
 
+#: src/display/skills.ts
+msgid "Try different layouts to increase finger independance"
+msgstr "Try different layouts to increase finger independance"
+
+#: src/display/skills.ts
+msgid "Tune drivers and firmware for faster repeated inputs"
+msgstr "Tune drivers and firmware for faster repeated inputs"
+
 #: src/skills.ts
 msgid "Unbranded membrane keyboard"
 msgstr "Unbranded membrane keyboard"
@@ -506,6 +546,18 @@ msgstr "Unbranded membrane keyboard"
 #: src/display/skin.ts
 msgid "Unpublished"
 msgstr "Unpublished"
+
+#: src/display/skills.ts
+msgid "Upgrade your chair to play more comfortably"
+msgstr "Upgrade your chair to play more comfortably"
+
+#: src/display/skills.ts
+msgid "Upgrade your keyboard to increase your synergy"
+msgstr "Upgrade your keyboard to increase your synergy"
+
+#: src/display/skills.ts
+msgid "Upgrade your monitor to see the notes more clearly"
+msgstr "Upgrade your monitor to see the notes more clearly"
 
 #: src/skills.ts
 msgid "Used earbuds"

@@ -1,0 +1,22 @@
+ALTER TABLE `character` ADD `accuracy_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `accuracy_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `speed_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `speed_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `stamina_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `stamina_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `jackspeed_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `jackspeed_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `coordination_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `coordination_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `release_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `release_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `reading_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `reading_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `consistency_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `consistency_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `concentration_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `concentration_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `speedjam_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `speedjam_overdrive` double DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `memory_upgrades` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `character` ADD `memory_overdrive` double DEFAULT 0 NOT NULL;

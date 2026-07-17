@@ -621,7 +621,8 @@ export default class CharacterBot extends Bot {
 		for (const skill of this.skills) {
 			const level = skill.level.get();
 			this.xp[skill.name] = Math.floor(
-				factor 
+				factor
+				* skill.xpMultiplier()
 				* factorXP(skill.name, this.xp[skill.name], level, score, notes, nonAcc, length),
 			);
 		}

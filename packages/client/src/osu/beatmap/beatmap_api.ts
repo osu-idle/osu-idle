@@ -8,7 +8,11 @@ import {
 	BASE_URL,
 	rpc,
 } from '../../online/client';
-import BeatmapStore, { SetRecord } from './beatmap_store';
+import Socket from '../../online/socket';
+import BeatmapStore, {
+	SetRecord,
+	beatmapsVersion,
+} from './beatmap_store';
 
 /** The live catalog and its metadata types, as returned by the server. */
 export type Manifest = InferResponseType<typeof rpc.v1.beatmap.catalog.$get>;
@@ -24,6 +28,13 @@ export default class BeatmapAPI {
 	public static assetUrl(path: string | undefined): string | undefined {
 		if (!path) return undefined;
 		return `${BASE_URL}${path}`;
+	}
+
+	/** Drop the cached catalog and bump the library version so song select
+	 *  refetches. Pushed by the server when the catalog changes. */
+	public static invalidate(): void {
+		this.manifest = undefined;
+		void beatmapsVersion.set(beatmapsVersion.get() + 1);
 	}
 
 	public static getManifest(): Promise<Manifest> {
@@ -95,3 +106,5 @@ export default class BeatmapAPI {
 	}
 
 }
+
+Socket.on('catalog:invalidate', () => BeatmapAPI.invalidate());

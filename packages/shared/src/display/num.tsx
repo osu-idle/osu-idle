@@ -19,6 +19,13 @@ export const bpm = (n?: number | string) =>
 		ensureNum(n) === Math.floor(ensureNum(n)) ? 3 : 0,
 	);
 
+/** Plain-text `level()`: "100.07" past level 100, for string-only contexts. */
+export const levelText = (level: number, xp: number): string => {
+	if (level < 100) return String(level);
+	const p = Math.floor(xp / xpForLevel(level) * 100);
+	return p > 0 ? `${level}.${String(p).padStart(2, '0')}` : String(level);
+};
+
 export const level = (level: number, xp: number): string | JSX.Element => {
 	const l = String(level);
 	if (level < 100) return l;

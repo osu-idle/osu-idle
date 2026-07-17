@@ -13,6 +13,15 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/components/upgrades/UpgradeRow.tsx
+msgid " · Overdrive {odText}"
+msgstr " · Overdrive {odText}"
+
+#. placeholder {0}: overdriveText(preview.overdrive)
+#: src/components/upgrades/UpgradeRow.tsx
+msgid " · Overdrive {odText} → {0}"
+msgstr " · Overdrive {odText} → {0}"
+
 #: src/components/options/RightClickHold.tsx
 msgid "(mobile) Tap duration to right click"
 msgstr "(mobile) Tap duration to right click"
@@ -49,6 +58,11 @@ msgstr "{min}-{0} min"
 #: src/osu/beatmap/grouping.ts
 msgid "{months, plural, one {# month ago} other {# months ago}}"
 msgstr "{months, plural, one {# month ago} other {# months ago}}"
+
+#. placeholder {0}: preview.level
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "{name} Lv{level} → Lv{0} · Costs {spent}xp{odSegment} · XP boost x{boost}"
+msgstr "{name} Lv{level} → Lv{0} · Costs {spent}xp{odSegment} · XP boost x{boost}"
 
 #: src/logs.ts
 msgid "{name} played {map} and got a {accuracy} {grade}. {gains}"
@@ -194,6 +208,10 @@ msgstr "All beatmaps deleted."
 msgid "Already playing"
 msgstr "Already playing"
 
+#: src/components/upgrades/UpgradesView.tsx
+msgid "An upgrade costs {UPGRADE_LEVELS} raw levels of the skill and permanently boosts its XP gains by {bonus}%. Buying above the required level spends more XP and feeds Overdrive, which multiplies the boost."
+msgstr "An upgrade costs {UPGRADE_LEVELS} raw levels of the skill and permanently boosts its XP gains by {bonus}%. Buying above the required level spends more XP and feeds Overdrive, which multiplies the boost."
+
 #: src/scenes/MainMenu.tsx
 msgid "Are you sure you want to quit?"
 msgstr "Are you sure you want to quit?"
@@ -284,6 +302,18 @@ msgstr "Bundled maps are listed in <0>song select</0>:<1> double-click</1> a map
 #: src/components/Tutorial.tsx
 msgid "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to download it, then <2>single-tap</2> to start playing."
 msgstr "Bundled maps are listed in <0>song select</0>:<1> double-tap</1> a map to download it, then <2>single-tap</2> to start playing."
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Buy"
+msgstr "Buy"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Buy {nextGear}?"
+msgstr "Buy {nextGear}?"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Buy: {UPGRADE_LEVELS} levels"
+msgstr "Buy: {UPGRADE_LEVELS} levels"
 
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/addons/InstalledAddonRow.tsx
@@ -695,6 +725,11 @@ msgstr "Location"
 msgid "Loop"
 msgstr "Loop"
 
+#. placeholder {0}: levelDisplay(level, xp)
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Lv{0}"
+msgstr "Lv{0}"
+
 #: src/components/songselect/UserCard.tsx
 msgid "Lv{level}"
 msgstr "Lv{level}"
@@ -740,6 +775,10 @@ msgstr "mapped by {creator}"
 #: src/components/options/MasterVolume.tsx
 msgid "Master"
 msgstr "Master"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Maxed"
+msgstr "Maxed"
 
 #: src/components/addons/AddonView.tsx
 msgid "Moderator feedback"
@@ -892,6 +931,10 @@ msgstr "osu|music|theme"
 msgid "Over 5 months ago"
 msgstr "Over 5 months ago"
 
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Overdrive +{ratioText}"
+msgstr "Overdrive +{ratioText}"
+
 #: src/scenes/Options.tsx
 msgid "parallax"
 msgstr "parallax"
@@ -1027,6 +1070,10 @@ msgstr "Rename"
 #: src/scenes/Options.tsx
 msgid "Renderer"
 msgstr "Renderer"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Requires Lv{minLevel}"
+msgstr "Requires Lv{minLevel}"
 
 #: src/components/result/ResultMeta.tsx
 msgid "Result"
@@ -1240,6 +1287,10 @@ msgstr "Today"
 msgid "Total {0}xp"
 msgstr "Total {0}xp"
 
+#: src/scenes/Upgrades.tsx
+msgid "Trade skill levels for permanent XP boosts"
+msgstr "Trade skill levels for permanent XP boosts"
+
 #: src/scenes/Options.tsx
 #: src/scenes/SongSelect.tsx
 msgid "Type to search!"
@@ -1279,6 +1330,11 @@ msgstr "Update failed ({0}). Please restart the game."
 #: src/components/skins/BrowseSkinsView.tsx
 msgid "Updated"
 msgstr "Updated"
+
+#: src/scenes/SongSelect.tsx
+#: src/scenes/Upgrades.tsx
+msgid "Upgrades"
+msgstr "Upgrades"
 
 #: src/components/Onboarding.tsx
 msgid "Upload a profile picture"
@@ -1345,6 +1401,10 @@ msgstr "What do you want to do with this beatmap?"
 #: src/components/community/CommunityBody.tsx
 msgid "World Map"
 msgstr "World Map"
+
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "x{multiplierText} XP"
+msgstr "x{multiplierText} XP"
 
 #: src/components/BeatmapXPBreakdown.tsx
 msgid "XP gained last play"

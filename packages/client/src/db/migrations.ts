@@ -137,12 +137,33 @@ const addAddonsGameVersion: Migration = db => {
 	db.run('ALTER TABLE addon ADD COLUMN gameVersion TEXT NOT NULL DEFAULT \'\';');
 };
 
+const addSkillUpgrades: Migration = db => {
+	// Fresh databases create `character` with these columns already; only patch
+	// an older table. One probe column stands for the whole batch.
+	const exists = db.exec(`
+		SELECT EXISTS (
+			SELECT 1 FROM pragma_table_info('character') WHERE name = 'accuracyUpgrades'
+		);
+	`)[0].values[0][0] as number;
+	if (exists) return;
+
+	const skills = [
+		'accuracy', 'speed', 'stamina', 'jackspeed', 'coordination', 'release',
+		'reading', 'consistency', 'concentration', 'speedjam', 'memory',
+	];
+	for (const skill of skills) {
+		db.run(`ALTER TABLE character ADD COLUMN ${skill}Upgrades INTEGER DEFAULT 0;`);
+		db.run(`ALTER TABLE character ADD COLUMN ${skill}Overdrive REAL DEFAULT 0;`);
+	}
+};
+
 const migrations: Migration[] = [
 	recomputeBests,
 	addOnlineId,
 	dedupeGuests,
 	removeScoreSetId,
 	addAddonsGameVersion,
+	addSkillUpgrades,
 ];
 
 /**
