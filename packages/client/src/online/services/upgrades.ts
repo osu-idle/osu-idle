@@ -9,11 +9,8 @@ import {
 	flushCharacterStats,
 } from './characters';
 
-/**
- * Buy the live character's next upgrade for a skill. Guests apply the shared
- * math locally; signed-in characters go through the server-authoritative
- * route and re-import the returned DTO. Returns true when the purchase landed.
- */
+/** Buy the live character's next upgrade: guests locally, signed-in via the
+ *  server. Returns true when it landed. */
 export const purchaseUpgrade = async (skillName: SkillName): Promise<boolean> => {
 	const character = Entities.character.get();
 	if (character.id === 0) return false;

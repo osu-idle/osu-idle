@@ -16,6 +16,9 @@ import {
 	sweepAdoption,
 	sweepPresence,
 } from './ws/presence';
+import { activateServerI18n } from './i18n';
+
+activateServerI18n();
 
 Logfile.setWriter(lines => appendFile('runtime.log', lines.join('\n') + '\n'));
 

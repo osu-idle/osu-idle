@@ -6,7 +6,7 @@ import {
 } from './sim/skills/xp.js';
 
 export const UPGRADE_LEVELS = 10;
-export const MAX_UPGRADES = 2;
+export const MAX_UPGRADES = 10;
 export const UPGRADE_XP_BONUS = 0.1;
 /** Effective-boost growth per overdrive decade: log10(2) doubles it. */
 export const OVERDRIVE_EXPONENT = Math.log10(2);
@@ -30,8 +30,7 @@ export type UpgradePurchase = UpgradeState & {
 export const upgradeMinLevel = (upgrades: number): number =>
 	(upgrades + 1) * UPGRADE_LEVELS;
 
-/** The minimum spendable XP for the next upgrade: the cost when purchased
- *  exactly at its required level. */
+/** Cost of the next upgrade bought exactly at its required level. */
 export const upgradeMinSpend = (upgrades: number): number => {
 	const min = upgradeMinLevel(upgrades);
 	return xpToLevel(min) - xpToLevel(min - UPGRADE_LEVELS);
@@ -42,13 +41,8 @@ export const canUpgrade = (
 ): boolean =>
 	upgrades < MAX_UPGRADES && level >= upgradeMinLevel(upgrades);
 
-/**
- * Purchase the skill's next upgrade: spend the top UPGRADE_LEVELS levels, and
- * accumulate overdrive from the overspend ratio. Only an overspent purchase
- * (ratio > 1) feeds overdrive. The partial level keeps its *fraction* of the
- * bar, not its absolute XP - a high-level partial is worth whole low levels
- * and would overshoot the drop; the shrunk remainder counts as spent.
- */
+/** Buy the next upgrade: drop UPGRADE_LEVELS levels (partial keeps its fraction),
+ *  add the overspend ratio to overdrive. */
 export const applyUpgrade = (state: UpgradeState): UpgradePurchase => {
 	if (!canUpgrade(state)) throw new Error('upgrade not purchasable');
 
@@ -67,19 +61,14 @@ export const applyUpgrade = (state: UpgradeState): UpgradePurchase => {
 	};
 };
 
-/**
- * Effective boost of the stored raw overdrive: a true multiplier while small,
- * degressive past the curves' crossover (~x3.7) - x2 → x2, x10 → x5,
- * x100 → x10, x1000 → x20 - and floored at x1.
- */
+/** Effective boost of raw overdrive: degressive power law, floored at x1. */
 export const overdriveMultiplier = (overdrive: number): number =>
 	Math.max(1, Math.min(
 		overdrive,
 		OVERDRIVE_SCALE * Math.pow(overdrive, OVERDRIVE_EXPONENT),
 	));
 
-/** The skill's total XP-gain multiplier: the additive per-upgrade bonus,
- *  amplified by overdrive. */
+/** XP-gain multiplier: additive upgrade bonus, amplified by overdrive. */
 export const upgradeXPMultiplier = (upgrades: number, overdrive: number): number =>
 	1 + UPGRADE_XP_BONUS * upgrades * overdriveMultiplier(overdrive);
 

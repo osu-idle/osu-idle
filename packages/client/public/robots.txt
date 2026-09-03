@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /web/auth
+Disallow: /web/login
+Disallow: /web/logout
+Disallow: /web/admin
+Disallow: /web/news/admin
+Disallow: /web/preview
+Disallow: /beatmaps/
+Disallow: /previews/
+Disallow: /skins/
+Disallow: /fonts/
+Disallow: /img/
+
+Sitemap: https://osu.idle.rhythmgamers.net/sitemap.xml

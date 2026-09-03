@@ -1,0 +1,208 @@
+/*
+ * The character profile at embed size.
+ *
+ * The markup uses the profile page's own bands and blocks, so this file only
+ * shrinks them: smaller avatar, tighter padding, smaller type. Nothing here
+ * sets a colour, which keeps the two pages in step when the real one changes.
+ */
+
+.preview {
+	padding-bottom: 12px;
+}
+
+/* ---- info band ---- */
+
+.preview .character__info {
+	height: 62px;
+	padding: 0 14px;
+}
+
+.preview .character__avatar {
+	width: 62px;
+	height: 62px;
+	border-radius: 16px;
+	/* the full page hangs the avatar off the banner above, there is none here */
+	transform: none;
+	flex: none;
+	object-fit: cover;
+}
+
+.preview .character__meta {
+	margin-left: 12px;
+	min-width: 0;
+	gap: 1px;
+}
+
+.preview .character__meta-up {
+	font-size: 17px;
+	font-weight: 700;
+	line-height: 1.2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.preview .character__meta-down {
+	font-size: 13px;
+	align-items: center;
+}
+
+.preview .character__meta-flag img {
+	width: 20px;
+	height: auto;
+	display: block;
+}
+
+.preview .character__meta-country {
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+/* ---- stats band ---- */
+
+.preview .character__stats {
+	padding: 10px 14px;
+	gap: 12px;
+	align-items: stretch;
+}
+
+.preview .character__ranks {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 4px 10px;
+}
+
+.preview .character__ranks-label {
+	font-size: 10px;
+	line-height: 1.2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 100%;
+}
+
+.preview .character__ranks-num {
+	font-size: 16px;
+	line-height: 1.2;
+}
+
+.preview .character__totals {
+	margin-top: 10px;
+	gap: 12px;
+	align-items: flex-end;
+}
+
+.preview .character__totals_left {
+	gap: 14px;
+}
+
+.preview .character__totals-left-label {
+	font-size: 10px;
+}
+
+.preview .character__totals-left-num {
+	font-size: 14px;
+	line-height: 1.2;
+}
+
+.preview .character__totals_grades {
+	gap: 7px;
+}
+
+.preview .grade__container {
+	width: 32px;
+	min-height: 22px;
+	height: 16px;
+}
+
+.preview .character__grades-num {
+	font-size: 11px;
+	line-height: 1.4;
+}
+
+.preview .character__all_stats {
+	font-size: 11px;
+	gap: 3px 12px;
+	align-self: flex-start;
+}
+
+.preview .character__stats-num {
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+}
+
+/* ---- skills block ---- */
+
+.preview .character__blocks {
+	padding-top: 12px;
+	gap: 8px;
+}
+
+.preview .character__block {
+	margin: 0 10px;
+	padding: 12px 14px;
+	font-size: 13px;
+}
+
+.preview .character__block-title {
+	font-size: 13px;
+	margin-bottom: 10px;
+	padding-bottom: 3px;
+}
+
+.preview .main-skill {
+	margin-bottom: 9px;
+}
+
+.preview .skills {
+	/* One column: at embed width two would squeeze the bars to nothing. */
+	grid-template-columns: 1fr;
+	gap: 5px 24px;
+}
+
+.preview .skill {
+	grid-template-columns: 84px 1fr auto;
+	gap: 8px;
+}
+
+.preview .skill__track {
+	height: 7px;
+}
+
+.preview .skill__name,
+.preview .skill__level {
+	font-size: 12px;
+}
+
+.preview .skill__level {
+	min-width: 44px;
+}
+
+/* Narrow embed: the stats band cannot hold two columns side by side, so it
+   stacks and the separator becomes a horizontal rule. */
+@media (max-width: 470px) {
+	.preview .character__stats {
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.preview .character__stats_sep {
+		width: auto;
+		height: 2px;
+		align-self: stretch;
+	}
+
+	.preview .character__ranks {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.preview .character__ranks-label {
+		white-space: normal;
+	}
+
+	.preview .character__all_stats {
+		align-self: stretch;
+		grid-template-columns: auto auto;
+		justify-content: space-between;
+	}
+}

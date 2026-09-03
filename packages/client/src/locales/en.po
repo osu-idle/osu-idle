@@ -42,6 +42,11 @@ msgstr "{0, plural, one {# result} other {# results}}"
 msgid "{0} of {total} results"
 msgstr "{0} of {total} results"
 
+#. placeholder {0}: skillName(g.skill)
+#: src/logs.ts
+msgid "{0} reached level {level}!"
+msgstr "{0} reached level {level}!"
+
 #: src/components/BeatmapCarousel.tsx
 msgid "{count, plural, one {# map} other {# maps}}"
 msgstr "{count, plural, one {# map} other {# maps}}"

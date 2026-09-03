@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PreviewRouteImport } from './routes/preview'
 import { Route as MapsRouteImport } from './routes/maps'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as LoginRouteImport } from './routes/login'
@@ -35,6 +36,11 @@ import { Route as AdminAddonsRouteImport } from './routes/admin/addons'
 import { Route as RankingsSkillsSkillRouteImport } from './routes/rankings/skills/$skill'
 import { Route as RankingsGradesGradeRouteImport } from './routes/rankings/grades/$grade'
 
+const PreviewRoute = PreviewRouteImport.update({
+  id: '/preview',
+  path: '/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MapsRoute = MapsRouteImport.update({
   id: '/maps',
   path: '/maps',
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/maps': typeof MapsRoute
+  '/preview': typeof PreviewRoute
   '/admin/addons': typeof AdminAddonsRoute
   '/admin/balancing': typeof AdminBalancingRoute
   '/admin/chat': typeof AdminChatRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/maps': typeof MapsRoute
+  '/preview': typeof PreviewRoute
   '/admin/addons': typeof AdminAddonsRoute
   '/admin/balancing': typeof AdminBalancingRoute
   '/admin/chat': typeof AdminChatRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/maps': typeof MapsRoute
+  '/preview': typeof PreviewRoute
   '/admin/addons': typeof AdminAddonsRoute
   '/admin/balancing': typeof AdminBalancingRoute
   '/admin/chat': typeof AdminChatRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/maps'
+    | '/preview'
     | '/admin/addons'
     | '/admin/balancing'
     | '/admin/chat'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/maps'
+    | '/preview'
     | '/admin/addons'
     | '/admin/balancing'
     | '/admin/chat'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/logout'
     | '/maps'
+    | '/preview'
     | '/admin/addons'
     | '/admin/balancing'
     | '/admin/chat'
@@ -333,6 +345,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   MapsRoute: typeof MapsRoute
+  PreviewRoute: typeof PreviewRoute
   AdminAddonsRoute: typeof AdminAddonsRoute
   AdminBalancingRoute: typeof AdminBalancingRoute
   AdminChatRoute: typeof AdminChatRoute
@@ -357,6 +370,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/preview': {
+      id: '/preview'
+      path: '/preview'
+      fullPath: '/preview'
+      preLoaderRoute: typeof PreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/maps': {
       id: '/maps'
       path: '/maps'
@@ -541,6 +561,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   MapsRoute: MapsRoute,
+  PreviewRoute: PreviewRoute,
   AdminAddonsRoute: AdminAddonsRoute,
   AdminBalancingRoute: AdminBalancingRoute,
   AdminChatRoute: AdminChatRoute,

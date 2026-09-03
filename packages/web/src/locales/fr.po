@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-07-17 16:55\n"
+"PO-Revision-Date: 2026-08-04 08:40\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -106,6 +106,7 @@ msgid "Change username"
 msgstr "Changer de pseudo"
 
 #: src/routes/c/$id.tsx
+#: src/routes/preview.tsx
 msgid "character info"
 msgstr "infos du personnnage"
 
@@ -140,7 +141,7 @@ msgstr "Rang pays"
 msgid "Create your own osu! character and watch it grow to become a<0/><1>legendary mania player</1>."
 msgstr "Créez votre joueur osu! et regardez-le s'améliorer jusqu'à devenir un <0/><1>joueur légendaire d'osu!mania</1>."
 
-#: src/routes/__root.tsx
+#: src/hooks/useRouteTitle.ts
 msgid "dashboard"
 msgstr "tableau de bord"
 
@@ -207,6 +208,7 @@ msgid "Historical"
 msgstr "Historique"
 
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Hit Accuracy"
 msgstr "Précision"
 
@@ -313,6 +315,7 @@ msgstr "Performance"
 #: src/components/leaderboard/PlayerGradesLeaderboard.tsx
 #: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Play Count"
 msgstr "Parties"
 
@@ -358,6 +361,7 @@ msgstr "Classé"
 #: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Ranked Score"
 msgstr "Score classé"
 
@@ -444,6 +448,7 @@ msgid "skills"
 msgstr "compétences"
 
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Skills"
 msgstr "Compétences"
 
@@ -481,10 +486,12 @@ msgid "Total"
 msgstr "Total"
 
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Total Hits"
 msgstr "Notes totales"
 
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Total Score"
 msgstr "Score total"
 

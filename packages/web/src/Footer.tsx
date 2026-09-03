@@ -13,6 +13,9 @@ export default function Footer() {
 			<a href="https://github.com/osu-idle/osu-idle"><Trans>Source code</Trans></a>
 			<a><Trans>Contact</Trans></a>
 		</div>
+		<div className='footer__rg'>
+			<a href="https://rhythmgamers.net">rhythmgamers.net</a>
+		</div>
 		<div className='footer__credits'>
 			v{VERSION} | adri powered {years}
 		</div>

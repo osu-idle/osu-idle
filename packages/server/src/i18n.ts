@@ -1,6 +1,12 @@
 import type { MiddlewareHandler } from 'hono';
-import type { I18n } from '@lingui/core';
-import { createI18n } from '@osu-idle/shared/i18n/runtime';
+import {
+	i18n,
+	type I18n,
+} from '@lingui/core';
+import {
+	createI18n,
+	loadAndActivate,
+} from '@osu-idle/shared/i18n/runtime';
 import { DEFAULT_LOCALE } from '@osu-idle/shared/i18n/locales';
 
 declare module 'hono' {
@@ -28,4 +34,10 @@ declare module 'hono' {
 export const i18nMiddleware: MiddlewareHandler = async (c, next) => {
 	c.set('i18n', createI18n(DEFAULT_LOCALE));
 	await next();
+};
+
+/** Give the Lingui singleton an active locale so `__`/`skillName` used outside a
+ *  request (announces, sweeps) fall back to source instead of throwing. */
+export const activateServerI18n = (): void => {
+	loadAndActivate(i18n, DEFAULT_LOCALE);
 };

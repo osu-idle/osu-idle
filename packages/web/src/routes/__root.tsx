@@ -3,9 +3,6 @@ import {
 	Outlet,
 	useRouterState,
 } from '@tanstack/react-router';
-import { useLingui } from '@lingui/react';
-import { msg } from '@lingui/core/macro';
-import useSynced from '@osu-idle/shared/hooks/useSynced';
 import Header from '../Header';
 import Footer from '../Footer';
 import Blackout from '../components/Blackout';
@@ -15,27 +12,31 @@ import {
 	useAuthLoaded,
 	useCurrentUser,
 } from '../hooks/useCurrentUser';
-import { pageTitle } from '../globals';
+import useDocumentHead from '../hooks/useDocumentHead';
+import useRouteTitle from '../hooks/useRouteTitle';
 
 export const Route = createRootRoute({ component: RootLayout });
 
 function RootLayout() {
-	const { i18n } = useLingui();
 	const user = useCurrentUser();
 	const authLoaded = useAuthLoaded();
-	const [override] = useSynced(pageTitle);
 
-	const matches = useRouterState({ select: s => s.matches });
-	const leaf = matches[matches.length - 1];
-	const onIndex = leaf?.routeId === '/';
+	const leafId = useRouterState({ select: s => s.matches[s.matches.length - 1]?.routeId });
+	const pathname = useRouterState({ select: s => s.location.pathname });
+	const onIndex = leafId === '/';
+	const title = useRouteTitle();
+
+	// The landing and the preview keep the title and canonical url from index.html.
+	useDocumentHead(leafId === '/preview' || (onIndex && !user) ? undefined : title, pathname);
+
+	// The preview route is meant to be embedded in an iframe elsewhere, so it
+	// renders on its own without the header, title and footer around it.
+	if (leafId === '/preview') return <Outlet />;
 
 	// On the index the signed-out vs signed-in UI diverge entirely; wait for the
 	// session so we don't flash the public landing to a signed-in user.
 	if (onIndex && !authLoaded) return null;
 	if (onIndex && !user) return <PublicLanding />;
-
-	const titleMsg = [...matches].reverse().find(m => m.staticData.title)?.staticData.title;
-	const title = override !== '' ? override : i18n._(titleMsg ?? msg`dashboard`);
 
 	return (<>
 		<RouteProgress />

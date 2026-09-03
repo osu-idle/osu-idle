@@ -24,6 +24,7 @@ packages/shared/src/locales/*.ts
 !.vscode/extensions.json
 .idea
 .DS_Store
+.claude
 
 # misc
 osu!design
@@ -33,6 +34,7 @@ packages/client/public/beatmaps
 packages/client/public/metadata
 packages/client/public/previews
 packages/client/public/download
+graphify-out/
 
 # tmp
 *.tsbuildinfo

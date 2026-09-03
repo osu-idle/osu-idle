@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-07-17 16:55\n"
+"PO-Revision-Date: 2026-07-17 18:40\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -46,6 +46,11 @@ msgstr "{0, plural, one {# résultat} other {# résultats}}"
 #: src/scenes/SongSelect.tsx
 msgid "{0} of {total} results"
 msgstr "{0} sur {total} résultats"
+
+#. placeholder {0}: skillName(g.skill)
+#: src/logs.ts
+msgid "{0} reached level {level}!"
+msgstr ""
 
 #: src/components/BeatmapCarousel.tsx
 msgid "{count, plural, one {# map} other {# maps}}"

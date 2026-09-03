@@ -12,6 +12,7 @@ import Entities from './entity/entities';
 export const LOGS_CHANNEL = '#logs';
 
 const LOG_COLOR = '#58a0ec';
+const LEVELUP_COLOR = '#81fa9b';
 
 export const logLines = new Synced<ChatLine[]>([]);
 
@@ -53,4 +54,14 @@ export const logPlayFinished = (
 		LOG_COLOR,
 		score.playedAt,
 	);
+	logSkillLevelUps(progression, score.playedAt);
+};
+
+/** One #logs line per level crossed this play, every level, every time. */
+const logSkillLevelUps = (progression?: SkillProgress[], at = Date.now()): void => {
+	for (const g of progression ?? []) {
+		for (let level = g.fromLevel + 1; level <= g.toLevel; level++) {
+			log(t`${skillName(g.skill)} reached level ${level}!`, LEVELUP_COLOR, at);
+		}
+	}
 };

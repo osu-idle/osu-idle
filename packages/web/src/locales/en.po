@@ -101,6 +101,7 @@ msgid "Change username"
 msgstr "Change username"
 
 #: src/routes/c/$id.tsx
+#: src/routes/preview.tsx
 msgid "character info"
 msgstr "character info"
 
@@ -135,7 +136,7 @@ msgstr "Country Ranking"
 msgid "Create your own osu! character and watch it grow to become a<0/><1>legendary mania player</1>."
 msgstr "Create your own osu! character and watch it grow to become a<0/><1>legendary mania player</1>."
 
-#: src/routes/__root.tsx
+#: src/hooks/useRouteTitle.ts
 msgid "dashboard"
 msgstr "dashboard"
 
@@ -202,6 +203,7 @@ msgid "Historical"
 msgstr "Historical"
 
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Hit Accuracy"
 msgstr "Hit Accuracy"
 
@@ -308,6 +310,7 @@ msgstr "Performance"
 #: src/components/leaderboard/PlayerGradesLeaderboard.tsx
 #: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Play Count"
 msgstr "Play Count"
 
@@ -353,6 +356,7 @@ msgstr "Ranked"
 #: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Ranked Score"
 msgstr "Ranked Score"
 
@@ -439,6 +443,7 @@ msgid "skills"
 msgstr "skills"
 
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Skills"
 msgstr "Skills"
 
@@ -476,10 +481,12 @@ msgid "Total"
 msgstr "Total"
 
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Total Hits"
 msgstr "Total Hits"
 
 #: src/pages/characters/CharacterPage.tsx
+#: src/pages/characters/CharacterPreview.tsx
 msgid "Total Score"
 msgstr "Total Score"
 

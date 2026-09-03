@@ -2,13 +2,58 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<link rel="icon" type="image/png" href="/idle.png" />
+		<link rel="icon" href="/favicon.ico" sizes="32x32" />
+		<link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 		<meta name="theme-color" content="#0f0d11" />
-		<title>osu!idle</title>
+
+		<title>osu!idle - an osu!mania idle game</title>
+		<meta name="description" content="Create an osu!mania character and let it play real beatmaps on its own. It trains its skills and earns pp on ranked maps. Free, in any browser on phone, tablet or PC." />
+		<meta name="application-name" content="osu!idle" />
+		<link rel="canonical" href="https://osu.idle.rhythmgamers.net/" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="osu!idle" />
+		<meta property="og:url" content="https://osu.idle.rhythmgamers.net/" />
+		<meta property="og:title" content="osu!idle - an osu!mania idle game" />
+		<meta property="og:description" content="Create an osu!mania character and let it play real beatmaps on its own. It trains its skills and earns pp on ranked maps. Free, in any browser on phone, tablet or PC." />
+		<meta property="og:image" content="https://osu.idle.rhythmgamers.net/og.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="osu!idle" />
+		<meta name="twitter:card" content="summary_large_image" />
+
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "VideoGame",
+			"name": "osu!idle",
+			"url": "https://osu.idle.rhythmgamers.net/",
+			"image": "https://osu.idle.rhythmgamers.net/og.png",
+			"description": "An osu!mania idle game. You build a character, it plays real beatmaps on its own, trains its skills and earns pp on ranked maps.",
+			"applicationCategory": "Game",
+			"genre": ["Idle", "Rhythm"],
+			"operatingSystem": "Web browser, Windows, Linux, macOS, Android, iOS",
+			"gamePlatform": ["Web browser", "PC", "Mobile"],
+			"inLanguage": "en",
+			"license": "https://www.gnu.org/licenses/agpl-3.0.html",
+			"offers": {
+				"@type": "Offer",
+				"price": "0",
+				"priceCurrency": "USD"
+			}
+		}
+		</script>
 	</head>
 	<body>
 		<div id="root"></div>
+		<noscript>
+			<h1>osu!idle</h1>
+			<p>An osu!mania idle game. You build a character, it plays real beatmaps on its own, trains its skills and earns pp on ranked maps.</p>
+			<p>The game needs JavaScript. Profiles, rankings and news are on <a href="/web">the web platform</a>.</p>
+			<p>osu!idle is an unofficial fan project and is not affiliated with osu.ppy.sh.</p>
+		</noscript>
 		<script type="module" src="/src/main.tsx"></script>
 	</body>
 </html>

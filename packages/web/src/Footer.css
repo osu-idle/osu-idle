@@ -8,6 +8,13 @@ footer {
 	font-size: 10px;
 	padding: 10px 0 5px;
 }
+.footer__rg {
+	margin: 0 auto;
+	padding: 0 0 5px;
+}
+.footer__rg a {
+	color: hsl(var(--hsl-f1));
+}
 .footer__credits,
 .footer__links {
 	display: flex;
