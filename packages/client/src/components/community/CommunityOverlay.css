@@ -17,12 +17,18 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	transition: opacity 0.5s ease;
+	/* visibility, not just pointer-events: a descendant can set pointer-events
+	   back on (the shared .dropdown does), and this sits above the page overlay,
+	   so a closed panel would eat clicks meant for the scene under it */
+	visibility: hidden;
+	transition: opacity 0.5s ease, visibility 0s linear 0.5s;
 	background: rgba(0, 0, 0, 0.9);
 	pointer-events: none;
 }
 .community-panel.is-enabled {
 	opacity: 1;
+	visibility: visible;
+	transition: opacity 0.5s ease, visibility 0s linear 0s;
 	pointer-events: all;
 }
 
@@ -32,10 +38,13 @@
 	width: 100%;
 	background: rgba(0, 0, 0, 0.9);
 	opacity: 0;
-	transition: opacity 0.5s ease;
+	visibility: hidden;
+	transition: opacity 0.5s ease, visibility 0s linear 0.5s;
 	pointer-events: none;
 }
 .community-chat-container.is-enabled {
 	opacity: 1;
+	visibility: visible;
+	transition: opacity 0.5s ease, visibility 0s linear 0s;
 	pointer-events: all;
 }

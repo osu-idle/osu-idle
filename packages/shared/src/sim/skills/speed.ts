@@ -64,7 +64,7 @@ export default class Speed extends Skill {
 	constructor(def = 0) {
 		super(SKILL.speed, def);
 
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			const { enablednps, comfortnps, nps } = Speed.computeForLevel(level);
 			this.enablednps = enablednps;
 			this.comfortnps = comfortnps;

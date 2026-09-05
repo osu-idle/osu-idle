@@ -26,6 +26,7 @@ export default function UpgradesView() {
 						key={`${character.id}:${skill.name}`}
 						skill={skill}
 						locked={character.id === 0}
+						lifetimeXp={character[`${skill.name}LifetimeXp`]}
 					/>
 				))}
 			</div>

@@ -64,3 +64,5 @@ packages/web/dist.next/
 
 /packages/server/beatmaps/
 /packages/server/previews/
+# local design dumps, never committed
+spec/

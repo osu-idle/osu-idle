@@ -1,4 +1,5 @@
 import {
+	bigint,
 	decimal,
 	double,
 	int,
@@ -28,20 +29,27 @@ export const RANK_HISTORY_DAYS = 90;
 
 const skillColumn = () => int().notNull().default(0);
 const overdriveColumn = () => double().notNull().default(0);
+// Prestige cycles push a single skill past 1.6e9 and the overall total past
+// 1.6e10, well over a signed INT.
+const xpColumn = () => bigint({ mode: 'number' }).notNull().default(0);
 
 type SkillColumns =
 	& { [K in SkillName as `${K}Level`]: ReturnType<typeof skillColumn> }
-	& { [K in SkillName as `${K}Xp`]: ReturnType<typeof skillColumn> }
-	& { [K in SkillName as `${K}TotalXp`]: ReturnType<typeof skillColumn> }
+	& { [K in SkillName as `${K}Xp`]: ReturnType<typeof xpColumn> }
+	& { [K in SkillName as `${K}TotalXp`]: ReturnType<typeof xpColumn> }
+	& { [K in SkillName as `${K}LifetimeXp`]: ReturnType<typeof xpColumn> }
 	& { [K in SkillName as `${K}Upgrades`]: ReturnType<typeof skillColumn> }
+	& { [K in SkillName as `${K}Prestige`]: ReturnType<typeof skillColumn> }
 	& { [K in SkillName as `${K}Overdrive`]: ReturnType<typeof overdriveColumn> };
 
 const skillColumns = Object.fromEntries(
 	Skills.flatMap(skill => [
 		[`${skill}Level`, skillColumn()],
-		[`${skill}Xp`, skillColumn()],
-		[`${skill}TotalXp`, skillColumn()],
+		[`${skill}Xp`, xpColumn()],
+		[`${skill}TotalXp`, xpColumn()],
+		[`${skill}LifetimeXp`, xpColumn()],
 		[`${skill}Upgrades`, skillColumn()],
+		[`${skill}Prestige`, skillColumn()],
 		[`${skill}Overdrive`, overdriveColumn()],
 	]),
 ) as SkillColumns;
@@ -57,8 +65,12 @@ export const characters = mysqlTable('character', {
 	avatarUrl: varchar({ length: 512 }),
 	...skillColumns,
 	overallLevel: skillColumn(),
-	overallXp: skillColumn(),
-	overallTotalXp: skillColumn(),
+	overallXp: xpColumn(),
+	overallTotalXp: xpColumn(),
+	overallLifetimeXp: xpColumn(),
+	/** Rebirth number, 1 for a first character. Its unlock set is the first
+	 *  generation - 1 entries of the shared list. */
+	generation: int().notNull().default(1),
 	pp: decimal({
 		precision: 10, scale: 3,
 	}).notNull().default('0'),
@@ -90,6 +102,8 @@ export function characterToDTO(
 			xp: row[`${s}Xp`],
 			upgrades: row[`${s}Upgrades`],
 			overdrive: row[`${s}Overdrive`],
+			prestige: row[`${s}Prestige`],
+			lifetimeXp: row[`${s}LifetimeXp`],
 		}]),
 	) as CharacterDTO['skills'];
 
@@ -99,6 +113,8 @@ export function characterToDTO(
 		name: row.name,
 		avatarUrl: resolveAvatarUrl(row.avatarUrl, userAvatarUrl),
 		country: userCountry,
+		generation: row.generation,
+		overallLevel: row.overallLevel,
 		skills,
 	};
 }

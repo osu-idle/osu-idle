@@ -18,21 +18,24 @@ export const purchaseUpgrade = async (skillName: SkillName): Promise<boolean> =>
 	if (character.isGuest()) {
 		const skill = character.skills.find(s => s.name === skillName);
 		if (!skill) return false;
+		let spent = 0;
 		try {
 			const purchase = applyUpgrade({
 				level: skill.level.get(),
 				xp: skill.xp.get(),
 				upgrades: skill.upgrades.get(),
 				overdrive: skill.overdrive.get(),
+				prestige: skill.prestige.get(),
 			});
 			skill.level.set(purchase.level);
 			skill.xp.set(purchase.xp);
 			skill.upgrades.set(purchase.upgrades);
 			skill.overdrive.set(purchase.overdrive);
+			spent = purchase.spent;
 		} catch {
 			return false;
 		}
-		await character.persistSkills();
+		await character.spendXP(skillName, spent);
 		return true;
 	}
 

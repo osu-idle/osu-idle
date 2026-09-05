@@ -14,7 +14,7 @@ import {
 	LEAD_IN_MS,
 	ManiaGame,
 } from '@osu-idle/shared/sim/maniaGame';
-import CharacterBot from '@osu-idle/shared/sim/bots/character';
+import CharacterBot, { type SkillProgress } from '@osu-idle/shared/sim/bots/character';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 import type { Bot } from '@osu-idle/shared/sim/bot';
 import { DEBUG_BOT_LEVEL } from '../gameplay/strainDebug';
@@ -23,6 +23,7 @@ import {
 	abortPlaySession,
 	fetchPlayResult,
 	PlayResultError,
+	finishPlaySession,
 	skipPlaySession,
 	startPlaySession,
 	type PlayContext,
@@ -32,6 +33,15 @@ import Socket from '../online/socket';
 import Spectate from '../online/spectate';
 import ContextMenu from '../components/ContextMenu';
 import Entities from '../entity/entities';
+import { hasUnlock } from '@osu-idle/shared/rebirth';
+import {
+	playReducer,
+	startPlay,
+	type PlayEffect,
+	type PlayEvent,
+	type PlayScoring,
+	type PlayState,
+} from '@osu-idle/shared/sim/playLifecycle';
 import { Score } from '../db/schema/score';
 import { ScoreXP } from '../db/schema/score_xp';
 import { logPlayFinished } from '../logs';
@@ -62,12 +72,16 @@ import {
 	DialogPanel,
 } from './Transition';
 import Controls from '../input/Controls';
-import { debugMode } from '../globals';
+import {
+	debugMode,
+	debugXpMultiplier,
+} from '../globals';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import accuracy from '@osu-idle/shared/display/accuracy';
 import { getCharacter } from '../online/services/characters';
 import Autopilot from '../gameplay/autopilot';
+import SkipToEndButton from '../components/gameplay/SkipToEndButton';
 import {
 	Skills,
 	type SkillName,
@@ -101,6 +115,14 @@ const HITSOUND_LOOKAHEAD_MS = 1500;
  *  hidden (rAF is paused then; timers are merely throttled). */
 const HITSOUND_TICK_MS = 250;
 
+/** How long a ranked skip waits for the server to release the rest of the replay
+ *  before finishing with whatever arrived. */
+const SKIP_WAIT_MS = 5000;
+
+/** How long to wait between asking the server for a result it is still storing.
+ *  How many times is the machine's business (RESULT_ATTEMPTS). */
+const RESULT_POLL_MS = 200;
+
 function GameplayInner({
 	beatmapInfo, 
 	beatmap, 
@@ -132,8 +154,11 @@ function GameplayInner({
 	// live grade for the HUD badge - a DOM <img> overlaid on the canvas, so it is
 	// React state pushed from the renderer only when the grade actually changes
 	const [grade, setGrade] = useState<Grade>('X');
-	const savedRef = useRef(false);
 	const gameRef = useRef<ManiaGame | null>(null);
+	// the play is over; the render loop switches to its outro clock so the
+	// playfield stops tracking a song that has ended
+	const forceFinishRef = useRef(false);
+	const offsetCursorRef = useRef(0);
 	const botRef = useRef<Bot | null>(null);
 	// source of the strain HUD's per-skill values - the playing bot when the play
 	// is simulated locally, or a display-only side analysis for ranked replays
@@ -176,13 +201,13 @@ function GameplayInner({
 	const [autopilot] = useSynced(Autopilot.session);
 	const nextUp = autopilot ? Autopilot.next() : null;
 	const online = useAsync(async () => 
-		character.id > 1 ? getCharacter(character.id) : undefined
+		character.isGuest() ? undefined : getCharacter(character.id)
 	, [character]);
 
 	// stop the play server-side and leave (reached through the confirm menu)
 	const abortPlay = () => {
 		if (play.mode === 'ranked') void abortPlaySession(play.token);
-		onExit();
+		dispatch({ type: 'abort' });
 	};
 
 	// quit (ranked only): leave while the bot keeps playing server-side; dismiss
@@ -221,7 +246,10 @@ function GameplayInner({
 		// the bot's reading window must stay scroll-speed-independent so the same map
 		// scores identically regardless of the player's chosen speed (and matches the
 		// server, which constructs ManiaGame with the default window).
-		gameRef.current = new ManiaGame(beatmap, botRef.current, { noFail: play.mode === 'debug' });
+		const divine = hasUnlock(character.generation, 'DIVINE');
+		gameRef.current = new ManiaGame(beatmap, botRef.current, {
+			noFail: play.mode === 'debug', divine,
+		});
 		// ranked replays don't analyze strain locally - run a display-only analysis
 		// of the same map with the character's skills (an approximation of the
 		// server's authoritative play, for the strain HUD only)
@@ -232,7 +260,7 @@ function GameplayInner({
 				character.skills, 
 				beatmap.difficulty.overallDifficulty,
 			);
-			new ManiaGame(beatmap, strainBotRef.current);
+			new ManiaGame(beatmap, strainBotRef.current, { divine });
 		}
 		clockRef.current = null;
 		hitsoundPtr.current = 0;
@@ -253,12 +281,213 @@ function GameplayInner({
 		SceneManager.set(SCENE.SELECT);
 	};
 
-	// debug: resolve the whole map instantly and jump to the result screen
+	// --- play lifecycle -----------------------------------------------------
+	// The machine in shared/sim/playLifecycle decides what happens; everything
+	// below only carries its effects out. Nothing here may end a play on its own:
+	// dispatch an event and let the machine say so, or the endings drift apart
+	// again.
+	const lifecycleRef = useRef<PlayState>(startPlay(play.mode as PlayScoring));
+	/** this client's own score, shown when nobody else owns the result */
+	const localScoreRef = useRef<Score | undefined>(undefined);
+	/** the authoritative result, once the server has one */
+	const serverScoreRef = useRef<{ score: Score, gains?: SkillProgress[] } | undefined>(undefined);
+	/** per-skill gains to show alongside a locally-scored play */
+	const progressionRef = useRef<SkillProgress[] | undefined>(undefined);
+	/** the play's token, which only a ranked play has */
+	const rankedToken = play.mode === 'ranked' ? play.token : undefined;
+
+	const dispatch = (event: PlayEvent) => {
+		const from = lifecycleRef.current.phase;
+		const stepped = playReducer(lifecycleRef.current, event);
+		lifecycleRef.current = stepped.state;
+		// one line per transition: what happened, where it moved, what it asked
+		// for. If a play ever stalls again this says which phase it stalled in.
+		console.log(`[play] ${event.type} | ${from} -> ${stepped.state.phase} | `
+			+ (stepped.effects.map(e => e.type).join(' ') || 'no effects'), event);
+		for (const effect of stepped.effects) {
+			// an effect that throws must not vanish: without this the play stalls in
+			// whatever phase it was in, with nothing on screen to say why
+			void perform(effect).catch((e) => {
+				console.error(`[play] effect ${effect.type} failed`, e);
+				if (effect.type === 'build-local-score') {
+					dispatch({
+						type: 'local-ready', failed: gameRef.current?.score.failed ?? false,
+					});
+				}
+			});
+		}
+	};
+
+	/** Build this client's score for the play, and for a locally-scored one save
+	 *  it and award its XP. pp must never gate it: a rejection here would leave
+	 *  the play with nothing to show. */
+	const buildLocalScore = async () => {
+		const game = gameRef.current;
+		if (!game) {
+			// nothing to build from, but the machine still has to be told
+			dispatch({
+				type: 'local-ready', failed: false,
+			});
+			return;
+		}
+		const pp = await calculatePP(game.score, beatmap).catch((e) => {
+			console.warn('[score] pp failed, finishing without it', e);
+			return 0;
+		});
+		const c = game.score.counts;
+		const failed = game.score.failed;
+		const local = new Score({
+			characterId: Number(character.id),
+			beatmapId: beatmap.metadata.beatmapId,
+			score: Math.round(game.score.score),
+			accuracy: game.score.accuracy,
+			maxCombo: game.score.maxCombo,
+			...c,
+			grade: game.score.grade,
+			pp,
+			ur: game.unstableRate(),
+			pfc: c.MISS === 0 && c.BAD === 0 && c.GOOD === 0,
+			playedAt: Date.now(),
+		});
+		localScoreRef.current = local;
+
+		// ranked keeps it unsaved: it is the fallback display, and the server's own
+		// score is what gets mirrored. A failed play is never saved or paid for.
+		if (play.mode !== 'ranked' && play.mode !== 'debug' && !failed) {
+			try {
+				const saved = await local.add();
+				let progression;
+				if (play.mode === 'guest' && botRef.current instanceof CharacterBot) {
+					progression = botRef.current.applyProgression(
+						beatmapInfo.metadata.total_length,
+						saved,
+						debugXpMultiplier.get(),
+					);
+					void Entities.character.get().addProgression(progression);
+					void ScoreXP.record(saved, progression);
+				}
+				logPlayFinished(saved, beatmapInfo, progression);
+				localScoreRef.current = saved;
+				progressionRef.current = progression;
+			} catch (e) {
+				console.warn('[score] save failed', e);
+			}
+		}
+		dispatch({
+			type: 'local-ready', failed,
+		});
+	};
+
+	/** Ask for the authoritative result. Polls rather than backing off - the wait
+	 *  is the server storing the play, which finishes when it finishes. */
+	const fetchResult = async (attempt: number) => {
+		try {
+			if (!rankedToken) return;
+			const result = await fetchPlayResult(rankedToken, true);
+			console.log('[play] server result', JSON.stringify(result).slice(0, 160));
+			if (result.failed || !('score' in result) || !result.score) {
+				dispatch({
+					type: 'server-result', hasScore: false,
+				});
+				return;
+			}
+			const ch = Entities.character.get();
+			for (const g of result.gains ?? []) {
+				ch.skills.find(s => s.name === g.skill)?.level.set(g.toLevel);
+				ch.skills.find(s => s.name === g.skill)?.xp.set(g.toXp);
+			}
+			void ch.persistSkills();
+
+			// mirror the server's score locally so it shows in history/leaderboards
+			const score = Score.fromDTO(result.score);
+			logPlayFinished(score, beatmapInfo, result.gains);
+			const saved = await score.add().catch((e) => {
+				console.warn('[score] local mirror failed', e);
+				return score;
+			});
+			void ScoreXP.record(saved, result.gains);
+			serverScoreRef.current = {
+				score: saved, gains: result.gains,
+			};
+			dispatch({
+				type: 'server-result', hasScore: true,
+			});
+		} catch (e) {
+			// `unknown` means the result is gone for good (finalised then expired, or
+			// a long AFK); anything else is worth asking again while it is stored
+			const retryable = !(e instanceof PlayResultError && e.reason === 'unknown');
+			console.warn(`[play] result attempt ${attempt} failed, retryable=${retryable}`, e);
+			if (retryable) await sleep(RESULT_POLL_MS);
+			else console.warn('[score] result gone, showing local replay', e);
+			dispatch({
+				type: 'server-error', retryable,
+			});
+		}
+	};
+
+	const showResult = (source: 'server' | 'local', failed: boolean) => {
+		const game = gameRef.current;
+		const server = serverScoreRef.current;
+		if (source === 'server' && server) {
+			SceneManager.set(SCENE.RESULT, server.score, game ?? undefined, server.gains, false);
+			return;
+		}
+		const local = localScoreRef.current;
+		if (!local) {
+			console.error('[score] no result to show, leaving gameplay');
+			onExit();
+			return;
+		}
+		SceneManager.set(SCENE.RESULT, local, game ?? undefined, progressionRef.current, failed);
+	};
+
+	const perform = async (effect: PlayEffect) => {
+		switch (effect.type) {
+			case 'resolve-map':
+				gameRef.current?.update(gameRef.current.songEndMs + 1000);
+				return;
+			case 'stop-hitsounds':
+				stopScheduledHitsounds();
+				return;
+			case 'release-audio':
+				releaseAudio();
+				return;
+			case 'freeze-playfield':
+				// the render loop switches to its outro clock, and the chrome swaps to
+				// the finished state
+				forceFinishRef.current = true;
+				setDone(true);
+				return;
+			case 'mark-complete':
+				if (rankedToken) Spectate.complete(rankedToken);
+				return;
+			case 'request-server-finish':
+				if (rankedToken) void finishPlaySession(rankedToken, effect.cursor);
+				// never let a skip wait forever on a reply that may not come
+				window.setTimeout(() => dispatch({ type: 'replay-timeout' }), SKIP_WAIT_MS);
+				return;
+			case 'build-local-score':
+				await buildLocalScore();
+				return;
+			case 'fetch-result':
+				await fetchResult(effect.attempt);
+				return;
+			case 'show-result':
+				showResult(effect.source, effect.failed);
+				return;
+			case 'exit':
+				onExit();
+				return;
+		}
+	};
+
+	/** Debug: end the play now. What that means - resolve here, or ask the server
+	 *  for the rest of the replay first - is the machine's call, not this one's. */
 	const skipToEnd = () => {
-		if (!game) return;
-		game.update(game.songEndMs + 1000); // judge every remaining note
-		music.playGameplay(game.songEndMs + 1000);
-		setDone(true);
+		if (!gameRef.current) return;
+		dispatch({
+			type: 'skip', cursor: offsetCursorRef.current,
+		});
 	};
 
 	const skipToStart = () => {
@@ -337,136 +566,14 @@ function GameplayInner({
 	Controls.seekForward.usePress(() => seekBy(10000));
 	Controls.seekBack.usePress(() => seekBy(-10000));
 
-	// finalise the play once it's over - the path depends on how it was scored:
-	//  - ranked:   the server is authoritative signal completion and show its result
-	//  - guest:    save locally and award XP from the local simulation
-	//  - unranked: save locally only (no XP)
-	useEffect(() => {
-		if (!done || !game || savedRef.current) return;
-		savedRef.current = true;
-		const c = game.score.counts;
-		const failed = game.score.failed;
-
-		void calculatePP(game.score, beatmap).then(async pp => {
-			// a local Score built from this client's (replayed or simulated) play -
-			// used as-is for guest/unranked, and as the fail-screen display for ranked
-			const local = new Score({
-				characterId: Number(character.id),
-				beatmapId: beatmap.metadata.beatmapId,
-				score: Math.round(game.score.score),
-				accuracy: game.score.accuracy,
-				maxCombo: game.score.maxCombo,
-				...c,
-				grade: game.score.grade,
-				pp,
-				ur: game.unstableRate(),
-				pfc: c.MISS === 0 && c.BAD === 0 && c.GOOD === 0,
-				playedAt: Date.now(),
-			});
-
-			// debug play: never saved, submitted, or XP-bearing - just show the result
-			if (play.mode === 'debug') {
-				SceneManager.set(SCENE.RESULT, local, game, undefined, false);
-				return;
-			}
-
-			if (play.mode === 'ranked') {
-				// the ranked play is a deterministic replay of the server's offsets, so
-				// `local` already reproduces the server's exact score - show it whenever
-				// the authoritative result can't be fetched (gone server-side, or the
-				// server unreachable) so the player still reaches their result screen.
-				const showLocal = () => SceneManager.set(
-					SCENE.RESULT, 
-					local, 
-					game, 
-					undefined, 
-					failed,
-				);
-
-				const handleRanked = async (tries = 0) => {
-					try {
-						const result = await fetchPlayResult(play.token, true);
-
-						if (result.failed || !('score' in result) || !result.score) {
-							SceneManager.set(SCENE.RESULT, local, game, undefined, true);
-							return;
-						}
-
-						const ch = Entities.character.get();
-						for (const g of result.gains ?? []) {
-							ch.skills.find(s => s.name === g.skill)?.level.set(g.toLevel);
-							ch.skills.find(s => s.name === g.skill)?.xp.set(g.toXp);
-						}
-						void ch.persistSkills();
-
-						// mirror the authoritative server score into the local DB so it
-						// shows up in local history / leaderboards (keyed by its onlineId)
-						const score = Score.fromDTO(result.score);
-						logPlayFinished(score, beatmapInfo, result.gains);
-						void score.add()
-							.then(saved => {
-								void ScoreXP.record(saved, result.gains);
-								SceneManager.set(SCENE.RESULT, saved, game, result.gains, false);
-							})
-							.catch(e => {
-								console.warn('[score] local mirror failed', e);
-								SceneManager.set(SCENE.RESULT, score, game, result.gains, false);
-							});
-						return;
-					} catch (e) {
-						// unknown: the result is gone (finalised then TTL-expired, or a long
-						// AFK at the end of the play) - fall back to the in-memory replay.
-						if (e instanceof PlayResultError && e.reason === 'unknown') {
-							showLocal();
-							return;
-						}
-						// otherwise it may not be finalised yet (clock skew) - retry, then
-						// fall back to the in-memory replay rather than leaving the player stuck.
-						if (tries >= 8) {
-							console.warn('[score] result fetch failed, showing local replay', e);
-							showLocal();
-							return;
-						}
-						await sleep(Math.min(8, Math.pow(2, tries)) * 1000);
-						await handleRanked(tries + 1);
-					}
-				};
-
-				await handleRanked();
-				return;
-			}
-
-			// guest / unranked: a failed play isn't saved and awards no XP
-			if (failed) {
-				SceneManager.set(SCENE.RESULT, local, game, undefined, true);
-				return;
-			}
-			void local.add()
-				.then(saved => {
-					// only guest play awards local XP; unranked play does not
-					let progression;
-					if (play.mode === 'guest' && botRef.current instanceof CharacterBot) {
-						progression = botRef.current.applyProgression(
-							beatmapInfo.metadata.total_length,
-							saved,
-						);
-						void Entities.character.get().persistSkills();
-						void ScoreXP.record(saved, progression);
-					}
-					logPlayFinished(saved, beatmapInfo, progression);
-					SceneManager.set(SCENE.RESULT, saved, game, progression, false);
-				})
-				.catch((e) => { console.warn('[score] save failed', e); onExit(); });
-		});
-	}, [done]);
-
 	// A remote abort (another tab/device quitting this play) is pushed over the
 	// socket - stop spectating and leave.
 	useEffect(() => {
 		if (play.mode !== 'ranked') return;
 		return Socket.on('play:aborted', msg => {
-			if (msg.token !== play.token || savedRef.current) return;
-			onExit();
+			// through the machine: a play that already reached its result swallows
+			// this instead of leaving the scene out from under the result screen
+			if (msg.token === play.token) dispatch({ type: 'abort' });
 		});
 	}, []);
 
@@ -482,14 +589,28 @@ function GameplayInner({
 		if (!(bot instanceof ReplayBot)) return;
 
 		let cursor = play.next;
+		// the skip reads this to tell the server where our replay got to; without
+		// seeding it, a skip before the first pushed slice asks from 0 and the
+		// answer re-appends offsets we already hold
+		offsetCursorRef.current = cursor;
 		let done = false;
 		const offOffsets = Socket.on('play:offsets', msg => {
-			if (msg.token !== play.token || done) return;
+			if (msg.token !== play.token) return;
+			// `done` latches to stop the feed re-appending, but a skip's answer has
+			// to get through it: the server can report done with nothing to give
+			// (an unknown token), and then this would drop the reply that finishes
+			// the play
+			if (done && lifecycleRef.current.phase !== 'awaiting-replay') return;
 			if (msg.offsets.length) {
 				gameRef.current?.appendReplay(bot.addOffsets(msg.offsets));
 			}
 			cursor = msg.next;
+			offsetCursorRef.current = cursor;
 			done = msg.done;
+
+			dispatch({
+				type: 'offsets', done: msg.done,
+			});
 		});
 		const rewatch = (open: boolean) => {
 			if (open && !done) Socket.send({
@@ -787,7 +908,8 @@ function GameplayInner({
 
 			// end of map
 			if (!finished 
-				&& (game.finished 
+				&& (forceFinishRef.current
+					|| game.finished 
 					|| (now > game.songEndMs && (play.mode !== 'ranked' || (now > play.endsAt)))
 				)
 			) {
@@ -796,12 +918,7 @@ function GameplayInner({
 				// scrolling seamlessly while the result screen loads
 				outroFrom = now;
 				outroAt = performance.now();
-				// a fail stops gameplay before the map ends; silence the hitsounds
-				// already queued ahead on the audio clock so they don't play on past it
-				if (game.score.failed) stopScheduledHitsounds();
-				// release the gameplay buffer and hand audio back to the streaming player
-				releaseAudio();
-				setDone(true);
+				dispatch({ type: 'ended' });
 			}
 
 			// the playfield is now painted (frozen at the lead-in start). On a genuine
@@ -913,11 +1030,7 @@ function GameplayInner({
 				</div>
 			)}
 
-			{debug && !done && (
-				<button className="play__skip" onClick={skipToEnd}>
-					skip to end ⏭
-				</button>
-			)}
+			<SkipToEndButton shown={debug && !done} onSkip={skipToEnd} />
 
 			{confirmAbort && (
 				<ContextMenu

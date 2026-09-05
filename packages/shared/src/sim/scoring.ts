@@ -6,7 +6,17 @@ import {
 } from '../judgement.js';
 import clamp from '../math/clamp.js';
 
+/** What a divine adds on top of a marvelous, and only on a play that stayed
+ *  pure - see ScoreState.accuracy. A full-divine play reads exactly 101%. */
+export const DIVINE_ACCURACY_BONUS = 0.01;
+
+/** The most accuracy a play can report: every note divine on a pure play. Wire
+ *  schemas validate against this - a score above their ceiling is discarded on
+ *  arrival, which surfaces as a play that never finishes. */
+export const MAX_ACCURACY = 1 + DIVINE_ACCURACY_BONUS;
+
 export const ACCURACY: {[key in Judgement]: number} = {
+	[JUDGEMENT.DIVINE]: 1,
 	[JUDGEMENT.MARVELOUS]: 1,
 	[JUDGEMENT.PERFECT]: 1,
 	[JUDGEMENT.GREAT]: 0.66,
@@ -16,6 +26,7 @@ export const ACCURACY: {[key in Judgement]: number} = {
 };
 
 const HIT_VALUE: {[key in Judgement]: number} = {
+	[JUDGEMENT.DIVINE]: 320,
 	[JUDGEMENT.MARVELOUS]: 320,
 	[JUDGEMENT.PERFECT]: 300,
 	[JUDGEMENT.GREAT]: 200,
@@ -25,6 +36,7 @@ const HIT_VALUE: {[key in Judgement]: number} = {
 };
 
 const BONUS_VALUE: {[key in Judgement]: number} = {
+	[JUDGEMENT.DIVINE]: 32,
 	[JUDGEMENT.MARVELOUS]: 32,
 	[JUDGEMENT.PERFECT]: 32,
 	[JUDGEMENT.GREAT]: 16,
@@ -34,6 +46,7 @@ const BONUS_VALUE: {[key in Judgement]: number} = {
 };
 
 const HIT_BONUS: {[key in Judgement]: number} = {
+	[JUDGEMENT.DIVINE]: 2,
 	[JUDGEMENT.MARVELOUS]: 2,
 	[JUDGEMENT.PERFECT]: 1,
 	[JUDGEMENT.GREAT]: -4,
@@ -49,6 +62,7 @@ const HP_VALUE: {[key in Judgement]: (drain: number) => number} = {
 	[JUDGEMENT.GREAT]:(drain) => 0.4 - drain * 0.04,
 	[JUDGEMENT.PERFECT]: (drain) => 0.5 - drain * 0.05,
 	[JUDGEMENT.MARVELOUS]: (drain) => 0.55 - drain * 0.05,
+	[JUDGEMENT.DIVINE]: (drain) => 0.55 - drain * 0.05,
 };
 
 export const MAX_HP = 100;
@@ -159,8 +173,13 @@ export const maxHpIncrease = (drain: number): number => 0.0055 - drain * 0.0005;
 
 export type HitWindows = {[key in Judgement]: number};
 
-export function maniaWindows(od: number): HitWindows {
+export const DIVINE_WINDOW = 6;
+
+/** `divine` comes from the character's rebirth unlocks. Locked, its window is
+ *  negative so no offset can ever fall in it. */
+export function maniaWindows(od: number, divine = false): HitWindows {
 	return {
+		[JUDGEMENT.DIVINE]: divine ? DIVINE_WINDOW : -1,
 		[JUDGEMENT.MARVELOUS]: 16.5,
 		[JUDGEMENT.PERFECT]: 64 - 3 * od,
 		[JUDGEMENT.GREAT]: 97 - 3 * od,
@@ -171,6 +190,7 @@ export function maniaWindows(od: number): HitWindows {
 }
 
 export function judge(absOffsetMs: number, w: HitWindows): Judgement {
+	if (absOffsetMs <= w[JUDGEMENT.DIVINE]) return JUDGEMENT.DIVINE;
 	if (absOffsetMs <= w[JUDGEMENT.MARVELOUS]) return JUDGEMENT.MARVELOUS;
 	if (absOffsetMs <= w[JUDGEMENT.PERFECT]) return JUDGEMENT.PERFECT;
 	if (absOffsetMs <= w[JUDGEMENT.GREAT]) return JUDGEMENT.GREAT;
@@ -185,6 +205,9 @@ export type HoldTier = { judgement: Judgement, head: number, combined: number };
 
 export function holdTiers(w: HitWindows): HoldTier[] {
 	return [
+		{
+			judgement: JUDGEMENT.DIVINE, head: w[JUDGEMENT.DIVINE] * 1.2, combined: w[JUDGEMENT.DIVINE] * 2.4, 
+		},
 		{
 			judgement: JUDGEMENT.MARVELOUS, head: w[JUDGEMENT.MARVELOUS] * 1.2, combined: w[JUDGEMENT.MARVELOUS] * 2.4, 
 		},
@@ -213,6 +236,7 @@ const MAX_SCORE = 1_000_000;
 /** Running score / combo / accuracy state for a play. */
 export class ScoreState {
 	readonly counts: Record<Judgement, number> = {
+		[JUDGEMENT.DIVINE]: 0,
 		[JUDGEMENT.MARVELOUS]: 0,
 		[JUDGEMENT.PERFECT]: 0,
 		[JUDGEMENT.GREAT]: 0,
@@ -247,6 +271,9 @@ export class ScoreState {
 		/** osu!mania's per-map HP gain multiplier (`computeHpMultiplier`); scales
 		 *  positive HP changes only. 1 leaves gains at the raw drain-rate values. */
 		private readonly hpMultiplier = 1,
+		/** the character has divine unlocked, so an untouched play already sits at
+		 *  Z and drops to X on the first marvelous. Availability, not a landed hit. */
+		private readonly divineUnlocked = false,
 	) {
 		this.od = this.od; // prevent unused var warning
 	}
@@ -290,8 +317,24 @@ export class ScoreState {
 		}
 	}
 
+	/** Nothing below marvelous landed. The divine accuracy bonus and the top two
+	 *  grades all hang on this, and a pure play is exactly a 1M play. */
+	get pure(): boolean {
+		return this.counts[JUDGEMENT.PERFECT] === 0
+			&& this.counts[JUDGEMENT.GREAT] === 0
+			&& this.counts[JUDGEMENT.GOOD] === 0
+			&& this.counts[JUDGEMENT.BAD] === 0
+			&& this.counts[JUDGEMENT.MISS] === 0;
+	}
+
+	/** The divine bonus is applied here rather than accumulated into accEarned:
+	 *  one late GREAT has to take back every divine bonus already earned. */
 	get accuracy(): number {
-		return this.accPossible === 0 ? 1 : this.accEarned / this.accPossible;
+		if (this.accPossible === 0) return 1;
+		const bonus = this.pure
+			? this.counts[JUDGEMENT.DIVINE] * DIVINE_ACCURACY_BONUS
+			: 0;
+		return (this.accEarned + bonus) / this.accPossible;
 	}
 
 	get MISS(): number {
@@ -304,12 +347,14 @@ export class ScoreState {
 
 	get grade (): Grade {
 		if (this.failed) return GRADE.D;
-		if (this.counts[JUDGEMENT.PERFECT] === 0
-			&& this.counts[JUDGEMENT.GREAT] === 0
-			&& this.counts[JUDGEMENT.GOOD] === 0
-			&& this.counts[JUDGEMENT.BAD] === 0
-			&& this.counts[JUDGEMENT.MISS] === 0
-		) return GRADE.X;
+		if (this.pure) {
+			// nothing below marvelous has landed, so the play is still X at worst.
+			// It reads Z while no marvelous has spoiled it - from the very first
+			// note when divine is available, dropping to X the moment one lands.
+			const spoiled = this.counts[JUDGEMENT.MARVELOUS] > 0;
+			const divine = this.counts[JUDGEMENT.DIVINE] > 0 || this.divineUnlocked;
+			return !spoiled && divine ? GRADE.XX : GRADE.X;
+		}
 		if (this.accuracy >= 1) return GRADE.SS;
 		if (this.accuracy >= 0.95) return GRADE.S;
 		if (this.accuracy >= 0.9) return GRADE.A;

@@ -6,6 +6,7 @@ import type {
 import type RuntimeNote from '../runtimeNote.js';
 import max from '../../helpers/max.js';
 import cubic_bezier from '../../math/cubic_bezier.js';
+import normalize from '../../math/normalize.js';
 import Skill from './skill.js';
 import { SKILL } from '../../skills.js';
 
@@ -38,10 +39,24 @@ export default class Stamina extends Skill {
 	 *  (two tiers under = impossible) */
 	private static readonly OVERLOAD_CURVE = 1.6;
 
+	/** Per-second relaxation rates. The two are independent curves on purpose:
+	 *  deriving fatigue from recovery sent it through zero at mapped level 110
+	 *  and negative above, which inverted the gate. */
+	private static readonly RECOVERY_BASE = 0.025;
+	private static readonly RECOVERY_SPAN = 0.015;
+	private static readonly FATIGUE_BASE = 0.030;
+	private static readonly FATIGUE_SPAN = 0.015;
+	/** How much of the remaining fatigue rate the 100-200 band takes off. Below
+	 *  1 so it approaches the floor instead of reaching zero. */
+	private static readonly FATIGUE_RELIEF = 0.6;
+	/** No rate may reach zero: at zero the relaxation step is a no-op and strain
+	 *  freezes wherever it stands. */
+	private static readonly MIN_RATE = 0.001;
+
 	constructor(def = 0) {
 		super(SKILL.stamina, def);
 
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			const { recoveryRate, fatigueRate, nps } = Stamina.computeForLevel(level);
 			this.nps = nps;
 			this.fatigueRate = fatigueRate;
@@ -56,8 +71,17 @@ export default class Stamina extends Skill {
 		const nps = 6.6 * progress;
 		const bonusNps = 0.6 * bonusProgress;
 
-		const recoveryRate = 0.025 + 0.015 * progress + 0.0015 * bonusProgress;
-		const fatigueRate = 0.055 - recoveryRate;
+		// the 100-200 band eases fatigue instead of subtracting from it, so the
+		// rate keeps falling as the level climbs without ever crossing zero
+		const bonus = Stamina.fn(normalize(level, [100, 200]));
+		const recoveryRate = Stamina.RECOVERY_BASE
+			+ Stamina.RECOVERY_SPAN * progress
+			+ Stamina.RECOVERY_SPAN * bonus;
+		const fatigueRate = Math.max(
+			Stamina.MIN_RATE,
+			(Stamina.FATIGUE_BASE - Stamina.FATIGUE_SPAN * progress)
+				* (1 - Stamina.FATIGUE_RELIEF * bonus),
+		);
 
 		return {
 			nps: 1.2 + nps + bonusNps,

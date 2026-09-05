@@ -4,6 +4,7 @@ import type { ReplayOffset } from '@osu-idle/shared/sim/maniaGame';
 import type Character from '../db/schema/character';
 import { showDeltas } from '../globals';
 import Socket from './socket';
+import { debugXpMultiplier } from '../globals';
 
 /** Generous: a start awaits the server-side simulation of the whole map. */
 const START_TIMEOUT_MS = 20_000;
@@ -79,7 +80,7 @@ export async function startPlaySession(
 		const sentAt = Date.now();
 		const res = await Socket.request(
 			{
-				type: 'play:start', beatmapId,
+				type: 'play:start', beatmapId, xpMultiplier: debugXpMultiplier.get(),
 			},
 			'play:start',
 			START_TIMEOUT_MS,
@@ -143,6 +144,14 @@ export async function skipPlaySession(token: string) {
 	if (!(await Socket.sendSoon({
 		type: 'play:skip', token,
 	}))) console.warn('[play] skip not delivered');
+}
+
+/** Debug: ask the server to end the play now so its authoritative result can be
+ *  read immediately. Ignored by a production server. */
+export async function finishPlaySession(token: string, next: number) {
+	if (!(await Socket.sendSoon({
+		type: 'play:finish', token, next,
+	}))) console.warn('[play] finish not delivered');
 }
 
 /** Quit: tell the server to drop the play without submitting. */

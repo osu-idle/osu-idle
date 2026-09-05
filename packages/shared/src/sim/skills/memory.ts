@@ -67,7 +67,7 @@ export default class Memory extends Skill {
 	constructor(def = 0) {
 		super(SKILL.memory, def);
 
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			const p = Memory.SKILL_CB(Math.min(1, level / 100));
 			const i = Memory.IMPROVE_CB(Math.min(1, level / 100));
 			this.minPlays = lerp(Memory.MIN_PLAYS_LOW, Memory.MIN_PLAYS_HIGH, p);

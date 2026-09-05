@@ -35,7 +35,9 @@ export const Route = createFileRoute('/preview')({
 			getCharacterStats(id),
 		]);
 
-		return { character, stats };
+		return {
+			character, stats, 
+		};
 	},
 	component: PreviewRoute,
 	staticData: { title: msg`character info` },

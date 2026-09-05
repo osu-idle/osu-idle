@@ -10,6 +10,7 @@ export default class Entities {
 	public static character = new Synced<Character>(new Character({ 
 		id: 0, 
 		name: 'Loading...', 
+		local: 1,
 	}));
 
 }

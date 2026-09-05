@@ -1,6 +1,6 @@
 {
   "name": "@osu-idle/server",
-  "version": "0.17.1.0",
+  "version": "0.18.0.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -28,7 +28,7 @@
     "script:prod": "NODE_ENV=production tsx src/db/set_map_plays.ts",
     "migrate:beatmaps": "tsx src/db/migrate-beatmaps.ts",
     "migrate:beatmaps:prod": "NODE_ENV=production tsx src/db/migrate-beatmaps.ts",
-    "test": "tsx src/db/test.ts",
+    "webhook:preview": "tsx src/db/webhookPreview.ts",
     "extract": "lingui extract --clean"
   },
   "dependencies": {

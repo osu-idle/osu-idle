@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MAX_ACCURACY } from './sim/scoring.js';
 import {
 	Skills,
 	type SkillName,
@@ -13,6 +14,9 @@ export const skillProgressDTO = z.object({
 	xp: z.number().int().min(0),
 	upgrades: z.number().int().min(0),
 	overdrive: z.number().min(0),
+	prestige: z.number().int().min(0),
+	/** Xp ever earned on the skill: spending never takes it back. */
+	lifetimeXp: z.number().int().min(0),
 });
 export type SkillProgressDTO = z.infer<typeof skillProgressDTO>;
 
@@ -34,6 +38,11 @@ export const characterDTO = z.object({
 	avatarUrl: z.string(),
 	// The account's osu! country code. Absent for the local Guest.
 	country: z.string().optional(),
+	// Rebirth number, 1 for a first character: its unlock set is the first
+	// generation - 1 entries of REBIRTH_UNLOCKS.
+	generation: z.number().int().positive(),
+	// Drives the rebirth requirement.
+	overallLevel: z.number().int().min(0),
 	skills: skillsDTO,
 });
 export type CharacterDTO = z.infer<typeof characterDTO>;
@@ -42,7 +51,7 @@ export type CharacterDTO = z.infer<typeof characterDTO>;
  *  profile header). Aggregates that live on the character row / its totals. */
 export const characterStatsDTO = z.object({
 	pp: z.number().min(0),
-	accuracy: z.number().min(0).max(1),
+	accuracy: z.number().min(0).max(MAX_ACCURACY),
 	playCount: z.number().int().min(0),
 	level: z.number().int().min(0),
 });

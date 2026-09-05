@@ -1,7 +1,7 @@
 {
   "name": "osu-idle",
   "private": true,
-  "version": "0.17.1.0",
+  "version": "0.18.0.0",
   "type": "module",
   "description": "osu! idle - a replica of the osu! startup experience (React client + Hono backend)",
   "workspaces": [
@@ -13,7 +13,7 @@
     "packages/desktop"
   ],
   "scripts": {
-    "dev": "concurrently -n shared,server,types,web,client,graph -c gray,green,cyan,magenta,blue,yellow npm:dev:shared npm:dev:server npm:dev:types npm:dev:web npm:dev:client npm:dev:graph",
+    "dev": "concurrently -n shared,server,types,web,client -c gray,green,cyan,magenta,blue npm:dev:shared npm:dev:server npm:dev:types npm:dev:web npm:dev:client",
     "dev:shared": "npm -w @osu-idle/shared run dev",
     "dev:server": "npm -w @osu-idle/server run dev",
     "dev:types": "npm -w @osu-idle/server run build:types -- --watch",

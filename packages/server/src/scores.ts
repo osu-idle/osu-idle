@@ -1,3 +1,4 @@
+import { betterScore } from '@osu-idle/shared/scoreOrder';
 import {
 	count,
 	eq,
@@ -165,11 +166,7 @@ export const onSubmitScore = async (
 	await updateCharacterTotals(totals);
 };
 
-export const compareScores = (s1: ScoreRow, s2: ScoreRow) => {
-	const d1 = s1.score - s2.score;
-	if (d1 !== 0) return d1 > 0;
-	return (s1.id - s2.id) < 0;
-};
+export const compareScores = (s1: ScoreRow, s2: ScoreRow) => betterScore(s1, s2);
 
 export const compareScoresPP = (s1: ScoreRow, s2: ScoreRow) => {
 	const d1 = parseFloat(s1.pp) - parseFloat(s2.pp);
@@ -337,10 +334,12 @@ export async function applySkillXp(
 				[`${g.skill}Level`, g.toLevel],
 				[`${g.skill}Xp`, g.toXp],
 				[`${g.skill}TotalXp`, row[`${g.skill}TotalXp`] + g.xp],
+				[`${g.skill}LifetimeXp`, row[`${g.skill}LifetimeXp`] + g.xp],
 			]),
 			['overallLevel', overall.level.get()],
 			['overallXp', overall.xp.get()],
 			['overallTotalXp', row.overallTotalXp + overallXpGained],
+			['overallLifetimeXp', row.overallLifetimeXp + overallXpGained],
 		],
 	) as Record<`${
 		'overall'
@@ -348,7 +347,9 @@ export async function applySkillXp(
 		| `${'overall' 
 		| SkillName}Xp` 
 		| `${'overall' 
-		| SkillName}TotalXp`,
+		| SkillName}TotalXp`
+		| `${'overall' 
+		| SkillName}LifetimeXp`,
 	number
 	>;
 

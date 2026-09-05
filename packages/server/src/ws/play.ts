@@ -5,11 +5,14 @@ import {
 	abortPlay,
 	fetchResult,
 	playState,
+	finishPlayNow,
 	skipPlay,
 	startPlay,
 	streamOffsets,
 } from '../play';
 import { hub } from './hub';
+import { isProd } from '../env';
+import type { PlayResult } from '@osu-idle/shared/play';
 
 /**
  * The play consumer of the community socket. Commands (start/skip/abort/result)
@@ -111,6 +114,29 @@ type PlaySession = {
 };
 
 /** Handle one play-scoped message. Returns false for anything else. */
+/** Answer a result request, whatever happens. The reply is sent after an await,
+ *  so a throw in here used to send nothing at all and the client retried into
+ *  silence until it gave up - a server fault reaching the player as a hang. */
+const answerResult = async (
+	ws: WSContext,
+	characterId: number,
+	token: string,
+	forceSee: boolean,
+): Promise<void> => {
+	let result: PlayResult;
+	try {
+		result = await fetchResult(characterId, token, forceSee);
+	} catch (e) {
+		console.error('[play] result failed for', characterId, e);
+		result = {
+			ok: false, reason: 'unfinalized',
+		};
+	}
+	hub.sendLocal(ws, {
+		type: 'play:result', token, result,
+	});
+};
+
 export const handlePlay = async (
 	msg: ClientMessage,
 	{
@@ -123,7 +149,7 @@ export const handlePlay = async (
 			try {
 				const fresh = await freshCharacter() ?? character;
 				console.log(fresh.name, 'wants to play', msg.beatmapId);
-				const result = await startPlay(fresh, msg.beatmapId);
+				const result = await startPlay(fresh, msg.beatmapId, isProd ? 1 : msg.xpMultiplier ?? 1);
 				console.log(fresh.name, 'play status', result.status);
 				hub.sendLocal(ws, {
 					type: 'play:start', result,
@@ -145,15 +171,35 @@ export const handlePlay = async (
 		case 'play:skip':
 			await skipPlay(character.id, msg.token);
 			return true;
+		case 'play:finish': {
+			// a debug affordance: on prod it would hand out a play's xp without
+			// spending the time the idle loop is built on
+			if (isProd) return true;
+			// ending the play opens the whole remainder to the horizon gate, so the
+			// rest of the replay can be answered right here - the client must not be
+			// left waiting on the periodic feed to notice
+			await finishPlayNow(character.id, msg.token);
+			// read the rest of the replay out before finalising - finalising
+			// consumes the play record
+			const rest = await streamOffsets(character.id, msg.token, msg.next);
+			// `done` from the horizon gate answers "is the map fully revealed", which
+			// a failed play never satisfies: its timeline stops where the bot died, so
+			// the offsets past that point are never released. The play is over either
+			// way, so nothing more is coming - say so, or the client waits forever.
+			// Do not finalise here. finalizePlay consumes the play record, so a
+			// finalise racing the client's own play:result leaves that read with
+			// nothing to find - it reports unknown and retries while the first one
+			// is still storing, which reads as the client hanging on "submitting".
+			hub.sendLocal(ws, {
+				type: 'play:offsets', token: msg.token, ...rest, done: true,
+			});
+			return true;
+		}
 		case 'play:abort':
 			await abortPlay(character.id, msg.token);
 			return true;
 		case 'play:result':
-			hub.sendLocal(ws, {
-				type: 'play:result',
-				token: msg.token,
-				result: await fetchResult(character.id, msg.token, msg.forceSee ?? false),
-			});
+			await answerResult(ws, character.id, msg.token, msg.forceSee ?? false);
 			return true;
 		default:
 			return false;

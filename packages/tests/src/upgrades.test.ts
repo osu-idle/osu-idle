@@ -4,12 +4,23 @@ import {
 	expect,
 } from 'vitest';
 import {
-	MAX_UPGRADES,
+	BASE_MAX_UPGRADES,
+	GEAR_TIER_LEVELS,
+	PRESTIGE_XP_BONUS,
+	REBIRTH_MIN_OVERALL_LEVEL,
 	UPGRADE_LEVELS,
 	UPGRADE_XP_BONUS,
+	applyPrestige,
 	applyUpgrade,
+	canPrestige,
+	canRebirth,
 	canUpgrade,
+	maxUpgrades,
+	upgradeCost,
 	overdriveMultiplier,
+	prestigeMinLevel,
+	prestigeXPMultiplier,
+	skillXPMultiplier,
 	upgradeMinLevel,
 	upgradeMinSpend,
 	upgradeXPMultiplier,
@@ -20,7 +31,7 @@ import {
 } from '@osu-idle/shared/sim/skills/xp';
 
 const fresh = {
-	upgrades: 0, overdrive: 0,
+	upgrades: 0, overdrive: 0, prestige: 0,
 };
 
 describe('upgrade cost', () => {
@@ -37,17 +48,93 @@ describe('upgrade cost', () => {
 
 	it('is not purchasable below the required level', () => {
 		expect(canUpgrade({
-			level: UPGRADE_LEVELS - 1, upgrades: 0,
+			level: UPGRADE_LEVELS - 1, upgrades: 0, prestige: 0,
 		})).toBe(false);
 		expect(canUpgrade({
-			level: UPGRADE_LEVELS, upgrades: 0,
+			level: UPGRADE_LEVELS, upgrades: 0, prestige: 0,
 		})).toBe(true);
 	});
 
-	it('is capped at MAX_UPGRADES', () => {
+	it('is capped at the base ladder without prestige', () => {
 		expect(canUpgrade({
-			level: 100, upgrades: MAX_UPGRADES,
+			level: 100, upgrades: BASE_MAX_UPGRADES, prestige: 0,
 		})).toBe(false);
+	});
+
+	it('each prestige grants one more slot', () => {
+		expect(maxUpgrades(0)).toBe(BASE_MAX_UPGRADES);
+		expect(maxUpgrades(3)).toBe(BASE_MAX_UPGRADES + 3);
+	});
+
+	it('a gear tier costs the one level it stepped up by', () => {
+		expect(upgradeCost(0)).toBe(UPGRADE_LEVELS);
+		expect(upgradeCost(BASE_MAX_UPGRADES - 1)).toBe(UPGRADE_LEVELS);
+		expect(upgradeCost(BASE_MAX_UPGRADES)).toBe(GEAR_TIER_LEVELS);
+		expect(upgradeCost(BASE_MAX_UPGRADES + 3)).toBe(GEAR_TIER_LEVELS);
+	});
+
+	it('spends only that cost when a tier is bought', () => {
+		const p = applyUpgrade({
+			level: 101, xp: 0, upgrades: BASE_MAX_UPGRADES, overdrive: 0, prestige: 1,
+		});
+		expect(p.level).toBe(100);
+		expect(p.upgrades).toBe(BASE_MAX_UPGRADES + 1);
+	});
+
+	it('gear tiers step by one level, landing on the prestige that granted them', () => {
+		// the base ladder is untouched
+		expect(upgradeMinLevel(BASE_MAX_UPGRADES - 1)).toBe(BASE_MAX_UPGRADES * UPGRADE_LEVELS);
+		// the first tier lands one level above it, not ten
+		expect(upgradeMinLevel(BASE_MAX_UPGRADES))
+			.toBe(BASE_MAX_UPGRADES * UPGRADE_LEVELS + GEAR_TIER_LEVELS);
+		// after n prestiges the last slot needs the same level as prestige n+1
+		for (let n = 1; n <= 5; n++)
+			expect(upgradeMinLevel(maxUpgrades(n) - 1)).toBe(prestigeMinLevel(n));
+	});
+});
+
+describe('prestige', () => {
+	it('needs real level 100, one more per prestige taken', () => {
+		expect(prestigeMinLevel(0)).toBe(100);
+		expect(prestigeMinLevel(1)).toBe(101);
+		expect(canPrestige({
+			level: 99, prestige: 0,
+		})).toBe(false);
+		expect(canPrestige({
+			level: 100, prestige: 0,
+		})).toBe(true);
+		expect(canPrestige({
+			level: 100, prestige: 1,
+		})).toBe(false);
+	});
+
+	it('wipes level, xp, upgrades and overdrive, and counts up', () => {
+		const p = applyPrestige({
+			level: 100, xp: 500, upgrades: 7, overdrive: 3.5, prestige: 0,
+		});
+		expect(p).toEqual({
+			level: 0, xp: 0, upgrades: 0, overdrive: 0, prestige: 1,
+		});
+	});
+
+	it('refuses below the requirement', () => {
+		expect(() => applyPrestige({
+			level: 99, xp: 0, ...fresh,
+		})).toThrow();
+	});
+
+	it('multiplies its own pool on top of the upgrade bonus', () => {
+		expect(prestigeXPMultiplier(0)).toBe(1);
+		expect(prestigeXPMultiplier(2)).toBeCloseTo(Math.pow(1 + PRESTIGE_XP_BONUS, 2), 10);
+		expect(skillXPMultiplier(3, 5, 2))
+			.toBeCloseTo(upgradeXPMultiplier(3, 5) * prestigeXPMultiplier(2), 10);
+	});
+});
+
+describe('rebirth', () => {
+	it('unlocks on overall level, not a per-skill one', () => {
+		expect(canRebirth(REBIRTH_MIN_OVERALL_LEVEL - 1)).toBe(false);
+		expect(canRebirth(REBIRTH_MIN_OVERALL_LEVEL)).toBe(true);
 	});
 });
 

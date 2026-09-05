@@ -75,7 +75,7 @@ export default class Concentration extends Skill {
 		// drift malus starts (it then ramps in over DRIFT_RAMP_MS and plateaus).
 		const holdCurve = cubic_bezier(0.4, 0.3, 0.6, 0.7);
 
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			this.wobbleFocus = Math.max(0, 1 - wobbleSteadiness(level));
 			this.driftFocus = Math.max(0, 1 - driftCurve(Math.min(1, level / 100)));
 			this.driftHoldMs = Concentration.DRIFT_HOLD_BASE_MS

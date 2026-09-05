@@ -7,7 +7,8 @@ import type RuntimeNote from '../runtimeNote.js';
 import Synced from '../../helpers/synced.js';
 import type { SkillName } from '../../skills.js';
 import { xpForLevel } from './xp.js';
-import { upgradeXPMultiplier } from '../../upgrades.js';
+import { skillXPMultiplier } from '../../upgrades.js';
+import { mapLevel } from './levelCurve.js';
 
 export default abstract class Skill {
 
@@ -15,6 +16,7 @@ export default abstract class Skill {
 	public readonly xp = new Synced(0);
 	public readonly upgrades = new Synced(0);
 	public readonly overdrive = new Synced(0);
+	public readonly prestige = new Synced(0);
 
 	constructor(
 		public readonly name: SkillName,
@@ -37,7 +39,24 @@ export default abstract class Skill {
 	}
 
 	public xpMultiplier(): number {
-		return upgradeXPMultiplier(this.upgrades.get(), this.overdrive.get());
+		return skillXPMultiplier(
+			this.upgrades.get(),
+			this.overdrive.get(),
+			this.prestige.get(),
+		);
+	}
+
+	/** Effective level: what the player earned plus what prestige granted. */
+	public effectiveLevel(): number {
+		return this.level.get() + this.prestige.get();
+	}
+
+	/** Subscribe to the mapped level the strain curves read. Skills use this
+	 *  instead of level.sync so prestige bonuses reach their rates. */
+	protected syncSkillLevel(apply: (level: number) => void): void {
+		const run = () => apply(mapLevel(this.effectiveLevel()));
+		void this.level.sync(run);
+		void this.prestige.sync(run);
 	}
 
 	gainXP(xp: number): number {

@@ -1,3 +1,5 @@
+import { rankValue } from '@osu-idle/shared/scoreOrder';
+import { effectiveLevelOf } from '@osu-idle/shared/sim/skills/levelCurve';
 import {
 	and,
 	count,
@@ -52,16 +54,23 @@ const PREFIX = `${redisKeyPrefix}ranking:`;
 // in parallel).
 const META = `${redisKeyPrefix}rankmeta:`;
 // Bump when the set layout changes so the next deploy rebuilds from MySQL.
-const SCHEMA = 4;
+const SCHEMA = 7;   // skill sets hold the skill level, not lifetime xp
 const builtKey = `${META}built:v${SCHEMA}`;
 const lockKey = `${META}lock:v${SCHEMA}`;
 
 const suffix = (country?: string) => country === undefined ? '' : `:c:${country || '__'}`;
 const globalKey = (m: GlobalMetric) => `${PREFIX}${m}`;
 const countryKey = (m: CountryMetric, country: string) => `${PREFIX}${m}${suffix(country)}`;
-// One sorted set per beatmap (and per beatmap+country), scored by best score.
+// One sorted set per beatmap (and per beatmap+country), scored by best score
+// then accuracy. Score alone is not enough now that divine exists: it is capped
+// at 1M and raises accuracy instead, so every top play would tie on score and
+// the earlier one would keep the place forever.
 const beatmapKey = (beatmapId: number, country?: string) =>
 	`${PREFIX}bm:${beatmapId}${suffix(country)}`;
+
+// The sort value comes from shared/scoreOrder, the same rule that decides which
+// of two plays is a character's best - they have to agree, so they are one thing.
+const beatmapScore = rankValue;
 
 // Equal scores tiebreak on the winning score's id - the earlier (lower id) play
 // ranks higher, matching compareScores. The id can't ride in the float64 set
@@ -100,9 +109,16 @@ function index(
 		member,
 	);
 	pipeline.zadd(countryKey('overall', data.user.country), data.character.overallTotalXp, member);
+	// skill boards rank on the level the listings show, so the page reads in the
+	// same order as its own numbers
 	for (const skill of Skills) {
-		pipeline.zadd(globalKey(skill), data.character[`${skill}TotalXp`], member);
-		pipeline.zadd(countryKey(skill, data.user.country), data.character[`${skill}TotalXp`], member);
+		const level = effectiveLevelOf(
+			data.character[`${skill}Level`],
+			data.character[`${skill}Xp`],
+			data.character[`${skill}Prestige`],
+		);
+		pipeline.zadd(globalKey(skill), level, member);
+		pipeline.zadd(countryKey(skill, data.user.country), level, member);
 	}
 	let allgrades = 0;
 	for (const grade of GoodGrades) {
@@ -290,7 +306,7 @@ export async function beatmapRank(
 export async function reindexBeatmap(characterId: number, beatmapId: number): Promise<void> {
 	const [row] = await db
 		.select({
-			id: best.id, score: best.score, country: users.country, 
+			id: best.id, score: best.score, accuracy: best.accuracy, country: users.country, 
 		})
 		.from(best)
 		.innerJoin(characters, eq(characters.id, best.characterId))
@@ -306,8 +322,9 @@ export async function reindexBeatmap(characterId: number, beatmapId: number): Pr
 		pipeline.zrem(beatmapKey(beatmapId), stale);
 		pipeline.zrem(beatmapKey(beatmapId, row.country), stale);
 	}
-	pipeline.zadd(beatmapKey(beatmapId), row.score, member);
-	pipeline.zadd(beatmapKey(beatmapId, row.country), row.score, member);
+	const value = beatmapScore(row.score, row.accuracy);
+	pipeline.zadd(beatmapKey(beatmapId), value, member);
+	pipeline.zadd(beatmapKey(beatmapId, row.country), value, member);
 	pipeline.hset(beatmapIds(beatmapId), String(characterId), String(row.id));
 	await pipeline.exec();
 }
@@ -342,7 +359,8 @@ export async function rebuildAll(): Promise<void> {
 
 	const bests = await db
 		.select({
-			id: best.id, beatmapId: best.beatmapId, characterId: best.characterId, score: best.score, country: users.country, 
+			id: best.id, beatmapId: best.beatmapId, characterId: best.characterId, score: best.score,
+			accuracy: best.accuracy, country: users.country, 
 		})
 		.from(best)
 		.innerJoin(characters, eq(characters.id, best.characterId))
@@ -352,8 +370,9 @@ export async function rebuildAll(): Promise<void> {
 	for (let i = 0; i < bests.length; i++) {
 		const b = bests[i];
 		const member = beatmapMember(b.characterId, b.id);
-		pipeline.zadd(beatmapKey(b.beatmapId), b.score, member);
-		pipeline.zadd(beatmapKey(b.beatmapId, b.country), b.score, member);
+		const value = beatmapScore(b.score, b.accuracy);
+		pipeline.zadd(beatmapKey(b.beatmapId), value, member);
+		pipeline.zadd(beatmapKey(b.beatmapId, b.country), value, member);
 		pipeline.hset(beatmapIds(b.beatmapId), String(b.characterId), String(b.id));
 		if (i % 200 === 199) {
 			await pipeline.exec();

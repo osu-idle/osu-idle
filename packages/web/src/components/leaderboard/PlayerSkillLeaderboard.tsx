@@ -4,6 +4,7 @@ import type { getSkillRanking } from '../../api/rankings';
 import Flag from '../Flag';
 import rank from '@osu-idle/shared/display/rank';
 import { level } from '@osu-idle/shared/display/num';
+import SkillLevel from '@osu-idle/shared/display/SkillLevel';
 import { Skills } from '@osu-idle/shared/skills';
 import {
 	mapped,
@@ -58,7 +59,15 @@ export default function PlayerSkillLeaderboard({ page, sort, country, players }:
 							<Link to='/c/$id' params={{ id: String(player.character.id) }}>{player.character.name}</Link>
 						</div></td>
 						{SkillSorts.map(s => <td key={s} className={sort === SKILL_SORT[s] ? 'current' : 'dimmed'}>
-							{level(player.character[`${s}Level`], player.character[`${s}Xp`])}
+							{/* overall stays the xp level; a skill shows what it plays at */}
+							{s === 'overall'
+								? level(player.character.overallLevel, player.character.overallXp)
+								: <SkillLevel
+									level={player.character[`${s}Level`]}
+									xp={player.character[`${s}Xp`]}
+									prestige={player.character[`${s}Prestige`]}
+									lifetimeXp={player.character[`${s}LifetimeXp`]}
+								/>}
 						</td>)}
 					</tr>)}
 				</tbody>

@@ -6,6 +6,11 @@ import { Score } from './db/schema/score';
 
 export const debugMode = new Synced(import.meta.env.DEV);
 
+/** Debug: scales the xp a play awards, so the long progression thresholds are
+ *  reachable while testing. The server refuses it outside development. */
+export const DEBUG_XP_STEPS = [1, 10, 100, 1000, 10000, 100000] as const;
+export const debugXpMultiplier = new Synced<number>(1);
+
 // True on touch-primary devices (phones/tablets): coarse pointer + no hover.
 export const isMobile = window.matchMedia('(pointer: coarse) and (hover: none)').matches;
 
@@ -16,13 +21,13 @@ export const isOptionsOpen = new Synced(false);
 export const isCommunityOpen = new Synced(false);
 export const webUrl = new Synced('/');
 
-/** The full-screen page overlay (skins / add-ons / upgrades); undefined = closed. */
+/** The full-screen page overlay (skins / add-ons / character); undefined = closed. */
 export type OpenPage =
 	| {
 		page: 'skins' | 'addons',
 		view: 'manage' | 'browse',
 	}
-	| { page: 'upgrades' };
+	| { page: 'character' };
 export const openPage = new Synced<OpenPage | undefined>(undefined);
 
 export const isVolumeVisible = new Synced(false);

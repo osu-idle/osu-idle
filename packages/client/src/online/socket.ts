@@ -1,3 +1,4 @@
+import type { ZodError } from 'zod';
 import Synced from '@osu-idle/shared/helpers/synced';
 import { desktop } from '@osu-idle/shared/desktop';
 import { VERSION } from '@osu-idle/shared/version';
@@ -39,6 +40,16 @@ type MessageOf<T extends MessageType> = Extract<ServerMessage, { type: T }>;
  *
  * Built to grow - new server features just add a message variant, not a socket.
  */
+/** A message that fails validation is dropped, and a dropped message is
+ *  indistinguishable from a server that never answered - whatever was waiting on
+ *  it simply times out. Never let that happen quietly. */
+const reportDiscarded = (raw: unknown, error: ZodError): void => {
+	console.error('[socket] discarded an invalid message',
+		(raw as { type?: string })?.type ?? '(no type)',
+		error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; '),
+		raw);
+};
+
 export default class Socket {
 
 	public static readonly presence = new Synced<PresenceEntry[]>([]);
@@ -209,7 +220,7 @@ export default class Socket {
 			return;
 		}
 		const parsed = serverMessage.safeParse(raw);
-		if (!parsed.success) return;
+		if (!parsed.success) return reportDiscarded(raw, parsed.error);
 		const msg = parsed.data;
 
 		// feature consumers (play, ...) subscribe by type; community is below

@@ -32,7 +32,7 @@ export default class SpeedJam extends Skill {
 		super(SKILL.speedjam, def);
 
 		const fn = cubic_bezier(.3, 1, .8, .7);
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			const p = fn(Math.min(1, level / 100));
 			this.jamFactor = this.baseFactor 
 				- (

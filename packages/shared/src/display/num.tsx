@@ -1,5 +1,6 @@
-import type { JSX } from 'react';
+import type { ReactNode } from 'react';
 import { xpForLevel } from '../sim/skills/xp.js';
+import { levelFromXp } from './levelDisplay.js';
 
 const ensureNum = (n?: number | string): number =>
 	typeof n === 'number' ? n : parseFloat(n ?? '0');
@@ -26,28 +27,15 @@ export const levelText = (level: number, xp: number): string => {
 	return p > 0 ? `${level}.${String(p).padStart(2, '0')}` : String(level);
 };
 
-export const level = (level: number, xp: number): string | JSX.Element => {
-	const l = String(level);
-	if (level < 100) return l;
-
-	const p = Math.floor(xp / xpForLevel(level) * 100);
-
-	return <span className={`level_container level_${l}`}>{l}
-		{p > 0 && (
-			<span className='level_part' style={{ opacity: 0.5 + 0.5 * (p / 100) }}>
-				.{String(p).padStart(2, '0')}
-			</span>
-		)}
-	</span>;
-};
+/** A skill or overall level. The drawing rules live in levelDisplay. */
+export const level = (level: number, xp: number): ReactNode => levelFromXp(level, xp);
 
 export const bignum = (n?: number | string | null): string => {
 	n = Math.floor(ensureNum(n ?? '0'));
 
-	const transform = (n: number) => {
-		const s = String(n).substring(0, 4).padEnd(4, '0');
-		return s.charAt(s.length - 1) === '.' ? s.substring(0, s.length - 1) : s;
-	};
+	// a suffixed value always carries exactly two decimals (10.45k, 102.12k,
+	// 2.82M), truncated rather than rounded so it never reads higher than it is
+	const transform = (n: number) => (Math.floor(n * 100) / 100).toFixed(2);
 
 	if (n < 1000) return String(n);
 	if (n < 1000000) return `${transform(n / 1000)}k`;

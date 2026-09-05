@@ -6,8 +6,21 @@ import {
 } from './sim/skills/xp.js';
 
 export const UPGRADE_LEVELS = 10;
-export const MAX_UPGRADES = 10;
+/** Slots on the base gear ladder, before any prestige. */
+export const BASE_MAX_UPGRADES = 10;
+/** Extra slots a prestige grants on that skill. */
+export const UPGRADES_PER_PRESTIGE = 1;
+/** Real levels between two gear tiers - the slots past the base ladder. */
+export const GEAR_TIER_LEVELS = 1;
 export const UPGRADE_XP_BONUS = 0.1;
+
+/** Real level the first prestige needs; each one taken raises it. */
+export const PRESTIGE_MIN_LEVEL = 100;
+export const PRESTIGE_LEVEL_STEP = 1;
+/** Multiplicative xp bonus per prestige, in its own pool. */
+export const PRESTIGE_XP_BONUS = 0.1;
+/** Overall character level that unlocks rebirth. */
+export const REBIRTH_MIN_OVERALL_LEVEL = 110;
 /** Effective-boost growth per overdrive decade: log10(2) doubles it. */
 export const OVERDRIVE_EXPONENT = Math.log10(2);
 export const OVERDRIVE_SCALE = 2.5;
@@ -19,6 +32,7 @@ export type UpgradeState = {
 	xp: number,
 	upgrades: number,
 	overdrive: number,
+	prestige: number,
 };
 
 export type UpgradePurchase = UpgradeState & {
@@ -26,27 +40,41 @@ export type UpgradePurchase = UpgradeState & {
 	ratio: number,
 };
 
-/** The level required to afford the next upgrade. */
+/** Slots available on a skill: the base ladder plus one per prestige. */
+export const maxUpgrades = (prestige: number): number =>
+	BASE_MAX_UPGRADES + prestige * UPGRADES_PER_PRESTIGE;
+
+/** The level required to afford the next upgrade. The base ladder steps by
+ *  UPGRADE_LEVELS; gear tiers past it step by one, so each lands on the same
+ *  level as the prestige that granted it. */
 export const upgradeMinLevel = (upgrades: number): number =>
-	(upgrades + 1) * UPGRADE_LEVELS;
+	upgrades < BASE_MAX_UPGRADES
+		? (upgrades + 1) * UPGRADE_LEVELS
+		: BASE_MAX_UPGRADES * UPGRADE_LEVELS
+			+ (upgrades - BASE_MAX_UPGRADES + 1) * GEAR_TIER_LEVELS;
+
+/** Levels the next purchase spends: the base ladder costs UPGRADE_LEVELS, a gear
+ *  tier costs the one level it stepped up by. */
+export const upgradeCost = (upgrades: number): number =>
+	upgrades < BASE_MAX_UPGRADES ? UPGRADE_LEVELS : GEAR_TIER_LEVELS;
 
 /** Cost of the next upgrade bought exactly at its required level. */
 export const upgradeMinSpend = (upgrades: number): number => {
 	const min = upgradeMinLevel(upgrades);
-	return xpToLevel(min) - xpToLevel(min - UPGRADE_LEVELS);
+	return xpToLevel(min) - xpToLevel(min - upgradeCost(upgrades));
 };
 
 export const canUpgrade = (
-	{ level, upgrades }: Pick<UpgradeState, 'level' | 'upgrades'>,
+	{ level, upgrades, prestige }: Pick<UpgradeState, 'level' | 'upgrades' | 'prestige'>,
 ): boolean =>
-	upgrades < MAX_UPGRADES && level >= upgradeMinLevel(upgrades);
+	upgrades < maxUpgrades(prestige) && level >= upgradeMinLevel(upgrades);
 
-/** Buy the next upgrade: drop UPGRADE_LEVELS levels (partial keeps its fraction),
+/** Buy the next upgrade: drop its cost in levels (partial keeps its fraction),
  *  add the overspend ratio to overdrive. */
 export const applyUpgrade = (state: UpgradeState): UpgradePurchase => {
 	if (!canUpgrade(state)) throw new Error('upgrade not purchasable');
 
-	const level = state.level - UPGRADE_LEVELS;
+	const level = state.level - upgradeCost(state.upgrades);
 	const xp = state.xp / xpForLevel(state.level) * xpForLevel(level);
 	const spent = xpToLevel(state.level) + state.xp - xpToLevel(level) - xp;
 	const ratio = spent / upgradeMinSpend(state.upgrades);
@@ -56,10 +84,38 @@ export const applyUpgrade = (state: UpgradeState): UpgradePurchase => {
 		xp,
 		upgrades: state.upgrades + 1,
 		overdrive: state.overdrive + (ratio > 1 ? ratio : 0),
+		prestige: state.prestige,
 		spent,
 		ratio,
 	};
 };
+
+/** The real level a skill needs to prestige again. Bonus levels never count. */
+export const prestigeMinLevel = (prestige: number): number =>
+	PRESTIGE_MIN_LEVEL + prestige * PRESTIGE_LEVEL_STEP;
+
+export const canPrestige = (
+	{ level, prestige }: Pick<UpgradeState, 'level' | 'prestige'>,
+): boolean =>
+	level >= prestigeMinLevel(prestige);
+
+/** Prestige a skill: level, xp, upgrades and overdrive all go, and the skill
+ *  keeps a bonus level, an extra gear tier and a bigger multiplier. Lifetime
+ *  totals are untouched - the caller must not subtract anything. */
+export const applyPrestige = (state: UpgradeState): UpgradeState => {
+	if (!canPrestige(state)) throw new Error('prestige not available');
+
+	return {
+		level: 0,
+		xp: 0,
+		upgrades: 0,
+		overdrive: 0,
+		prestige: state.prestige + 1,
+	};
+};
+
+export const canRebirth = (overallLevel: number): boolean =>
+	overallLevel >= REBIRTH_MIN_OVERALL_LEVEL;
 
 /** Effective boost of raw overdrive: degressive power law, floored at x1. */
 export const overdriveMultiplier = (overdrive: number): number =>
@@ -72,5 +128,20 @@ export const overdriveMultiplier = (overdrive: number): number =>
 export const upgradeXPMultiplier = (upgrades: number, overdrive: number): number =>
 	1 + UPGRADE_XP_BONUS * upgrades * overdriveMultiplier(overdrive);
 
+/** Its own pool: multiplicative, and multiplied with the upgrade bonus. */
+export const prestigeXPMultiplier = (prestige: number): number =>
+	Math.pow(1 + PRESTIGE_XP_BONUS, prestige);
+
+/** Everything a skill's xp gain is multiplied by. */
+export const skillXPMultiplier = (
+	upgrades: number,
+	overdrive: number,
+	prestige: number,
+): number =>
+	upgradeXPMultiplier(upgrades, overdrive) * prestigeXPMultiplier(prestige);
+
 export const upgradeBody = z.object({ skill: z.enum(Skills) });
 export type UpgradeBody = z.infer<typeof upgradeBody>;
+
+export const prestigeBody = z.object({ skill: z.enum(Skills) });
+export type PrestigeBody = z.infer<typeof prestigeBody>;

@@ -110,6 +110,7 @@ export const defaultSkin: () => SkinDefinition = () => ({
 		hitPosition: 100,
 	},
 	judgements: {
+		[JUDGEMENT.DIVINE]: getUniformJudgeConfig(ColorSchema.parse('#a8f0ff'), 'DIVINE'),
 		[JUDGEMENT.MARVELOUS]: getUniformJudgeConfig(ColorSchema.parse('#ffe88a'), 'MARVELOUS'),
 		[JUDGEMENT.PERFECT]: getUniformJudgeConfig(ColorSchema.parse('#ffd24a'), 'PERFECT'),
 		[JUDGEMENT.GREAT]: getUniformJudgeConfig(ColorSchema.parse('#6fe07a'), 'GREAT'),
@@ -130,6 +131,7 @@ export const defaultSkin: () => SkinDefinition = () => ({
 		transitionMs: 200,
 	},
 	grade: {
+		[GRADE.XX]: '/skins/default/grade-XX.png',
 		[GRADE.X]: '/skins/default/grade-X.png',
 		[GRADE.SS]: '/skins/default/grade-SS.png',
 		[GRADE.S]: '/skins/default/grade-S.png',

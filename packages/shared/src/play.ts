@@ -120,6 +120,11 @@ export const playClientMessages = [
 	z.object({
 		type: z.literal('play:start'),
 		beatmapId: z.number().int(),
+		/** debug only, pinned to 1 in production: scales the play's xp so
+		 *  progression thresholds are reachable while testing. Deliberately
+		 *  unbounded - a ceiling here rejects the whole start message, so a debug
+		 *  knob could stop a song from starting at all. */
+		xpMultiplier: z.number().int().positive().optional(),
 	}),
 	// arm this socket's play feed: with `next`, stream replay offsets from that
 	// cursor; without it, push live state checkpoints (the resume banner)
@@ -133,6 +138,14 @@ export const playClientMessages = [
 	z.object({
 		type: z.literal('play:skip'),
 		token: z.string(),
+	}),
+	// debug only: end the play now, so its authoritative result can be read
+	// without waiting out the map in real time. Refused on a production server.
+	z.object({
+		type: z.literal('play:finish'),
+		token: z.string(),
+		/** where the client's replay got to, so the answer carries the rest */
+		next: z.number(),
 	}),
 	// quit: drop the play without submitting
 	z.object({

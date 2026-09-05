@@ -1,0 +1,76 @@
+.rebirth__status {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 24px;
+	margin-bottom: 16px;
+	font-size: 14px;
+	opacity: .85;
+}
+
+.rebirth__form {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.rebirth__name {
+	flex: 1;
+	min-width: 0;
+	padding: 10px 14px;
+	border: none;
+	border-radius: 6px;
+	background: rgba(0, 0, 0, .35);
+	color: inherit;
+	font: inherit;
+}
+
+.rebirth__name:focus {
+	outline: 2px solid #ff4089;
+}
+
+.lineage {
+	margin-top: 28px;
+}
+
+.lineage__title {
+	margin: 0 0 10px;
+	font-size: 15px;
+	font-weight: 400;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	opacity: .7;
+}
+
+.lineage__list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.lineage__row {
+	display: flex;
+	gap: 16px;
+	align-items: center;
+	padding: 10px 14px;
+	border-radius: 6px;
+	background: rgba(0, 0, 0, .25);
+}
+
+.lineage__row.is-current {
+	background: rgba(255, 64, 137, .18);
+}
+
+.lineage__name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.lineage__gen,
+.lineage__overall,
+.lineage__unlocks {
+	font-size: 13px;
+	opacity: .75;
+}

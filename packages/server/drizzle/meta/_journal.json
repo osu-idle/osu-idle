@@ -253,6 +253,27 @@
       "when": 1784302603218,
       "tag": "0035_mighty_retro_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1788562593930,
+      "tag": "0036_funny_nico_minoru",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "5",
+      "when": 1788565108894,
+      "tag": "0037_gorgeous_zaran",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1788565109894,
+      "tag": "0038_rename_z_to_xx",
+      "breakpoints": true
     }
   ]
 }

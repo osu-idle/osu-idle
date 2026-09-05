@@ -1,3 +1,4 @@
+import type { ZodError } from 'zod';
 import type { Hono } from 'hono';
 import type { Context } from 'hono';
 import { getCookie } from 'hono/cookie';
@@ -78,6 +79,15 @@ const resolveCharacter = async (
  * server entrypoint attaches to the Node http server. Not part of `AppType` - the
  * socket is a typed message bus (shared `clientMessage`/`serverMessage`), not RPC.
  */
+/** A message that fails validation is dropped, and a dropped message is
+ *  indistinguishable from one the client never sent: whatever it asked for
+ *  simply never happens, with nothing anywhere to say why. */
+const reportDiscarded = (userId: number, raw: unknown, error: ZodError): void => {
+	console.error('[ws] discarded an invalid message from', userId,
+		(raw as { type?: string })?.type ?? '(no type)',
+		error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; '));
+};
+
 export const registerWs = (app: Hono): Pick<NodeWebSocket, 'injectWebSocket'> => {
 	const {
 		upgradeWebSocket, injectWebSocket,
@@ -131,7 +141,7 @@ export const registerWs = (app: Hono): Pick<NodeWebSocket, 'injectWebSocket'> =>
 					return;
 				}
 				const parsed = clientMessage.safeParse(raw);
-				if (!parsed.success) return;
+				if (!parsed.success) return reportDiscarded(userId, raw, parsed.error);
 				const msg = parsed.data;
 
 				try {

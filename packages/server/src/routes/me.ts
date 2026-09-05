@@ -28,12 +28,27 @@ import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 import { reindexCharacter } from '../rankings';
 import { characterNameHistory } from '../db/schema/name_history';
 import {
+	applyPrestige,
 	applyUpgrade,
+	canPrestige,
+	canRebirth,
 	canUpgrade,
+	prestigeBody,
 	upgradeBody,
 } from '@osu-idle/shared/upgrades';
+import {
+	OLD_SUFFIX,
+	rebirthBody,
+	usesReservedOld,
+} from '@osu-idle/shared/rebirth';
+import { isPlaying } from '../play';
 import { xpGivesLevel } from '@osu-idle/shared/sim/skills/xp';
 import type { SkillName } from '@osu-idle/shared/skills';
+
+const characterId = z.number().int().positive();
+const characterRenameBody = characterNameBody.extend({ characterId: characterId.optional() });
+
+const characterSelectBody = z.object({ characterId });
 
 // Re-throw the ZodError so the app's onError returns the standard shape.
 const jsonBody = <T extends z.ZodType>(schema: T) =>
@@ -69,7 +84,7 @@ export const meRoutes = new Hono()
 			.limit(1);
 		if (existing) throw new HTTPException(409, { message: 'Character already exists' });
 
-		await assertNameAvailable(userId, body.name);
+		await assertNameAvailable(userId, body.name, user.username);
 
 		// Always a fresh character - skill/profile columns default to zero, and
 		// local Guest progress is no longer migrated online.
@@ -108,22 +123,25 @@ export const meRoutes = new Hono()
 
 	// Rename the account's current character (same rules as creation). The old
 	// name is kept permanently in the character's name history.
-	.post('/username', requireAuth, jsonBody(characterNameBody), async c => {
+	.post('/username', requireAuth, jsonBody(characterRenameBody), async c => {
 		const userId = c.get('userId');
-		const { name } = c.req.valid('json');
+		const {
+			name, characterId,
+		} = c.req.valid('json');
 
 		const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-		if (!user?.currentCharacter) throw new HTTPException(409, { message: 'No character' });
+		const target = characterId ?? user?.currentCharacter;
+		if (!user || !target) throw new HTTPException(409, { message: 'No character' });
 
 		const [row] = await db
 			.select()
 			.from(characters)
-			.where(eq(characters.id, user.currentCharacter))
+			.where(and(eq(characters.id, target), eq(characters.userId, userId)))
 			.limit(1);
 		if (!row) throw new HTTPException(409, { message: 'No character' });
 
 		if (name !== row.name) {
-			await assertNameAvailable(userId, name, row.id);
+			await assertNameAvailable(userId, name, user.username, row.id);
 			await db.insert(characterNameHistory).values({
 				characterId: row.id, name: row.name,
 			});
@@ -168,6 +186,7 @@ export const meRoutes = new Hono()
 			xp: row[`${skill}Xp`],
 			upgrades: row[`${skill}Upgrades`],
 			overdrive: row[`${skill}Overdrive`],
+			prestige: row[`${skill}Prestige`],
 		};
 		if (!canUpgrade(state)) throw new HTTPException(409, { message: 'Upgrade not purchasable' });
 		const purchase = applyUpgrade(state);
@@ -217,11 +236,185 @@ export const meRoutes = new Hono()
 			ratio: purchase.ratio,
 		});
 	})
+
+	// Every character the account owns, oldest generation first - the hall of fame.
+	.get('/characters', requireAuth, async c => {
+		const userId = c.get('userId');
+		const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+		if (!user) throw new HTTPException(404, { message: 'User not found' });
+
+		const rows = await db
+			.select()
+			.from(characters)
+			.where(eq(characters.userId, userId))
+			.orderBy(characters.generation);
+
+		return c.json(rows.map(row => characterToDTO(row, user.avatarUrl, user.country)));
+	})
+
+	// Switch which of the account's characters is live.
+	.post('/character/select', requireAuth, jsonBody(characterSelectBody), async c => {
+		const userId = c.get('userId');
+		const { characterId } = c.req.valid('json');
+
+		const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+		if (!user) throw new HTTPException(404, { message: 'User not found' });
+
+		const [row] = await db
+			.select()
+			.from(characters)
+			.where(and(eq(characters.id, characterId), eq(characters.userId, userId)))
+			.limit(1);
+		if (!row) throw new HTTPException(404, { message: 'Character not found' });
+
+		if (user.currentCharacter) await assertNotPlaying(user.currentCharacter);
+
+		await db.update(users)
+			.set({ currentCharacter: characterId })
+			.where(eq(users.id, userId));
+
+		return c.json(characterToDTO(row, user.avatarUrl, user.country));
+	})
+
+	// Prestige one skill: its level, xp, upgrades and overdrive go, and it keeps a
+	// bonus level, an extra gear tier and a bigger multiplier. Lifetime totals and
+	// the ranking metrics are deliberately left alone.
+	.post('/prestige', requireAuth, jsonBody(prestigeBody), async c => {
+		const userId = c.get('userId');
+		const { skill } = c.req.valid('json');
+		const { user, row } = await currentCharacter(userId);
+		await assertNotPlaying(row.id);
+
+		const state = {
+			level: row[`${skill}Level`],
+			xp: row[`${skill}Xp`],
+			upgrades: row[`${skill}Upgrades`],
+			overdrive: row[`${skill}Overdrive`],
+			prestige: row[`${skill}Prestige`],
+		};
+		if (!canPrestige(state)) throw new HTTPException(409, { message: 'Prestige not available' });
+		const next = applyPrestige(state);
+
+		const updates = {
+			[`${skill}Level`]: next.level,
+			[`${skill}Xp`]: next.xp,
+			[`${skill}Upgrades`]: next.upgrades,
+			[`${skill}Overdrive`]: next.overdrive,
+			[`${skill}Prestige`]: next.prestige,
+		} as Record<`${SkillName}${'Level' | 'Xp' | 'Upgrades' | 'Overdrive' | 'Prestige'}`, number>;
+
+		const [written] = await db
+			.update(characters)
+			.set(updates)
+			.where(and(
+				eq(characters.id, row.id),
+				eq(characters[`${skill}Level`], state.level),
+				eq(characters[`${skill}Prestige`], state.prestige),
+			));
+		if (!written.affectedRows) throw new HTTPException(409, { message: 'Character changed, retry' });
+
+		await reindexCharacter(row.id);
+
+		const [updated] = await db.select().from(characters).where(eq(characters.id, row.id)).limit(1);
+		return c.json(characterToDTO(updated!, user.avatarUrl, user.country));
+	})
+
+	// Rebirth: the account starts a fresh character one generation up, which owns
+	// one more unlock. The previous one stays playable, ranked, and keeps its
+	// progress - it just gives up the name, osu!-style.
+	.post('/rebirth', requireAuth, jsonBody(rebirthBody), async c => {
+		const userId = c.get('userId');
+		const { name } = c.req.valid('json');
+		const { user, row } = await currentCharacter(userId);
+		await assertNotPlaying(row.id);
+
+		if (!canRebirth(row.overallLevel)) {
+			throw new HTTPException(409, { message: 'Rebirth not available' });
+		}
+		// Keeping your name is the only thing that displaces the old character: it
+		// hands the name over and takes _old, osu!-style. Any other name leaves it
+		// exactly as it was.
+		const inherits = name === row.name;
+		if (inherits) {
+			const displaced = await displacedName(row.name);
+			await db.insert(characterNameHistory).values({
+				characterId: row.id, name: row.name,
+			});
+			await db.update(characters).set({ name: displaced }).where(eq(characters.id, row.id));
+		} else {
+			await assertNameAvailable(userId, name, user.username);
+		}
+
+		const [created] = await db.insert(characters).values({
+			userId, name, generation: row.generation + 1,
+		});
+		const characterId = created.insertId;
+
+		await db.update(users)
+			.set({ currentCharacter: characterId })
+			.where(eq(users.id, userId));
+
+		await reindexCharacter(row.id);
+		await reindexCharacter(characterId);
+
+		const [fresh] = await db.select().from(characters).where(eq(characters.id, characterId)).limit(1);
+		return c.json(characterToDTO(fresh!, user.avatarUrl, user.country), 201);
+	})
 ;
 
+/** The account's live character, or a 409 when onboarding never ran. */
+const currentCharacter = async (userId: number) => {
+	const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+	if (!user?.currentCharacter) throw new HTTPException(409, { message: 'No character' });
+
+	const [row] = await db
+		.select()
+		.from(characters)
+		.where(eq(characters.id, user.currentCharacter))
+		.limit(1);
+	if (!row) throw new HTTPException(409, { message: 'No character' });
+
+	return {
+		user, row,
+	};
+};
+
+/** A running play reads the character mid-flight, so anything that rewrites its
+ *  progression waits for the play to end. */
+const assertNotPlaying = async (characterId: number) => {
+	if (await isPlaying(characterId)) {
+		throw new HTTPException(409, { message: 'A play is in progress' });
+	}
+};
+
+/** The name a displaced character falls back to, osu!-style: append _old until
+ *  it is free, so a lineage chains Adri -> Adri_old -> Adri_old_old. */
+const displacedName = async (name: string): Promise<string> => {
+	let candidate = `${name}${OLD_SUFFIX}`;
+	for (;;) {
+		const [taken] = await db
+			.select({ id: characters.id })
+			.from(characters)
+			.where(eq(characters.name, candidate))
+			.limit(1);
+		if (!taken) return candidate;
+		candidate = `${candidate}${OLD_SUFFIX}`;
+	}
+};
+
 /** Reject a name already used by another character (`excludeCharacterId` is the
- *  caller's own, for renames) or reserved by another osu! account. */
-const assertNameAvailable = async (userId: number, name: string, excludeCharacterId?: number) => {
+ *  caller's own, for renames), reserved by another osu! account, or carrying the
+ *  _old token, which only a player whose own osu! username has it may use. */
+const assertNameAvailable = async (
+	userId: number,
+	name: string,
+	osuUsername: string,
+	excludeCharacterId?: number,
+) => {
+	if (usesReservedOld(name, osuUsername)) {
+		throw new HTTPException(403, { message: 'Name is reserved' });
+	}
+
 	const [existingName] = await db
 		.select({ id: characters.id })
 		.from(characters)

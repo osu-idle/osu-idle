@@ -10,6 +10,7 @@ import { getUser } from '../../api/users';
 import Flag from '../../components/Flag';
 import ProfilePicture from '../../components/ProfilePicture';
 import Grade from '../../components/score/Grade';
+import { headlineGrades } from './headlineGrades';
 import { SkillBar } from '../../components/character/SkillBar';
 import { CharacterRanks } from '../../components/character/CharacterRanks';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
@@ -22,8 +23,6 @@ import { Trans } from '@lingui/react/macro';
 import { countryName } from '@osu-idle/shared/display/country';
 import { i18n } from '../../i18n';
 
-/** Same headline grades as the profile page. */
-const GRADE_DISPLAY = ['X', 'SS', 'S', 'A'] as const;
 
 type Character = Awaited<ReturnType<typeof getCharacter>>;
 type Stats = Awaited<ReturnType<typeof getCharacterStats>>;
@@ -76,7 +75,7 @@ export default function CharacterPreview({ character, stats }: {
 							</div>
 						</div>
 						<div className='character__totals_grades'>
-							{GRADE_DISPLAY.map(g => (
+							{headlineGrades(stats).map(g => (
 								<div key={g} className='character__grades-area'>
 									<Grade grade={g} />
 									<div className='character__grades-num'>{num(stats[g])}</div>

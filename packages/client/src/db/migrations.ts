@@ -1,4 +1,10 @@
 import type { Database } from 'sql.js';
+import { rankValueSQL } from '@osu-idle/shared/scoreOrder';
+import {
+	xpGivesLevel,
+	xpToLevel,
+} from '@osu-idle/shared/sim/skills/xp';
+import { GRADE } from '@osu-idle/shared/judgement';
 
 /**
  * Schema migrations, applied in order on boot.
@@ -157,6 +163,135 @@ const addSkillUpgrades: Migration = db => {
 	}
 };
 
+/** Prestige counters per skill, plus the character's rebirth generation. */
+const addPrestige: Migration = db => {
+	const exists = db.exec(`
+		SELECT EXISTS (
+			SELECT 1 FROM pragma_table_info('character') WHERE name = 'accuracyPrestige'
+		);
+	`)[0].values[0][0] as number;
+	if (exists) return;
+
+	const skills = [
+		'accuracy', 'speed', 'stamina', 'jackspeed', 'coordination', 'release',
+		'reading', 'consistency', 'concentration', 'speedjam', 'memory',
+	];
+	for (const skill of skills) {
+		db.run(`ALTER TABLE character ADD COLUMN ${skill}Prestige INTEGER DEFAULT 0;`);
+		db.run(`ALTER TABLE character ADD COLUMN ${skill}TotalXp INTEGER DEFAULT 0;`);
+	}
+
+	db.run('ALTER TABLE character ADD COLUMN overallTotalXp INTEGER DEFAULT 0;');
+	db.run('ALTER TABLE character ADD COLUMN overallLevel INTEGER DEFAULT 0;');
+
+	db.run('ALTER TABLE character ADD COLUMN generation INTEGER DEFAULT 1;');
+	// The table also caches server characters for score assignment, so offline
+	// ones need a marker of their own once a rebirth pushes them past id 1.
+	db.run('ALTER TABLE character ADD COLUMN local INTEGER DEFAULT 0;');
+	db.run('UPDATE character SET local = 1 WHERE id = 1;');
+};
+
+/** The divine judgement's own count column on stored scores. */
+const addDivineJudgement: Migration = db => {
+	const exists = db.exec(`
+		SELECT EXISTS (
+			SELECT 1 FROM pragma_table_info('score') WHERE name = 'DIVINE'
+		);
+	`)[0].values[0][0] as number;
+	if (exists) return;
+
+	db.run('ALTER TABLE score ADD COLUMN DIVINE INTEGER DEFAULT 0;');
+};
+
+/** The top grade was renamed while it was dev-only, so stored scores still say
+ *  the old letter. */
+const renameGradeZ: Migration = db => {
+	db.run(`UPDATE score SET grade = '${GRADE.XX}' WHERE grade = 'Z';`);
+};
+
+/** `addPrestige` added the lifetime totals with a default of 0 and left them
+ *  there, but the row already held the player's whole history in its level/xp
+ *  columns. Rebirth reads `overallLevel`, so every existing player was back at
+ *  overall Lv0. */
+const backfillTotals: Migration = db => {
+	const skills = [
+		'accuracy', 'speed', 'stamina', 'jackspeed', 'coordination', 'release',
+		'reading', 'consistency', 'concentration', 'speedjam', 'memory',
+	];
+	const cols = skills.flatMap(s => [s, `${s}XP`, `${s}TotalXp`]);
+	const rows = db.exec(`SELECT id, ${cols.join(', ')} FROM character`)[0];
+	if (!rows) return;
+
+	for (const row of rows.values as number[][]) {
+		const id = row[0];
+		let overall = 0;
+		const sets: string[] = [];
+		skills.forEach((skill, i) => {
+			const [level, xp, total] = row.slice(1 + i * 3, 4 + i * 3);
+			const lifetime = total || Math.round(xpToLevel(level) + xp);
+			overall += lifetime;
+			sets.push(`${skill}TotalXp = ${lifetime}`);
+		});
+		const level = xpGivesLevel(overall).level;
+		db.run(`UPDATE character
+			SET ${sets.join(', ')}, overallTotalXp = ${overall}, overallLevel = ${level}
+			WHERE id = ${id};`);
+	}
+};
+
+/** Local characters used to be id 1 alone, so a rebirth's autoincrement id could
+ *  land on a server character's id and the two rows would overwrite each other.
+ *  Move the whole local lineage below zero, where server ids never reach. */
+const localCharacterIds: Migration = db => {
+	const exists = db.exec(`
+		SELECT EXISTS (
+			SELECT 1 FROM pragma_table_info('character') WHERE name = 'current'
+		);
+	`)[0].values[0][0] as number;
+	if (!exists) db.run('ALTER TABLE character ADD COLUMN current INTEGER DEFAULT 0;');
+
+	// score_xp only exists once its module has been imported, so check first
+	const has = (name: string) =>
+		db.exec(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = '${name}';`).length > 0;
+
+	const locals = 'SELECT id FROM character WHERE local = 1 AND id > 0';
+	for (const t of ['score', 'score_best', 'score_best_pp', 'score_xp'])
+		if (has(t)) db.run(`UPDATE ${t} SET characterId = -characterId WHERE characterId IN (${locals});`);
+	db.run('UPDATE character SET id = -id WHERE local = 1 AND id > 0;');
+
+	db.run(`UPDATE character SET current = 1 WHERE id =
+		(SELECT id FROM character WHERE local = 1 ORDER BY generation DESC LIMIT 1);`);
+};
+
+/** Re-pick the local bests through the shared ordering rule. Score alone used
+ *  to decide it, so a divine play - capped at 1M like any other - never
+ *  displaced the score already there and the card kept the older grade. */
+const rebestOnAccuracy: Migration = db => {
+	db.run('DELETE FROM score_best');
+	db.run(`INSERT INTO score_best (characterId, beatmapId, scoreId)
+		SELECT s.characterId, s.beatmapId, s.id FROM score s
+		WHERE NOT EXISTS (
+			SELECT 1 FROM score o
+			WHERE o.characterId = s.characterId AND o.beatmapId = s.beatmapId
+				AND (${rankValueSQL('o.')} > ${rankValueSQL('s.')}
+					OR (${rankValueSQL('o.')} = ${rankValueSQL('s.')} AND o.id < s.id))
+		);`);
+};
+
+
+/** Lifetime xp, the figure spending never takes back. Existing rows only have
+ *  the spendable total, which is the closest thing they ever recorded. */
+const addLifetimeXp: Migration = db => {
+	const skills = [
+		'accuracy', 'speed', 'stamina', 'jackspeed', 'coordination', 'release',
+		'reading', 'consistency', 'concentration', 'speedjam', 'memory',
+	];
+	for (const skill of skills) {
+		db.run(`ALTER TABLE character ADD COLUMN ${skill}LifetimeXp INTEGER DEFAULT 0;`);
+		db.run(`UPDATE character SET ${skill}LifetimeXp = ${skill}TotalXp;`);
+	}
+};
+
 const migrations: Migration[] = [
 	recomputeBests,
 	addOnlineId,
@@ -164,6 +299,13 @@ const migrations: Migration[] = [
 	removeScoreSetId,
 	addAddonsGameVersion,
 	addSkillUpgrades,
+	addPrestige,
+	addDivineJudgement,
+	backfillTotals,
+	localCharacterIds,
+	renameGradeZ,
+	rebestOnAccuracy,
+	addLifetimeXp,
 ];
 
 /**

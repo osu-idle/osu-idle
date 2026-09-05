@@ -39,6 +39,16 @@
 	line-clamp: 1;
 }
 
+/* the sub carries what a confirm actually costs, so it wraps rather than
+   ellipsising the consequence away */
+.ctxmenu__sub {
+	-webkit-line-clamp: 3;
+	line-clamp: 3;
+	font-size: 0.65em;
+	line-height: 1.25;
+	max-width: 92vw;
+}
+
 .ctxmenu__options {
 	display: flex;
 	flex-direction: column;

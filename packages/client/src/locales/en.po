@@ -37,6 +37,17 @@ msgstr "{0, plural, one {# download} other {# downloads}}"
 msgid "{0, plural, one {# result} other {# results}}"
 msgstr "{0, plural, one {# result} other {# results}}"
 
+#. placeholder {0}: character.name
+#. placeholder {1}: character.name
+#: src/components/character/RebirthView.tsx
+msgid "{0} hands its name over and becomes {1}_old"
+msgstr "{0} hands its name over and becomes {1}_old"
+
+#. placeholder {0}: character.name
+#: src/components/character/RebirthView.tsx
+msgid "{0} keeps its name"
+msgstr "{0} keeps its name"
+
 #. placeholder {0}: filteredItems.length
 #: src/scenes/SongSelect.tsx
 msgid "{0} of {total} results"
@@ -55,6 +66,11 @@ msgstr "{count, plural, one {# map} other {# maps}}"
 msgid "{count} here"
 msgstr "{count} here"
 
+#. placeholder {0}: next ?? 'nothing new'
+#: src/components/character/RebirthView.tsx
+msgid "{handover}, stays playable and ranked · The new character starts from zero and unlocks {0}"
+msgstr "{handover}, stays playable and ranked · The new character starts from zero and unlocks {0}"
+
 #. placeholder {0}: min + 1
 #: src/osu/beatmap/grouping.ts
 msgid "{min}-{0} min"
@@ -64,14 +80,14 @@ msgstr "{min}-{0} min"
 msgid "{months, plural, one {# month ago} other {# months ago}}"
 msgstr "{months, plural, one {# month ago} other {# months ago}}"
 
-#. placeholder {0}: preview.level
-#: src/components/upgrades/UpgradeRow.tsx
-msgid "{name} Lv{level} → Lv{0} · Costs {spent}xp{odSegment} · XP boost x{boost}"
-msgstr "{name} Lv{level} → Lv{0} · Costs {spent}xp{odSegment} · XP boost x{boost}"
-
 #: src/logs.ts
 msgid "{name} played {map} and got a {accuracy} {grade}. {gains}"
 msgstr "{name} played {map} and got a {accuracy} {grade}. {gains}"
+
+#. placeholder {0}: preview.level
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "{name} XP Lv{level} → XP Lv{0} · Costs {spent}xp{odSegment} · XP boost x{boost}"
+msgstr "{name} XP Lv{level} → XP Lv{0} · Costs {spent}xp{odSegment} · XP boost x{boost}"
 
 #: src/components/PlaylistOverlay.tsx
 msgid "{nbMaps} maps"
@@ -141,6 +157,10 @@ msgstr "A game is already in progress. Play locally instead? It won't be submitt
 #: src/components/DesktopUpdate.tsx
 msgid "A new update is available. Click here to download it !"
 msgstr "A new update is available. Click here to download it !"
+
+#: src/components/character/PrestigeView.tsx
+msgid "A skill that reaches XP Lv{PRESTIGE_MIN_LEVEL} can be reset to zero. It loses its upgrades and Overdrive, and keeps a permanent bonus level, an extra gear slot and a multiplicative XP bonus. Each prestige asks for one more level than the last."
+msgstr "A skill that reaches XP Lv{PRESTIGE_MIN_LEVEL} can be reset to zero. It loses its upgrades and Overdrive, and keeps a permanent bonus level, an extra gear slot and a multiplicative XP bonus. Each prestige asks for one more level than the last."
 
 #: src/scenes/Gameplay.tsx
 msgid "abort"
@@ -220,6 +240,10 @@ msgstr "An upgrade costs {UPGRADE_LEVELS} raw levels of the skill and permanentl
 #: src/scenes/MainMenu.tsx
 msgid "Are you sure you want to quit?"
 msgstr "Are you sure you want to quit?"
+
+#: src/components/character/RebirthView.tsx
+msgid "At overall Lv{REBIRTH_MIN_OVERALL_LEVEL} you can start a brand new character one generation up, which is born with one more permanent unlock. Everything you have now stays: the old character remains playable, keeps its levels, and stays on the leaderboards. Pick a new name for the new character - or keep your current one, and the old character hands it over and takes _old."
+msgstr "At overall Lv{REBIRTH_MIN_OVERALL_LEVEL} you can start a brand new character one generation up, which is born with one more permanent unlock. Everything you have now stays: the old character remains playable, keeps its levels, and stays on the leaderboards. Pick a new name for the new character - or keep your current one, and the old character hands it over and takes _old."
 
 #: src/components/community/CommunityControls.tsx
 msgid "Auto-hide"
@@ -316,9 +340,13 @@ msgstr "Buy"
 msgid "Buy {nextGear}?"
 msgstr "Buy {nextGear}?"
 
-#: src/components/upgrades/UpgradeRow.tsx
-msgid "Buy: {UPGRADE_LEVELS} levels"
-msgstr "Buy: {UPGRADE_LEVELS} levels"
+#: src/components/upgrades/UpgradeBuyButton.tsx
+msgid "Buy now"
+msgstr "Buy now"
+
+#: src/components/upgrades/UpgradeBuyButton.tsx
+msgid "Buy: {cost, plural, one {# level} other {# levels}}"
+msgstr "Buy: {cost, plural, one {# level} other {# levels}}"
 
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/addons/InstalledAddonRow.tsx
@@ -394,6 +422,11 @@ msgstr "Change the way osu!idle behaves"
 #: src/components/addons/AddonCodePane.tsx
 msgid "Changes"
 msgstr "Changes"
+
+#: src/scenes/Character.tsx
+#: src/scenes/SongSelect.tsx
+msgid "Character"
+msgstr "Character"
 
 #: src/components/Onboarding.tsx
 msgid "Character name"
@@ -617,6 +650,11 @@ msgstr "Game version"
 msgid "GAMEPLAY"
 msgstr "GAMEPLAY"
 
+#. placeholder {0}: character.generation
+#: src/components/character/LineageList.tsx
+msgid "Gen {0}"
+msgstr "Gen {0}"
+
 #: src/scenes/Options.tsx
 #: src/scenes/Options.tsx
 #: src/scenes/Options.tsx
@@ -626,6 +664,10 @@ msgstr "General"
 #: src/scenes/Options.tsx
 msgid "GENERAL"
 msgstr "GENERAL"
+
+#: src/components/character/RebirthView.tsx
+msgid "Generation {generation}"
+msgstr "Generation {generation}"
 
 #: src/components/Tutorial.tsx
 msgid "Got it!"
@@ -642,6 +684,10 @@ msgstr "Group"
 #: src/logs.ts
 msgid "Guest"
 msgstr "Guest"
+
+#: src/components/character/LineageList.tsx
+msgid "Hall of fame"
+msgstr "Hall of fame"
 
 #: src/components/community/CommunityControls.tsx
 msgid "Hide chat"
@@ -730,14 +776,14 @@ msgstr "Location"
 msgid "Loop"
 msgstr "Loop"
 
-#. placeholder {0}: levelDisplay(level, xp)
-#: src/components/upgrades/UpgradeRow.tsx
-msgid "Lv{0}"
-msgstr "Lv{0}"
-
 #: src/components/songselect/UserCard.tsx
 msgid "Lv{level}"
 msgstr "Lv{level}"
+
+#: src/components/character/PrestigeRow.tsx
+#: src/components/upgrades/UpgradeRow.tsx
+msgid "Lv<0/>"
+msgstr "Lv<0/>"
 
 #: src/scenes/Options.tsx
 msgid "Main menu"
@@ -781,7 +827,7 @@ msgstr "mapped by {creator}"
 msgid "Master"
 msgstr "Master"
 
-#: src/components/upgrades/UpgradeRow.tsx
+#: src/components/upgrades/UpgradeBuyButton.tsx
 msgid "Maxed"
 msgstr "Maxed"
 
@@ -817,6 +863,14 @@ msgstr "name, author or tag"
 msgid "Never"
 msgstr "Never"
 
+#: src/components/character/PrestigeRow.tsx
+msgid "Never prestiged"
+msgstr "Never prestiged"
+
+#: src/components/character/RebirthView.tsx
+msgid "New character name"
+msgstr "New character name"
+
 #: src/components/addons/BrowseAddonsView.tsx
 #: src/components/skins/BrowseSkinsView.tsx
 msgid "Newest"
@@ -826,6 +880,10 @@ msgstr "Newest"
 #: src/components/Tutorial.tsx
 msgid "Next"
 msgstr "Next"
+
+#: src/components/character/RebirthView.tsx
+msgid "Next rebirth unlocks {next}"
+msgstr "Next rebirth unlocks {next}"
 
 #: src/gameplay/autopilot.ts
 msgid "Next song"
@@ -891,6 +949,14 @@ msgstr "No skins found."
 msgid "No skins installed. Browse the catalog to find some."
 msgstr "No skins installed. Browse the catalog to find some."
 
+#: src/components/character/LineageList.tsx
+msgid "No unlocks"
+msgstr "No unlocks"
+
+#: src/components/character/RebirthView.tsx
+msgid "No unlocks yet"
+msgstr "No unlocks yet"
+
 #: src/logs.ts
 msgid "No XP gained."
 msgstr "No XP gained."
@@ -936,6 +1002,16 @@ msgstr "osu|music|theme"
 msgid "Over 5 months ago"
 msgstr "Over 5 months ago"
 
+#. placeholder {0}: character.overallLevel
+#: src/components/character/LineageList.tsx
+msgid "Overall Lv{0}"
+msgstr "Overall Lv{0}"
+
+#. placeholder {0}: character.overallLevel
+#: src/components/character/RebirthView.tsx
+msgid "Overall Lv{0} / {REBIRTH_MIN_OVERALL_LEVEL}"
+msgstr "Overall Lv{0} / {REBIRTH_MIN_OVERALL_LEVEL}"
+
 #: src/components/upgrades/UpgradeRow.tsx
 msgid "Overdrive +{ratioText}"
 msgstr "Overdrive +{ratioText}"
@@ -974,6 +1050,7 @@ msgstr "Personal best"
 msgid "Pick a song"
 msgstr "Pick a song"
 
+#: src/components/character/LineageList.tsx
 #: src/components/community/MusicControls.tsx
 #: src/scenes/MainMenu.tsx
 msgid "Play"
@@ -1003,6 +1080,7 @@ msgstr "Play unranked ?"
 msgid "Played by {playerName} on {playedAt}"
 msgstr "Played by {playerName} on {playedAt}"
 
+#: src/components/character/LineageList.tsx
 #: src/online/presence.ts
 msgid "Playing"
 msgstr "Playing"
@@ -1015,6 +1093,20 @@ msgstr "Playlist"
 #: src/components/Tutorial.tsx
 msgid "Playlists"
 msgstr "Playlists"
+
+#: src/components/character/PrestigeRow.tsx
+#: src/components/character/PrestigeRow.tsx
+#: src/scenes/Character.tsx
+msgid "Prestige"
+msgstr "Prestige"
+
+#: src/components/character/PrestigeRow.tsx
+msgid "Prestige {name}?"
+msgstr "Prestige {name}?"
+
+#: src/components/character/PrestigeRow.tsx
+msgid "Prestiged {prestige} times · +{prestige} bonus levels"
+msgstr "Prestiged {prestige} times · +{prestige} bonus levels"
 
 #: src/components/skins/SkinView.tsx
 #: src/components/skins/SkinView.tsx
@@ -1050,6 +1142,16 @@ msgstr "Read the full article"
 msgid "Really delete \"{0}\"?"
 msgstr "Really delete \"{0}\"?"
 
+#: src/components/character/RebirthView.tsx
+#: src/components/character/RebirthView.tsx
+#: src/scenes/Character.tsx
+msgid "Rebirth"
+msgstr "Rebirth"
+
+#: src/components/character/RebirthView.tsx
+msgid "Rebirth as {wanted}?"
+msgstr "Rebirth as {wanted}?"
+
 #: src/components/songselect/TopBar.tsx
 msgid "Recently Played"
 msgstr "Recently Played"
@@ -1076,9 +1178,21 @@ msgstr "Rename"
 msgid "Renderer"
 msgstr "Renderer"
 
-#: src/components/upgrades/UpgradeRow.tsx
-msgid "Requires Lv{minLevel}"
-msgstr "Requires Lv{minLevel}"
+#: src/components/character/RebirthView.tsx
+msgid "Requires overall Lv{REBIRTH_MIN_OVERALL_LEVEL}"
+msgstr "Requires overall Lv{REBIRTH_MIN_OVERALL_LEVEL}"
+
+#: src/components/upgrades/UpgradeBuyButton.tsx
+msgid "Requires XP Lv{minLevel}"
+msgstr "Requires XP Lv{minLevel}"
+
+#: src/components/character/PrestigeRow.tsx
+msgid "Requires XP Lv{required}"
+msgstr "Requires XP Lv{required}"
+
+#: src/scenes/Character.tsx
+msgid "Reset a maxed skill for permanent bonus levels"
+msgstr "Reset a maxed skill for permanent bonus levels"
 
 #: src/components/result/ResultMeta.tsx
 msgid "Result"
@@ -1224,6 +1338,10 @@ msgstr "Sort"
 msgid "Star Rating: {0}★"
 msgstr "Star Rating: {0}★"
 
+#: src/scenes/Character.tsx
+msgid "Start a new character that is born with more unlocks"
+msgstr "Start a new character that is born with more unlocks"
+
 #: src/components/community/MusicControls.tsx
 msgid "Stop"
 msgstr "Stop"
@@ -1292,7 +1410,7 @@ msgstr "Today"
 msgid "Total {0}xp"
 msgstr "Total {0}xp"
 
-#: src/scenes/Upgrades.tsx
+#: src/scenes/Character.tsx
 msgid "Trade skill levels for permanent XP boosts"
 msgstr "Trade skill levels for permanent XP boosts"
 
@@ -1316,6 +1434,11 @@ msgstr "Uninstall"
 msgid "Uninstall add-on"
 msgstr "Uninstall add-on"
 
+#. placeholder {0}: owned.join(', ')
+#: src/components/character/RebirthView.tsx
+msgid "Unlocked: {0}"
+msgstr "Unlocked: {0}"
+
 #: src/osu/beatmap/grouping.ts
 msgid "Unplayed"
 msgstr "Unplayed"
@@ -1336,8 +1459,7 @@ msgstr "Update failed ({0}). Please restart the game."
 msgid "Updated"
 msgstr "Updated"
 
-#: src/scenes/SongSelect.tsx
-#: src/scenes/Upgrades.tsx
+#: src/scenes/Character.tsx
 msgid "Upgrades"
 msgstr "Upgrades"
 
@@ -1407,6 +1529,11 @@ msgstr "What do you want to do with this beatmap?"
 msgid "World Map"
 msgstr "World Map"
 
+#. placeholder {0}: multiplier.toFixed(2)
+#: src/components/character/PrestigeRow.tsx
+msgid "x{0} XP"
+msgstr "x{0} XP"
+
 #: src/components/upgrades/UpgradeRow.tsx
 msgid "x{multiplierText} XP"
 msgstr "x{multiplierText} XP"
@@ -1414,6 +1541,13 @@ msgstr "x{multiplierText} XP"
 #: src/components/BeatmapXPBreakdown.tsx
 msgid "XP gained last play"
 msgstr "XP gained last play"
+
+#. placeholder {0}: prestige + 1
+#. placeholder {1}: maxUpgrades(prestige + 1)
+#. placeholder {2}: next.toFixed(2)
+#: src/components/character/PrestigeRow.tsx
+msgid "XP Lv{level} → XP Lv0 · Loses every upgrade and all Overdrive · Keeps +{0} bonus levels, {1} gear slots and x{2} XP"
+msgstr "XP Lv{level} → XP Lv0 · Loses every upgrade and all Overdrive · Keeps +{0} bonus levels, {1} gear slots and x{2} XP"
 
 #: src/osu/beatmap/grouping.ts
 msgid "Yesterday"

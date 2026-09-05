@@ -38,7 +38,7 @@ export default class Accuracy extends Skill {
 	constructor(def = 0) {
 		super(SKILL.accuracy, def);
 
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			const { bad, minMs, maxMs } = Accuracy.computeForLevel(level);
 			this.bad = bad;
 			this.minMs = minMs;

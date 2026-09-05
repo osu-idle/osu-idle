@@ -6,7 +6,7 @@ import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { openPage } from '../../globals';
 import Addons from '../../scenes/Addons';
 import Skins from '../../scenes/Skins';
-import Upgrades from '../../scenes/Upgrades';
+import Character from '../../scenes/Character';
 import './pageOverlay.css';
 
 /**
@@ -32,8 +32,8 @@ export default function PageOverlay() {
 				if (e.target === e.currentTarget && !openPage.get()) setShown(undefined);
 			}}
 		>
-			{shown.page === 'upgrades'
-				? <Upgrades />
+			{shown.page === 'character'
+				? <Character />
 				: shown.page === 'skins'
 					? <Skins key={shown.view} view={shown.view} />
 					: <Addons key={shown.view} view={shown.view} />}

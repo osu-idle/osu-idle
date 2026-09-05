@@ -2,6 +2,12 @@ import 'dotenv/config';
 import '@osu-idle/shared/osu/controlPointPatch';
 import { env } from '../env';
 
+/**
+ * Posts a sample embed to the live map feed, to eyeball its formatting. It sends
+ * for real, so it is deliberately not called `test`: `npm test` inside this
+ * package used to run it and spam the Discord.
+ */
+
 const publish = async () => {
 	if (!env.MAP_FEED_WEBHOOK) return;
 

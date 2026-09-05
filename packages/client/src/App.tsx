@@ -17,6 +17,7 @@ import Presence from './online/presence';
 import Socket from './online/socket';
 import CommunityOverlay from './components/community/CommunityOverlay';
 import PageOverlay from './components/page/PageOverlay';
+import Playground from './dev/Playground';
 import FloatingDeltas from './components/FloatingDeltas';
 import './online/versionWatch';
 
@@ -24,8 +25,15 @@ Spectate.start();
 Presence.start();
 Socket.start();
 
+/** Dev-only component bench; see dev/Playground.tsx. Checked once at load so a
+ *  production build drops the whole tree. */
+const playground = import.meta.env.DEV
+	&& new URLSearchParams(location.search).has('playground');
+
 export default function App() {
 	const [scene] = useSynced(SceneManager.scene);
+
+	if (playground) return <Playground />;
 
 	return (
 		<>

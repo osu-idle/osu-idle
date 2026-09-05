@@ -41,6 +41,10 @@ msgstr "{m}mn"
 msgid "{mo} months ago"
 msgstr "{mo} months ago"
 
+#: src/display/skills.ts
+msgid "{name} Tier {tier}"
+msgstr "{name} Tier {tier}"
+
 #: src/display/ago.ts
 msgid "{s} seconds ago"
 msgstr "{s} seconds ago"

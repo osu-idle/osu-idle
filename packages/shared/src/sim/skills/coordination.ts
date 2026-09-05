@@ -70,7 +70,7 @@ export default class Coordination extends Skill {
 		super(SKILL.coordination, def);
 
 		const fn = cubic_bezier(.15,1,1,.86);
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			const p = fn(Math.min(1, level / 100));
 			this.fatigueRate = lerp(Coordination.GAIN_BASE, Coordination.GAIN_SKILLED, p);
 			this.decayRate = lerp(Coordination.DECAY_BASE, Coordination.DECAY_SKILLED, p);

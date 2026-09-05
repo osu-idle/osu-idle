@@ -66,7 +66,7 @@ export default class JackSpeed extends Skill {
 	constructor(def = 0) {
 		super(SKILL.jackspeed, def);
 
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			const { base, comfort, nps, max } = JackSpeed.computeForLevel(level);
 			this.comfort = comfort;
 			this.nps = nps;

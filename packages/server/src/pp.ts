@@ -12,10 +12,11 @@ export function calculatePP(score: ScoreState, chart: string): number {
 		lazer: false,
 
 		legacyTotalScore: Math.floor(score.score),
-		accuracy: score.accuracy,
+		// a pure divine play reads above 1, which is outside rosu-pp's domain
+		accuracy: Math.min(1, score.accuracy),
 		combo: score.maxCombo,
 
-		nGeki: score.counts.MARVELOUS,
+		nGeki: score.counts.MARVELOUS + score.counts.DIVINE,
 		n300: score.counts.PERFECT,
 		nKatu: score.counts.GREAT,
 		n100: score.counts.GOOD,

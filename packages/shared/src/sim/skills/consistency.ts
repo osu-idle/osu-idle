@@ -53,7 +53,7 @@ export default class Consistency extends Skill {
 	constructor(def = 0) {
 		super(SKILL.consistency, def);
 
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			this.randomness = Consistency.BASE_CHOKE_CHANCE
 				- Consistency.fn(level / 110) * (Consistency.BASE_CHOKE_CHANCE - Consistency.MIN_CHOKE_CHANCE);
 

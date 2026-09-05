@@ -10,6 +10,10 @@ import {
 	table,
 	text,
 } from '../dao';
+import {
+	betterScore,
+	rankValueSQL,
+} from '@osu-idle/shared/scoreOrder';
 import { ScoreBest } from './score_best';
 import { ScoreBestPP } from './score_best_pp';
 import {
@@ -74,7 +78,7 @@ export class Score extends DAO(t) {
 	}
 
 	public isHigherThan(score: Score): boolean {
-		return this.score > score.score;
+		return betterScore(this, score);
 	}
 
 	public hasHigherPPThan(score: Score): boolean {
@@ -156,7 +160,7 @@ export class Score extends DAO(t) {
 
 	static forBeatmap(beatmapId: number, limit = 50): Promise<Score[]> {
 		return this.query(
-			'SELECT * FROM score WHERE beatmapId = ? ORDER BY score DESC, playedAt DESC LIMIT ?',
+			`SELECT * FROM score WHERE beatmapId = ? ORDER BY ${rankValueSQL()} DESC, id ASC LIMIT ?`,
 			[beatmapId, limit],
 		);
 	}

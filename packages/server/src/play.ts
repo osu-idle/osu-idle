@@ -12,6 +12,7 @@ import CharacterBot, {
 	getRecoveryTime,
 } from '@osu-idle/shared/sim/bots/character';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
+import { hasUnlock } from '@osu-idle/shared/rebirth';
 import {
 	MINDBLOCK_SKILLS,
 	type SkillName,
@@ -200,6 +201,42 @@ redis.call('ZADD', KEYS[2], d.endsAt, ARGV[1])
 return out
 `;
 
+/**
+ * Debug: shift the whole timeline so the play ends right now, making its
+ * already-simulated result readable without waiting the map out in real time.
+ * The outcome itself is fixed at start, so this only changes *when* it can be
+ * read - which is still real progression, hence the production refusal at the
+ * call site. Token must match; a re-fire is a no-op.
+ */
+const FINISH_PLAY = `
+local v = redis.call('GET', KEYS[1])
+if not v then return false end
+local d = cjson.decode(v)
+if d.characterId ~= tonumber(ARGV[1]) then return false end
+if d.token ~= ARGV[2] then return false end
+local now = tonumber(ARGV[3])
+local delta = d.endsAt - now
+if delta <= 0 then return v end
+d.startedAt = d.startedAt - delta
+d.endsAt = d.endsAt - delta
+d.skipped = true
+local out = cjson.encode(d)
+redis.call('SET', KEYS[1], out)
+redis.call('ZADD', KEYS[2], d.endsAt, ARGV[1])
+return out
+`;
+
+/** Debug xp scaling, applied once as the play is stored so every later read -
+ *  result screen, totals, rankings - agrees on what the play was worth. */
+const scaleXp = (
+	xp: Record<SkillName, number>,
+	multiplier: number,
+): Record<SkillName, number> => {
+	if (multiplier <= 1) return xp;
+	for (const name of Object.keys(xp) as SkillName[]) xp[name] = Math.floor(xp[name] * multiplier);
+	return xp;
+};
+
 /** Mark a character active now (presence + the "online in the last hour" set). */
 const markOnline = (characterId: number) => redis.zadd(ONLINE_KEY, Date.now(), String(characterId));
 
@@ -276,6 +313,7 @@ async function loadCharacterSkills(character: CharacterRow, beatmapId: number) {
 		skill.xp.set(character[`${skill.name}Xp`]);
 		skill.upgrades.set(character[`${skill.name}Upgrades`]);
 		skill.overdrive.set(character[`${skill.name}Overdrive`]);
+		skill.prestige.set(character[`${skill.name}Prestige`]);
 
 		if (skill instanceof Memory) {
 			skill.timesPlayed.set(await getPlays(character.id, beatmapId));
@@ -347,6 +385,8 @@ async function joinExisting(characterId: number): Promise<StartPlayResult | null
 export async function startPlay(
 	character: CharacterRow,
 	beatmapId: number,
+	/** debug xp scaling; the ws handler pins it to 1 in production */
+	xpMultiplier: number = 1,
 ): Promise<StartPlayResult> {
 	await markOnline(character.id);
 
@@ -384,7 +424,7 @@ export async function startPlay(
 		await redis.zrem(PLAYING_KEY, String(character.id));
 		return { status: 'unranked' };
 	}
-	return simulateAndStore(character, beatmapId, beatmap);
+	return simulateAndStore(character, beatmapId, beatmap, xpMultiplier);
 }
 
 const getServerXP = async (
@@ -422,12 +462,13 @@ async function simulateAndStore(
 	character: CharacterRow,
 	beatmapId: number,
 	beatmap: Awaited<ReturnType<typeof getBeatmap>>,
+	xpMultiplier: number = 1,
 ): Promise<StartPlayResult> {
 	const skills = await loadCharacterSkills(character, beatmapId);
 
 	const chart = decoder.decodeFromString(beatmap.chart);
 	const bot = new CharacterBot(skills, chart.difficulty.overallDifficulty);
-	const game = new ManiaGame(chart, bot);
+	const game = new ManiaGame(chart, bot, { divine: hasUnlock(character.generation, 'DIVINE') });
 	// advance to the end in steps, checkpointing accuracy/grade along the way
 	// (update judges incrementally, so stepping does no extra work) - the live
 	// state poll reads these back for the resume banner
@@ -502,14 +543,14 @@ async function simulateAndStore(
 		songStartMs: game.songStartMs,
 		draft,
 		samples,
-		skillXp: await getServerXP(
+		skillXp: scaleXp(await getServerXP(
 			character,
 			session,
 			bot,
 			beatmap,
 			chart,
 			score,
-		),
+		), xpMultiplier),
 	};
 	if (failedAt) {
 		entry.failedAt = failedAt;
@@ -744,6 +785,15 @@ export async function skipPlay(characterId: number, token: string): Promise<{ ok
 	const raw = await redis.eval(
 		SKIP_PLAY, 2, playKey(characterId), PLAYING_KEY,
 		String(characterId), token, String(Date.now()), String(LEAD_IN_MS),
+	) as string | null;
+	return { ok: raw !== null };
+}
+
+/** Debug: end the play now (see FINISH_PLAY). */
+export async function finishPlayNow(characterId: number, token: string): Promise<{ ok: boolean }> {
+	const raw = await redis.eval(
+		FINISH_PLAY, 2, playKey(characterId), PLAYING_KEY,
+		String(characterId), token, String(Date.now()),
 	) as string | null;
 	return { ok: raw !== null };
 }

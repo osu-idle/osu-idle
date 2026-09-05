@@ -52,7 +52,7 @@ export default class Reading extends Skill {
 	constructor(def = 0) {
 		super(SKILL.reading, def);
 
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			const { notes, above } = Reading.computeForLevel(level);
 			this.notes = notes;
 			this.above = above;

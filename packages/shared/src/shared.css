@@ -4,10 +4,8 @@
 }
 
 .level_part {
-	position: absolute;
 	font-size: 90%;
 	font-weight: 100;
-	bottom: 0;
 }
 
 .level_100 {

@@ -41,6 +41,8 @@ export type ManiaGameOptions = {
 	scrollMs?: number
 	/** never end the play on HP reaching 0 (local debug play) */
 	noFail?: boolean
+	/** the character has the divine judgement unlocked (a rebirth grants it) */
+	divine?: boolean
 };
 
 /** One entry on the resolution timeline: a bot input judged at `time`, or - when
@@ -155,6 +157,7 @@ export class ManiaGame {
 			this.notes.length,
 			options.noFail,
 			hpMultiplier,
+			options.divine,
 		);
 		this.songEndMs =
 			this.notes.reduce((m, n) => Math.max(m, n.hold ? n.endTime : n.time), 0) + 2000;
@@ -163,7 +166,7 @@ export class ManiaGame {
 
 		this.scroll = new ScrollModel(beatmap);
 		this.barlines = buildBarlines(beatmap, this.songEndMs);
-		this.windows = maniaWindows(beatmap.difficulty.overallDifficulty);
+		this.windows = maniaWindows(beatmap.difficulty.overallDifficulty, options.divine);
 
 		// visibility window (scroll units): everything between just past the
 		// judgement line and the top of the approach is "on screen"

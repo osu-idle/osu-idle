@@ -116,6 +116,17 @@
 .upgrade__buy:hover:not(:disabled) {
 	background: rgba(255, 64, 137, 0.8);
 }
+
+/* shift-click skips the confirm, so the button has to look like it will */
+.upgrade__buy.is-instant:not(:disabled) {
+	background: rgba(255, 210, 74, 0.55);
+	color: #1a1420;
+}
+.upgrade__buy.is-instant:hover:not(:disabled) {
+	background: #ffd24a;
+	color: #1a1420;
+	box-shadow: 0 0 12px rgba(255, 210, 74, 0.55);
+}
 .upgrade__buy:disabled {
 	background: rgba(255, 255, 255, 0.08);
 	color: var(--text-dim);

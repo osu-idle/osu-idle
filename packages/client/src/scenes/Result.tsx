@@ -35,12 +35,25 @@ import CountUp, { COUNT_UP_MS } from '../components/result/CountUp';
 import ResultMeta from '../components/result/ResultMeta';
 import SkillProgression from '../components/result/SkillProgression';
 import { currentScore } from '../globals';
+import { showsDivine } from '@osu-idle/shared/rebirth';
 
+/** Two per row. Divine pairs with marvelous at the top and pushes perfect down
+ *  beside great; without divine the pairing is left exactly as it was. */
 const JUDGE_ORDER: Judgement[] = [
 	JUDGEMENT.PERFECT, JUDGEMENT.MARVELOUS,
 	JUDGEMENT.GREAT, JUDGEMENT.GOOD,
 	JUDGEMENT.BAD, JUDGEMENT.MISS,
 ];
+
+const DIVINE_JUDGE_ORDER: Judgement[] = [
+	JUDGEMENT.DIVINE, JUDGEMENT.MARVELOUS,
+	JUDGEMENT.PERFECT, JUDGEMENT.GREAT,
+	JUDGEMENT.GOOD, JUDGEMENT.BAD,
+	JUDGEMENT.MISS,
+];
+
+const judgeOrder = (divineCount: number): Judgement[] =>
+	showsDivine(divineCount) ? DIVINE_JUDGE_ORDER : JUDGE_ORDER;
 
 type Props = {
 	score: Score | ScoreDTO,
@@ -54,6 +67,9 @@ type Props = {
 
 export default function Result({ score, game, progression, failed }: Props) {
 	const [skin] = useSynced(currentSkin);
+
+	const count = (j: Judgement): number =>
+		score instanceof Score ? score[j] : score.judgements[j];
 
 	const gains = progression
 		?.filter((p) => p.gained > 0)
@@ -94,9 +110,9 @@ export default function Result({ score, game, progression, failed }: Props) {
 		return () => { clearInterval(tick); clearTimeout(launch); };
 	}, [autopilot]);
 
-	const player = useAsync(async () => score.characterId > 1 ? 
-		await getCharacter(score.characterId) 
-		: Character.get({ id: score.characterId }), [score.characterId]);
+	const player = useAsync(async () => Character.isLocalId(score.characterId)
+		? Character.get({ id: score.characterId })
+		: await getCharacter(score.characterId), [score.characterId]);
 
 	const displayScore = Math.round(score.score);
 	const shownScore = useSmoothNumber(displayScore, { 
@@ -138,7 +154,7 @@ export default function Result({ score, game, progression, failed }: Props) {
 							</div>
 
 							<div className="result__judges">
-								{JUDGE_ORDER.map((j) => (
+								{judgeOrder(count(JUDGEMENT.DIVINE)).map((j) => (
 									<div key={j} className="result__judge">
 										<span 
 											className="result__judge-label" 
@@ -151,7 +167,7 @@ export default function Result({ score, game, progression, failed }: Props) {
 										<span 
 											className="result__judge-count" 
 											style={{ textShadow: `0 0px 4px ${skin.data.judgements[j].judge}` }}>
-											<CountUp value={score instanceof Score ? score[j] : score.judgements[j]} 
+											<CountUp value={count(j)} 
 											/></span>
 									</div>
 								))}

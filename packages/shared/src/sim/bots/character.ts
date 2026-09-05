@@ -631,10 +631,20 @@ export default class CharacterBot extends Bot {
 	}
 
 	private progression?: SkillProgress[];
-	applyProgression(length: number, score: ScoreLike): SkillProgress[] {
+	applyProgression(
+		length: number,
+		score: ScoreLike,
+		/** debug xp scaling for local plays; the server scales its own */
+		xpMultiplier: number = 1,
+	): SkillProgress[] {
 		if (this.progression) return this.progression;
 
 		const xp = this.getSkillsXP(length, score);
+		if (xpMultiplier > 1) {
+			for (const name of Object.keys(xp) as SkillName[]) {
+				xp[name] = Math.floor(xp[name] * xpMultiplier);
+			}
+		}
 		this.progression = this.skills.map((skill) => {
 			const gained = xp[skill.name];
 			const fromLevel = skill.level.get();

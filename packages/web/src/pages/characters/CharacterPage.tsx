@@ -20,7 +20,11 @@ import {
 	useCurrentUser,
 } from '../../hooks/useCurrentUser';
 import { useState } from 'react';
-import { Judgements } from '@osu-idle/shared/judgement';
+import {
+	JUDGEMENT,
+	Judgements,
+} from '@osu-idle/shared/judgement';
+import { showsDivine } from '@osu-idle/shared/rebirth';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import num from '@osu-idle/shared/display/num';
 import hitAccuracy from '@osu-idle/shared/osu/hitAccuracy';
@@ -29,6 +33,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import ScoreRow from '../../components/score/ScoreRow';
 import Grade from '../../components/score/Grade';
+import { headlineGrades } from './headlineGrades';
 import { SkillBar } from '../../components/character/SkillBar';
 import { CharacterRanks } from '../../components/character/CharacterRanks';
 import RankGraph from '../../components/character/RankGraph';
@@ -38,8 +43,6 @@ import { Trans } from '@lingui/react/macro';
 import { countryName } from '@osu-idle/shared/display/country';
 import { i18n } from '../../i18n';
 
-/** Headline grades shown in the totals block (best play per beatmap). */
-const GRADE_DISPLAY = ['X', 'SS', 'S', 'A'] as const;
 
 type Character = Awaited<ReturnType<typeof getCharacter>>;
 type Stats = Awaited<ReturnType<typeof getCharacterStats>>;
@@ -112,7 +115,7 @@ export default function CharacterPage({ id, character, stats }: {
 							</div>
 						</div>
 						<div className='character__totals_grades'>
-							{GRADE_DISPLAY.map(g => (
+							{headlineGrades(stats).map(g => (
 								<div key={g} className='character__grades-area'>
 									<Grade grade={g} />
 									<div className='character__grades-num'>{num(stats[g])}</div>
@@ -139,12 +142,14 @@ export default function CharacterPage({ id, character, stats }: {
 						<div className='character__stats-label'><Trans>Total Hits</Trans></div>
 						<div className='character__stats-num'>{num(stats.totalHits)}</div>
 					</div>
-					{Judgements.map(j => (
-						<div key={j} className='character__stats-area'>
-							<div className={`character__stats-label character__stats-judge judge-${j}`}>{j}</div>
-							<div className='character__stats-num'>{num(stats[j])}</div>
-						</div>
-					))}
+					{Judgements
+						.filter(j => j !== JUDGEMENT.DIVINE || showsDivine(stats[j]))
+						.map(j => (
+							<div key={j} className='character__stats-area'>
+								<div className={`character__stats-label character__stats-judge judge-${j}`}>{j}</div>
+								<div className='character__stats-num'>{num(stats[j])}</div>
+							</div>
+						))}
 				</div>
 			</div>
 			<div className='character__submeta'>

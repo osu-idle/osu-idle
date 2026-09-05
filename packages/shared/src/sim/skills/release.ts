@@ -16,12 +16,15 @@ export default class Release extends Skill {
 	private precision!: number;
 	private baseImprecision!: number;
 
+	/** No rate may reach zero: at zero the decay is a no-op and strain sticks. */
+	private static readonly MIN_RATE = 0.0001;
+
 	constructor(def = 0) {
 		super(SKILL.release, def);
 
 		const fn = cubic_bezier(0,.65,1,.45);
 		const fnBase = cubic_bezier(.5,1,.95,.8);
-		this.level.sync(level => {
+		this.syncSkillLevel(level => {
 			const levelNerf = fnBase(Math.min(1, level / 100)) * 7;
 			level -= levelNerf;
 			this.precision = level / 120;
@@ -30,9 +33,12 @@ export default class Release extends Skill {
 			const base2 = fnBase(Math.max(0, 1 - (level / 150)));
 			this.baseImprecision =  base * (0.10 + 0.02 * base2);
 
-			this.recoveryRate = 0.005 * fn(normalize(level, [0, 100])) 
-				+ 0.005 * fn(Math.max(0, (level - 100) / 100))
-			;
+			// floored: at zero the decay below is exp(0), so release strain never
+			// comes down and pins at 1 for the whole play
+			this.recoveryRate = Math.max(Release.MIN_RATE,
+				0.005 * fn(normalize(level, [0, 100])) 
+				+ 0.005 * fn(Math.max(0, (level - 100) / 100)),
+			);
 			this.fatigueRate = 0.0008 * (1 - fn(normalize(level, [100, 200])));
 		});
 	}

@@ -73,4 +73,19 @@ export default tseslint.config(
 			],
 		},
 	},
+	{
+		// The level -> skill mapping paces the strain curves and nothing else.
+		// The player is shown their effective level, so the mapped number must
+		// never reach a screen: it only means something to the tuning.
+		files: ['packages/client/src/**', 'packages/web/src/**'],
+		rules: {
+			'no-restricted-imports': ['error', {
+				paths: [{
+					name: '@osu-idle/shared/sim/skills/levelCurve',
+					importNames: ['mapLevel', 'LEVEL_MAPPING'],
+					message: 'gameplay skill is internal to the sim - show effectiveLevelOf instead',
+				}],
+			}],
+		},
+	},
 );

@@ -6,6 +6,7 @@ import {
 import {
 	ScoreState,
 	maniaWindows,
+	DIVINE_WINDOW,
 	judge,
 	judgeHold,
 	MAX_HP,
@@ -30,6 +31,7 @@ describe('maniaWindows', () => {
 	it('matches the stable formula at OD 0', () => {
 		const w = maniaWindows(0);
 		expect(w).toEqual({
+			[JUDGEMENT.DIVINE]: -1,
 			[JUDGEMENT.MARVELOUS]: 16.5,
 			[JUDGEMENT.PERFECT]: 64,
 			[JUDGEMENT.GREAT]: 97,
@@ -47,6 +49,20 @@ describe('maniaWindows', () => {
 		expect(w[JUDGEMENT.GOOD]).toBe(112);
 		expect(w[JUDGEMENT.BAD]).toBe(136);
 		expect(w[JUDGEMENT.MISS]).toBe(173);
+	});
+
+	it('leaves divine unreachable until a rebirth unlocks it', () => {
+		expect(maniaWindows(0)[JUDGEMENT.DIVINE]).toBe(-1);
+		// judge() compares with <=, so a flawless 0ms hit must still not be divine
+		expect(judge(0, maniaWindows(0))).toBe(JUDGEMENT.MARVELOUS);
+	});
+
+	it('opens an 6ms divine window once unlocked', () => {
+		const w = maniaWindows(0, true);
+		expect(w[JUDGEMENT.DIVINE]).toBe(DIVINE_WINDOW);
+		expect(judge(0, w)).toBe(JUDGEMENT.DIVINE);
+		expect(judge(DIVINE_WINDOW, w)).toBe(JUDGEMENT.DIVINE);
+		expect(judge(DIVINE_WINDOW + 0.1, w)).toBe(JUDGEMENT.MARVELOUS);
 	});
 });
 
@@ -144,7 +160,79 @@ describe('ScoreState combo & accuracy', () => {
 	});
 });
 
+describe('DIVINE', () => {
+	it('scores exactly like a marvelous - 1M stays the cap', () => {
+		const divine = play(6, 8, 10, [[JUDGEMENT.DIVINE, 10]]);
+		const marvelous = play(6, 8, 10, [[JUDGEMENT.MARVELOUS, 10]]);
+		expect(divine.score).toBe(marvelous.score);
+		expect(divine.hp).toBe(marvelous.hp);
+		expect(divine.maxCombo).toBe(marvelous.maxCombo);
+	});
+
+	it('reads exactly 101% on a full-divine play', () => {
+		expect(play(6, 8, 10, [[JUDGEMENT.DIVINE, 10]]).accuracy).toBeCloseTo(1.01, 10);
+	});
+
+	it('scales with the divine share while the play stays pure', () => {
+		const half = play(6, 8, 10, [[JUDGEMENT.DIVINE, 5], [JUDGEMENT.MARVELOUS, 5]]);
+		expect(half.accuracy).toBeCloseTo(1.005, 10);
+	});
+
+	it('gives up the bonus entirely once anything below marvelous lands', () => {
+		// 9 divines and one PERFECT. An unconditional 1.01 weight would read
+		// 100.99% here, on a play that never reaches 1M - the exact leak the
+		// purity condition exists to close. It must land on a flat 100%.
+		const spoiled = play(6, 8, 10, [[JUDGEMENT.DIVINE, 9], [JUDGEMENT.PERFECT, 1]]);
+		expect(spoiled.accuracy).toBeCloseTo(1, 10);
+	});
+
+	it('retracts the bonus when the play is spoiled after the divines land', () => {
+		const s = new ScoreState(6, 8, 10);
+		for (let i = 0; i < 9; i++) s.add(JUDGEMENT.DIVINE);
+		expect(s.accuracy).toBeGreaterThan(1);
+		s.add(JUDGEMENT.GREAT);
+		expect(s.accuracy).toBeLessThan(1);
+	});
+});
+
+describe('live grade with divine unlocked', () => {
+	// 6th arg: the character has divine available, independent of what has landed
+	const live = () => new ScoreState(6, 8, 10, false, 1, true);
+
+	it('starts an untouched play at Z', () => {
+		expect(live().grade).toBe(GRADE.XX);
+	});
+
+	it('drops to X on the first marvelous', () => {
+		const s = live();
+		s.add(JUDGEMENT.DIVINE);
+		expect(s.grade).toBe(GRADE.XX);
+		s.add(JUDGEMENT.MARVELOUS);
+		expect(s.grade).toBe(GRADE.X);
+	});
+
+	it('stays X once dropped, even if divines keep landing', () => {
+		const s = live();
+		s.add(JUDGEMENT.MARVELOUS);
+		s.add(JUDGEMENT.DIVINE);
+		expect(s.grade).toBe(GRADE.X);
+	});
+
+	it('leaves an untouched play at X when divine is locked', () => {
+		expect(new ScoreState(6, 8, 10).grade).toBe(GRADE.X);
+	});
+});
+
 describe('ScoreState grades', () => {
+	it('is Z only when every hit is DIVINE', () => {
+		expect(play(6, 8, 10, [[JUDGEMENT.DIVINE, 10]]).grade).toBe(GRADE.XX);
+		// one marvelous among them is still a perfect play, but not a pure one
+		expect(play(6, 8, 10, [[JUDGEMENT.DIVINE, 9], [JUDGEMENT.MARVELOUS, 1]]).grade)
+			.toBe(GRADE.X);
+		expect(play(6, 8, 10, [[JUDGEMENT.DIVINE, 9], [JUDGEMENT.PERFECT, 1]]).grade)
+			.not.toBe(GRADE.XX);
+	});
+
 	it('is X (SS-perfect) only when every hit is MARVELOUS', () => {
 		expect(play(6, 8, 10, [[JUDGEMENT.MARVELOUS, 10]]).grade).toBe(GRADE.X);
 	});

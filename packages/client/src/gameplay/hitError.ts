@@ -52,6 +52,9 @@ export function drawHitErrorBar(
 	let prevWin = 0;
 	for (const j of Judgements) {
 		const win = windows[j] * scale;
+		// a judgement the character has not unlocked has a negative window, which
+		// would drag the next ring's origin left of centre
+		if (win <= prevWin) continue;
 		ctx.fillStyle = colorA(colorDim(skin.data.judgements[j].hitErrorBg, 1.35), 0.2);
 		ctx.fillRect(cx + prevWin, y - barH / 2, win - prevWin, barH);
 		ctx.fillRect(cx - win, y - barH / 2, win - prevWin, barH);

@@ -49,6 +49,15 @@ export default class Spectate {
 		this.dismissedToken = token;
 	}
 
+	/** Play this client has already shown a result for. The server keeps
+	 *  reporting a play active until its record is consumed, and finalising a big
+	 *  one takes a moment - without this, returning to song select relaunches the
+	 *  play that just ended. */
+	private static completedToken: string | undefined;
+	public static complete(token: string): void {
+		this.completedToken = token;
+	}
+
 	/** The dismissed play while it's still live - drives the resume banner. */
 	public static background = new Synced<BackgroundPlay | undefined>(undefined);
 
@@ -80,6 +89,11 @@ export default class Spectate {
 		if (!character || character.isGuest()) return;
 
 		if (state.phase === 'active') {
+			// already resulted, just not yet consumed server-side
+			if (state.token === this.completedToken) {
+				this.unwatch();
+				return;
+			}
 			if (state.token === this.dismissedToken) {
 				this.watch(state.token);
 				await this.trackBackground(state);

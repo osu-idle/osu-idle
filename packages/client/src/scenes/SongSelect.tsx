@@ -27,6 +27,7 @@ import TopBar from '../components/songselect/TopBar';
 import SpectateBanner from '../components/songselect/SpectateBanner';
 import UserCard from '../components/songselect/UserCard';
 import CardContextMenu from '../components/songselect/CardContextMenu';
+import XpMultiplierToggle from '../components/songselect/XpMultiplierToggle';
 import StrainDebug from './StrainDebug';
 import { matchesSearch } from '../osu/beatmap/beatmapSearch';
 import Entities from '../entity/entities';
@@ -236,6 +237,8 @@ export default function SongSelect() {
 	useEffect(() => { Autopilot.stop(); }, []);
 
 	const onBack = () => {
+		// a page overlay (character, skins, add-ons) owns input while it is up
+		if (openPage.get()) { void openPage.set(undefined); return; }
 		if (playlistItem) { setPlaylistItem(null); return; }
 		if (menuItem) { setMenuItem(null); return; }
 		SETTINGS.search.set('');
@@ -249,13 +252,11 @@ export default function SongSelect() {
 	const [scrollSpeed] = useSynced(SETTINGS.scrollspeed);
 	const [library] = useSynced(beatmapsVersion);
 	const [character] = useSynced(Entities.character);
-	const online_character = useAsync(async () => character.id > 1 ? 
-		getCharacter(character.id) 
-		: undefined
+	const online_character = useAsync(async () => character.isGuest() ? undefined
+		: getCharacter(character.id)
 	, [character]);
-	const online_stats = useAsync(async () => character.id > 1 ? 
-		getCharacterStats(character.id) 
-		: undefined
+	const online_stats = useAsync(async () => character.isGuest() ? undefined
+		: getCharacterStats(character.id)
 	, [character]);
 	const [debug] = useSynced(debugMode);
 	const { t } = useLingui(); // for strings outside JSX text (attrs, toasts, menu)
@@ -480,9 +481,10 @@ export default function SongSelect() {
 		void selectItem(orderedItems[next].beatmap);
 	}, [orderedItems, selectItem]);
 
-	Controls.next.usePress(() => move(1));
-	Controls.previous.usePress(() => move(-1));
+	Controls.next.usePress(() => { if (!openPage.get()) move(1); });
+	Controls.previous.usePress(() => { if (!openPage.get()) move(-1); });
 	Controls.confirm.usePress(() => {
+		if (openPage.get()) { return; }
 		if (playlistItem) { return; }
 		if (menuItem) { return; }
 		const map = music.beatmap.get();
@@ -703,10 +705,10 @@ export default function SongSelect() {
 					<Trans>BACK</Trans>
 				</button>
 				<button
-					className="game__upgrades"
-					onClick={() => openPage.set({ page: 'upgrades' })}
+					className="game__character"
+					onClick={() => openPage.set({ page: 'character' })}
 				>
-					<span><Trans>Upgrades</Trans></span>
+					<span><Trans>Character</Trans></span>
 				</button>
 				<UserCard
 					character={character}
@@ -724,6 +726,8 @@ export default function SongSelect() {
 					⛛
 				</button>
 			)}
+
+			{debug && <XpMultiplierToggle />}
 
 			{debugBeatmap && (
 				<StrainDebug 

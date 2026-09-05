@@ -125,6 +125,11 @@ export class MusicPlayer {
 			this.samples = new SampleSchedule(menu);
 			this.sampleStart = menu.length ? menu[0].time : 0;
 			this.sampleEnd = menu.reduce((m, s) => Math.max(m, s.time), 0);
+			// this runs after the track has already been told to play - a preview
+			// starts at the map's preview point, not at 0 - so seat the pointer where
+			// playback actually is. Without it the schedule starts from the top of
+			// the map and fires samples the preview has long passed.
+			if (this._playing) this.samples.resync(this.time());
 			await preloadSamples(map.set.metadata.id, menu);
 		} catch (e) {
 			console.warn('[music] storyboard load failed', e);
@@ -132,18 +137,21 @@ export class MusicPlayer {
 	}
 
 	/** Start, seek or stop the slave <audio> element to track the virtual position.
-	 *  Once the track ends it stays ended (the clock continues past it). */
+	 *  Past the end of the track it stays silent and the clock carries on, but a
+	 *  position back inside the track starts it again - a replay of the same map
+	 *  used to leave the element `ended` for good, so only the samples came back. */
 	private syncAudio(pos: number): void {
 		if (!this.audio.src) return; // no backing track (virtual map)
 		if (pos < 0) {
 			if (!this.audio.paused) this.audio.pause();
 			return;
 		}
-		if (this.audio.paused && !this.audio.ended) {
-			if (Math.abs(this.audio.currentTime * 1000 - pos) > 250) 
-				this.audio.currentTime = pos / 1000;
-			void this.audio.play().catch(() => {});
-		}
+		if (!this.audio.paused) return;
+		const durationMs = isFinite(this.audio.duration) ? this.audio.duration * 1000 : undefined;
+		if (durationMs !== undefined && pos >= durationMs) return; // genuinely past it
+		if (Math.abs(this.audio.currentTime * 1000 - pos) > 250) 
+			this.audio.currentTime = pos / 1000;
+		void this.audio.play().catch(() => {});
 	}
 
 	/**
