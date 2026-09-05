@@ -64,6 +64,8 @@ const t = table('character', {
 	overallTotalXp: integer().default(0),
 	overallLevel:   integer().default(0),
 	generation:  integer().default(1),
+	// when memory was last prestiged: plays before it no longer train it
+	memoryResetAt: integer().default(0),
 	local:       integer().default(0),
 	current:     integer().default(0),
 });

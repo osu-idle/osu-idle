@@ -1,4 +1,7 @@
-import type { SkillName } from '@osu-idle/shared/skills';
+import {
+	SKILL,
+	type SkillName,
+} from '@osu-idle/shared/skills';
 import {
 	applyPrestige,
 	canRebirth,
@@ -38,6 +41,9 @@ export const prestigeSkill = async (skillName: SkillName): Promise<boolean> => {
 		} catch {
 			return false;
 		}
+		// memory's progress is the maps it has learned, so that is what its
+		// prestige spends - the scores themselves stay for the profile
+		if (skillName === SKILL.memory) character.memoryResetAt = Date.now();
 		await character.persistSkills();
 		return true;
 	}

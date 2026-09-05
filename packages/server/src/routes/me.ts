@@ -42,6 +42,8 @@ import {
 	usesReservedOld,
 } from '@osu-idle/shared/rebirth';
 import { isPlaying } from '../play';
+import { resetMemory } from '../db/schema/beatmaps_played';
+import { SKILL } from '@osu-idle/shared/skills';
 import { xpGivesLevel } from '@osu-idle/shared/sim/skills/xp';
 import type { SkillName } from '@osu-idle/shared/skills';
 
@@ -312,6 +314,10 @@ export const meRoutes = new Hono()
 				eq(characters[`${skill}Prestige`], state.prestige),
 			));
 		if (!written.affectedRows) throw new HTTPException(409, { message: 'Character changed, retry' });
+
+		// memory's progress is the maps it has learned, so that is what its
+		// prestige spends - the play counts the profile shows are left alone
+		if (skill === SKILL.memory) await resetMemory(row.id);
 
 		await reindexCharacter(row.id);
 

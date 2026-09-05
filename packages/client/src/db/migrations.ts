@@ -292,6 +292,12 @@ const addLifetimeXp: Migration = db => {
 	}
 };
 
+/** Memory's prestige forgets the maps it learned. Existing rows keep all their
+ *  training: nothing has been prestiged yet at this point. */
+const addMemoryReset: Migration = db => {
+	db.run('ALTER TABLE character ADD COLUMN memoryResetAt INTEGER DEFAULT 0;');
+};
+
 const migrations: Migration[] = [
 	recomputeBests,
 	addOnlineId,
@@ -306,6 +312,7 @@ const migrations: Migration[] = [
 	renameGradeZ,
 	rebestOnAccuracy,
 	addLifetimeXp,
+	addMemoryReset,
 ];
 
 /**

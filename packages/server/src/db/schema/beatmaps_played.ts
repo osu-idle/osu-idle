@@ -70,6 +70,16 @@ export const getPlays = async (characterId: number, beatmapId: number): Promise<
 	return row?.plays ?? 0;
 };
 
+/** Forget every map this character has learned, without touching how many times
+ *  they played it. Prestiging memory trades the training in for the bonus, so
+ *  the maps are fresh to it again while `plays` keeps counting for the profile. */
+export const resetMemory = async (characterId: number) => {
+	return db
+		.update(beatmaps_played)
+		.set({ memory: 0 })
+		.where(eq(beatmaps_played.characterId, characterId));
+};
+
 export const addBeatmapPlayed = async (characterId: number, beatmapId: number) => {
 	await db.update(beatmaps)
 		.set({ plays: sql`${beatmaps.plays} + 1` })

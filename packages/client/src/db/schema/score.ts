@@ -166,12 +166,19 @@ export class Score extends DAO(t) {
 	}
 
 	/** How many times this character has played this map locally - drives the
-	 *  memory skill for guest / unranked plays (ranked uses the server count). */
-	static countPlays(characterId: number, beatmapId: number): Promise<number> {
+	 *  memory skill for guest / unranked plays (ranked uses the server count).
+	 *  Plays from before memory was last prestiged do not count: that training
+	 *  is what the prestige spent. */
+	static countPlays(
+		characterId: number,
+		beatmapId: number,
+		since = 0,
+	): Promise<number> {
 		return DB.read(db => {
 			const res = db.exec(
-				'SELECT COUNT(*) AS n FROM score WHERE characterId = ? AND beatmapId = ?',
-				[characterId, beatmapId],
+				`SELECT COUNT(*) AS n FROM score
+					WHERE characterId = ? AND beatmapId = ? AND playedAt >= ?`,
+				[characterId, beatmapId, since],
 			);
 			return (res[0]?.values[0][0] as number) ?? 0;
 		});

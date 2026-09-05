@@ -113,4 +113,23 @@ describe('client database migrations', () => {
 		expect(rows(db, 'SELECT id, grade FROM score ORDER BY id')).toEqual([[1, 'X'], [2, 'XX']]);
 		expect(one(db, 'SELECT scoreId FROM score_best')).toBe(2);
 	});
+	it('gives memory somewhere to record that its training was spent', () => {
+		const db = oldDatabase();
+		db.run('INSERT INTO character (id, name, local) VALUES (1, \'Guest\', 1);');
+		db.run(`INSERT INTO score (id, characterId, beatmapId, score, accuracy, grade, pp, playedAt)
+			VALUES (1, 1, 10, 900000, 0.98, 'S', 50, 100),
+				(2, 1, 10, 950000, 0.99, 'S', 60, 500),
+				(3, 1, 10, 980000, 0.99, 'S', 70, 1500);`);
+
+		migrate(db);
+
+		// nothing prestiged yet, so every play still trains
+		expect(one(db, 'SELECT memoryResetAt FROM character WHERE id = -1')).toBe(0);
+		const since = (t: number) => one(db,
+			`SELECT COUNT(*) FROM score WHERE characterId = -1 AND beatmapId = 10 AND playedAt >= ${t}`);
+		expect(since(0)).toBe(3);
+		// after a reset the earlier plays stop counting, but the scores remain
+		expect(since(1000)).toBe(1);
+		expect(one(db, 'SELECT COUNT(*) FROM score')).toBe(3);
+	});
 });

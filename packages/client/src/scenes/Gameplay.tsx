@@ -1222,6 +1222,7 @@ export default function Gameplay({
 			const timesPlayed = await Score.countPlays(
 				character.id, 
 				live.metadata.beatmapId,
+				character.memoryResetAt,
 			);
 			setBoot({
 				beatmap: live, play, timesPlayed, 
