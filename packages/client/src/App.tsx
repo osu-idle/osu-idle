@@ -2,7 +2,6 @@ import Popups from './components/Popups';
 import Cursor from './components/Cursor';
 import SceneManager from './scenes/SceneManager';
 import TransitionOverlay from './scenes/Transition';
-import Alpha from './components/Alpha';
 import VolumeOverlay from './components/VolumeOverlay';
 import WebBrowser from './components/WebBrowser';
 import Onboarding from './components/Onboarding';
@@ -37,7 +36,6 @@ export default function App() {
 
 	return (
 		<>
-			<Alpha />
 			{scene}
 			<PageOverlay />
 			<TransitionOverlay />

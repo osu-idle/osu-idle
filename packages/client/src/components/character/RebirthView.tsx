@@ -43,11 +43,11 @@ export default function RebirthView() {
 		if (!ready || busy) return;
 		const wanted = name.trim();
 		const handover = wanted === character.name
-			? t`${character.name} hands its name over and becomes ${character.name}_old`
+			? t`${character.name} becomes ${character.name}_old`
 			: t`${character.name} keeps its name`;
 		setConfirming({
 			title: t`Rebirth as ${wanted}?`,
-			sub: t`${handover}, stays playable and ranked · The new character starts from zero and unlocks ${next ?? 'nothing new'}`,
+			sub: t`${handover}, stays playable and ranked · The new character starts from zero and unlocks: ${next ?? 'nothing new'}`,
 			confirmLabel: t`Rebirth`,
 			color: '#ff4089',
 			onConfirm: () => void run(),
@@ -58,12 +58,12 @@ export default function RebirthView() {
 		<div className="upgrades">
 			<p className="upgrades__hint">
 				<Trans>
-					At overall Lv{REBIRTH_MIN_OVERALL_LEVEL} you can start a brand new
-					character one generation up, which is born with one more permanent
-					unlock. Everything you have now stays: the old character remains
-					playable, keeps its levels, and stays on the leaderboards. Pick a new
-					name for the new character - or keep your current one, and the old
-					character hands it over and takes _old.
+					After reaching overall Lv{REBIRTH_MIN_OVERALL_LEVEL} you can start over
+					with a new character one generation up, which permanently unlocks a new
+					feature. Everything you have now stays available: the old character
+					remains playable, keeps its levels, and stays on the leaderboards. Pick
+					a new name, or keep your current one and the old character gets _old
+					appended to its name.
 				</Trans>
 			</p>
 
@@ -80,7 +80,7 @@ export default function RebirthView() {
 						: <Trans>No unlocks yet</Trans>}
 				</span>
 				{next && (
-					<span><Trans>Next rebirth unlocks {next}</Trans></span>
+					<span><Trans>Next rebirth unlocks: {next}</Trans></span>
 				)}
 			</div>
 

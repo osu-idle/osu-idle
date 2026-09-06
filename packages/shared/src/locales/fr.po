@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-05 21:51\n"
+"PO-Revision-Date: 2026-09-06 10:31\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -48,7 +48,7 @@ msgstr "il y a {mo} mois"
 
 #: src/display/skills.ts
 msgid "{name} Tier {tier}"
-msgstr ""
+msgstr "{name} Tier {tier}"
 
 #: src/display/ago.ts
 msgid "{s} seconds ago"

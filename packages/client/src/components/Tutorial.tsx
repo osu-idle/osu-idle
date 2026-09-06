@@ -83,9 +83,9 @@ export default function Tutorial() {
 			</Trans>,
 		},
 		{
-			title: t`Early alpha`,
+			title: t`In Beta`,
 			body: <Trans>
-				osu!idle is in <b>alpha</b> and under active development - if you hit a bug,
+				osu!idle is in <b>beta</b> and under active development - if you hit a bug,
 				report it on <a 
 					href="https://discord.gg/Yd5GEaX8AJ"
 					target="_blank"

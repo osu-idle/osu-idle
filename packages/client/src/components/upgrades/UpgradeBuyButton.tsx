@@ -31,8 +31,8 @@ export default function UpgradeBuyButton({
 	const label = () => {
 		if (maxed) return <Trans>Maxed</Trans>;
 		if (!purchasable) return <Trans>Requires XP Lv{minLevel}</Trans>;
-		if (instant) return <Trans>Buy now</Trans>;
-		return <Trans>Buy: <Plural value={cost} one="# level" other="# levels" /></Trans>;
+		if (instant) return <Trans>Buy</Trans>;
+		return <Trans>Buy for <Plural value={cost} one="# level" other="# levels" /></Trans>;
 	};
 
 	return (

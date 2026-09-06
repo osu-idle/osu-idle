@@ -11,8 +11,8 @@ export default function PrestigeView() {
 		<div className="upgrades">
 			<p className="upgrades__hint">
 				<Trans>
-					A skill that reaches XP Lv{PRESTIGE_MIN_LEVEL} can be reset to zero. It
-					loses its upgrades and Overdrive, and keeps a permanent bonus level, an
+					Reaching XP Lv{PRESTIGE_MIN_LEVEL} on a skill lets you reset it. You
+					lose its upgrades and Overdrive, and gain a permanent bonus level, an
 					extra gear slot and a multiplicative XP bonus. Each prestige asks for
 					one more level than the last.
 				</Trans>

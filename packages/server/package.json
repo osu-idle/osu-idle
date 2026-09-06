@@ -1,6 +1,6 @@
 {
   "name": "@osu-idle/server",
-  "version": "0.18.1.0",
+  "version": "0.18.2.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -29,7 +29,9 @@
     "migrate:beatmaps": "tsx src/db/migrate-beatmaps.ts",
     "migrate:beatmaps:prod": "NODE_ENV=production tsx src/db/migrate-beatmaps.ts",
     "webhook:preview": "tsx src/db/webhookPreview.ts",
-    "extract": "lingui extract --clean"
+    "extract": "lingui extract --clean",
+    "replay:scores": "tsx src/db/replay-scores.ts",
+    "replay:scores:prod": "NODE_ENV=production tsx src/db/replay-scores.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",

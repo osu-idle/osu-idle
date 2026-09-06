@@ -2,7 +2,6 @@ import './SkillBar.css';
 
 import { xpForLevel } from '@osu-idle/shared/sim/skills/xp';
 import { SkillName } from '@osu-idle/shared/skills';
-import { level as dlevel } from '@osu-idle/shared/display/num';
 import SkillLevel from '@osu-idle/shared/display/SkillLevel';
 import { skillName } from '@osu-idle/shared/display/skills';
 
@@ -16,7 +15,8 @@ export function SkillBar({ skill, progress: {
 }) {
 	const toNext = xpForLevel(level);
 	const percent = toNext > 0 ? Math.min(1, xp / toNext) : 0;
-	// the overall level stays the xp one; a skill shows what it plays at
+	// overall has no prestige to add, so it reads as the xp level either way -
+	// but it still earns the hover, and the lifetime behind it
 	const overall = String(skill) === 'overall';
 	return (
 		<li className='skill'>
@@ -30,9 +30,8 @@ export function SkillBar({ skill, progress: {
 				<div className='skill__fill' style={{ width: `${percent*100}%` }} />
 			</div>
 			<span className='skill__level'>
-				{overall
-					? <>{dlevel(level, xp)}<span className='skill__cap'>{level < 100 && '/100'}</span></>
-					: <SkillLevel level={level} xp={xp} prestige={prestige} lifetimeXp={lifetimeXp} />}
+				<SkillLevel level={level} xp={xp} prestige={prestige} lifetimeXp={lifetimeXp} />
+				{overall && <span className='skill__cap'>{level < 100 && '/100'}</span>}
 			</span>
 		</li>
 	);

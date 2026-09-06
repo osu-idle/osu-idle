@@ -31,7 +31,6 @@ export type OpenPage =
 export const openPage = new Synced<OpenPage | undefined>(undefined);
 
 export const isVolumeVisible = new Synced(false);
-export const displayAlpha = new Synced(false);
 
 export const message = new Synced('');
 

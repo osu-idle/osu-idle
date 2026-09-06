@@ -306,7 +306,7 @@ type StartPlayResult = RankedStartPlayResult
 
 /** Build the character's skills, loaded with their level/XP (and play count for
  *  Memory) so the simulation runs at the character's current state. */
-async function loadCharacterSkills(character: CharacterRow, beatmapId: number) {
+export async function loadCharacterSkills(character: CharacterRow, beatmapId: number) {
 	const skills = makeOrderedSkills();
 	for (const skill of skills) {
 		skill.level.set(character[`${skill.name}Level`]);
@@ -427,7 +427,10 @@ export async function startPlay(
 	return simulateAndStore(character, beatmapId, beatmap, xpMultiplier);
 }
 
-const getServerXP = async (
+/** The xp a finished play is worth: fatigue, mindblock, and the bonus for a
+ *  first X. Exported so the score replay awards xp by the same rules a live
+ *  play does, rather than keeping a second copy of them. */
+export const getServerXP = async (
 	character: CharacterRow,
 	session: PlayTime,
 	bot: CharacterBot,

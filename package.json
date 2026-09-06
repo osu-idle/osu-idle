@@ -1,7 +1,7 @@
 {
   "name": "osu-idle",
   "private": true,
-  "version": "0.18.1.0",
+  "version": "0.18.2.0",
   "type": "module",
   "description": "osu! idle - a replica of the osu! startup experience (React client + Hono backend)",
   "workspaces": [
@@ -23,8 +23,8 @@
     "build": "npm run i18n:extract && npm run i18n:compile && npm -w @osu-idle/shared run build && npm -w @osu-idle/server run build:types && npm -w @osu-idle/client run build && npm -w @osu-idle/web run build",
     "build:deploy": "npm -w @osu-idle/server run build:types && npm -w @osu-idle/client run build && npm -w @osu-idle/web run build",
     "build:nodeploy": "npm run build:shared && npm run build:types",
-    "deploy:prod": "sudo echo 'starting' && node scripts/version-bump.mjs --verify \"npm run i18n:upload && npm run i18n:download && node scripts/staged-build.mjs\" && sudo systemctl restart osu-idle",
-    "deploy:prod:migrate": "sudo echo 'starting' && node scripts/version-bump.mjs --verify \"npm run i18n:upload && npm run i18n:download && node scripts/staged-build.mjs\" && sudo systemctl stop osu-idle && npm run migrate:prod && sudo systemctl start osu-idle",
+    "deploy:prod": "sudo echo 'starting' && npm run backup:prod && node scripts/version-bump.mjs --verify \"npm run i18n:upload && npm run i18n:download && node scripts/staged-build.mjs\" && sudo systemctl restart osu-idle",
+    "deploy:prod:migrate": "sudo echo 'starting' && npm run backup:prod && node scripts/version-bump.mjs --verify \"npm run i18n:upload && npm run i18n:download && node scripts/staged-build.mjs\" && sudo systemctl stop osu-idle && npm run migrate:prod && sudo systemctl start osu-idle",
     "publish:desktop": "npm -w @osu-idle/desktop run dist && node scripts/publish-desktop.mjs",
     "version:bump": "node scripts/version-bump.mjs",
     "deploy:server:prod": "sudo echo 'starting' && npm -w @osu-idle/shared run build && npm -w @osu-idle/server run build:types && sudo systemctl restart osu-idle",
@@ -53,7 +53,8 @@
     "test:watch": "npm -w @osu-idle/tests run test:watch",
     "testplay": "npm -w @osu-idle/tests run testplay",
     "testxp": "npm -w @osu-idle/tests run testxp",
-    "benchmark": "npm -w @osu-idle/tests run benchmark"
+    "benchmark": "npm -w @osu-idle/tests run benchmark",
+    "backup:prod": "node scripts/backup-db.mjs"
   },
   "overrides": {
     "zod": "^4.4.3"

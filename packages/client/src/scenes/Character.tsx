@@ -28,13 +28,13 @@ export default function Character() {
 				{
 					id: 'prestige',
 					label: <Trans>Prestige</Trans>,
-					subtitle: t`Reset a maxed skill for permanent bonus levels`,
+					subtitle: t`Reset a skill for a permanent level bonus`,
 					render: () => <PrestigeView />,
 				},
 				{
 					id: 'rebirth',
 					label: <Trans>Rebirth</Trans>,
-					subtitle: t`Start a new character that is born with more unlocks`,
+					subtitle: t`Start over with a new character that unlocks new features`,
 					render: () => <RebirthView />,
 				},
 			]}

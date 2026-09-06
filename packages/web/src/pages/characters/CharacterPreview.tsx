@@ -114,7 +114,8 @@ export default function CharacterPreview({ character, stats }: {
 						<SkillBar
 							skill={'overall' as SkillName}
 							progress={{
-								level: character.overallLevel, xp: character.overallXp, 
+								level: character.overallLevel, xp: character.overallXp,
+								lifetimeXp: character.overallLifetimeXp,
 							}}
 						/>
 					</div>

@@ -76,8 +76,8 @@ export default function PrestigeRow({
 			<div className="upgrade__info">
 				<span className="upgrade__desc">
 					{prestige > 0
-						? <Trans>Prestiged {prestige} times · +{prestige} bonus levels</Trans>
-						: <Trans>Never prestiged</Trans>}
+						? <Trans>{prestige} prestiges · +{prestige} bonus levels</Trans>
+						: <Trans>No prestige</Trans>}
 				</span>
 			</div>
 			<div className="upgrade__action">

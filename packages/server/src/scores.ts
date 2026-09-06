@@ -298,6 +298,9 @@ const announceSkillLevels = async (
 export async function applySkillXp(
 	characterId: number,
 	xp: Record<SkillName, number>,
+	/** Off when catching xp up after a rollback: those milestones were announced
+	 *  when they were first reached, and the channel should not hear them twice. */
+	announceMilestones = true,
 ) {
 	const [row] = await db.select().from(characters).where(eq(characters.id, characterId)).limit(1);
 	if (!row) throw new Error(`character ${characterId} not found`);
@@ -354,7 +357,7 @@ export async function applySkillXp(
 	>;
 
 	await db.update(characters).set(updates).where(eq(characters.id, characterId));
-	await announceSkillLevels(row, [
+	if (announceMilestones) await announceSkillLevels(row, [
 		...gains.map(g => ({
 			skill: g.skill as SkillName, from: g.fromLevel, to: g.toLevel,
 		})),

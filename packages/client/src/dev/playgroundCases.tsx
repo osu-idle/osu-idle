@@ -76,8 +76,8 @@ export const PLAYGROUND_CASES: { id: string, label: string, render: () => ReactN
 		label: 'Confirm - long rebirth text',
 		render: () => <ConfirmMenu
 			title="Rebirth as Adri?"
-			sub={'Adri becomes Adri_old and stays playable and ranked · '
-				+ 'The new character starts from zero and unlocks DIVINE'}
+			sub={'Adri becomes Adri_old, stays playable and ranked · '
+				+ 'The new character starts from zero and unlocks: DIVINE'}
 			confirmLabel="Rebirth"
 			color="#ff4089"
 			onConfirm={() => {}}

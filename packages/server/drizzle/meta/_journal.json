@@ -274,6 +274,13 @@
       "when": 1788565109894,
       "tag": "0038_rename_z_to_xx",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "5",
+      "when": 1788565110894,
+      "tag": "0039_backfill_lifetime_xp",
+      "breakpoints": true
     }
   ]
 }
