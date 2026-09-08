@@ -281,6 +281,27 @@
       "when": 1788565110894,
       "tag": "0039_backfill_lifetime_xp",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "5",
+      "when": 1788565111894,
+      "tag": "0040_beatmap_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "5",
+      "when": 1788565112894,
+      "tag": "0041_news_announced",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "5",
+      "when": 1788565113894,
+      "tag": "0042_pending_action",
+      "breakpoints": true
     }
   ]
 }

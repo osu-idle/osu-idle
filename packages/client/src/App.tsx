@@ -11,16 +11,18 @@ import { isMobile } from './globals';
 import Message from './components/Message';
 import Options from './scenes/Options';
 import FpsCounter from './components/FpsCounter';
-import Spectate from './online/spectate';
+import PlayManager from './online/playManager';
 import Presence from './online/presence';
 import Socket from './online/socket';
 import CommunityOverlay from './components/community/CommunityOverlay';
 import PageOverlay from './components/page/PageOverlay';
+import PlayDock from './components/dock/PlayDock';
 import Playground from './dev/Playground';
 import FloatingDeltas from './components/FloatingDeltas';
 import './online/versionWatch';
+import './online/characterWatch';
 
-Spectate.start();
+PlayManager.start();
 Presence.start();
 Socket.start();
 
@@ -38,6 +40,7 @@ export default function App() {
 		<>
 			{scene}
 			<PageOverlay />
+			<PlayDock />
 			<TransitionOverlay />
 			<VolumeOverlay />
 			<Onboarding />

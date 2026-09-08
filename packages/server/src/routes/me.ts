@@ -10,42 +10,40 @@ import {
 	characterNameBody,
 	onboardingBody,
 } from '@osu-idle/shared/onboarding';
-import {
-	db,
-	pool,
-} from '../db/client';
+import { db } from '../db/client';
 import {
 	characters,
 	characterToDTO,
+	type CharacterRow,
 } from '../db/schema/character';
 import { requireAuth } from '../auth/middleware';
 import { users } from '../db/schema/user';
 import { saveUploadedImage } from '../uploads';
-import type { RowDataPacket } from 'mysql2/promise';
 import { env } from '../env';
 import { publish } from '../discord/publish';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 import { reindexCharacter } from '../rankings';
 import { characterNameHistory } from '../db/schema/name_history';
 import {
-	applyPrestige,
-	applyUpgrade,
-	canPrestige,
-	canRebirth,
-	canUpgrade,
 	prestigeBody,
 	upgradeBody,
 } from '@osu-idle/shared/upgrades';
-import {
-	OLD_SUFFIX,
-	rebirthBody,
-	usesReservedOld,
-} from '@osu-idle/shared/rebirth';
+import { rebirthBody } from '@osu-idle/shared/rebirth';
 import { isPlaying } from '../play';
-import { resetMemory } from '../db/schema/beatmaps_played';
-import { SKILL } from '@osu-idle/shared/skills';
-import { xpGivesLevel } from '@osu-idle/shared/sim/skills/xp';
-import type { SkillName } from '@osu-idle/shared/skills';
+import {
+	assertActionAvailable,
+	performPrestige,
+	performRebirth,
+	performUpgrade,
+} from '../character/actions';
+import {
+	applyPendingAction,
+	queuePendingAction,
+} from '../character/pending';
+import { assertNameAvailable } from '../character/names';
+import { announceCharacter } from '../character/push';
+import type { PendingAction } from '@osu-idle/shared/pendingAction';
+import type { UserRow } from '../db/schema/user';
 
 const characterId = z.number().int().positive();
 const characterRenameBody = characterNameBody.extend({ characterId: characterId.optional() });
@@ -151,7 +149,9 @@ export const meRoutes = new Hono()
 			row.name = name;
 		}
 
-		return c.json(characterToDTO(row, user.avatarUrl, user.country));
+		const dto = characterToDTO(row, user.avatarUrl, user.country);
+		announceCharacter(dto);
+		return c.json(dto);
 	})
 
 	// Upload a custom profile picture for the account's current character,
@@ -169,73 +169,26 @@ export const meRoutes = new Hono()
 
 	// Buy the current character's next upgrade for a skill: spends levels
 	// (and their lifetime XP, so leaderboards drop too) per the shared math.
+	// Mid-play it is parked instead - see character/pending.ts.
 	.post('/upgrade', requireAuth, jsonBody(upgradeBody), async c => {
-		const userId = c.get('userId');
+		const { user, row } = await currentCharacter(c.get('userId'));
 		const { skill } = c.req.valid('json');
 
-		const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-		if (!user?.currentCharacter) throw new HTTPException(409, { message: 'No character' });
+		const deferred = await queueWhilePlaying(row, {
+			type: 'upgrade', skill, requestedAt: Date.now(),
+		});
+		// parked, not refused: the client spends it locally now and the server
+		// does it for real when the play ends
+		if (deferred !== 'none') {
+			return c.json({
+				queued: deferred === 'queued',
+				character: await characterById(row.id, user),
+			});
+		}
 
-		const [row] = await db
-			.select()
-			.from(characters)
-			.where(eq(characters.id, user.currentCharacter))
-			.limit(1);
-		if (!row) throw new HTTPException(409, { message: 'No character' });
-
-		const state = {
-			level: row[`${skill}Level`],
-			xp: row[`${skill}Xp`],
-			upgrades: row[`${skill}Upgrades`],
-			overdrive: row[`${skill}Overdrive`],
-			prestige: row[`${skill}Prestige`],
-		};
-		if (!canUpgrade(state)) throw new HTTPException(409, { message: 'Upgrade not purchasable' });
-		const purchase = applyUpgrade(state);
-
-		// Spending is global: the spent XP also leaves the lifetime totals that
-		// rankings and the overall level are built on.
-		const spent = Math.round(purchase.spent);
-		const skillTotalXp = Math.max(0, row[`${skill}TotalXp`] - spent);
-		const overallTotalXp = Math.max(0, row.overallTotalXp - spent);
-		const overall = xpGivesLevel(overallTotalXp);
-
-		const updates = {
-			[`${skill}Level`]: purchase.level,
-			[`${skill}Xp`]: Math.round(purchase.xp),
-			[`${skill}TotalXp`]: skillTotalXp,
-			[`${skill}Upgrades`]: purchase.upgrades,
-			[`${skill}Overdrive`]: purchase.overdrive,
-			overallTotalXp,
-			overallLevel: overall.level,
-			overallXp: Math.round(overall.xp),
-		} as Record<`${SkillName}${'Level' | 'Xp' | 'TotalXp' | 'Upgrades' | 'Overdrive'}`
-		| `overall${'Level' | 'Xp' | 'TotalXp'}`, number>;
-
-		// Conditional write: lose the race against a concurrent purchase or a
-		// play finalise touching the same skill, instead of clobbering it.
-		const [written] = await db
-			.update(characters)
-			.set(updates)
-			.where(and(
-				eq(characters.id, row.id),
-				eq(characters[`${skill}Level`], state.level),
-				eq(characters[`${skill}Upgrades`], state.upgrades),
-			));
-		if (!written.affectedRows) throw new HTTPException(409, { message: 'Character changed, retry' });
-
-		await reindexCharacter(row.id);
-
-		const [updated] = await db
-			.select()
-			.from(characters)
-			.where(eq(characters.id, row.id))
-			.limit(1);
-
+		const { spent, ratio } = await performUpgrade(row, skill);
 		return c.json({
-			character: characterToDTO(updated!, user.avatarUrl, user.country),
-			spent,
-			ratio: purchase.ratio,
+			character: await characterById(row.id, user), spent, ratio,
 		});
 	})
 
@@ -282,91 +235,99 @@ export const meRoutes = new Hono()
 	// bonus level, an extra gear tier and a bigger multiplier. Lifetime totals and
 	// the ranking metrics are deliberately left alone.
 	.post('/prestige', requireAuth, jsonBody(prestigeBody), async c => {
-		const userId = c.get('userId');
+		const { user, row } = await currentCharacter(c.get('userId'));
 		const { skill } = c.req.valid('json');
-		const { user, row } = await currentCharacter(userId);
-		await assertNotPlaying(row.id);
 
-		const state = {
-			level: row[`${skill}Level`],
-			xp: row[`${skill}Xp`],
-			upgrades: row[`${skill}Upgrades`],
-			overdrive: row[`${skill}Overdrive`],
-			prestige: row[`${skill}Prestige`],
-		};
-		if (!canPrestige(state)) throw new HTTPException(409, { message: 'Prestige not available' });
-		const next = applyPrestige(state);
+		const deferred = await queueWhilePlaying(row, {
+			type: 'prestige', skill, requestedAt: Date.now(),
+		});
+		if (deferred === 'none') await performPrestige(row, skill);
 
-		const updates = {
-			[`${skill}Level`]: next.level,
-			[`${skill}Xp`]: next.xp,
-			[`${skill}Upgrades`]: next.upgrades,
-			[`${skill}Overdrive`]: next.overdrive,
-			[`${skill}Prestige`]: next.prestige,
-		} as Record<`${SkillName}${'Level' | 'Xp' | 'Upgrades' | 'Overdrive' | 'Prestige'}`, number>;
-
-		const [written] = await db
-			.update(characters)
-			.set(updates)
-			.where(and(
-				eq(characters.id, row.id),
-				eq(characters[`${skill}Level`], state.level),
-				eq(characters[`${skill}Prestige`], state.prestige),
-			));
-		if (!written.affectedRows) throw new HTTPException(409, { message: 'Character changed, retry' });
-
-		// memory's progress is the maps it has learned, so that is what its
-		// prestige spends - the play counts the profile shows are left alone
-		if (skill === SKILL.memory) await resetMemory(row.id);
-
-		await reindexCharacter(row.id);
-
-		const [updated] = await db.select().from(characters).where(eq(characters.id, row.id)).limit(1);
-		return c.json(characterToDTO(updated!, user.avatarUrl, user.country));
+		return c.json({
+			queued: deferred === 'queued',
+			character: await characterById(row.id, user),
+		});
 	})
 
 	// Rebirth: the account starts a fresh character one generation up, which owns
 	// one more unlock. The previous one stays playable, ranked, and keeps its
 	// progress - it just gives up the name, osu!-style.
 	.post('/rebirth', requireAuth, jsonBody(rebirthBody), async c => {
-		const userId = c.get('userId');
+		const { user, row } = await currentCharacter(c.get('userId'));
 		const { name } = c.req.valid('json');
-		const { user, row } = await currentCharacter(userId);
-		await assertNotPlaying(row.id);
 
-		if (!canRebirth(row.overallLevel)) {
-			throw new HTTPException(409, { message: 'Rebirth not available' });
-		}
-		// Keeping your name is the only thing that displaces the old character: it
-		// hands the name over and takes _old, osu!-style. Any other name leaves it
-		// exactly as it was.
-		const inherits = name === row.name;
-		if (inherits) {
-			const displaced = await displacedName(row.name);
-			await db.insert(characterNameHistory).values({
-				characterId: row.id, name: row.name,
-			});
-			await db.update(characters).set({ name: displaced }).where(eq(characters.id, row.id));
-		} else {
-			await assertNameAvailable(userId, name, user.username);
-		}
+		// Checked here, not only inside performRebirth: parked, that check would
+		// not run until the play ended, where a taken name is a 403 swallowed into
+		// a log - after the player was told the rebirth would happen. Keeping your
+		// own name displaces the old character instead, so it needs no check.
+		if (name !== row.name) await assertNameAvailable(user.id, name, user.username);
 
-		const [created] = await db.insert(characters).values({
-			userId, name, generation: row.generation + 1,
+		const deferred = await queueWhilePlaying(row, {
+			type: 'rebirth', name, requestedAt: Date.now(),
 		});
-		const characterId = created.insertId;
+		// nothing was created yet: the answer is the character they still have
+		if (deferred === 'queued') {
+			return c.json({
+				queued: true, character: await characterById(row.id, user),
+			});
+		}
+		// it already happened while we were parking it: answer with what it made,
+		// or the client keeps the character the rebirth just renamed
+		if (deferred === 'applied') {
+			const { row: live } = await currentCharacter(user.id);
+			return c.json({
+				queued: false, character: await characterById(live.id, user),
+			}, 201);
+		}
 
-		await db.update(users)
-			.set({ currentCharacter: characterId })
-			.where(eq(users.id, userId));
-
-		await reindexCharacter(row.id);
-		await reindexCharacter(characterId);
-
-		const [fresh] = await db.select().from(characters).where(eq(characters.id, characterId)).limit(1);
-		return c.json(characterToDTO(fresh!, user.avatarUrl, user.country), 201);
+		const created = await performRebirth(user, row, name);
+		return c.json({
+			queued: false, character: await characterById(created, user),
+		}, 201);
 	})
+
 ;
+
+/** The character row as the wire sees it, re-read so it carries whatever the
+ *  request just changed, and handed to the account's devices on the way out -
+ *  the player's other screens are looking at the same character. */
+const characterById = async (id: number, user: UserRow) => {
+	const [row] = await db.select().from(characters).where(eq(characters.id, id)).limit(1);
+	const dto = characterToDTO(row!, user.avatarUrl, user.country);
+	announceCharacter(dto);
+	return dto;
+};
+
+/**
+ * Park an action when a play is running, and say whether it was parked.
+ *
+ * The play was simulated - outcome and xp both - from this character when it
+ * started, so a purchase now can never reach it. Refusing outright would make
+ * these unreachable for anyone actually using the play queue, so it waits for
+ * the play to end instead. It is still checked against the character now, so an
+ * impossible request fails immediately rather than silently later, and they
+ * stack: buying three things during one play buys three things.
+ */
+const queueWhilePlaying = async (
+	row: CharacterRow,
+	action: PendingAction,
+): Promise<'queued' | 'applied' | 'none'> => {
+	if (!(await isPlaying(row.id))) return 'none';
+	// checked against the character as it will be - what is already parked spends
+	// first - and checked inside the lock that appends, so two clicks in the same
+	// breath cannot both pass
+	await queuePendingAction(row.id, action, (locked, parked) =>
+		assertActionAvailable(locked, action, parked));
+
+	// The play may have finished between the check above and the append, in which
+	// case its finalise has already looked for parked actions and found none.
+	// Nothing else would run this one until some later play ends - so it runs
+	// here, and the caller answers with what happened rather than promising it
+	// for an ending that is already past.
+	if (await isPlaying(row.id)) return 'queued';
+	await applyPendingAction(row.id);
+	return 'applied';
+};
 
 /** The account's live character, or a 409 when onboarding never ran. */
 const currentCharacter = async (userId: number) => {
@@ -393,55 +354,6 @@ const assertNotPlaying = async (characterId: number) => {
 	}
 };
 
-/** The name a displaced character falls back to, osu!-style: append _old until
- *  it is free, so a lineage chains Adri -> Adri_old -> Adri_old_old. */
-const displacedName = async (name: string): Promise<string> => {
-	let candidate = `${name}${OLD_SUFFIX}`;
-	for (;;) {
-		const [taken] = await db
-			.select({ id: characters.id })
-			.from(characters)
-			.where(eq(characters.name, candidate))
-			.limit(1);
-		if (!taken) return candidate;
-		candidate = `${candidate}${OLD_SUFFIX}`;
-	}
-};
-
-/** Reject a name already used by another character (`excludeCharacterId` is the
- *  caller's own, for renames), reserved by another osu! account, or carrying the
- *  _old token, which only a player whose own osu! username has it may use. */
-const assertNameAvailable = async (
-	userId: number,
-	name: string,
-	osuUsername: string,
-	excludeCharacterId?: number,
-) => {
-	if (usesReservedOld(name, osuUsername)) {
-		throw new HTTPException(403, { message: 'Name is reserved' });
-	}
-
-	const [existingName] = await db
-		.select({ id: characters.id })
-		.from(characters)
-		.where(eq(characters.name, name))
-		.limit(1);
-	if (existingName && existingName.id !== excludeCharacterId) {
-		throw new HTTPException(409, { message: 'Name already taken' });
-	}
-
-	const [results1] = await pool.promise().query<RowDataPacket[]>(
-		'SELECT * FROM stats.osu_user WHERE osu_id != ? AND username = ?',
-		[userId, name]);
-	const [results2] = await pool.promise().query<RowDataPacket[]>(
-		'SELECT * FROM farm.user WHERE osu_id != ? AND username = ?',
-		[userId, name]);
-
-	if ((results1 && results1.length) || (results2 && results2.length)) {
-		throw new HTTPException(403, { message: 'Name is reserved' });
-	}
-};
-
 /** Set the account's current character avatar and return the resolved character DTO. */
 async function setCurrentCharacterAvatar(userId: number, url: string | null) {
 	const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
@@ -453,5 +365,7 @@ async function setCurrentCharacterAvatar(userId: number, url: string | null) {
 		.from(characters)
 		.where(eq(characters.id, user.currentCharacter))
 		.limit(1);
-	return characterToDTO(row!, user.avatarUrl, user.country);
+	const dto = characterToDTO(row!, user.avatarUrl, user.country);
+	announceCharacter(dto);
+	return dto;
 }

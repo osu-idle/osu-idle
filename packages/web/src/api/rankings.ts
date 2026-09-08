@@ -43,6 +43,36 @@ export const getCountrySkillRanking = (skill: SkillSort, country: string, page: 
 		}, 
 	}));
 
+/** The same skills ranked on what they have ever earned. */
+export const getLifetimeRanking = (skill: SkillSort, page: number = 1) =>
+	unwrap(rpc.v1.ranking.lifetime[':skill'].page[':page'].$get({
+		param: {
+			skill, page: String(page),
+		},
+	}));
+
+export const getCountryLifetimeRanking = (skill: SkillSort, country: string, page: number = 1) =>
+	unwrap(rpc.v1.ranking.lifetime[':skill'].country[':country'].page[':page'].$get({
+		param: {
+			skill, country, page: String(page),
+		},
+	}));
+
+/** How many times each skill has been prestiged. */
+export const getPrestigeRanking = (skill: SkillSort, page: number = 1) =>
+	unwrap(rpc.v1.ranking.prestige[':skill'].page[':page'].$get({
+		param: {
+			skill, page: String(page),
+		},
+	}));
+
+export const getCountryPrestigeRanking = (skill: SkillSort, country: string, page: number = 1) =>
+	unwrap(rpc.v1.ranking.prestige[':skill'].country[':country'].page[':page'].$get({
+		param: {
+			skill, country, page: String(page),
+		},
+	}));
+
 export const getGradesRanking = (grade: GoodGrade | 'all', page: number = 1) =>
 	unwrap(rpc.v1.ranking.grades[':grade'].page[':page'].$get({
 		param: {

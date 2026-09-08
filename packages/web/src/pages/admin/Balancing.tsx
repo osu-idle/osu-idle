@@ -6,7 +6,6 @@ import OsuPlot, { precise4 } from '../../components/OsuPlot';
 import {
 	accBasedScoreFactor,
 	factorXP,
-	getRecoveryTime,
 	lowDensityBasedNotesFactor,
 	mapXP,
 	speedBasedScoreFactor,
@@ -77,9 +76,6 @@ export default function BalancingPage() {
 	}));
 	
 	const transposed = getProgression(n => lowDensityBasedNotesFactor(n, 50), 0, 110);
-	
-	const recoveryBase = getProgression(n => n, 0, 60);
-	const recovery = getProgression(n => getRecoveryTime(0, n * 1000) / 1000, 0, 60);
 	
 	const skillReadingNotes = getProgression(n => Reading.computeForLevel(n).notes);
 	const skillReadingAbove = getProgression(n => Reading.computeForLevel(n).above);
@@ -218,21 +214,6 @@ export default function BalancingPage() {
 					series={[
 						{
 							name: 'Accuracy', x: transposed.x, y: transposed.y, 
-						},
-					]}
-				/>
-
-				Fatigue recovery
-				<OsuPlot
-					title="Fatigue recup"
-					xTitle="Seconds"
-					yTitle="Seconds Recovered"
-					series={[
-						{
-							name: 'Base', x: recoveryBase.x, y: recoveryBase.y, color: '#c0437d28', 
-						},
-						{
-							name: 'Tweaked', x: recovery.x, y: recovery.y, 
 						},
 					]}
 				/>

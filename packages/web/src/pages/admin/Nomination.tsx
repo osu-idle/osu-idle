@@ -14,6 +14,7 @@ import {
 	updateNomination,
 	uploadBeatmap,
 } from '../../api/maps';
+import Link from '../../components/Link';
 import NominationRow from './NominationRow';
 import {
 	PHASE_ORDER,
@@ -135,6 +136,11 @@ export default function NominationPage() {
 					{sortBtn('submitted', 'Submitted')}
 					{sortBtn('ranked', 'Ranked')}
 				</div>
+				<Link to='/maps/requests' search={{
+					filter: 'open', sort: 'support', page: 1,
+				}} className='nomination__btn'>
+					Player requests
+				</Link>
 				<span className='nomination__count'>{sorted.length} sets</span>
 			</div>
 

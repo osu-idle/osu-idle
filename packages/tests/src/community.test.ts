@@ -9,6 +9,7 @@ import {
 	chatLineDTO,
 } from '@osu-idle/shared/community/wire';
 import { presenceEntryDTO } from '@osu-idle/shared/community/presence';
+import { Skills } from '@osu-idle/shared/skills';
 import {
 	firstPlaceMessage,
 	isSkillLevelMilestone,
@@ -92,6 +93,34 @@ describe('community wire contract', () => {
 		};
 		expect(serverMessage.parse(msg)).toEqual(msg);
 		expect(chatLineDTO.parse(msg.line)).toEqual(msg.line);
+	});
+
+	it('round-trips the pushed character, parked purchases and all', () => {
+		const skills = Object.fromEntries(Skills.map(s => [s, {
+			level: 92,
+			xp: 1200,
+			upgrades: 8,
+			overdrive: 7.7,
+			prestige: 0,
+			lifetimeXp: 4_000_000,
+		}]));
+		const msg = {
+			type: 'character' as const,
+			character: {
+				id: 7,
+				userId: 3,
+				name: 'someone',
+				avatarUrl: 'https://example.invalid/a.png',
+				country: 'FR',
+				generation: 1,
+				overallLevel: 88,
+				skills,
+				pendingActions: [{
+					type: 'upgrade' as const, skill: 'accuracy' as const, requestedAt: 1_700_000_000_000,
+				}],
+			},
+		};
+		expect(serverMessage.parse(msg)).toEqual(msg);
 	});
 
 	it('round-trips a system chat message (no sender)', () => {

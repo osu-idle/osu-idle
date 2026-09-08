@@ -8,15 +8,15 @@ import { msg } from '@lingui/core/macro';
 import {
 	getAllMaps,
 	getPopularMaps,
-} from '../api/maps';
-import RankedMaps from '../pages/beatmaps/RankedMaps';
+} from '../../api/maps';
+import RankedMaps from '../../pages/beatmaps/RankedMaps';
 
 const mapsSearch = z.object({
 	sort: fallback(z.enum(['date', 'plays']), 'date').default('date'),
 	dir: fallback(z.enum(['asc', 'desc']), 'desc').default('desc'),
 });
 
-export const Route = createFileRoute('/maps')({
+export const Route = createFileRoute('/maps/')({
 	validateSearch: zodValidator(mapsSearch),
 	loaderDeps: ({ search }) => search,
 	loader: ({ deps }) => deps.sort === 'plays' ? getPopularMaps(deps.dir) : getAllMaps(deps.dir),

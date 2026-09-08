@@ -4,7 +4,7 @@ import Dropdown from '../dropdown/Dropdown';
 import {
 	autopilotModeLabels,
 	AutopilotModes,
-} from '../../gameplay/autopilot';
+} from '../../gameplay/playQueue';
 
 export default function AutopilotMode() {
 	const labels = autopilotModeLabels();

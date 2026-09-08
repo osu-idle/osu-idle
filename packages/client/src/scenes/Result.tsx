@@ -1,5 +1,6 @@
 import DevianceGraph from '../gameplay/DevianceGraph';
 import { Score } from '../db/schema/score';
+import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import { ManiaGame } from '@osu-idle/shared/sim/maniaGame';
 import Background from './Background';
 import './Result.css';
@@ -16,10 +17,7 @@ import {
 } from '@osu-idle/shared/judgement';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import { ScoreDTO } from '@osu-idle/shared/score';
-import {
-	useEffect,
-	useState,
-} from 'react';
+import { useEffect } from 'react';
 import { flushBeatmapScores } from '../online/services/scores';
 import {
 	flushCharacter,
@@ -27,10 +25,7 @@ import {
 	getCharacter,
 } from '../online/services/characters';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
-import Autopilot from '../gameplay/autopilot';
-import { launchPlay } from './launchPlay';
 import num from '@osu-idle/shared/display/num';
-import { SETTINGS } from '../db/settings';
 import CountUp, { COUNT_UP_MS } from '../components/result/CountUp';
 import ResultMeta from '../components/result/ResultMeta';
 import SkillProgression from '../components/result/SkillProgression';
@@ -63,9 +58,12 @@ type Props = {
 	progression?: SkillProgress[],
 	/** the play failed (HP hit 0): the score was not saved and awards no XP */
 	failed?: boolean,
+	/** the map this score is of. Given, the screen names it itself instead of
+	 *  following the live selection, which browsing elsewhere can change. */
+	beatmap?: LightBeatmap,
 };
 
-export default function Result({ score, game, progression, failed }: Props) {
+export default function Result({ score, game, progression, failed, beatmap }: Props) {
 	const [skin] = useSynced(currentSkin);
 
 	const count = (j: Judgement): number =>
@@ -87,28 +85,10 @@ export default function Result({ score, game, progression, failed }: Props) {
 		return () => { currentScore.set(undefined); };
 	}, []);
 
-	const onBack = () => {
-		// leaving the result screen by hand ends the playlist automation
-		Autopilot.stop();
-		SceneManager.set(SCENE.SELECT);
-	};
+	// leaving the result screen no longer stops anything: the queue runs whether
+	// or not a scene is watching it (stop it from the dock instead)
+	const onBack = () => SceneManager.set(SCENE.SELECT);
 	Controls.back.usePress(onBack);
-
-	// playlist autopilot: after a short countdown, chain into the next playable
-	// entry of the playlist (wrapping around). Unmounting cancels the timer.
-	const [autopilot] = useSynced(Autopilot.session);
-	const nextUp = autopilot ? Autopilot.next() : null;
-	const autopilotDelay = SETTINGS.autopilotDelay.get();
-	const [countdown, setCountdown] = useState(Math.round(autopilotDelay));
-	useEffect(() => {
-		if (!autopilot) return;
-		const tick = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
-		const launch = setTimeout(() => {
-			const next = Autopilot.advance();
-			if (next) launchPlay(next);
-		}, autopilotDelay * 1000);
-		return () => { clearInterval(tick); clearTimeout(launch); };
-	}, [autopilot]);
 
 	const player = useAsync(async () => Character.isLocalId(score.characterId)
 		? Character.get({ id: score.characterId })
@@ -126,25 +106,13 @@ export default function Result({ score, game, progression, failed }: Props) {
 	const playerName = player?.name ?? '--';
 	const ur = score.ur.toFixed(2);
 
-	const next = `${nextUp?.set.metadata.artist} - ${nextUp?.set.metadata.title}`;
-
 	return (<>
-		<Background />
+		<Background beatmap={beatmap} />
 		<div className="resultscreen">
-			<ResultMeta playerName={playerName} playedAt={playedAt} />
+			<ResultMeta playerName={playerName} playedAt={playedAt} beatmap={beatmap} />
 			<button className="result__exit" onClick={onBack}>
 				<Trans>BACK</Trans>
 			</button>
-			{autopilot && (
-				<div className="result__autopilot">
-					{nextUp
-						? <>
-							<Trans>Next up in {countdown}s:</Trans> {next}
-							<span>[{nextUp.metadata.version}]</span>
-						</>
-						: <Trans>Autopilot: nothing playable</Trans>}
-				</div>
-			)}
 			<div className="result">
 				<div className="result__left">
 					<div className="result__topleft">

@@ -7,7 +7,7 @@ import {
 import {
 	AUTOPILOT_MODE,
 	AutopilotMode,
-} from '../gameplay/autopilot';
+} from '../gameplay/playQueue';
 import {
 	mapped,
 	ValueIn,

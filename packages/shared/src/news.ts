@@ -54,6 +54,7 @@ export const newsDTO = z.object({
 	authorId: z.number().int(),
 	authorName: z.string(),
 	published: z.boolean(),
+	announced: z.boolean(), // already posted to the Discord news feed
 	publishedAt: z.string().nullable(), // ISO, null while a draft
 	createdAt: z.string(),
 	updatedAt: z.string(),
@@ -76,6 +77,9 @@ export const newsCreateBody = z.object({
 	tag: z.enum(NEWS_TAG_NAMES),
 	imageUrl: z.string().max(512).nullable().default(null),
 	published: z.boolean().default(false),
+	// Post the article to the Discord news feed when it goes live. Request-only
+	// (never stored): the row's `announced` flag is what stops a second post.
+	announce: z.boolean().default(true),
 });
 export type NewsCreateBody = z.infer<typeof newsCreateBody>;
 

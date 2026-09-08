@@ -55,14 +55,13 @@ export function aggregateXP(
 	chart: number, 
 	spec: SkillSpec,
 	runs: number,
-	fatigue = 1,
 ): XPAggregate {
 	const beatmap = getBeatmap(chart);
 	const records: XP[] = [];
 	const accuracies: number[] = [];
 	let failed = 0;
 	for (let i = 0; i < runs; i++) {
-		const { xp, score } = simulateXP(beatmap, spec, fatigue);
+		const { xp, score } = simulateXP(beatmap, spec);
 		accuracies.push(score.accuracy);
 		if (score.failed) failed++;
 		else records.push(xp);
@@ -113,8 +112,6 @@ export interface XPScenario {
 	/** per-skill level overrides layered on top of {@link base} */
 	levels?: Partial<XP>;
 	runs?: number;
-	/** session fatigue multiplier (1 = fresh) */
-	fatigue?: number;
 	expect: XPExpectation;
 	/** default tolerance for every checked skill (default ×1.5 fold) */
 	tolerance?: XPTolerance;
@@ -157,7 +154,7 @@ export function runXPScenario(scenario: XPScenario): void {
 	const base = scenario.base ?? LEVEL[scenario.profile];
 	const spec = Object.fromEntries(Skills.map(n => [n, scenario.levels?.[n] ?? base])) as XP;
 	const runs = scenario.runs ?? 25;
-	const a = aggregateXP(scenario.chart, spec, runs, scenario.fatigue ?? 1);
+	const a = aggregateXP(scenario.chart, spec, runs);
 	const goal = scenario.goal ?? 'XP gains';
 
 	const overrides = Object.entries(scenario.levels ?? {}).map(([n, lvl]) => ` ${n} ${lvl}`).join('');

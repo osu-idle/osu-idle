@@ -8,6 +8,7 @@ import {
 	Grades,
 	type Grade,
 } from './judgement.js';
+import { pendingActionDTO } from './pendingAction.js';
 
 export const skillProgressDTO = z.object({
 	level: z.number().int().min(0),
@@ -44,6 +45,8 @@ export const characterDTO = z.object({
 	// Drives the rebirth requirement.
 	overallLevel: z.number().int().min(0),
 	skills: skillsDTO,
+	// What a running play has deferred to its end, in the order it was asked for.
+	pendingActions: pendingActionDTO.array().optional(),
 });
 export type CharacterDTO = z.infer<typeof characterDTO>;
 

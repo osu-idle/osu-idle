@@ -24,6 +24,9 @@ export const news = mysqlTable('news', {
 		.references(() => users.id, { onDelete: 'cascade' }),
 	published: boolean().notNull().default(false),
 	publishedAt: timestamp(), // null while a draft
+	// Set once the article has been posted to the Discord news feed, so
+	// re-saving a published article never announces it twice.
+	announced: boolean().notNull().default(false),
 	createdAt: timestamp().notNull().defaultNow(),
 	updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
 });
@@ -44,6 +47,7 @@ export function toNewsDTO(row: NewsRow, authorName: string): NewsDTO {
 		authorId: row.authorId,
 		authorName,
 		published: row.published,
+		announced: row.announced,
 		publishedAt: row.publishedAt?.toISOString() ?? null,
 		createdAt: row.createdAt.toISOString(),
 		updatedAt: row.updatedAt.toISOString(),

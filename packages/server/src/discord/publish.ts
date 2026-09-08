@@ -1,13 +1,20 @@
 import { type RESTPostAPIWebhookWithTokenJSONBody } from 'discord-api-types/rest';
 
-export const publish = async (webhook: string, message: RESTPostAPIWebhookWithTokenJSONBody) => {
+/** Post to a Discord webhook. Returns whether it landed - Discord rejects a
+ *  malformed embed with a 4xx, which used to pass unnoticed. */
+export const publish = async (
+	webhook: string, message: RESTPostAPIWebhookWithTokenJSONBody,
+): Promise<boolean> => {
 	try {
-		await fetch(webhook, {
+		const res = await fetch(webhook, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(message),
 		});
+		if (!res.ok) console.log('Webhook rejected', res.status, await res.text());
+		return res.ok;
 	} catch(e) {
 		console.log('Could not send webhook', e);
+		return false;
 	}
 };

@@ -41,6 +41,11 @@ import {
 	previewPath,
 } from '../beatmaps/storage';
 import { hub } from '../ws/hub';
+import {
+	acceptRequestsForSet,
+	beatmapRequestRoutes,
+	requestersForSets,
+} from './beatmapRequest';
 
 /** Nomination changed what the catalog lists: connected clients refetch. */
 const invalidateCatalog = () => hub.broadcast({ type: 'catalog:invalidate' });
@@ -184,9 +189,13 @@ export const beatmapsRoutes = new Hono()
 			else bySet.set(diff.setId, [diff]);
 		}
 
+		const requesters = await requestersForSets(sets.map(set => set.id));
+
 		return c.json(sets.map(set => ({
 			...set,
 			diffs: (bySet.get(set.id) ?? []).sort((a, b) => Number(a.sr) - Number(b.sr)),
+			// Set when the map got here through a player's request.
+			requestedBy: requesters.get(set.id),
 		})));
 	})
 	.post('/nomination', requireAdmin, async c => {
@@ -196,7 +205,10 @@ export const beatmapsRoutes = new Hono()
 
 		const buffer = Buffer.from(await file.arrayBuffer());
 		try {
-			return c.json(await ingestOsz(buffer));
+			const result = await ingestOsz(buffer);
+			// A map someone asked for is answered the moment its file lands.
+			await acceptRequestsForSet(result.setId, c.get('userId'));
+			return c.json(result);
 		} catch (e) {
 			throw new HTTPException(400, { message: e instanceof Error ? e.message : 'Could not ingest beatmap' });
 		}
@@ -286,6 +298,10 @@ export const beatmapsRoutes = new Hono()
 		invalidateCatalog();
 		return c.json({ ok: true });
 	})
+
+	// Player-facing ranking propositions. Mounted before the `:id` catch-all so
+	// `/request` isn't swallowed by it.
+	.route('/request', beatmapRequestRoutes)
 
 	// Single beatmap (difficulty), live-only. Keep last: catch-all `:id`.
 	.get('/:id', async c => {

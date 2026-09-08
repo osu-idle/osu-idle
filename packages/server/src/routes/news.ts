@@ -19,6 +19,7 @@ import {
 import { users } from '../db/schema/user';
 import { requireAdmin } from '../auth/admin';
 import { saveUploadedImage } from '../uploads';
+import { announceNews } from '../news/announce';
 
 const idParam = z.coerce.number().int().positive();
 
@@ -29,6 +30,31 @@ const jsonBody = <T extends z.ZodType>(schema: T) =>
 	zValidator('json', schema, result => {
 		if (!result.success) throw result.error;
 	});
+
+/**
+ * Post a freshly published article to the Discord news feed. The announce is
+ * claimed by flipping `announced` false->true in one statement, so only one
+ * cluster worker ever posts, and re-saving (or unpublishing and publishing
+ * again) never posts a second time. `announce: false` on the request skips it
+ * and leaves the flag down, so it can still go out on a later save.
+ */
+const maybeAnnounce = async (id: number, announce: boolean, authorName: string) => {
+	if (!announce) return;
+
+	const [row] = await db.select().from(news).where(eq(news.id, id)).limit(1);
+	if (!row?.published || row.announced) return;
+
+	const [claim] = await db
+		.update(news)
+		.set({ announced: true })
+		.where(and(eq(news.id, id), eq(news.announced, false)));
+	if (!claim.affectedRows) return;
+
+	// Put the flag back if Discord refused it, so a re-save can try again.
+	if (!await announceNews(row, authorName)) {
+		await db.update(news).set({ announced: false }).where(eq(news.id, id));
+	}
+};
 
 /** Join the author's username onto a news row and map to the DTO. */
 async function withAuthor(row: typeof news.$inferSelect) {
@@ -82,7 +108,7 @@ export const newsRoutes = new Hono()
 
 	// Admin: create.
 	.post('/', requireAdmin, jsonBody(newsCreateBody), async c => {
-		const body = c.req.valid('json');
+		const { announce, ...body } = c.req.valid('json');
 
 		const [dupe] = await db.select({ id: news.id }).from(news).where(eq(news.slug, body.slug)).limit(1);
 		if (dupe) throw new HTTPException(409, { message: 'An article with that slug already exists' });
@@ -93,13 +119,16 @@ export const newsRoutes = new Hono()
 			publishedAt: body.published ? new Date() : null,
 		});
 		const [row] = await db.select().from(news).where(eq(news.id, created.insertId)).limit(1);
-		return c.json(await withAuthor(row!), 201);
+		const dto = await withAuthor(row!);
+
+		await maybeAnnounce(created.insertId, announce, dto.authorName);
+		return c.json(dto, 201);
 	})
 
 	// Admin: update. Toggling `published` on stamps `publishedAt` the first time.
 	.patch('/:id', requireAdmin, jsonBody(newsUpdateBody), async c => {
 		const id = idParam.parse(c.req.param('id'));
-		const body = c.req.valid('json');
+		const { announce = true, ...body } = c.req.valid('json');
 
 		const [existing] = await db.select().from(news).where(eq(news.id, id)).limit(1);
 		if (!existing) throw new HTTPException(404, { message: 'Article not found' });
@@ -120,7 +149,10 @@ export const newsRoutes = new Hono()
 			...body, publishedAt, 
 		}).where(eq(news.id, id));
 		const [row] = await db.select().from(news).where(eq(news.id, id)).limit(1);
-		return c.json(await withAuthor(row!));
+		const dto = await withAuthor(row!);
+
+		await maybeAnnounce(id, announce, dto.authorName);
+		return c.json(dto);
 	})
 
 	// Admin: delete.

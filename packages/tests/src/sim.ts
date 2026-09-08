@@ -80,14 +80,13 @@ export interface XPResult {
 
 /**
  * Run one full play and read back the per-skill XP it earns - the exact value
- * the server submits (`bot.getSkillsXP`, see server/play.ts). `fatigue` is the
- * session fatigue multiplier (1 = fresh).
+ * the server submits (`bot.getSkillsXP`, see server/play.ts).
  */
-export function simulateXP(beatmap: Beatmap, spec: SkillSpec, fatigue = 1): XPResult {
+export function simulateXP(beatmap: Beatmap, spec: SkillSpec): XPResult {
 	const bot = build(spec, beatmap.difficulty.overallDifficulty);
 	const game = new ManiaGame(beatmap, bot);
 	game.update(game.songEndMs + 1000); // advance past the end so every note resolves
-	const xp = bot.getSkillsXP(beatmap.totalLength, game.score, fatigue);
+	const xp = bot.getSkillsXP(beatmap.totalLength, game.score);
 	return {
 		score: game.score, xp, game, 
 	};

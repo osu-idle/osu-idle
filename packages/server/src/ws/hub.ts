@@ -18,18 +18,33 @@ import { redisKeyPrefix } from '../env';
 
 const CHANNEL = `${redisKeyPrefix}ws:broadcast`;
 
-/** What travels over the pub/sub channel: a message, optionally addressed to a
- *  single character (otherwise delivered to everyone). */
-type Envelope = {
-	to?: number;
-	msg: ServerMessage;
-};
+/**
+ * What travels over the pub/sub channel: a message, optionally addressed to a
+ * single character (otherwise delivered to everyone) - or a rekey, which every
+ * worker applies to its own map.
+ *
+ * A rekey has to travel the same way a message does. The worker that ran the
+ * rebirth is not the one holding the player's socket, so a local mutation there
+ * fixes the binding only by coincidence.
+ */
+type Envelope =
+	| {
+		to?: number;
+		msg: ServerMessage;
+	}
+	| {
+		rekey: { from: number, to: number };
+	};
 
 const OPEN = 1;
 
 class WsHub {
 
 	private readonly conns = new Map<number, Set<WSContext>>();
+	/** The character each socket currently belongs to. A rebirth moves a socket
+	 *  between ids, and the connection that opened it still remembers the id it
+	 *  connected with - so this, not the caller, is what says where it lives. */
+	private readonly owner = new Map<WSContext, number>();
 	private subscribed = false;
 
 	/** Start listening for published messages. Idempotent; called once per worker. */
@@ -53,13 +68,45 @@ class WsHub {
 		let set = this.conns.get(characterId);
 		if (!set) this.conns.set(characterId, set = new Set());
 		set.add(ws);
+		this.owner.set(ws, characterId);
 	}
 
-	public remove(characterId: number, ws: WSContext): void {
+	/** Move a character's sockets onto a new id, everywhere. A rebirth makes a new
+	 *  character and points the account at it; without this, everything addressed
+	 *  to the character that is now playing goes to nobody. */
+	public rekey(fromId: number, toId: number): void {
+		if (fromId === toId) return;
+		void redis.publish(CHANNEL, JSON.stringify({
+			rekey: {
+				from: fromId, to: toId,
+			},
+		} satisfies Envelope));
+	}
+
+	/** The character a socket belongs to now, which is not always the one it
+	 *  connected as. */
+	public ownerOf(ws: WSContext): number | undefined {
+		return this.owner.get(ws);
+	}
+
+	public remove(ws: WSContext): void {
+		const characterId = this.owner.get(ws);
+		this.owner.delete(ws);
+		if (characterId === undefined) return;
 		const set = this.conns.get(characterId);
 		if (!set) return;
 		set.delete(ws);
 		if (set.size === 0) this.conns.delete(characterId);
+	}
+
+	private applyRekey(from: number, to: number): void {
+		const set = this.conns.get(from);
+		if (!set) return;
+		this.conns.delete(from);
+		const target = this.conns.get(to);
+		if (!target) this.conns.set(to, set);
+		else for (const ws of set) target.add(ws);
+		for (const ws of set) this.owner.set(ws, to);
 	}
 
 	/** Is this character connected to *this* worker? */
@@ -85,7 +132,12 @@ class WsHub {
 		ws.send(JSON.stringify(msg));
 	}
 
-	private deliver({ to, msg }: Envelope): void {
+	private deliver(envelope: Envelope): void {
+		if ('rekey' in envelope) {
+			this.applyRekey(envelope.rekey.from, envelope.rekey.to);
+			return;
+		}
+		const { to, msg } = envelope;
 		const data = JSON.stringify(msg);
 		const sets = to === undefined
 			? this.conns.values()

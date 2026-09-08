@@ -114,7 +114,23 @@ describe('prestige', () => {
 		});
 		expect(p).toEqual({
 			level: 0, xp: 0, upgrades: 0, overdrive: 0, prestige: 1,
+			spent: xpToLevel(100) + 500,
 		});
+	});
+
+	it('charges the overall level for everything the reset undid', () => {
+		// the caller takes `spent` off the running totals, so prestiging every
+		// skill walks the character back down instead of leaving it at the top
+		const p = applyPrestige({
+			level: 100, xp: 0, upgrades: 10, overdrive: 5, prestige: 0,
+		});
+		expect(p.spent).toBeCloseTo(xpToLevel(100), 5);
+
+		// the xp banked inside the level goes with the level
+		const part = applyPrestige({
+			level: 100, xp: 5000, upgrades: 10, overdrive: 5, prestige: 0,
+		});
+		expect(part.spent).toBeCloseTo(xpToLevel(100) + 5000, 5);
 	});
 
 	it('refuses below the requirement', () => {

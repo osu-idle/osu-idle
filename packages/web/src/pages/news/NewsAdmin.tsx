@@ -21,6 +21,7 @@ import {
 	mediaUrl,
 } from '../../api/news';
 import { formatChangelog } from './changelog';
+import AnnounceToggle from './AnnounceToggle';
 import Link from '../../components/Link';
 
 interface Draft {
@@ -49,6 +50,10 @@ export default function NewsAdmin() {
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
 	const [uploading, setUploading] = useState(false);
+	// Posting the article to Discord is the default; untick to publish quietly.
+	const [announce, setAnnounce] = useState(true);
+	// An article only ever announces once, so the box is moot after that.
+	const [announced, setAnnounced] = useState(false);
 
 	// The server is the real gate - if listing drafts succeeds we're an admin.
 	const refresh = () =>
@@ -63,6 +68,8 @@ export default function NewsAdmin() {
 		setDraft(EMPTY);
 		setSlugTouched(false); 
 		setError(null);
+		setAnnounce(true);
+		setAnnounced(false);
 	};
 	const edit = (a: NewsDTO) => {
 		setEditingId(a.id);
@@ -71,6 +78,8 @@ export default function NewsAdmin() {
 		});
 		setSlugTouched(true);
 		setError(null);
+		setAnnounce(true);
+		setAnnounced(a.announced);
 	};
 
 	const onTitle = (title: string) =>
@@ -98,7 +107,7 @@ export default function NewsAdmin() {
 		setSaving(true);
 		setError(null);
 		const body = {
-			...draft, ...(publish === undefined ? {} : { published: publish }), 
+			...draft, announce, ...(publish === undefined ? {} : { published: publish }), 
 		};
 		try {
 			if (editingId === null) await createNews(body);
@@ -254,6 +263,8 @@ export default function NewsAdmin() {
 							“Format changelog” turns a markdown changelog into HTML.
 						</small>
 					</div>
+
+					<AnnounceToggle announce={announce} announced={announced} onChange={setAnnounce} />
 
 					{error && <p className="news-msg news-msg--error">{error}</p>}
 

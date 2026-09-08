@@ -100,9 +100,13 @@ export const canPrestige = (
 	level >= prestigeMinLevel(prestige);
 
 /** Prestige a skill: level, xp, upgrades and overdrive all go, and the skill
- *  keeps a bonus level, an extra gear tier and a bigger multiplier. Lifetime
- *  totals are untouched - the caller must not subtract anything. */
-export const applyPrestige = (state: UpgradeState): UpgradeState => {
+ *  keeps a bonus level, an extra gear tier and a bigger multiplier.
+ *
+ *  `spent` is everything the reset levels were worth. The caller takes it off
+ *  the running totals, so the overall level falls with the skill - a character
+ *  who has prestiged everything is not still carrying the level it all bought.
+ *  Lifetime is the exception and never moves: it is what the tooltip hints at. */
+export const applyPrestige = (state: UpgradeState): UpgradeState & { spent: number } => {
 	if (!canPrestige(state)) throw new Error('prestige not available');
 
 	return {
@@ -111,6 +115,7 @@ export const applyPrestige = (state: UpgradeState): UpgradeState => {
 		upgrades: 0,
 		overdrive: 0,
 		prestige: state.prestige + 1,
+		spent: xpToLevel(state.level) + state.xp,
 	};
 };
 

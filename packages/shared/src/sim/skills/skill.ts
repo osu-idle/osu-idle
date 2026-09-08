@@ -8,7 +8,10 @@ import Synced from '../../helpers/synced.js';
 import type { SkillName } from '../../skills.js';
 import { xpForLevel } from './xp.js';
 import { skillXPMultiplier } from '../../upgrades.js';
-import { mapLevel } from './levelCurve.js';
+import {
+	effectiveLevelOf,
+	mapLevel,
+} from './levelCurve.js';
 
 export default abstract class Skill {
 
@@ -46,16 +49,20 @@ export default abstract class Skill {
 		);
 	}
 
-	/** Effective level: what the player earned plus what prestige granted. */
+	/** Effective level: what the player earned, how far into the next level they
+	 *  are, and what prestige granted. The same number the player is shown. */
 	public effectiveLevel(): number {
-		return this.level.get() + this.prestige.get();
+		return effectiveLevelOf(this.level.get(), this.xp.get(), this.prestige.get());
 	}
 
 	/** Subscribe to the mapped level the strain curves read. Skills use this
-	 *  instead of level.sync so prestige bonuses reach their rates. */
+	 *  instead of level.sync so prestige bonuses and the xp banked inside the
+	 *  current level reach their rates - a play gets better as it earns, not
+	 *  only when the level flips. */
 	protected syncSkillLevel(apply: (level: number) => void): void {
 		const run = () => apply(mapLevel(this.effectiveLevel()));
 		void this.level.sync(run);
+		void this.xp.sync(run);
 		void this.prestige.sync(run);
 	}
 

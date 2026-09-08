@@ -10,13 +10,13 @@ import { difficultyColor } from '../osu/difficulty';
 import { DownloadState } from './BeatmapCarousel';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
 import LightBeatmapSet from '../osu/beatmap/LightBeatmapSet';
-import { music } from '../audio/MusicPlayer';
 import {
 	Score,
 	scoresVersion,
 } from '../db/schema/score';
 import Entities from '../entity/entities';
 import { currentSkin } from '../osu/skin/Skin';
+import { useSelection } from './songselect/selection';
 import useAsync from '@osu-idle/shared/hooks/useAsync';
 import useSynced from '@osu-idle/shared/hooks/useSynced';
 import { SETTINGS } from '../db/settings';
@@ -104,8 +104,10 @@ export default function BeatmapCard({
 		}
 	};
 
-	const active = beatmap.isPlaying();
-	const sibling = !active && set.is(music.beatmap.get()?.set);
+	const selection = useSelection();
+	const selected = selection.use(b => b);
+	const active = beatmap.is(selected);
+	const sibling = !active && set.is(selected?.set);
 
 	const dl = downloads[set.metadata.id];
 	const downloaded = dl?.status === 'done';

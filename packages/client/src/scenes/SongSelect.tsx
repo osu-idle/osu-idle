@@ -10,7 +10,6 @@ import {
 	Plural,
 	useLingui,
 } from '@lingui/react/macro';
-import Triangles from '../components/Triangles';
 import BeatmapCarousel, {
 	type CarouselItem,
 	type CarouselRow,
@@ -24,21 +23,22 @@ import {
 	type PlaylistsByBeatmap,
 } from '../osu/beatmap/grouping';
 import TopBar from '../components/songselect/TopBar';
-import SpectateBanner from '../components/songselect/SpectateBanner';
+import SongSelectBackdrop from '../components/songselect/SongSelectBackdrop';
+import useSongSelectAudio from '../components/songselect/useSongSelectAudio';
+import useQueueMode from '../components/songselect/useQueueMode';
+import {
+	queueSelection,
+	SelectionContext,
+} from '../components/songselect/selection';
 import UserCard from '../components/songselect/UserCard';
-import CardContextMenu from '../components/songselect/CardContextMenu';
-import XpMultiplierToggle from '../components/songselect/XpMultiplierToggle';
-import StrainDebug from './StrainDebug';
+import CardOverlays from '../components/songselect/CardOverlays';
+import { playFromList } from '../components/songselect/listPlay';
 import { matchesSearch } from '../osu/beatmap/beatmapSearch';
 import Entities from '../entity/entities';
-import {
-	music,
-	PLAYER_MODE,
-} from '../audio/MusicPlayer';
+import { music } from '../audio/MusicPlayer';
 import BeatmapAPI, { Metadata } from '../osu/beatmap/beatmap_api';
 import LightBeatmapSet from '../osu/beatmap/LightBeatmapSet';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
-import Background from './Background';
 import './SongSelect.css';
 import BeatmapStore, { beatmapsVersion } from '../osu/beatmap/beatmap_store';
 import Controls from '../input/Controls';
@@ -66,8 +66,8 @@ import {
 	getPlaylistIndex,
 	playlistsVersion,
 } from '../db/schema/playlist';
-import PlaylistOverlay from '../components/PlaylistOverlay';
-import Autopilot, { AUTOPILOT_MODE } from '../gameplay/autopilot';
+import SongSelectDebug from '../components/songselect/SongSelectDebug';
+import PlayQueue, { AUTOPILOT_MODE } from '../gameplay/playQueue';
 import Log from '@osu-idle/shared/helpers/log';
 import { launchPlay } from './launchPlay';
 import { xpGainsVersion } from '../db/schema/score_xp';
@@ -220,27 +220,35 @@ function buildCarouselRows(
 	};
 }
 
-export default function SongSelect() {
-	music.mode.set(PLAYER_MODE.LOOP);
-	
-	if (!music.playing.get()) {
-		music.play(0);
-	}
+/**
+ * Song select, in one of two modes.
+ *
+ * `launch` is the scene: clicking a downloaded map plays it. `queue` is the same
+ * carousel mounted as an overlay above whatever is running, where clicking adds
+ * to the queue instead - the whole point being that you can rebuild what plays
+ * next without stopping what is playing. Search, grouping, sorting, downloads
+ * and the card menu are the same in both.
+ */
+type Props = { mode?: 'launch' | 'queue' };
+
+export default function SongSelect({ mode = 'launch' }: Props) {
+	const { overlay, queueing } = useQueueMode(mode);
+	// queueing asks a different question - which map to add, not which is playing -
+	// so it browses against its own selection and leaves the live one alone
+	const selection = queueing ? queueSelection : music.beatmap;
+	const previews = useSongSelectAudio(overlay, selection);
 
 	// the right-click contextual menu's target, and the playlist manager's target
 	const [menuItem, setMenuItem] = useState<CarouselItem | null>(null);
 	const [playlistItem, setPlaylistItem] = useState<CarouselItem | null>(null);
 
-	// landing back on song select is how every playlist-autopilot run ends
-	// (quitting gameplay, backing out of the result, a failed launch) - stop any
-	// session here so a stale one can never chain plays later.
-	useEffect(() => { Autopilot.stop(); }, []);
-
 	const onBack = () => {
-		// a page overlay (character, skins, add-ons) owns input while it is up
-		if (openPage.get()) { void openPage.set(undefined); return; }
 		if (playlistItem) { setPlaylistItem(null); return; }
 		if (menuItem) { setMenuItem(null); return; }
+		// Escape never reaches here while a page is open: Controls closes the page
+		// itself and stops there (see its `escape` case), so queueing is left
+		// without the scene under it also acting on the same keypress.
+		if (openPage.get()) { void openPage.set(undefined); return; }
 		SETTINGS.search.set('');
 		SceneManager.set(SCENE.MENU);
 	};
@@ -265,7 +273,7 @@ export default function SongSelect() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const [version] = useSynced(music.beatmap);
+	const [version] = useSynced(selection);
 	const [downloads, setDownloads] = useState<Record<number, DownloadState>>({});
 	const [hasDownloaded, setHasDownloaded] = useState(false);
 	const [debugBeatmap, setDebugBeatmap] = useState<LightBeatmap>();
@@ -464,16 +472,22 @@ export default function SongSelect() {
 	 * it's handed; the backdrop is swapped per-difficulty too.
 	 */
 	const selectItem = useCallback(async (beatmap: LightBeatmap) => {
-		if (beatmap.is(music.beatmap.get())) return;
+		if (beatmap.is(selection.get())) return;
 
 		console.log('selected', beatmap.metadata.version);
-		await music.beatmap.set(beatmap);
-		await music.play(beatmap.metadata.runtime ? beatmap.metadata.previewTime : 0);
-	}, []);
+		await selection.set(beatmap);
+	}, [selection]);
+
+	// Previewing follows the selection rather than the click that caused it, so
+	// the dock putting the list on the map being played sounds like picking it.
+	useEffect(() => {
+		if (!previews || !version) return;
+		void music.play(version.metadata.runtime ? version.metadata.previewTime : 0);
+	}, [version, previews]);
 
 	const move = useCallback((step: number) => {
 		const current = orderedItems
-			.findIndex((i) => i.beatmap.is(music.beatmap.get()));
+			.findIndex((i) => i.beatmap.is(selection.get()));
 		// when nothing is selected, next lands on the first card, previous the last
 		const next = current === -1
 			? (step === 1 ? 0 : orderedItems.length - 1)
@@ -487,7 +501,7 @@ export default function SongSelect() {
 		if (openPage.get()) { return; }
 		if (playlistItem) { return; }
 		if (menuItem) { return; }
-		const map = music.beatmap.get();
+		const map = selection.get();
 		if (!map) return;
 		if (!handleCardClick(map, false)) {
 			handleCardDoubleClick(map);
@@ -496,27 +510,48 @@ export default function SongSelect() {
 
 	/**
 	 * Launch gameplay for a downloaded difficulty (see {@link launchPlay}) and
-	 * arm the autopilot per the selected mode (debug launches never chain):
+	 * fill the queue per the selected mode (debug launches never chain):
 	 *   LOOP     - replay this one map forever
 	 *   PLAYLIST - chain the launched playlist group if playlist mode
 	 *   NEXT     - chain in song-select order: the open group when grouped,
 	 *              otherwise the whole search-filtered list
+	 *   SHUFFLE  - same pool as NEXT, picked at random instead of in order
 	 */
-	const play = useCallback((beatmap: LightBeatmap, debug = false) => {
+	const play = useCallback((beatmap: LightBeatmap, debug = false, arm = true) => {
 		lastLaunchedGroupKey = expanded?.group.key ?? null;
-		if (!debug) {
+		if (!debug && arm) {
 			const mode = SETTINGS.autopilotMode.get();
 			if (mode === AUTOPILOT_MODE.LOOP) {
-				Autopilot.start(beatmap.set.metadata.title, [beatmap], 0);
+				PlayQueue.start(beatmap.set.metadata.title, [beatmap], 0);
 			} else if (mode !== AUTOPILOT_MODE.PLAYLIST || group === 'By Playlist') {
 				const pool = expanded ? expanded.items : orderedItems;
 				const index = pool.findIndex((i) => i.beatmap.is(beatmap));
 				if (index >= 0) 
-					Autopilot.start(expanded?.group.label ?? '', pool.map((i) => i.beatmap), index);
+					PlayQueue.start(
+						expanded?.group.label ?? '',
+						pool.map((i) => i.beatmap),
+						index,
+						mode === AUTOPILOT_MODE.SHUFFLE,
+					);
 			}
 		}
 		launchPlay(beatmap, debug);
 	}, [group, expanded, orderedItems]);
+
+	// the dock plays through this so the queue fills from the listing on screen,
+	// rather than launching a lone play the way spectating does
+	useEffect(() => {
+		void playFromList.set((map: LightBeatmap) => {
+			const item = orderedItems.find((i) => i.beatmap.is(map));
+			if (!item?.beatmap.metadata.runtime) return false;
+			void selectItem(item.beatmap);
+			// a queue the player arranged is theirs: only fill it from the listing
+			// when there is nothing in it to lose
+			play(item.beatmap, false, !PlayQueue.state.get()?.entries.length);
+			return true;
+		});
+		return () => { void playFromList.set(undefined); };
+	}, [orderedItems, play, selectItem]);
 
 	/** Download a remote set, then upgrade it in place to playable RuntimeBeatmaps. */
 	const download = useCallback(async (meta: Metadata) => {
@@ -544,7 +579,7 @@ export default function SongSelect() {
 			}));
 			
 			const all = await loadLibrary();
-			const item = all.find((i) => i.beatmap.isPlaying());
+			const item = all.find((i) => i.beatmap.is(selection.get()));
 			if (item) void selectItem(item.beatmap);
 		} catch (e) {
 			console.error('[download] failed', e);
@@ -562,8 +597,9 @@ export default function SongSelect() {
 	) => {
 		if (scoreView) return false;
 		console.log('Clicked on card', beatmap.metadata.version);
-		if (beatmap.metadata.runtime && beatmap.isPlaying()) {
-			play(beatmap);
+		if (beatmap.metadata.runtime && beatmap.is(selection.get())) {
+			if (queueing) PlayQueue.append(beatmap, queueLabel);
+			else play(beatmap);
 			return true;
 		}
 
@@ -571,7 +607,7 @@ export default function SongSelect() {
 			void selectItem(beatmap);
 		}
 		return false;
-	}, [scoreView, play, selectItem]);
+	}, [scoreView, play, selectItem, queueing, expanded, selection]);
 
 	// double click: download the set - but do nothing if it's already downloaded
 	const handleCardDoubleClick = useCallback((beatmap: LightBeatmap) => {
@@ -628,134 +664,116 @@ export default function SongSelect() {
 		if (item?.beatmap.metadata.runtime) setDebugBeatmap(item.beatmap);
 	}, [items, debugBeatmap]);
 
+	// where a queued map came from, for the queue's own label
+	const queueLabel = expanded?.group.label ?? '';
+
 	const total = items.length; // named in the results <Trans> below
 
 	return (
-		<div className={`game ${scoreView ? 'score-view' : ''}`}>
-			<Background />
-			<div
-				className="game__bg"
-				style={{ transform: `scale(1.06) translate(${parallax.x * 14}px, ${parallax.y * 14}px)` }}
-			>
-				<Triangles parallax={parallax} count={40} />
-			</div>
-			<div className="game__scrim" />
+		<SelectionContext.Provider value={selection}>
+			<div className={[
+				'game',
+				scoreView ? 'score-view' : '',
+				queueing ? 'game--queueing' : '',
+				overlay ? 'game--queue' : '',
+			].join(' ')}>
+				{/* mounted over another scene it draws no scenery, so what is behind
+				    stays visible; queueing swaps the metadata and the leaderboard for
+				    the grouping controls, which are how you find what to queue */}
+				{!overlay && <SongSelectBackdrop parallax={parallax} />}
+				<TopBar
+					version={version}
+					scrollSpeed={scrollSpeed}
+					scoreView={scoreView}
+					setScoreView={setScoreView}
+					compact={queueing}
+				/>
 
-			<TopBar 
-				version={version} 
-				scrollSpeed={scrollSpeed} 
-				scoreView={scoreView} 
-				setScoreView={setScoreView} 
-			/>
+				<main className="game__body">
 
-			<main className="game__body">
+					{error ? (
+						<div className="game__library-error">
+							<Trans>Couldn't load beatmaps: {error}</Trans>
+						</div>
+					) : (
+						<BeatmapCarousel
+							rows={rows}
+							onCardClick={handleCardClick}
+							onCardDoubleClick={handleCardDoubleClick}
+							onCardRightClick={handleCardRightClick}
+							hasDownloaded={hasDownloaded}
+							onToggleGroup={toggleGroup}
+							loading={loading}
+							downloads={downloads}
+							xpInsights={xpInsights}
+							totalCount={filteredItems.length}
+						/>
+					)}
 
-				{error ? (
-					<div className="game__library-error">
-						<Trans>Couldn't load beatmaps: {error}</Trans>
+					<div className="songsearch">
+						<div className="songsearch__row">
+							<span><Trans>Search:</Trans> </span>
+							<input
+								ref={searchRef}
+								className="songsearch__input"
+								value={search}
+								onChange={(e) => SETTINGS.search.set(e.target.value)}
+								onKeyDown={(e) => { if (e.key === 'Tab') e.preventDefault(); }}
+								onBlur={() => {
+									// keep the box focused (osu!-style), unless another surface
+									// legitimately owns the keyboard (debug view, an open overlay)
+									if (!debugBeatmap && !menuItem && !playlistItem) {
+										requestAnimationFrame(() => searchRef.current?.focus());
+									}
+								}}
+								placeholder={t`Type to search!`}
+								spellCheck={false}
+								autoComplete="off"
+							/>
+						</div>
+						<div className="songsearch__count">
+							{search.trim()
+								? <Trans>{filteredItems.length} of {total} results</Trans>
+								: <Plural value={items.length} one="# result" other="# results" />}
+						</div>
 					</div>
-				) : (
-					<BeatmapCarousel
-						rows={rows}
-						onCardClick={handleCardClick}
-						onCardDoubleClick={handleCardDoubleClick}
-						onCardRightClick={handleCardRightClick}
-						hasDownloaded={hasDownloaded}
-						onToggleGroup={toggleGroup}
-						loading={loading}
-						downloads={downloads}
-						xpInsights={xpInsights}
-						totalCount={filteredItems.length}
-					/>
-				)}
+				</main>
 
-				<div className="songsearch">
-					<div className="songsearch__row">
-						<span><Trans>Search:</Trans> </span>
-						<input
-							ref={searchRef}
-							className="songsearch__input"
-							value={search}
-							onChange={(e) => SETTINGS.search.set(e.target.value)}
-							onKeyDown={(e) => { if (e.key === 'Tab') e.preventDefault(); }}
-							onBlur={() => {
-								// keep the box focused (osu!-style), unless another surface
-								// legitimately owns the keyboard (debug view, an open overlay)
-								if (!debugBeatmap && !menuItem && !playlistItem) {
-									requestAnimationFrame(() => searchRef.current?.focus());
-								}
-							}}
-							placeholder={t`Type to search!`}
-							spellCheck={false}
-							autoComplete="off"
+				{!overlay && (
+					<div className="game__botbar">
+						<button className="game__exit" onClick={onBack}>
+							<Trans>BACK</Trans>
+						</button>
+						<UserCard
+							character={character}
+							online_character={online_character}
+							online_stats={online_stats}
 						/>
 					</div>
-					<div className="songsearch__count">
-						{search.trim()
-							? <Trans>{filteredItems.length} of {total} results</Trans>
-							: <Plural value={items.length} one="# result" other="# results" />}
-					</div>
-				</div>
-			</main>
+				)}
 
-			<SpectateBanner />
-
-			<div className="game__botbar">
-				<button className="game__exit" onClick={onBack}>
-					<Trans>BACK</Trans>
-				</button>
-				<button
-					className="game__character"
-					onClick={() => openPage.set({ page: 'character' })}
-				>
-					<span><Trans>Character</Trans></span>
-				</button>
-				<UserCard
-					character={character}
-					online_character={online_character}
-					online_stats={online_stats}
+				<SongSelectDebug
+					enabled={debug}
+					onOpen={handleDebug}
+					beatmap={debugBeatmap}
+					onClose={closeDebug}
+					onPlay={(map) => play(map, true)}
 				/>
-			</div>
 
-			{debug && (
-				<button 
-					className="game__debug-btn"
-					onClick={handleDebug} 
-					title={t`Strain debug`}
-				>
-					⛛
-				</button>
-			)}
-
-			{debug && <XpMultiplierToggle />}
-
-			{debugBeatmap && (
-				<StrainDebug 
-					beatmapInfo={debugBeatmap} 
-					onClose={closeDebug} 
-					onPlay={() => play(debugBeatmap, true)} 
-				/>
-			)}
-
-			{menuItem && (
-				<CardContextMenu
-					item={menuItem}
-					onClose={() => setMenuItem(null)}
+				<CardOverlays
+					menuItem={menuItem}
+					playlistItem={playlistItem}
+					queueLabel={queueLabel}
+					onCloseMenu={() => setMenuItem(null)}
 					onManagePlaylists={() => { setPlaylistItem(menuItem); setMenuItem(null); }}
-					onDelete={() => deleteSet(menuItem)}
+					onClosePlaylists={() => setPlaylistItem(null)}
+					onDelete={() => menuItem && deleteSet(menuItem)}
 					onClearScores={() => {
 						setMenuItem(null);
 						Log.popup(t`Clearing local scores is not available yet`);
 					}}
 				/>
-			)}
-
-			{playlistItem && (
-				<PlaylistOverlay 
-					beatmap={playlistItem.beatmap} 
-					onClose={() => setPlaylistItem(null)}
-				/>
-			)}
-		</div>
+			</div>
+		</SelectionContext.Provider>
 	);
 }

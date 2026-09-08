@@ -1,18 +1,24 @@
 import { Trans } from '@lingui/react/macro';
 import { music } from '../../audio/MusicPlayer';
+import LightBeatmap from '../../osu/beatmap/LightBeatmap';
 
-/** Title bar: beatmap title/version/creator (read from the live track) plus the
- *  played-by line. Falls back to a generic header when no track is loaded. */
+/** Title bar: the played map's title/version/creator plus the played-by line.
+ *  The map is passed in, not read from the live track: browsing elsewhere while
+ *  this is on screen must not rename the score you are looking at. Falls back to
+ *  the live track for a score opened from a leaderboard. */
 export default function ResultMeta({ 
 	playerName, 
 	playedAt, 
-}: { playerName: string; playedAt: string }) {
-	const track = music.beatmap.use((b) => b && ({
-		title: b.set.metadata.title,
-		artist: b.set.metadata.artist,
-		creator: b.set.metadata.creator,
-		version: b.metadata.version,
-	}));
+	beatmap,
+}: { playerName: string; playedAt: string; beatmap?: LightBeatmap }) {
+	const live = music.beatmap.use((b) => b);
+	const map = beatmap ?? live;
+	const track = map && {
+		title: map.set.metadata.title,
+		artist: map.set.metadata.artist,
+		creator: map.set.metadata.creator,
+		version: map.metadata.version,
+	};
 	return (
 		<div className="result__meta">
 			<div className="result__title">

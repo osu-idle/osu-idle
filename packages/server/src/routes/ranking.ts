@@ -31,6 +31,19 @@ const gradesRanking = (grade: string, page: number, country?: string) => {
 	return gradesPage(grade, page, country);
 };
 
+/** The same skills, ranked on what they have ever earned rather than what they
+ *  hold: `overall` is the summed column. */
+const lifetimeRanking = (skill: string, page: number, country?: string) => {
+	if (!isValidSkill(skill)) throw new Error('Invalid parameters');
+	return skillPage(`lifetime:${skill}`, page, country);
+};
+
+/** How many times each skill has been prestiged; `overall` is the total. */
+const prestigeRanking = (skill: string, page: number, country?: string) => {
+	if (!isValidSkill(skill)) throw new Error('Invalid parameters');
+	return skillPage(skill === 'overall' ? 'prestige:total' : `prestige:${skill}`, page, country);
+};
+
 export const rankingRoutes = new Hono()
 	.get('/countries', async c => c.json(
 		await playerCountries(),
@@ -61,6 +74,28 @@ export const rankingRoutes = new Hono()
 			c.req.param('country'),
 		),
 	))
+	.get('/lifetime/:skill/page/:page', async c => c.json(
+		await lifetimeRanking(
+			c.req.param('skill'),
+			idParam.parse(c.req.param('page')),
+		)))
+	.get('/lifetime/:skill/country/:country/page/:page', async c => c.json(
+		await lifetimeRanking(
+			c.req.param('skill'),
+			idParam.parse(c.req.param('page')),
+			c.req.param('country'),
+		)))
+	.get('/prestige/:skill/page/:page', async c => c.json(
+		await prestigeRanking(
+			c.req.param('skill'),
+			idParam.parse(c.req.param('page')),
+		)))
+	.get('/prestige/:skill/country/:country/page/:page', async c => c.json(
+		await prestigeRanking(
+			c.req.param('skill'),
+			idParam.parse(c.req.param('page')),
+			c.req.param('country'),
+		)))
 	.get('/grades/:grade/page/:page', async c => c.json(
 		await gradesRanking(
 			c.req.param('grade'), 

@@ -15,6 +15,18 @@ function sessionToken(c: Context): string | undefined {
 	return getCookie(c, SESSION_COOKIE);
 }
 
+/** The signed-in user id, or undefined when the caller has no valid session.
+ *  For routes that are public but render differently once signed in. */
+export const sessionUserId = async (c: Context): Promise<number | undefined> => {
+	const token = sessionToken(c);
+	if (!token) return undefined;
+	try {
+		return (await verifySession(token)).uid;
+	} catch {
+		return undefined;
+	}
+};
+
 /** Require a valid session (cookie or Bearer); exposes the user id as `c.get('userId')`. */
 export const requireAuth = createMiddleware<{ Variables: { userId: number } }>(async (c, next) => {
 	const token = sessionToken(c);

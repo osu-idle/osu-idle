@@ -33,6 +33,15 @@ export function SkillBar({ skill, progress: {
 				<SkillLevel level={level} xp={xp} prestige={prestige} lifetimeXp={lifetimeXp} />
 				{overall && <span className='skill__cap'>{level < 100 && '/100'}</span>}
 			</span>
+			{/* one star per prestige, on a line under the whole row - a count
+			    beside the name was too small to read. The line is always there,
+			    so one prestiged skill does not make its row taller than the rest. */}
+			<span
+				className='skill__prestige'
+				title={prestige
+					? `Prestiged ${prestige} time${prestige === 1 ? '' : 's'}`
+					: undefined}
+			>{'★'.repeat(prestige ?? 0)}</span>
 		</li>
 	);
 }

@@ -5,6 +5,7 @@ import {
 } from '@lingui/react/macro';
 import { dateAgo } from '@osu-idle/shared/display/ago';
 import Link from '../../components/Link';
+import MapsNav from './MapsNav';
 import type {
 	getAllMaps,
 	getPopularMaps,
@@ -35,6 +36,7 @@ export default function RankedMaps({ sort, dir, mapsets }: {
 
 	return (
 		<main>
+			<MapsNav current='listing' />
 			<div className='list__beatmap_sort'>
 				<span><Trans>Sort by</Trans></span>
 				{(['date', 'plays'] as const).map(type => {

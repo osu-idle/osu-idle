@@ -432,8 +432,14 @@ async function connect(): Promise<Database> {
 	return db;
 }
 
-/** The lazily-opened, schema-initialised database handle. */
-const handle = (): Promise<Database> => (connection ??= connect());
+/** The lazily-opened, schema-initialised database handle. A failed open is not
+ *  kept: held, its rejection would be the answer to every later call for the
+ *  rest of the session, and everything reading the database would go quiet at
+ *  once. */
+const handle = (): Promise<Database> => (connection ??= connect().catch(e => {
+	connection = undefined;
+	throw e;
+}));
 
 /**
  * The single managed database. Opens lazily, creates registered schemas on

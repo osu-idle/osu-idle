@@ -26,11 +26,6 @@ import {
 } from '../db/schema/first_place';
 import { getRecentCharacterScores } from '../db/schema/score';
 import { getFormerNames } from '../db/schema/name_history';
-import { getPlayTime } from '../play';
-import {
-	fatigueXPFactor,
-	getRecoveryTime,
-} from '@osu-idle/shared/sim/bots/character';
 
 const numberParam = z.coerce.number().int().positive();
 
@@ -44,19 +39,11 @@ export const charactersRoutes = new Hono()
 
 		const user = await getUserById(row.userId);
 
-		const session = await getPlayTime(id);
-		const strainTime = Math.max(0, 
-			(session?.currentStrainTime ?? 0) - getRecoveryTime(session?.lastEnd ?? -Infinity, Date.now()),
-		);
-		const fatigue = fatigueXPFactor(strainTime / 1000);
-
 		const formerNames = (await getFormerNames(id)).filter(n => n !== row.name);
 
 		return c.json({
 			...row,
 			avatarUrl: resolveAvatarUrl(row.avatarUrl, user?.avatarUrl),
-			fatiguePercent: (1 - fatigue),
-			sessionTime: strainTime,
 			formerNames,
 		});
 	})

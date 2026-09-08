@@ -19,6 +19,18 @@ export default function RankingsNav({ current }: {
 			className={item('skills')}>
 			{t`skills`}
 		</Link>
+		<Link to='/rankings/lifetime/$skill'
+			params={{ skill: SKILL_SORT.overall }}
+			search={{ page: 1 }}
+			className={item('lifetime')}>
+			{t`lifetime`}
+		</Link>
+		<Link to='/rankings/prestige/$skill'
+			params={{ skill: SKILL_SORT.overall }}
+			search={{ page: 1 }}
+			className={item('prestige')}>
+			{t`prestige`}
+		</Link>
 		<Link to='/rankings/grades/$grade'
 			params={{ grade: GOOD_GRADE.X }} 
 			search={{ page: 1 }} 

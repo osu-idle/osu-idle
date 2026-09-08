@@ -312,27 +312,6 @@ export const mapXP = (noteXP: number): number => {
 	return (noteXP + xpCB(normalize(noteXP, [0, 1000])) * noteXP);
 };
 
-const FATIGUE_START_HOURS = 10;
-const FATIGUE_END_HOURS = 24;
-const fatigueCB = cubic_bezier(.53,.05,.41,.84);
-/**
- * @param sessionTime in seconds
- */
-export const fatigueXPFactor = (sessionTime: number): number => {
-	const hours = sessionTime / 3600;
-	if (hours <= FATIGUE_START_HOURS) return 1;
-	if (hours >= FATIGUE_END_HOURS) return 0;
-	return 1 -  fatigueCB(
-		(hours - FATIGUE_START_HOURS) / (FATIGUE_END_HOURS - FATIGUE_START_HOURS),
-	);
-};
-
-export const rcCB = cubic_bezier(.25,0,.2,1);
-export const getRecoveryTime = (startMs: number, endMs: number) => {
-	const raw = Math.max(0, endMs - startMs);
-	return raw * (0.25 + (rcCB(raw / 60000) * 1.25));
-};
-
 export type Strains = [RuntimeNote, [NoteStrain, number, number][]];
 
 export default class CharacterBot extends Bot {
@@ -575,7 +554,6 @@ export default class CharacterBot extends Bot {
 	getSkillsXP(
 		length: number, 
 		score: ScoreLike, 
-		factor: number = 1,
 	): Record<SkillName, number> {
 		if (this.xp) return this.xp;
 
@@ -621,8 +599,7 @@ export default class CharacterBot extends Bot {
 		for (const skill of this.skills) {
 			const level = skill.level.get();
 			this.xp[skill.name] = Math.floor(
-				factor
-				* skill.xpMultiplier()
+				skill.xpMultiplier()
 				* factorXP(skill.name, this.xp[skill.name], level, score, notes, nonAcc, length),
 			);
 		}

@@ -279,6 +279,10 @@ export class MusicPlayer {
 	}
 
 	async play(atMs?: number) {
+		// A play owns the output while it is running: its decoded buffer is a
+		// second source, and starting the streaming element under it is two songs
+		// at once. Only a track riding out after the play ended gives way (below).
+		if (this.gameSource && !this.gameRiding) return;
 		if (this.gameRiding) this.stopRiding();
 		if (this.context.state === 'suspended') await this.context.resume();
 		const pos = atMs ?? this.pausePos ?? this.songStart();

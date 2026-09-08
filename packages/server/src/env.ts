@@ -23,10 +23,24 @@ const schema = z.object({
 	DB_PASSWORD: z.string(),
 	DB_NAME: z.string().min(1).default('idle'),
 	DB_NAME_DEV: z.string().min(1).default('idle_test'),
+	// The farm's `stats` database, read-only: it mirrors every ranked/loved
+	// beatmap and backs the map-request search box. Same host/credentials.
+	STATS_DB_NAME: z.string().min(1).default('stats'),
 
 	// osu! OAuth application (https://osu.ppy.sh/home/account/edit → OAuth)
 	OSU_CLIENT_ID: z.string().min(1),
 	OSU_CLIENT_SECRET: z.string().min(1),
+
+	// The osu! API scheduler (https://github.com/Adrriii/osu-api-scheduler): every
+	// osu! API call goes through it so the host's single per-IP rate budget is
+	// shared across projects. Nothing here talks to osu.ppy.sh/api directly.
+	OSU_API_URL: z.url().default('https://osu.api.rhythmgamers.net'),
+	OSU_SCHEDULER_TOKEN: z.string().min(1),
+
+	// Where an accepted request's .osz is pulled from when ingesting it straight
+	// from the queue. `{setId}` is substituted; osu! itself has no download API
+	// for an app token, so this is a mirror.
+	BEATMAP_MIRROR_URL: z.string().min(1).default('https://catboy.best/d/{setId}'),
 
 	// Secret for signing our own session + CSRF-state JWTs.
 	JWT_SECRET: z.string().min(1),
@@ -40,6 +54,7 @@ const schema = z.object({
 	REDIS_DB: z.coerce.number().int().min(0).default(0),
 	
 	MAP_FEED_WEBHOOK: z.string(),
+	NEWS_FEED_WEBHOOK: z.string(),
 	USER_FEED_WEBHOOK: z.string(),
 	ERROR_FEED_WEBHOOK: z.string(),
 

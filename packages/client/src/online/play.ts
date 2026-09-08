@@ -24,11 +24,24 @@ export type RankedPlayContext = {
 	endsAt: number
 };
 
+/** A play this client resolved and is running itself (guest, or a map the
+ *  server won't rank). Shaped like the ranked one on purpose: the scene treats
+ *  both as a replay of a play that already happened. */
+export type LocalPlayContext = {
+	mode: 'guest' | 'unranked';
+	token: string;
+	beatmapId: number;
+	offsets: ReplayOffset[];
+	startedAt: number;
+	endsAt: number;
+};
+
 /**
  * How a launched play is scored:
- *  - `guest`    - not signed in: simulated + scored locally, awards local XP.
- *  - `unranked` - signed in but the server hasn't ingested this map: played
- *                 locally, local score only, no XP, not submitted.
+ *  - `guest`    - not signed in: resolved + scored by the local session, awards
+ *                 local XP. Runs on its own clock, watched or not.
+ *  - `unranked` - signed in but the server hasn't ingested this map: same local
+ *                 session, local score only, no XP, not submitted.
  *  - `ranked`   - signed in + map on the server: the server simulated it and is
  *                 authoritative. The client replays the offsets seeked to the
  *                 play's live position (`startedAt`) and fetches the result on
@@ -37,16 +50,23 @@ export type RankedPlayContext = {
  *                 saved or submitted. Launched from the strain debug view.
  */
 export type PlayContext =
-	| { mode: 'guest' }
-	| { mode: 'unranked' }
 	| { mode: 'debug' }
+	| LocalPlayContext
 	| RankedPlayContext;
 
-/** A resolved {@link PlayContext}, or `refused`, the server declined to rank an
- *  otherwise-rankable play (anti-cheat lock / server error).
- * `refused` isn't a way to start a play; the caller turns it into a dialog and,
- * if the player accepts, retries as an `unranked` local play. */
-export type PlaySession = PlayContext | { mode: 'refused' };
+/**
+ * What a launch resolved to, before anything is running: a ranked play the
+ *  server has already started, or the kind of local play to start here.
+ *
+ * `refused` isn't a way to start a play - the server declined to rank an
+ * otherwise-rankable one (anti-cheat lock / server error); the caller turns it
+ * into a dialog and, if the player accepts, retries as an `unranked` local play.
+ */
+export type PlaySession =
+	| { mode: 'guest' }
+	| { mode: 'unranked' }
+	| { mode: 'refused' }
+	| RankedPlayContext;
 
 /**
  * The character's server-side play state, pushed over the socket: on connect,

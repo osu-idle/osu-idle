@@ -10,12 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PreviewRouteImport } from './routes/preview'
-import { Route as MapsRouteImport } from './routes/maps'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DownloadRouteImport } from './routes/download'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as NewsIndexRouteImport } from './routes/news/index'
+import { Route as MapsIndexRouteImport } from './routes/maps/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as RankingsScoreRouteImport } from './routes/rankings/score'
 import { Route as RankingsPlaysRouteImport } from './routes/rankings/plays'
@@ -23,6 +23,7 @@ import { Route as RankingsGlobalRouteImport } from './routes/rankings/global'
 import { Route as RankingsCountryRouteImport } from './routes/rankings/country'
 import { Route as NewsAdminRouteImport } from './routes/news/admin'
 import { Route as NewsSlugRouteImport } from './routes/news/$slug'
+import { Route as MapsRequestsRouteImport } from './routes/maps/requests'
 import { Route as HelpFaqRouteImport } from './routes/help/faq'
 import { Route as CIdRouteImport } from './routes/c/$id'
 import { Route as AuthErrorRouteImport } from './routes/auth/error'
@@ -34,16 +35,13 @@ import { Route as AdminChatRouteImport } from './routes/admin/chat'
 import { Route as AdminBalancingRouteImport } from './routes/admin/balancing'
 import { Route as AdminAddonsRouteImport } from './routes/admin/addons'
 import { Route as RankingsSkillsSkillRouteImport } from './routes/rankings/skills/$skill'
+import { Route as RankingsPrestigeSkillRouteImport } from './routes/rankings/prestige/$skill'
+import { Route as RankingsLifetimeSkillRouteImport } from './routes/rankings/lifetime/$skill'
 import { Route as RankingsGradesGradeRouteImport } from './routes/rankings/grades/$grade'
 
 const PreviewRoute = PreviewRouteImport.update({
   id: '/preview',
   path: '/preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MapsRoute = MapsRouteImport.update({
-  id: '/maps',
-  path: '/maps',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogoutRoute = LogoutRouteImport.update({
@@ -69,6 +67,11 @@ const IndexRoute = IndexRouteImport.update({
 const NewsIndexRoute = NewsIndexRouteImport.update({
   id: '/news/',
   path: '/news/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapsIndexRoute = MapsIndexRouteImport.update({
+  id: '/maps/',
+  path: '/maps/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -104,6 +107,11 @@ const NewsAdminRoute = NewsAdminRouteImport.update({
 const NewsSlugRoute = NewsSlugRouteImport.update({
   id: '/news/$slug',
   path: '/news/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapsRequestsRoute = MapsRequestsRouteImport.update({
+  id: '/maps/requests',
+  path: '/maps/requests',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpFaqRoute = HelpFaqRouteImport.update({
@@ -161,6 +169,16 @@ const RankingsSkillsSkillRoute = RankingsSkillsSkillRouteImport.update({
   path: '/rankings/skills/$skill',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RankingsPrestigeSkillRoute = RankingsPrestigeSkillRouteImport.update({
+  id: '/rankings/prestige/$skill',
+  path: '/rankings/prestige/$skill',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RankingsLifetimeSkillRoute = RankingsLifetimeSkillRouteImport.update({
+  id: '/rankings/lifetime/$skill',
+  path: '/rankings/lifetime/$skill',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RankingsGradesGradeRoute = RankingsGradesGradeRouteImport.update({
   id: '/rankings/grades/$grade',
   path: '/rankings/grades/$grade',
@@ -172,7 +190,6 @@ export interface FileRoutesByFullPath {
   '/download': typeof DownloadRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
-  '/maps': typeof MapsRoute
   '/preview': typeof PreviewRoute
   '/admin/addons': typeof AdminAddonsRoute
   '/admin/balancing': typeof AdminBalancingRoute
@@ -184,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/auth/error': typeof AuthErrorRoute
   '/c/$id': typeof CIdRoute
   '/help/faq': typeof HelpFaqRoute
+  '/maps/requests': typeof MapsRequestsRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/admin': typeof NewsAdminRoute
   '/rankings/country': typeof RankingsCountryRoute
@@ -191,8 +209,11 @@ export interface FileRoutesByFullPath {
   '/rankings/plays': typeof RankingsPlaysRoute
   '/rankings/score': typeof RankingsScoreRoute
   '/admin/': typeof AdminIndexRoute
+  '/maps/': typeof MapsIndexRoute
   '/news/': typeof NewsIndexRoute
   '/rankings/grades/$grade': typeof RankingsGradesGradeRoute
+  '/rankings/lifetime/$skill': typeof RankingsLifetimeSkillRoute
+  '/rankings/prestige/$skill': typeof RankingsPrestigeSkillRoute
   '/rankings/skills/$skill': typeof RankingsSkillsSkillRoute
 }
 export interface FileRoutesByTo {
@@ -200,7 +221,6 @@ export interface FileRoutesByTo {
   '/download': typeof DownloadRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
-  '/maps': typeof MapsRoute
   '/preview': typeof PreviewRoute
   '/admin/addons': typeof AdminAddonsRoute
   '/admin/balancing': typeof AdminBalancingRoute
@@ -212,6 +232,7 @@ export interface FileRoutesByTo {
   '/auth/error': typeof AuthErrorRoute
   '/c/$id': typeof CIdRoute
   '/help/faq': typeof HelpFaqRoute
+  '/maps/requests': typeof MapsRequestsRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/admin': typeof NewsAdminRoute
   '/rankings/country': typeof RankingsCountryRoute
@@ -219,8 +240,11 @@ export interface FileRoutesByTo {
   '/rankings/plays': typeof RankingsPlaysRoute
   '/rankings/score': typeof RankingsScoreRoute
   '/admin': typeof AdminIndexRoute
+  '/maps': typeof MapsIndexRoute
   '/news': typeof NewsIndexRoute
   '/rankings/grades/$grade': typeof RankingsGradesGradeRoute
+  '/rankings/lifetime/$skill': typeof RankingsLifetimeSkillRoute
+  '/rankings/prestige/$skill': typeof RankingsPrestigeSkillRoute
   '/rankings/skills/$skill': typeof RankingsSkillsSkillRoute
 }
 export interface FileRoutesById {
@@ -229,7 +253,6 @@ export interface FileRoutesById {
   '/download': typeof DownloadRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
-  '/maps': typeof MapsRoute
   '/preview': typeof PreviewRoute
   '/admin/addons': typeof AdminAddonsRoute
   '/admin/balancing': typeof AdminBalancingRoute
@@ -241,6 +264,7 @@ export interface FileRoutesById {
   '/auth/error': typeof AuthErrorRoute
   '/c/$id': typeof CIdRoute
   '/help/faq': typeof HelpFaqRoute
+  '/maps/requests': typeof MapsRequestsRoute
   '/news/$slug': typeof NewsSlugRoute
   '/news/admin': typeof NewsAdminRoute
   '/rankings/country': typeof RankingsCountryRoute
@@ -248,8 +272,11 @@ export interface FileRoutesById {
   '/rankings/plays': typeof RankingsPlaysRoute
   '/rankings/score': typeof RankingsScoreRoute
   '/admin/': typeof AdminIndexRoute
+  '/maps/': typeof MapsIndexRoute
   '/news/': typeof NewsIndexRoute
   '/rankings/grades/$grade': typeof RankingsGradesGradeRoute
+  '/rankings/lifetime/$skill': typeof RankingsLifetimeSkillRoute
+  '/rankings/prestige/$skill': typeof RankingsPrestigeSkillRoute
   '/rankings/skills/$skill': typeof RankingsSkillsSkillRoute
 }
 export interface FileRouteTypes {
@@ -259,7 +286,6 @@ export interface FileRouteTypes {
     | '/download'
     | '/login'
     | '/logout'
-    | '/maps'
     | '/preview'
     | '/admin/addons'
     | '/admin/balancing'
@@ -271,6 +297,7 @@ export interface FileRouteTypes {
     | '/auth/error'
     | '/c/$id'
     | '/help/faq'
+    | '/maps/requests'
     | '/news/$slug'
     | '/news/admin'
     | '/rankings/country'
@@ -278,8 +305,11 @@ export interface FileRouteTypes {
     | '/rankings/plays'
     | '/rankings/score'
     | '/admin/'
+    | '/maps/'
     | '/news/'
     | '/rankings/grades/$grade'
+    | '/rankings/lifetime/$skill'
+    | '/rankings/prestige/$skill'
     | '/rankings/skills/$skill'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -287,7 +317,6 @@ export interface FileRouteTypes {
     | '/download'
     | '/login'
     | '/logout'
-    | '/maps'
     | '/preview'
     | '/admin/addons'
     | '/admin/balancing'
@@ -299,6 +328,7 @@ export interface FileRouteTypes {
     | '/auth/error'
     | '/c/$id'
     | '/help/faq'
+    | '/maps/requests'
     | '/news/$slug'
     | '/news/admin'
     | '/rankings/country'
@@ -306,8 +336,11 @@ export interface FileRouteTypes {
     | '/rankings/plays'
     | '/rankings/score'
     | '/admin'
+    | '/maps'
     | '/news'
     | '/rankings/grades/$grade'
+    | '/rankings/lifetime/$skill'
+    | '/rankings/prestige/$skill'
     | '/rankings/skills/$skill'
   id:
     | '__root__'
@@ -315,7 +348,6 @@ export interface FileRouteTypes {
     | '/download'
     | '/login'
     | '/logout'
-    | '/maps'
     | '/preview'
     | '/admin/addons'
     | '/admin/balancing'
@@ -327,6 +359,7 @@ export interface FileRouteTypes {
     | '/auth/error'
     | '/c/$id'
     | '/help/faq'
+    | '/maps/requests'
     | '/news/$slug'
     | '/news/admin'
     | '/rankings/country'
@@ -334,8 +367,11 @@ export interface FileRouteTypes {
     | '/rankings/plays'
     | '/rankings/score'
     | '/admin/'
+    | '/maps/'
     | '/news/'
     | '/rankings/grades/$grade'
+    | '/rankings/lifetime/$skill'
+    | '/rankings/prestige/$skill'
     | '/rankings/skills/$skill'
   fileRoutesById: FileRoutesById
 }
@@ -344,7 +380,6 @@ export interface RootRouteChildren {
   DownloadRoute: typeof DownloadRoute
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
-  MapsRoute: typeof MapsRoute
   PreviewRoute: typeof PreviewRoute
   AdminAddonsRoute: typeof AdminAddonsRoute
   AdminBalancingRoute: typeof AdminBalancingRoute
@@ -356,6 +391,7 @@ export interface RootRouteChildren {
   AuthErrorRoute: typeof AuthErrorRoute
   CIdRoute: typeof CIdRoute
   HelpFaqRoute: typeof HelpFaqRoute
+  MapsRequestsRoute: typeof MapsRequestsRoute
   NewsSlugRoute: typeof NewsSlugRoute
   NewsAdminRoute: typeof NewsAdminRoute
   RankingsCountryRoute: typeof RankingsCountryRoute
@@ -363,8 +399,11 @@ export interface RootRouteChildren {
   RankingsPlaysRoute: typeof RankingsPlaysRoute
   RankingsScoreRoute: typeof RankingsScoreRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  MapsIndexRoute: typeof MapsIndexRoute
   NewsIndexRoute: typeof NewsIndexRoute
   RankingsGradesGradeRoute: typeof RankingsGradesGradeRoute
+  RankingsLifetimeSkillRoute: typeof RankingsLifetimeSkillRoute
+  RankingsPrestigeSkillRoute: typeof RankingsPrestigeSkillRoute
   RankingsSkillsSkillRoute: typeof RankingsSkillsSkillRoute
 }
 
@@ -375,13 +414,6 @@ declare module '@tanstack/react-router' {
       path: '/preview'
       fullPath: '/preview'
       preLoaderRoute: typeof PreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/maps': {
-      id: '/maps'
-      path: '/maps'
-      fullPath: '/maps'
-      preLoaderRoute: typeof MapsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/logout': {
@@ -417,6 +449,13 @@ declare module '@tanstack/react-router' {
       path: '/news'
       fullPath: '/news/'
       preLoaderRoute: typeof NewsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/': {
+      id: '/maps/'
+      path: '/maps'
+      fullPath: '/maps/'
+      preLoaderRoute: typeof MapsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -466,6 +505,13 @@ declare module '@tanstack/react-router' {
       path: '/news/$slug'
       fullPath: '/news/$slug'
       preLoaderRoute: typeof NewsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/requests': {
+      id: '/maps/requests'
+      path: '/maps/requests'
+      fullPath: '/maps/requests'
+      preLoaderRoute: typeof MapsRequestsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help/faq': {
@@ -545,6 +591,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RankingsSkillsSkillRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rankings/prestige/$skill': {
+      id: '/rankings/prestige/$skill'
+      path: '/rankings/prestige/$skill'
+      fullPath: '/rankings/prestige/$skill'
+      preLoaderRoute: typeof RankingsPrestigeSkillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rankings/lifetime/$skill': {
+      id: '/rankings/lifetime/$skill'
+      path: '/rankings/lifetime/$skill'
+      fullPath: '/rankings/lifetime/$skill'
+      preLoaderRoute: typeof RankingsLifetimeSkillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rankings/grades/$grade': {
       id: '/rankings/grades/$grade'
       path: '/rankings/grades/$grade'
@@ -560,7 +620,6 @@ const rootRouteChildren: RootRouteChildren = {
   DownloadRoute: DownloadRoute,
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
-  MapsRoute: MapsRoute,
   PreviewRoute: PreviewRoute,
   AdminAddonsRoute: AdminAddonsRoute,
   AdminBalancingRoute: AdminBalancingRoute,
@@ -572,6 +631,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthErrorRoute: AuthErrorRoute,
   CIdRoute: CIdRoute,
   HelpFaqRoute: HelpFaqRoute,
+  MapsRequestsRoute: MapsRequestsRoute,
   NewsSlugRoute: NewsSlugRoute,
   NewsAdminRoute: NewsAdminRoute,
   RankingsCountryRoute: RankingsCountryRoute,
@@ -579,8 +639,11 @@ const rootRouteChildren: RootRouteChildren = {
   RankingsPlaysRoute: RankingsPlaysRoute,
   RankingsScoreRoute: RankingsScoreRoute,
   AdminIndexRoute: AdminIndexRoute,
+  MapsIndexRoute: MapsIndexRoute,
   NewsIndexRoute: NewsIndexRoute,
   RankingsGradesGradeRoute: RankingsGradesGradeRoute,
+  RankingsLifetimeSkillRoute: RankingsLifetimeSkillRoute,
+  RankingsPrestigeSkillRoute: RankingsPrestigeSkillRoute,
   RankingsSkillsSkillRoute: RankingsSkillsSkillRoute,
 }
 export const routeTree = rootRouteImport

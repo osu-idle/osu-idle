@@ -2,13 +2,28 @@
 	display: grid;
 	grid-template-columns: 110px 1fr auto;
 	align-items: center;
-	gap: 12px;
+	column-gap: 12px;
+	/* the stars sit on a second row, tight under the first */
+	row-gap: 2px;
 }
 
 .skill__name {
 	text-transform: capitalize;
 	color: hsl(var(--hsl-c2));
 	font-size: 13px;
+	white-space: nowrap;
+}
+
+.skill__prestige {
+	/* under the name, the bar and the level alike, so the three stay aligned */
+	grid-column: 1 / -1;
+	min-height: 11px;
+	font-size: 10px;
+	line-height: 11px;
+	letter-spacing: 1px;
+	color: hsl(var(--hsl-h1));
+	/* one line, however many there are: it runs under the bar, which is empty
+	   space, rather than wrapping and making this row taller than the others */
 	white-space: nowrap;
 }
 

@@ -69,3 +69,8 @@ spec/
 
 # database snapshots taken before a deploy - never committed, they hold player data
 backups/
+
+# e2e (playwright)
+packages/e2e/test-results
+packages/e2e/playwright-report
+packages/e2e/blob-report

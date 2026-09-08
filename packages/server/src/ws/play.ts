@@ -39,7 +39,8 @@ export class PlayFeed {
 	private ticking = false;
 
 	constructor(
-		private readonly characterId: number,
+		/** read per use: a rebirth moves the socket onto a new character mid-play */
+		private readonly characterId: () => number,
 		private readonly ws: WSContext,
 	) {}
 
@@ -65,7 +66,7 @@ export class PlayFeed {
 			if (this.next !== undefined) await this.streamTick(token);
 			else await this.stateTick(token);
 		} catch (e) {
-			console.error('[play] feed tick failed for', this.characterId, e);
+			console.error('[play] feed tick failed for', this.characterId(), e);
 		} finally {
 			this.ticking = false;
 		}
@@ -74,7 +75,7 @@ export class PlayFeed {
 	/** Push the offsets revealed since the cursor; a final (possibly empty) done
 	 *  chunk closes the stream client-side. */
 	private async streamTick(token: string): Promise<void> {
-		const chunk = await streamOffsets(this.characterId, token, this.next!);
+		const chunk = await streamOffsets(this.characterId(), token, this.next!);
 		if (chunk.offsets.length || chunk.done) {
 			hub.sendLocal(this.ws, {
 				type: 'play:offsets', token, ...chunk,
@@ -87,7 +88,7 @@ export class PlayFeed {
 	/** Push the play state whenever its checkpoint moves; the terminal state
 	 *  (finished/idle/another play) is pushed once, then the feed stops. */
 	private async stateTick(token: string): Promise<void> {
-		const state = await playState(this.characterId);
+		const state = await playState(this.characterId());
 		const live = state.phase === 'active' && state.token === token;
 		const key = state.phase === 'active'
 			? `${state.token}:${state.accuracy}:${state.grade}`

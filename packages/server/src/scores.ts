@@ -302,67 +302,85 @@ export async function applySkillXp(
 	 *  when they were first reached, and the channel should not hear them twice. */
 	announceMilestones = true,
 ) {
-	const [row] = await db.select().from(characters).where(eq(characters.id, characterId)).limit(1);
-	if (!row) throw new Error(`character ${characterId} not found`);
+	// The read and the write are one locked transaction: this writes back levels
+	// and totals it read at the start, so a purchase committing in between would
+	// be silently reverted - the spent levels handed back while the upgrade it
+	// bought stays (`${skill}Upgrades` isn't in the update set).
+	const {
+		row, gains, overallLevel,
+	} = await db.transaction(async tx => {
+		const [row] = await tx
+			.select()
+			.from(characters)
+			.where(eq(characters.id, characterId))
+			.limit(1)
+			.for('update');
+		if (!row) throw new Error(`character ${characterId} not found`);
 
-	const skills = makeOrderedSkills();
-	const overall = new Overall();
-	overall.level.set(row.overallLevel);
-	overall.xp.set(row.overallXp);
-	let overallXpGained = 0;
-	const gains = skills.map(skill => {
-		const fromLevel = row[`${skill.name}Level`];
-		const fromXp = row[`${skill.name}Xp`];
-		skill.level.set(fromLevel);
-		skill.xp.set(fromXp);
-		overallXpGained += xp[skill.name];
-		const levels = skill.gainXP(xp[skill.name] ?? 0);
+		const skills = makeOrderedSkills();
+		const overall = new Overall();
+		overall.level.set(row.overallLevel);
+		overall.xp.set(row.overallXp);
+		let overallXpGained = 0;
+		const gains = skills.map(skill => {
+			const fromLevel = row[`${skill.name}Level`];
+			const fromXp = row[`${skill.name}Xp`];
+			skill.level.set(fromLevel);
+			skill.xp.set(fromXp);
+			overallXpGained += xp[skill.name];
+			const levels = skill.gainXP(xp[skill.name] ?? 0);
+			return {
+				skill: skill.name, 
+				gained: xp[skill.name] ?? 0, 
+				fromLevel, 
+				fromXp,
+				toLevel: skill.level.get(),
+				toXp: Math.round(skill.xp.get()),
+				levels, 
+				xp: xp[skill.name], 
+			};
+		});
+
+		overall.gainXP(overallXpGained);
+
+		const updates = Object.fromEntries(
+			[
+				...gains.flatMap(g => [
+					[`${g.skill}Level`, g.toLevel],
+					[`${g.skill}Xp`, g.toXp],
+					[`${g.skill}TotalXp`, row[`${g.skill}TotalXp`] + g.xp],
+					[`${g.skill}LifetimeXp`, row[`${g.skill}LifetimeXp`] + g.xp],
+				]),
+				['overallLevel', overall.level.get()],
+				['overallXp', overall.xp.get()],
+				['overallTotalXp', row.overallTotalXp + overallXpGained],
+				['overallLifetimeXp', row.overallLifetimeXp + overallXpGained],
+			],
+		) as Record<`${
+			'overall'
+			| SkillName}Level` 
+			| `${'overall' 
+			| SkillName}Xp` 
+			| `${'overall' 
+			| SkillName}TotalXp`
+			| `${'overall' 
+			| SkillName}LifetimeXp`,
+		number
+		>;
+
+		await tx.update(characters).set(updates).where(eq(characters.id, characterId));
 		return {
-			skill: skill.name, 
-			gained: xp[skill.name] ?? 0, 
-			fromLevel, 
-			fromXp,
-			toLevel: skill.level.get(),
-			toXp: Math.round(skill.xp.get()),
-			levels, 
-			xp: xp[skill.name], 
+			row, gains, overallLevel: overall.level.get(),
 		};
 	});
 
-	overall.gainXP(overallXpGained);
-
-	const updates = Object.fromEntries(
-		[
-			...gains.flatMap(g => [
-				[`${g.skill}Level`, g.toLevel],
-				[`${g.skill}Xp`, g.toXp],
-				[`${g.skill}TotalXp`, row[`${g.skill}TotalXp`] + g.xp],
-				[`${g.skill}LifetimeXp`, row[`${g.skill}LifetimeXp`] + g.xp],
-			]),
-			['overallLevel', overall.level.get()],
-			['overallXp', overall.xp.get()],
-			['overallTotalXp', row.overallTotalXp + overallXpGained],
-			['overallLifetimeXp', row.overallLifetimeXp + overallXpGained],
-		],
-	) as Record<`${
-		'overall'
-		| SkillName}Level` 
-		| `${'overall' 
-		| SkillName}Xp` 
-		| `${'overall' 
-		| SkillName}TotalXp`
-		| `${'overall' 
-		| SkillName}LifetimeXp`,
-	number
-	>;
-
-	await db.update(characters).set(updates).where(eq(characters.id, characterId));
+	// Discord I/O never holds the row lock.
 	if (announceMilestones) await announceSkillLevels(row, [
 		...gains.map(g => ({
 			skill: g.skill as SkillName, from: g.fromLevel, to: g.toLevel,
 		})),
 		{
-			skill: 'overall', from: row.overallLevel, to: overall.level.get(),
+			skill: 'overall', from: row.overallLevel, to: overallLevel,
 		},
 	]);
 	return gains;

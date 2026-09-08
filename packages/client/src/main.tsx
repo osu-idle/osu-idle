@@ -18,6 +18,10 @@ initWakeLock(); // keep mobile screens awake while playing
 initFullscreen(); // keep the fullscreen setting in sync with Esc/F11
 void bootAddons(); // mount enabled installed add-ons
 
+// dev-only handle the end-to-end suite drives the app through; the static
+// condition drops the whole module from a production build.
+if (import.meta.env.DEV) void import('./dev/testBridge');
+
 // Load the saved language's catalog before first render so the UI never flashes
 // message keys, and re-activate whenever the picker changes it. `sync` fires
 // immediately with the current value (the browser's preferred locale on first

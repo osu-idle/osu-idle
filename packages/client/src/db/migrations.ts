@@ -20,6 +20,21 @@ import { GRADE } from '@osu-idle/shared/judgement';
  */
 type Migration = (db: Database) => void;
 
+/** `ALTER TABLE ... ADD COLUMN`, skipped when the column is already there. A
+ *  fresh database is created from the live schema and then replays every
+ *  migration, so an unguarded add fails on the columns it means to add. */
+const addColumn = (db: Database, table: string, column: string, ddl: string) => {
+	const exists = db.exec(`
+		SELECT EXISTS (
+			SELECT 1 FROM pragma_table_info('${table}') WHERE name = '${column}'
+		);
+	`)[0].values[0][0] as number;
+	if (exists) return false;
+
+	db.run(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl};`);
+	return true;
+};
+
 /**
  * Personal-best tables were keyed by score `id`, so a new best inserted a fresh
  * row and the old marker lingered - `best()` then returned an arbitrary (in
@@ -287,7 +302,7 @@ const addLifetimeXp: Migration = db => {
 		'reading', 'consistency', 'concentration', 'speedjam', 'memory',
 	];
 	for (const skill of skills) {
-		db.run(`ALTER TABLE character ADD COLUMN ${skill}LifetimeXp INTEGER DEFAULT 0;`);
+		if (!addColumn(db, 'character', `${skill}LifetimeXp`, 'INTEGER DEFAULT 0')) continue;
 		db.run(`UPDATE character SET ${skill}LifetimeXp = ${skill}TotalXp;`);
 	}
 };
@@ -295,7 +310,7 @@ const addLifetimeXp: Migration = db => {
 /** Memory's prestige forgets the maps it learned. Existing rows keep all their
  *  training: nothing has been prestiged yet at this point. */
 const addMemoryReset: Migration = db => {
-	db.run('ALTER TABLE character ADD COLUMN memoryResetAt INTEGER DEFAULT 0;');
+	addColumn(db, 'character', 'memoryResetAt', 'INTEGER DEFAULT 0');
 };
 
 const migrations: Migration[] = [

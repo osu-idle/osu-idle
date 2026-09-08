@@ -1,0 +1,324 @@
+/* The play dock.
+ *
+ * Sized against the rest of the interface, not against a desktop app: song
+ * select's character button is 62px tall at 1.15rem, its BACK is 2rem, the card
+ * menu's options are 40px. A cursor here can be a 100px circle, so nothing is a
+ * small target. The look is the playlist manager's - square edges, thin grey
+ * border, pink for what matters.
+ *
+ * It sits above the community controls (bottom right, z 9700) and above song
+ * select's bottom bar, so it never lands on either.
+ */
+.dock {
+	position: fixed;
+	right: 8px;
+	/* just clear of the community controls (bottom right, ~34px tall) */
+	bottom: 44px;
+	z-index: 60;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.82);
+	border: 1px solid gray;
+	backdrop-filter: blur(4px);
+	animation: dock-in 0.16s ease both;
+}
+@keyframes dock-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* song select keeps a 110px bottom bar, which paints over the dock (z 100) */
+.dock--above-bar {
+	bottom: 120px;
+}
+
+.dock--pill {
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+	padding: 0.7rem 0.9rem;
+	max-width: min(720px, 66vw);
+}
+/* Sized to what it holds: with a play and a queue in it that is the full width,
+   with two buttons in it that is two buttons - not a fixed panel with a hole on
+   the right. */
+.dock--panel {
+	width: max-content;
+	max-width: min(460px, 92vw);
+	padding: 1rem 1.1rem 1.1rem;
+}
+
+/* Docked into the column song select leaves empty (its carousel starts at
+   500px) while the queue carousel is open. Same panel, same rows - it fills a
+   column instead of floating, so there is only ever one queue on screen. */
+.dock--left {
+	left: 0;
+	right: auto;
+	top: 64px;
+	bottom: 0;
+	width: 420px;
+	max-width: none;
+	display: flex;
+	flex-direction: column;
+	border: 0;
+	border-right: 1px solid gray;
+	/* the queue carousel is a page overlay (5000) when it is not the scene */
+	z-index: 5100;
+}
+/* in song select the carousel is the scene, which keeps its bottom bar */
+.dock--left-scene {
+	bottom: 110px;
+}
+.dock--left .dock__queue {
+	flex: 1;
+	min-height: 0;
+	max-height: none;
+}
+
+
+.dock__body {
+	flex: 1;
+	min-width: 0;
+	text-align: left;
+	color: inherit;
+	background: none;
+	border: 0;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+}
+
+.dock__map {
+	font-size: 1.15rem;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.dock__map span {
+	color: var(--osu-pink-light);
+}
+
+.dock__sub {
+	color: rgba(255, 255, 255, 0.6);
+	font-size: 0.95rem;
+	margin: 0.35rem 0 0.5rem;
+}
+
+.dock__progress {
+	height: 4px;
+	background: rgba(255, 255, 255, 0.12);
+	overflow: hidden;
+}
+.dock__progress b {
+	display: block;
+	height: 4px;
+	background: var(--osu-pink-darkest);
+	transition: width 1s linear;
+}
+
+.dock__now {
+	display: flex;
+	gap: 0.8rem;
+	align-items: center;
+}
+.dock__now > div {
+	flex: 1;
+	min-width: 0;
+}
+.dock__grade {
+	height: 46px;
+	width: auto;
+	flex: none;
+}
+
+/* They wrap at 7rem and then grow to fill the row they land in: six make two
+   full rows, two make one full row, and neither leaves a strip of panel empty
+   beside them. Not a grid - the panel is sized to its contents, and a track
+   count cannot be resolved against a width that is itself waiting on the
+   contents (which is what collapsed them into one column). */
+.dock__controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	align-items: center;
+	margin-top: 0.9rem;
+}
+.dock__controls .dock__btn {
+	flex: 1 1 7rem;
+}
+/* with nothing playing and nothing queued there is nothing above them */
+.dock__controls:first-child {
+	margin-top: 0;
+}
+.dock--left .dock__btn {
+	padding: 0 0.6rem;
+}
+/* one width for all of them, whatever the word: they read as a set, and a row
+   of them lines up whether it is two or six */
+.dock__btn {
+	height: 46px;
+	min-width: 7rem;
+	padding: 0 1.15rem;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	background: rgba(255, 255, 255, 0.08);
+	color: #fff;
+	font-size: 1.05rem;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background 0.12s ease;
+}
+.dock__btn:hover:not(:disabled) {
+	background: rgba(255, 255, 255, 0.2);
+}
+.dock__btn:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+/* the reason to open this while a play is running, and the way to upgrades from
+   song select now that its bottom bar has no button of its own */
+.dock__btn--upgrades {
+	border-color: rgba(255, 102, 171, 0.6);
+	color: var(--osu-pink-light);
+}
+
+/* The floating panel is a glance, not a workspace: it shows what is playing,
+   what is next and the controls, and unfolds the rest of the queue only when
+   you reach for it. The docked one (queue carousel open) is the workspace and
+   is always open. */
+.dock--panel:not(.dock--left) .dock__queue {
+	max-height: 0;
+	margin-top: 0;
+	opacity: 0;
+	overflow: hidden;
+	transition:
+		max-height 0.18s ease,
+		margin-top 0.18s ease,
+		opacity 0.18s ease;
+}
+.dock--panel:not(.dock--left):hover .dock__queue {
+	max-height: 260px;
+	margin-top: 0.9rem;
+	opacity: 1;
+	overflow-y: auto;
+}
+
+.dock__upnext {
+	margin-top: 0.6rem;
+	font-size: 0.95rem;
+	color: rgba(255, 255, 255, 0.75);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.dock__upnext span {
+	color: var(--osu-pink-light);
+}
+
+.dock__queue {
+	margin-top: 0.9rem;
+	max-height: 260px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 102, 171, 0.5) transparent;
+}
+.dock__queue::-webkit-scrollbar {
+	width: 8px;
+}
+.dock__queue::-webkit-scrollbar-thumb {
+	background: rgba(255, 102, 171, 0.45);
+	border-radius: 4px;
+}
+.dock__queue::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.dock__entry {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	min-height: 54px;
+	padding: 0.45rem 0.6rem;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid gray;
+	color: rgba(255, 255, 255, 0.85);
+	font-size: 1rem;
+}
+.dock__entry.is-next {
+	background: rgba(255, 102, 171, 0.18);
+	border-color: rgba(255, 102, 171, 0.55);
+	color: #fff;
+}
+.dock__entry-name {
+	flex: 1;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.dock__entry-name span {
+	color: var(--osu-pink-light);
+}
+.dock__next {
+	flex-shrink: 0;
+	color: rgba(255, 255, 255, 0.6);
+	font-size: 0.85rem;
+	font-weight: 700;
+}
+
+/* the row's buttons only exist on hover, so they take no width until then -
+   the title gets the whole row rather than being cut short for something
+   invisible - and every one of them is a real target. */
+.dock__entry-actions {
+	position: absolute;
+	right: 0.5rem;
+	display: flex;
+	gap: 4px;
+	opacity: 0;
+	padding-left: 1.5rem;
+	background: linear-gradient(90deg, transparent, rgba(12, 10, 16, 0.97) 1.5rem);
+	transition: opacity 0.12s ease;
+	pointer-events: none;
+}
+.dock__entry:hover .dock__entry-actions {
+	opacity: 1;
+	pointer-events: auto;
+}
+.dock__entry-actions button {
+	min-width: 44px;
+	height: 44px;
+	padding: 0 0.7rem;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	background: rgba(20, 17, 24, 0.95);
+	color: #fff;
+	font-size: 1.1rem;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background 0.12s ease;
+}
+.dock__entry-actions button:hover:not(:disabled) {
+	background: rgba(255, 255, 255, 0.2);
+}
+.dock__entry-actions button:disabled {
+	opacity: 0.25;
+	cursor: default;
+}
+
+.dock__empty {
+	color: rgba(255, 255, 255, 0.55);
+	font-size: 0.95rem;
+	padding: 0.6rem 0;
+}
+
+.dock__label {
+	color: rgba(255, 255, 255, 0.6);
+	font-size: 0.95rem;
+	margin-bottom: 0.45rem;
+}

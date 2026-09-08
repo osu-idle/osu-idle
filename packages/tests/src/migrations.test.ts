@@ -27,7 +27,9 @@ beforeAll(async () => {
  *  totals and scores graded with the old top letter. */
 const APPLIED = 8;
 
-const oldDatabase = (): Database => {
+/** `live` builds the table the current schema creates - the one a new player
+ *  gets, with every column the migrations add already there. */
+const database = (live = false): Database => {
 	const db = new SQL.Database();
 	const skillCols = Skills.flatMap(s => [
 		`${s} INTEGER DEFAULT 0`,
@@ -36,6 +38,7 @@ const oldDatabase = (): Database => {
 		`${s}Overdrive REAL DEFAULT 0`,
 		`${s}Prestige INTEGER DEFAULT 0`,
 		`${s}TotalXp INTEGER DEFAULT 0`,
+		...live ? [`${s}LifetimeXp INTEGER DEFAULT 0`] : [],
 	]);
 	db.run(`CREATE TABLE character (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,7 +47,7 @@ const oldDatabase = (): Database => {
 		overallTotalXp INTEGER DEFAULT 0,
 		overallLevel INTEGER DEFAULT 0,
 		generation INTEGER DEFAULT 1,
-		local INTEGER DEFAULT 0
+		local INTEGER DEFAULT 0${live ? ', memoryResetAt INTEGER DEFAULT 0, current INTEGER DEFAULT 0' : ''}
 	);`);
 	db.run(`CREATE TABLE score (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,14 +59,29 @@ const oldDatabase = (): Database => {
 			characterId INTEGER NOT NULL, beatmapId INTEGER NOT NULL, scoreId INTEGER NOT NULL,
 			PRIMARY KEY (characterId, beatmapId)
 		);`);
-	db.run(`PRAGMA user_version = ${APPLIED}`);
+	// a fresh database has run nothing yet and replays every migration
+	db.run(`PRAGMA user_version = ${live ? 0 : APPLIED}`);
 	return db;
 };
+
+const oldDatabase = () => database();
+const freshDatabase = () => database(true);
 
 const rows = (db: Database, sql: string) => db.exec(sql)[0]?.values ?? [];
 const one = (db: Database, sql: string) => rows(db, sql)[0]?.[0];
 
 describe('client database migrations', () => {
+	it('replays every migration over the schema a new player is given', () => {
+		const db = freshDatabase();
+		db.run('INSERT INTO character (id, name, local) VALUES (1, \'Guest\', 1);');
+
+		expect(() => migrate(db)).not.toThrow();
+
+		expect(one(db, 'SELECT COUNT(*) FROM character')).toBe(1);
+		// everything was recorded, so the next boot finds nothing left to do
+		expect(migrate(db)).toBe(false);
+	});
+
 	it('moves the local lineage below zero, with its scores', () => {
 		const db = oldDatabase();
 		db.run('INSERT INTO character (id, name, local, generation) VALUES (1, \'Guest\', 1, 1);');

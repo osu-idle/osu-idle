@@ -16,7 +16,6 @@ import num from '@osu-idle/shared/display/num';
 import accuracy from '@osu-idle/shared/display/accuracy';
 import hitAccuracy from '@osu-idle/shared/osu/hitAccuracy';
 import { xpForLevel } from '@osu-idle/shared/sim/skills/xp';
-import { recentTimeAgo } from '@osu-idle/shared/display/ago';
 import { GUEST_AVATAR_URL } from '@osu-idle/shared/osu/profile';
 
 /** Profile card: avatar + online stats, clicking through to osu! web
@@ -36,9 +35,6 @@ export default function UserCard({
 		: undefined;
 	const pp = num(online_character?.pp);
 	const accText = online_stats && accuracy(hitAccuracy(online_stats));
-	const fatigue = online_character ? 
-		accuracy(online_character.fatiguePercent) 
-		: '';
 	const level = num(online_character?.overallLevel);
 	return (
 		<div
@@ -61,12 +57,7 @@ export default function UserCard({
 				<span className="game__user-name">{character.name}</span>
 				{online_character && (<>
 					<span className="game__user-pp"><Trans>Performance: {pp}pp</Trans></span>
-					<span className="game__user-acc"><Trans>Accuracy: {accText}</Trans>
-						{online_character.sessionTime > 600000 && <span 
-							className='game__user-fatigue'>
-							{recentTimeAgo(online_character.sessionTime)} ({fatigue})
-						</span>}
-					</span>
+					<span className="game__user-acc"><Trans>Accuracy: {accText}</Trans></span>
 					<span className="game__user-level"><Trans>Lv{level}</Trans></span>
 				</>)}
 				{!online_character && (

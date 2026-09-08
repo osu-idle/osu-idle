@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: osu-idle\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-09-06 10:31\n"
+"PO-Revision-Date: 2026-09-08 16:41\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -30,9 +30,23 @@ msgstr "{0, plural, =0 {aujourd'hui} one {il y a # jour} other {il y a # jours}}
 msgid "{0} [{1}] by {2}"
 msgstr "{0} [{1}] par {2}"
 
+#. placeholder {0}: hit.diffs
+#: src/pages/beatmaps/RequestSearchHit.tsx
+msgid "{0} × 4K"
+msgstr "{0} × 4K"
+
 #: src/components/character/CharacterRanks.tsx
 msgid "{skill} Ranking"
 msgstr "Rang en {skill}"
+
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "Accept"
+msgstr "Accepter"
+
+#: src/pages/beatmaps/MapRequests.tsx
+#: src/pages/beatmaps/requestPhase.ts
+msgid "accepted"
+msgstr "acceptée"
 
 #: src/components/leaderboard/PlayerGradesLeaderboard.tsx
 #: src/components/leaderboard/PlayerLeaderboard.tsx
@@ -52,6 +66,10 @@ msgstr "admin"
 msgid "admin dashboard"
 msgstr "tableau de bord d'administration"
 
+#: src/pages/beatmaps/MapRequests.tsx
+msgid "all"
+msgstr "tout"
+
 #: src/components/leaderboard/CountryFilter.tsx
 msgid "All"
 msgstr "Tout"
@@ -59,6 +77,10 @@ msgstr "Tout"
 #: src/pages/AuthError.tsx
 msgid "An error occurred when communicating with osu! ... if your osu! account is valid, please try again"
 msgstr "Une erreur est survenue lors de la communication avec osu!... Si votre compte osu! est valide, veuillez réessayer"
+
+#: src/pages/beatmaps/MapRequests.tsx
+msgid "Anyone can propose a map for ranking in osu!idle - osu!mania 4K only. Support the ones you want to play so it shows what people are after. Accepted maps join the nomination queue and are ranked from there."
+msgstr "N'importe qui peut proposer une map à classer dans osu!idle. Supportez les maps que vous voulez jouer, celles qui sont acceptées entreront dans la file de nomination."
 
 #: src/pages/DesktopDone.tsx
 msgid "Back in osu!idle already? You can close this tab."
@@ -70,7 +92,8 @@ msgid "balancing"
 msgstr "équilibrage"
 
 #: src/Header.tsx
-#: src/routes/maps.tsx
+#: src/pages/beatmaps/MapsNav.tsx
+#: src/routes/maps/index.tsx
 msgid "beatmap listing"
 msgstr "liste des maps"
 
@@ -145,14 +168,26 @@ msgstr "Créez votre joueur osu! et regardez-le s'améliorer jusqu'à devenir un
 msgid "dashboard"
 msgstr "tableau de bord"
 
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "Delete"
+msgstr "Supprimer"
+
 #. placeholder {0}: primary.label
 #: src/pages/PlayOsuIdle.tsx
 msgid "Download for {0} (v{version})"
 msgstr "Télécharger pour {0} (v{version})"
 
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "Download the .osz and push it into the nomination queue"
+msgstr "Télécharger le .osz et l'ajouter à la file de nomination"
+
 #: src/pages/PlayOsuIdle.tsx
 msgid "Download the desktop app"
 msgstr "Télécharger l'appli bureau"
+
+#: src/pages/beatmaps/MapRequests.tsx
+msgid "Drop this request?"
+msgstr "Annuler la demande ?"
 
 #: src/pages/AuthError.tsx
 msgid "Error"
@@ -220,6 +255,14 @@ msgstr "accueil"
 msgid "How do you want to play?"
 msgstr "Comment souhaitez-vous jouer ?"
 
+#: src/pages/beatmaps/requestPhase.ts
+msgid "in nomination"
+msgstr "nominating"
+
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "Ingest"
+msgstr "Ajouter"
+
 #: src/pages/PublicLanding.tsx
 msgid "Join the community"
 msgstr "Rejoindre la communauté"
@@ -228,6 +271,11 @@ msgstr "Rejoindre la communauté"
 msgid "Latest news"
 msgstr "Derniers articles"
 
+#: src/pages/rankings/RankingsNav.tsx
+msgid "lifetime"
+msgstr "cumulé"
+
+#: src/pages/beatmaps/MapRequests.tsx
 #: src/pages/characters/CharacterPage.tsx
 msgid "Loading…"
 msgstr "Chargement…"
@@ -248,8 +296,18 @@ msgstr "gérer les articles"
 msgid "map nomination"
 msgstr "nomination de maps"
 
+#: src/Header.tsx
+#: src/pages/beatmaps/MapsNav.tsx
+#: src/routes/maps/requests.tsx
+msgid "map requests"
+msgstr "propositions"
+
+#. placeholder {0}: hit.creator
 #. placeholder {0}: mapset.creator
+#. placeholder {0}: row.creator
 #: src/pages/beatmaps/RankedMaps.tsx
+#: src/pages/beatmaps/RequestRow.tsx
+#: src/pages/beatmaps/RequestSearchHit.tsx
 msgid "mapped by {0}"
 msgstr "mappé par {0}"
 
@@ -262,6 +320,10 @@ msgstr "créée par <0>{0}</0>"
 msgid "Most Played Beatmaps"
 msgstr "Maps les plus jouées"
 
+#: src/pages/beatmaps/MapRequests.tsx
+msgid "most wanted"
+msgstr "les plus demandées"
+
 #: src/Header.tsx
 msgid "My Profile"
 msgstr "Mon Profil"
@@ -269,6 +331,10 @@ msgstr "Mon Profil"
 #: src/pages/Home.tsx
 msgid "New Ranked Beatmaps"
 msgstr "Nouvelles maps classées"
+
+#: src/pages/beatmaps/MapRequests.tsx
+msgid "newest"
+msgstr "nouvelles"
 
 #: src/Header.tsx
 #: src/routes/news/$slug.tsx
@@ -290,6 +356,14 @@ msgstr "Pas encore d'articles. Revenez bientôt !"
 msgid "Not yet available for {0}"
 msgstr "Pas encore disponible pour {0}"
 
+#: src/pages/beatmaps/RequestForm.tsx
+msgid "Nothing found. If the map isn't listed, paste its beatmapset link instead."
+msgstr "Aucun résultat. Si la map est introuvable, mettez son lien à la place."
+
+#: src/pages/beatmaps/MapRequests.tsx
+msgid "Nothing here yet."
+msgstr "Rien ici pour le moment."
+
 #: src/routes/auth/error.tsx
 msgid "oh no!"
 msgstr "oh non!"
@@ -301,6 +375,11 @@ msgstr "en ligne"
 #: src/pages/Home.tsx
 msgid "Online Users"
 msgstr "Joueurs en ligne"
+
+#: src/pages/beatmaps/MapRequests.tsx
+#: src/pages/beatmaps/requestPhase.ts
+msgid "open"
+msgstr "proposé"
 
 #: src/pages/PlayOsuIdle.tsx
 msgid "Other platforms:"
@@ -348,9 +427,17 @@ msgstr "en jeu"
 msgid "Plays"
 msgstr "Parties"
 
+#: src/pages/rankings/RankingsNav.tsx
+msgid "prestige"
+msgstr "prestige"
+
 #: src/Footer.tsx
 msgid "Privacy"
 msgstr "Vie privée"
+
+#: src/pages/beatmaps/requestPhase.ts
+msgid "ranked"
+msgstr "classé"
 
 #: src/pages/beatmaps/RankedMaps.tsx
 #: src/pages/beatmaps/RankedMaps.tsx
@@ -369,7 +456,9 @@ msgstr "Score classé"
 #: src/routes/rankings/country.tsx
 #: src/routes/rankings/global.tsx
 #: src/routes/rankings/grades/$grade.tsx
+#: src/routes/rankings/lifetime/$skill.tsx
 #: src/routes/rankings/plays.tsx
+#: src/routes/rankings/prestige/$skill.tsx
 #: src/routes/rankings/score.tsx
 #: src/routes/rankings/skills/$skill.tsx
 msgid "rankings"
@@ -379,9 +468,30 @@ msgstr "classements"
 msgid "Ranks"
 msgstr "Rangs"
 
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "reason (optional)"
+msgstr "raison (optionnel)"
+
 #: src/pages/characters/CharacterPage.tsx
 msgid "Recent scores"
 msgstr "Scores récents"
+
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "Reject"
+msgstr "Rejeter"
+
+#: src/pages/beatmaps/MapRequests.tsx
+#: src/pages/beatmaps/requestPhase.ts
+msgid "rejected"
+msgstr "rejetée"
+
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "Remove your support"
+msgstr "Enlever votre support"
+
+#: src/pages/beatmaps/RequestForm.tsx
+msgid "Request"
+msgstr "Proposer"
 
 #: src/components/EditableProfilePicture.tsx
 msgid "Reset to osu! avatar"
@@ -399,6 +509,10 @@ msgstr "Règles"
 msgid "Save"
 msgstr "Sauvegarder"
 
+#: src/pages/beatmaps/requestPhase.ts
+msgid "scheduled"
+msgstr "planifiée"
+
 #: src/components/character/CharacterRanks.tsx
 msgid "Score Ranking"
 msgstr "Rang Score"
@@ -406,6 +520,10 @@ msgstr "Rang Score"
 #: src/pages/PublicLanding.tsx
 msgid "scores set"
 msgstr "scores"
+
+#: src/pages/beatmaps/RequestForm.tsx
+msgid "Search a 4K map, or paste its beatmapset link"
+msgstr "Cherchez une map 4K, ou collez son lien"
 
 #: src/pages/Logout.tsx
 msgid "See you later!"
@@ -416,6 +534,7 @@ msgid "Server Status"
 msgstr "Statut du serveur"
 
 #: src/Header.tsx
+#: src/pages/beatmaps/MapRequests.tsx
 #: src/pages/Login.tsx
 #: src/pages/PublicLanding.tsx
 msgid "Sign in"
@@ -460,6 +579,7 @@ msgstr "skins"
 #: src/components/leaderboard/PlayerGradesLeaderboard.tsx
 #: src/components/leaderboard/PlayerLeaderboard.tsx
 #: src/components/leaderboard/PlayerSkillLeaderboard.tsx
+#: src/pages/beatmaps/MapRequests.tsx
 #: src/pages/beatmaps/RankedMaps.tsx
 msgid "Sort by"
 msgstr "Trier par"
@@ -468,6 +588,10 @@ msgstr "Trier par"
 msgid "Source code"
 msgstr "Code source"
 
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "Support this request"
+msgstr "Supporter"
+
 #: src/Footer.tsx
 msgid "Terms"
 msgstr "Conditions"
@@ -475,6 +599,14 @@ msgstr "Conditions"
 #: src/pages/PublicLanding.tsx
 msgid "The ultimate<0/>osu!mania idle game"
 msgstr "L'ultime<0/>jeu idle osu!mania"
+
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "This request has been answered"
+msgstr "Cette proposition a été traitée"
+
+#: src/pages/beatmaps/MapRequests.tsx
+msgid "to propose a map or support someone else's."
+msgstr "pour proposer une map ou supporter une proposition."
 
 #: src/Header.tsx
 #: src/pages/rankings/RankingsNav.tsx
@@ -502,6 +634,14 @@ msgstr "Envoyer un avatar"
 #: src/pages/PublicLanding.tsx
 msgid "View all"
 msgstr "Tout voir"
+
+#: src/pages/beatmaps/RequestRow.tsx
+msgid "Withdraw"
+msgstr "Retirer"
+
+#: src/pages/beatmaps/RequestForm.tsx
+msgid "You already have {MAX_PENDING_REQUESTS} requests waiting. Wait for one to be answered before proposing another."
+msgstr "Vous avez déjà {MAX_PENDING_REQUESTS} propositions en attente. Attendez que l'une d'entre-elles soit traitée avant d'en envoyer une autre."
 
 #: src/pages/DesktopDone.tsx
 msgid "You're signed in!"

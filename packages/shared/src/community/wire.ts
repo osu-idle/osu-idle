@@ -11,6 +11,7 @@ import {
 	playClientMessages,
 	playServerMessages,
 } from '../play.js';
+import { characterDTO } from '../character.js';
 
 /** The default channel every signed-in player joins. */
 export const DEFAULT_CHANNEL = '#osu!idle';
@@ -126,6 +127,13 @@ export const serverMessage = z.discriminatedUnion('type', [
 	z.object({
 		type: z.literal('version'),
 		version: z.string(),
+	}),
+	// The account's character as the server has it. Pushed on connect and after
+	// every change to the row, so no interface has to ask for it and none of
+	// them can drift apart.
+	z.object({
+		type: z.literal('character'),
+		character: characterDTO,
 	}),
 	z.object({
 		type: z.literal('error'),

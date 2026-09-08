@@ -12,8 +12,8 @@ import {
 import './BeatmapCarousel.css';
 import BeatmapCard from './BeatmapCard';
 import LightBeatmap from '../osu/beatmap/LightBeatmap';
+import { useSelection } from './songselect/selection';
 import LightBeatmapSet from '../osu/beatmap/LightBeatmapSet';
-import { music } from '../audio/MusicPlayer';
 import Controls from '../input/Controls';
 import RightClick from '../input/RightClick';
 import type { BeatmapXPInsight } from '../xpInsights';
@@ -146,6 +146,7 @@ export default function BeatmapCarousel({
 	xpInsights,
 	totalCount,
 }: Props) {
+	const selection = useSelection();
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const rafRef = useRef(0);
 	// the scrollTop we're easing toward; null = no animation in flight
@@ -159,7 +160,7 @@ export default function BeatmapCarousel({
 		start: 0, end: 0, 
 	});
 	const rangeRef = useRef(range);
-	// live rows, for the centering glide: music.beatmap.use() captures its
+	// live rows, for the centering glide: selection.use() captures its
 	// callback once and so can't close over the latest `rows` prop.
 	const rowsRef = useRef(rows);
 	rowsRef.current = rows;
@@ -295,7 +296,7 @@ export default function BeatmapCarousel({
 	const centerOnActive = useCallback(() => {
 		const scroller = scrollRef.current;
 		if (!scroller) return;
-		const current = music.beatmap.get();
+		const current = selection.get();
 		const i = current
 			? rowsRef.current
 				.findIndex(r => r.type === 'card' && r.item.beatmap.is(current))
@@ -415,7 +416,7 @@ export default function BeatmapCarousel({
 		updateCurve();
 		// center only when the selection itself is new (initial load / re-entry),
 		// never on a plain group collapse/expand that just reshapes `rows`.
-		const current = music.beatmap.get();
+		const current = selection.get();
 		if (current && lastCenteredRef.current !== current.metadata.id)
 			centerOnActive();
 
@@ -437,7 +438,7 @@ export default function BeatmapCarousel({
 		[],
 	);
 
-	music.beatmap.use(beatmap => {
+	selection.use(beatmap => {
 		if (!beatmap) return;
 		centerOnActive();
 	});

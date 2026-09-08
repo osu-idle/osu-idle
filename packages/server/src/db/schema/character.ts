@@ -12,6 +12,7 @@ import {
 	type SkillName,
 } from '@osu-idle/shared/skills';
 import type { CharacterDTO } from '@osu-idle/shared/character';
+import type { PendingAction } from '@osu-idle/shared/pendingAction';
 import { users } from './user';
 import { apiBaseUrl } from '../../env';
 import { db } from '../client';
@@ -75,6 +76,8 @@ export const characters = mysqlTable('character', {
 		precision: 10, scale: 3,
 	}).notNull().default('0'),
 	rankHistory: jsonColumn<RankHistory>(),
+	/** The actions a running play has deferred to its end, in order. */
+	pendingAction: jsonColumn<PendingAction[]>(),
 });
 
 export type CharacterRow = typeof characters.$inferSelect;
@@ -116,6 +119,7 @@ export function characterToDTO(
 		generation: row.generation,
 		overallLevel: row.overallLevel,
 		skills,
+		pendingActions: row.pendingAction ?? undefined,
 	};
 }
 

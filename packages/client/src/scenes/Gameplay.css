@@ -89,7 +89,7 @@
 	color: var(--osu-pink-light);
 }
 
-/* playlist autopilot HUD: next map + live fatigue, under the back button */
+/* playlist autopilot HUD: what plays next, under the back button */
 .play__autopilot {
 	position: absolute;
 	top: 4rem;
@@ -107,10 +107,6 @@
 .play__autopilot-next span {
 	color: var(--osu-pink-light);
 }
-.play__autopilot-fatigue {
-	color: #ffc46b;
-}
-
 /* grade badge: overlaid to the left of the canvas-drawn accuracy (top right) */
 .play__grade {
 	position: absolute;

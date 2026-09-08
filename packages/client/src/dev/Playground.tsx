@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import {
+	useLayoutEffect,
+	useState,
+} from 'react';
 import './playground.css';
 import { PLAYGROUND_CASES } from './playgroundCases';
 
@@ -9,7 +12,8 @@ import { PLAYGROUND_CASES } from './playgroundCases';
  * browser script) without a full play.
  *
  * `?playground=<case id>` opens straight onto a case, and `data-playground-ready`
- * lands on the stage once it is mounted, which is what a script should wait for.
+ * lands on the stage once the case's state is seeded and it is mounted, which is
+ * what a script should wait for.
  */
 export default function Playground() {
 	const params = new URLSearchParams(location.search);
@@ -19,6 +23,14 @@ export default function Playground() {
 	);
 	const [run, setRun] = useState(0);
 	const current = PLAYGROUND_CASES.find(c => c.id === active);
+	const key = `${active}:${run}`;
+
+	// a case that needs app state seeds it here, before anything renders with it
+	const [seeded, setSeeded] = useState('');
+	useLayoutEffect(() => {
+		current?.setup?.();
+		setSeeded(key);
+	}, [key]);
 
 	return (
 		<div className="playground">
@@ -37,8 +49,11 @@ export default function Playground() {
 					replay
 				</button>
 			</div>
-			<div className="playground__stage" data-playground-ready={current ? 'true' : 'false'}>
-				<div key={`${active}:${run}`}>{current?.render()}</div>
+			<div
+				className="playground__stage"
+				data-playground-ready={current && seeded === key ? 'true' : 'false'}
+			>
+				{seeded === key && <div key={key}>{current?.render()}</div>}
 			</div>
 		</div>
 	);

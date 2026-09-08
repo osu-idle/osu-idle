@@ -72,6 +72,55 @@ describe('the level the player is shown', () => {
 	});
 });
 
+describe('the level the strain curves read', () => {
+	// the rates a skill caches off its level: its own number fields
+	const rates = (skill: Skill): number[] =>
+		Object.entries(skill)
+			.filter(([, v]) => typeof v === 'number')
+			.sort(([a], [b]) => a.localeCompare(b))
+			.map(([, v]) => v as number);
+
+	const ratesAt = (skill: Skill, level: number, progress: number): number[] => {
+		skill.level.set(level);
+		skill.xp.set(xpForLevel(level) * progress);
+		return rates(skill);
+	};
+
+	it('is the effective level - earned, progress and prestige', () => {
+		const skill = makeOrderedSkills()[0]!;
+		skill.level.set(50);
+		skill.xp.set(xpForLevel(50) * 0.5);
+		skill.prestige.set(3);
+		expect(skill.effectiveLevel()).toBeCloseTo(53.5, 6);
+	});
+
+	it('never reads past the level the xp is about to buy', () => {
+		const skill = makeOrderedSkills()[0]!;
+		skill.level.set(50);
+		skill.xp.set(xpForLevel(50) * 4);
+		expect(skill.effectiveLevel()).toBe(51);
+	});
+
+	it('moves every skill\'s rates as xp is banked, not only on a level up', () => {
+		for (const skill of makeOrderedSkills()) {
+			const low = ratesAt(skill, 50, 0);
+			const mid = ratesAt(skill, 50, 0.5);
+			const high = ratesAt(skill, 51, 0);
+
+			expect(low.length, `${skill.name} caches no rate`).toBeGreaterThan(0);
+			expect(mid, `${skill.name} ignores its level progress`).not.toEqual(low);
+			// half a level in sits between the two levels, on every rate
+			mid.forEach((v, i) => {
+				const a = low[i]!;
+				const b = high[i]!;
+				if (a === b) return;
+				expect(v, `${skill.name} rate ${i}`).toBeGreaterThan(Math.min(a, b));
+				expect(v, `${skill.name} rate ${i}`).toBeLessThan(Math.max(a, b));
+			});
+		}
+	});
+});
+
 describe('rebirth unlocks', () => {
 	it('gives a generation the first generation - 1 unlocks', () => {
 		expect(unlocksForGeneration(1)).toEqual([]);

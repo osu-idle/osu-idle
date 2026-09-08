@@ -18,7 +18,14 @@
  *    both go to the same place
  */
 
-/** How the play is scored, which decides who owns its result. */
+/**
+ * How the play is scored, which decides who owns its result.
+ *
+ * Only `debug` scores itself. Every other play is resolved up front by someone
+ * else - the server for `ranked`, the local session for `guest` and `unranked` -
+ * and the scene asks that owner for the result rather than deciding one. That is
+ * what lets a play keep running while nobody is watching it.
+ */
 export type PlayScoring = 'ranked' | 'guest' | 'unranked' | 'debug';
 
 export type PlayPhase =
@@ -46,10 +53,10 @@ export type PlayEvent =
 	| { type: 'replay-timeout' }
 	/** the local score is built and ready to show */
 	| { type: 'local-ready', failed: boolean }
-	/** the server answered; `hasScore` is false for a failed play, which carries none */
-	| { type: 'server-result', hasScore: boolean }
-	/** the server could not answer; `retryable` is false once its result is gone */
-	| { type: 'server-error', retryable: boolean }
+	/** the owner answered; `hasScore` is false for a failed play, which carries none */
+	| { type: 'owner-result', hasScore: boolean }
+	/** the owner could not answer; `retryable` is false once its result is gone */
+	| { type: 'owner-error', retryable: boolean }
 	/** the player quit */
 	| { type: 'abort' };
 
@@ -68,10 +75,11 @@ export type PlayEffect =
 	| { type: 'mark-complete' }
 	/** compute pp and build the local score; answers with `local-ready` */
 	| { type: 'build-local-score' }
-	/** ask for the authoritative result; answers with `server-result`/`server-error` */
+	/** ask the owner for the authoritative result; answers with
+	 *  `owner-result`/`owner-error` */
 	| { type: 'fetch-result', attempt: number }
 	/** show the result screen */
-	| { type: 'show-result', source: 'server' | 'local', failed: boolean }
+	| { type: 'show-result', source: 'owner' | 'local', failed: boolean }
 	/** leave gameplay without a result */
 	| { type: 'exit' };
 
@@ -85,7 +93,7 @@ export type PlayState = {
 };
 
 /** How many times to ask for the authoritative result before falling back to
- *  the local replay. The wait is the server storing the play, so this polls
+ *  the local replay. The wait is the owner storing the play, so this polls
  *  rather than backing off. */
 export const RESULT_ATTEMPTS = 50;
 
@@ -116,7 +124,7 @@ const teardown = (state: PlayState): PlayEffect[] => [
 	{ type: 'stop-hitsounds' },
 	{ type: 'release-audio' },
 	{ type: 'freeze-playfield' },
-	...(state.scoring === 'ranked' ? [{ type: 'mark-complete' } as const] : []),
+	...(state.scoring === 'debug' ? [] : [{ type: 'mark-complete' } as const]),
 	{ type: 'build-local-score' },
 ];
 
@@ -153,32 +161,34 @@ const awaitingReplayStep = (state: PlayState, event: PlayEvent): PlayStep => {
 const finalisingStep = (state: PlayState, event: PlayEvent): PlayStep => {
 	if (event.type !== 'local-ready') return step(state, []);
 
-	return state.scoring === 'ranked'
+	// a debug play is the only one that scores itself; everything else asks the
+	// owner that resolved it (the server, or the local session)
+	return state.scoring === 'debug'
 		? step(state, [{
-			type: 'fetch-result', attempt: 0,
-		}], {
-			phase: 'submitting', attempt: 0, failed: event.failed,
-		})
-		: step(state, [{
 			type: 'show-result', source: 'local', failed: event.failed,
 		}], {
 			phase: 'finished', failed: event.failed,
+		})
+		: step(state, [{
+			type: 'fetch-result', attempt: 0,
+		}], {
+			phase: 'submitting', attempt: 0, failed: event.failed,
 		});
 };
 
 const submittingStep = (state: PlayState, event: PlayEvent): PlayStep => {
-	// a failed play carries no server-side score, so its own replay is the only
+	// a failed play carries no owner-side score, so its own replay is the only
 	// thing there is to show
-	if (event.type === 'server-result') {
+	if (event.type === 'owner-result') {
 		return step(state, [{
 			type: 'show-result',
-			source: event.hasScore ? 'server' : 'local',
+			source: event.hasScore ? 'owner' : 'local',
 			failed: !event.hasScore,
 		}], {
 			phase: 'finished', failed: !event.hasScore,
 		});
 	}
-	if (event.type !== 'server-error') return step(state, []);
+	if (event.type !== 'owner-error') return step(state, []);
 
 	const attempt = state.attempt + 1;
 	if (event.retryable && attempt < RESULT_ATTEMPTS) {

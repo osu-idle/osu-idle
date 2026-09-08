@@ -36,8 +36,8 @@ const shown = (effects: PlayEffect[]) =>
 		Extract<PlayEffect, { type: 'show-result' }> | undefined;
 
 describe('a play that ends on its own', () => {
-	it('tears down and shows the local result when nobody else owns it', () => {
-		const { state, types, effects } = run('guest', [
+	it('tears down and shows its own replay when nobody else owns it', () => {
+		const { state, types, effects } = run('debug', [
 			{ type: 'ended' },
 			{
 				type: 'local-ready', failed: false, 
@@ -51,30 +51,30 @@ describe('a play that ends on its own', () => {
 		expect(state.phase).toBe('finished');
 	});
 
-	it('asks the server for the result of a ranked play', () => {
+	it('asks the owner for the result of a play it did not score itself', () => {
 		const { state, effects, types } = run('ranked', [
 			{ type: 'ended' },
 			{
 				type: 'local-ready', failed: false, 
 			},
 			{
-				type: 'server-result', hasScore: true, 
+				type: 'owner-result', hasScore: true, 
 			},
 		]);
 		// a ranked play also gives up the right to be rejoined
 		expect(types).toContain('mark-complete');
-		expect(shown(effects)?.source).toBe('server');
+		expect(shown(effects)?.source).toBe('owner');
 		expect(state.phase).toBe('finished');
 	});
 
-	it('shows its own replay for a failed play, which has no server score', () => {
+	it('shows its own replay for a failed play, which has no owner score', () => {
 		const { effects } = run('ranked', [
 			{ type: 'ended' },
 			{
 				type: 'local-ready', failed: true, 
 			},
 			{
-				type: 'server-result', hasScore: false, 
+				type: 'owner-result', hasScore: false, 
 			},
 		]);
 		expect(shown(effects)).toMatchObject({
@@ -83,7 +83,7 @@ describe('a play that ends on its own', () => {
 	});
 });
 
-describe('waiting on the server', () => {
+describe('waiting on the owner', () => {
 	it('polls while the result is still being stored', () => {
 		const { effects, state } = run('ranked', [
 			{ type: 'ended' },
@@ -91,17 +91,17 @@ describe('waiting on the server', () => {
 				type: 'local-ready', failed: false, 
 			},
 			{
-				type: 'server-error', retryable: true, 
+				type: 'owner-error', retryable: true, 
 			},
 			{
-				type: 'server-error', retryable: true, 
+				type: 'owner-error', retryable: true, 
 			},
 			{
-				type: 'server-result', hasScore: true, 
+				type: 'owner-result', hasScore: true, 
 			},
 		]);
 		expect(count(effects, 'fetch-result')).toBe(3);
-		expect(shown(effects)?.source).toBe('server');
+		expect(shown(effects)?.source).toBe('owner');
 		expect(state.phase).toBe('finished');
 	});
 
@@ -114,7 +114,7 @@ describe('waiting on the server', () => {
 		];
 		for (let i = 0; i < RESULT_ATTEMPTS + 5; i++) {
 			events.push({
-				type: 'server-error', retryable: true, 
+				type: 'owner-error', retryable: true, 
 			});
 		}
 		const { effects, state } = run('ranked', events);
@@ -130,7 +130,7 @@ describe('waiting on the server', () => {
 				type: 'local-ready', failed: false, 
 			},
 			{
-				type: 'server-error', retryable: false, 
+				type: 'owner-error', retryable: false, 
 			},
 		]);
 		expect(count(effects, 'fetch-result')).toBe(1);
@@ -139,13 +139,15 @@ describe('waiting on the server', () => {
 });
 
 describe('the debug skip', () => {
-	it('resolves the map itself when the client owns the score', () => {
+	it('resolves the map itself when the whole replay is already in hand', () => {
 		const { types, state } = run('guest', [{
 			type: 'skip', cursor: 0, 
 		}]);
 		expect(types).toEqual([
 			'resolve-map', 'stop-hitsounds', 'release-audio', 'freeze-playfield',
-			'build-local-score',
+			// a local play gives up the right to be rejoined too - its session
+			// owns the result the same way the server owns a ranked one
+			'mark-complete', 'build-local-score',
 		]);
 		expect(state.phase).toBe('finalising');
 	});
@@ -226,13 +228,16 @@ describe('invariants every path has to hold', () => {
 			{ type: 'ended' }, {
 				type: 'local-ready', failed: false, 
 			},
+			{
+				type: 'owner-result', hasScore: true, 
+			},
 		]],
 		['natural ranked', 'ranked', [
 			{ type: 'ended' }, {
 				type: 'local-ready', failed: false, 
 			},
 			{
-				type: 'server-result', hasScore: true, 
+				type: 'owner-result', hasScore: true, 
 			},
 		]],
 		['failed ranked', 'ranked', [
@@ -240,13 +245,21 @@ describe('invariants every path has to hold', () => {
 				type: 'local-ready', failed: true, 
 			},
 			{
-				type: 'server-result', hasScore: false, 
+				type: 'owner-result', hasScore: false, 
 			},
 		]],
 		['skipped guest', 'guest', [
 			{
 				type: 'skip', cursor: 0, 
 			}, {
+				type: 'local-ready', failed: false, 
+			},
+			{
+				type: 'owner-result', hasScore: true, 
+			},
+		]],
+		['natural debug', 'debug', [
+			{ type: 'ended' }, {
 				type: 'local-ready', failed: false, 
 			},
 		]],
@@ -259,7 +272,7 @@ describe('invariants every path has to hold', () => {
 			{
 				type: 'local-ready', failed: false, 
 			}, {
-				type: 'server-result', hasScore: true, 
+				type: 'owner-result', hasScore: true, 
 			},
 		]],
 		['skipped ranked, replay lost', 'ranked', [
@@ -269,7 +282,7 @@ describe('invariants every path has to hold', () => {
 			{
 				type: 'local-ready', failed: false, 
 			}, {
-				type: 'server-error', retryable: false, 
+				type: 'owner-error', retryable: false, 
 			},
 		]],
 	];
@@ -293,7 +306,7 @@ describe('invariants every path has to hold', () => {
 				type: 'offsets', done: true, 
 			},
 			{
-				type: 'server-result', hasScore: true, 
+				type: 'owner-result', hasScore: true, 
 			},
 			{ type: 'replay-timeout' },
 			{ type: 'ended' },

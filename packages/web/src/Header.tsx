@@ -101,6 +101,7 @@ export default function Header() {
 						<Link to='/maps' className="topbar__link-anchor"><span>{t`beatmaps`}</span></Link>
 						<div className='topbar__sub'>
 							<Link to='/maps' className="topbar__sublink"><span>{t`beatmap listing`}</span></Link>
+							<Link to='/maps/requests' className="topbar__sublink"><span>{t`map requests`}</span></Link>
 						</div>
 					</div>
 

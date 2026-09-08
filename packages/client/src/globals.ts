@@ -21,13 +21,15 @@ export const isOptionsOpen = new Synced(false);
 export const isCommunityOpen = new Synced(false);
 export const webUrl = new Synced('/');
 
-/** The full-screen page overlay (skins / add-ons / character); undefined = closed. */
+/** The full-screen page overlay (skins / add-ons / character / the play queue);
+ *  undefined = closed. */
 export type OpenPage =
 	| {
 		page: 'skins' | 'addons',
 		view: 'manage' | 'browse',
 	}
-	| { page: 'character' };
+	| { page: 'character' }
+	| { page: 'queue' };
 export const openPage = new Synced<OpenPage | undefined>(undefined);
 
 export const isVolumeVisible = new Synced(false);

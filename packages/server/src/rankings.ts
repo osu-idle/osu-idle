@@ -45,7 +45,12 @@ import {
 
 // Skills/overall are scored by *total* xp: it rises monotonically with level
 // then xp, so it orders identically to (level, xp) without packing two numbers.
-type GlobalMetric = 'pp' | 'score' | 'overall' | SkillName | GoodGrade | 'allgrades';
+/** Boards built on a skill: what it holds now, what it has ever earned, and how
+ *  many times it has been prestiged. `overall`/`total` are the summed columns. */
+type LifetimeMetric = `lifetime:${SkillName | 'overall'}`;
+type PrestigeMetric = `prestige:${SkillName | 'total'}`;
+type GlobalMetric = 'pp' | 'score' | 'overall' | SkillName | GoodGrade | 'allgrades'
+	| LifetimeMetric | PrestigeMetric;
 type CountryMetric = GlobalMetric;
 
 const PREFIX = `${redisKeyPrefix}ranking:`;
@@ -54,7 +59,7 @@ const PREFIX = `${redisKeyPrefix}ranking:`;
 // in parallel).
 const META = `${redisKeyPrefix}rankmeta:`;
 // Bump when the set layout changes so the next deploy rebuilds from MySQL.
-const SCHEMA = 7;   // skill sets hold the skill level, not lifetime xp
+const SCHEMA = 8;   // lifetime and prestige boards alongside the skill ones
 const builtKey = `${META}built:v${SCHEMA}`;
 const lockKey = `${META}lock:v${SCHEMA}`;
 
@@ -111,6 +116,7 @@ function index(
 	pipeline.zadd(countryKey('overall', data.user.country), data.character.overallTotalXp, member);
 	// skill boards rank on the level the listings show, so the page reads in the
 	// same order as its own numbers
+	let prestiges = 0;
 	for (const skill of Skills) {
 		const level = effectiveLevelOf(
 			data.character[`${skill}Level`],
@@ -119,7 +125,26 @@ function index(
 		);
 		pipeline.zadd(globalKey(skill), level, member);
 		pipeline.zadd(countryKey(skill, data.user.country), level, member);
+
+		// what the skill has ever earned - spending never takes from this
+		const lifetime = data.character[`${skill}LifetimeXp`];
+		pipeline.zadd(globalKey(`lifetime:${skill}`), lifetime, member);
+		pipeline.zadd(countryKey(`lifetime:${skill}`, data.user.country), lifetime, member);
+
+		const prestige = data.character[`${skill}Prestige`];
+		prestiges += prestige;
+		pipeline.zadd(globalKey(`prestige:${skill}`), prestige, member);
+		pipeline.zadd(countryKey(`prestige:${skill}`, data.user.country), prestige, member);
 	}
+	// the summed columns: lifetime overall is already the sum of the skills'
+	pipeline.zadd(globalKey('lifetime:overall'), data.character.overallLifetimeXp, member);
+	pipeline.zadd(
+		countryKey('lifetime:overall', data.user.country),
+		data.character.overallLifetimeXp,
+		member,
+	);
+	pipeline.zadd(globalKey('prestige:total'), prestiges, member);
+	pipeline.zadd(countryKey('prestige:total', data.user.country), prestiges, member);
 	let allgrades = 0;
 	for (const grade of GoodGrades) {
 		pipeline.zadd(globalKey(grade), data.character_totals?.[grade] ?? 0, member);

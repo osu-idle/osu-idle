@@ -24,6 +24,11 @@ export const SCENE = mapped([
 ]);
 export type Scene = ValueIn<typeof SCENE>;
 
+/** Bumped per launch so the gameplay element gets a new key: without one React
+ *  reconciles onto the mounted instance, whose boot has already run, and the
+ *  next map would replay the last one's chart behind a cover that never lifts. */
+let mounts = 0;
+
 const persisted = (import.meta.hot?.data ?? {}) as {
 	current?: Synced<Scene>;
 	scene?: Synced<JSX.Element>;
@@ -41,6 +46,7 @@ export default class SceneManager {
 			transition: Transition, 
 			debug = false,
 		) => <Gameplay 
+			key={++mounts}
 			beatmapInfo={beatmapInfo}
 			transition={transition} 
 			debugPlay={debug} 
@@ -50,11 +56,13 @@ export default class SceneManager {
 			game?: ManiaGame,
 			progression?: SkillProgress[],
 			failed?: boolean,
+			beatmap?: LightBeatmap,
 		) => <Result
 			game={game}
 			score={score}
 			progression={progression}
 			failed={failed}
+			beatmap={beatmap}
 		/>,
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

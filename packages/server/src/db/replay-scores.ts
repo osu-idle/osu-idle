@@ -102,11 +102,7 @@ const xpFor = async (row: DumpedScore) => {
 	const game = new ManiaGame(chart, bot, { divine: hasUnlock(character.generation, 'DIVINE') });
 	game.update(game.songEndMs + 1000); // straight to the end: only the blame matters
 
-	// no session strain survived the rollback, so the play is credited unfatigued
-	const session = {
-		characterId, lastEnd: -Infinity, currentStrainTime: 0, currentMapTime: 0,
-	};
-	return getServerXP(character, session, bot, beatmap, chart, asScoreLike(row) as never);
+	return getServerXP(character, bot, beatmap, chart, asScoreLike(row) as never);
 };
 
 const main = async () => {

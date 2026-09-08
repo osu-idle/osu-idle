@@ -41,6 +41,44 @@
 	padding-left: 500px;
 }
 
+/* Song select mounted over a running play: it keeps the carousel and the queue
+   and drops everything else - its own backdrop included, so the play stays
+   visible behind a dim rather than being replaced by another scene. */
+.game--queue {
+	background: rgba(4, 3, 9, 0.62);
+	backdrop-filter: blur(2px);
+}
+/* queueing in the scene: the compact bar replaces the tall one, the bottom bar
+   stays */
+.game--queueing .game__body {
+	height: calc(100% - 174px);
+}
+/* as an overlay there is no bottom bar either */
+.game--queue .game__body {
+	height: calc(100% - 64px);
+	padding-bottom: 20px;
+}
+
+/* The same bar the scene has, cut down to the controls that matter here: black
+   with the blue bottom edge, so the dropdowns sit on something instead of
+   floating over the play. */
+/* compound so it wins over the base .game__topbar height regardless of order */
+.game__topbar.game__topbar--compact {
+	height: 64px;
+	z-index: 13;
+	background: rgba(0, 0, 0, 0.82);
+	border-bottom: 2px solid #3c5dd1;
+}
+.game__topbar--compact .game__topfilter {
+	height: 64px;
+	justify-content: center;
+	padding-right: 24px;
+}
+.game__topbar--compact .game__group > span,
+.game__topbar--compact .game__sort > span {
+	font-size: 22px;
+}
+
 /* ---- top bar ---- */
 /* The bar is one black silhouette: full-width at 10vh, dropping to 18.5vh on
    the left over a smooth S-spline so the two heights join without a hard step.
@@ -94,9 +132,11 @@
 }
 .game__topfilter_sort {
 	display: flex;
+	align-items: center;
 	justify-content: flex-end;
 	gap: 25px;
 }
+
 .game__group,
 .game__sort {
 	display: flex;
@@ -184,86 +224,6 @@
 	pointer-events: none;
 }
 
-/* background-play banner: a play left running after quitting without abort.
-   Popup-styled (see Popups.css); click anywhere on it to resume spectating.
-   Top-center, over the top bar (its middle is empty between the metadata on
-   the left and the sort/group controls on the right). */
-.spectate-banner {
-	position: absolute;
-	left: 50%;
-	top: 0.8rem;
-	z-index: 50;
-	max-width: 380px;
-	overflow: hidden;
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	text-align: left;
-	border-radius: 10px;
-	padding: 8px 12px 12px;
-	background: #000000c0;
-	font-weight: 100;
-	border: 1px solid var(--osu-pink);
-	box-shadow: 0 0 20px rgba(255, 102, 171, 0.4);
-	cursor: pointer;
-	transform: translateX(-50%);
-	animation: spectate-banner-in 0.28s ease both;
-}
-.spectate-banner:hover {
-	border-color: white;
-}
-@keyframes spectate-banner-in {
-	from {
-		opacity: 0;
-		transform: translate(-50%, -20px);
-	}
-	to {
-		opacity: 1;
-		transform: translate(-50%, 0);
-	}
-}
-
-.spectate-banner__label {
-	font-size: 20px;
-}
-
-.spectate-banner__map {
-	font-size: 14px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.spectate-banner__map span {
-	color: var(--osu-pink-light);
-}
-
-.spectate-banner__stats {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 16px;
-	padding: 2px 0;
-}
-.spectate-banner__grade {
-	height: 26px;
-	width: auto;
-	filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6));
-}
-
-.spectate-banner__hint {
-	font-size: 12px;
-	color: var(--text-dim);
-}
-
-.spectate-banner__progress {
-	position: absolute;
-	left: 0;
-	bottom: 0;
-	height: 3px;
-	background: var(--osu-pink, #ff66ab);
-	box-shadow: 0 0 8px rgba(255, 102, 171, 0.8);
-	transition: width 1s linear;
-}
 
 .game__botbar {
 	position: relative;
@@ -339,16 +299,9 @@
 }
 .game__user-pp,
 .game__user-acc,
-.game__user-level,
-.game__user-fatigue {
+.game__user-level {
 	font-weight: 100;
 	font-size: 16px;
-}
-.game__user-fatigue {
-	position: absolute;
-	right: 0;
-	bottom: 0;
-	transform: translateY(-100%);
 }
 .game__user-level-bar {
 	margin-top: 0.2rem;
@@ -609,46 +562,6 @@
 	filter: brightness(1.08);
 }
 
-/* osu!stable "Mods"-style bottom-bar button: skewed pink slab between the
-   BACK button and the user card. */
-.game__character {
-	grid-column: 1;
-	grid-row: 1;
-	justify-self: end;
-	align-self: center;
-	margin-right: 20px;
-	height: 62px;
-	padding: 0 34px;
-	transform: skewX(-12deg);
-	background: linear-gradient(180deg, #ff8ab7 0%, #ff4089 100%);
-	border: 2px solid rgba(255, 255, 255, 0.35);
-	color: #fff;
-	font-size: 1.15rem;
-	font-weight: 700;
-	letter-spacing: 0.04em;
-	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-	transition:
-		transform 0.12s ease,
-		filter 0.15s ease;
-	z-index: 500;
-}
-.game__character > span {
-	display: block;
-	transform: skewX(12deg);
-}
-.game__character:hover {
-	transform: skewX(-12deg) translateY(-1px);
-	filter: brightness(1.1);
-}
-
-/* Narrow screens: the left column no longer fits both BACK and UPGRADES -
-   move UPGRADES to the empty right column instead of overlapping. */
-@media (max-width: 1080px) {
-	.game__character {
-		grid-column: 3;
-	}
-}
-
 .mobile__scores {
 	display: none;
 
@@ -740,11 +653,6 @@
 		padding: 1rem 0.5rem;
 	}
 
-	.game__character {
-		padding: 0 10px;
-		margin-right: 8px;
-		height: 48px;
-	}
 }
 
 @media (max-width: 490px) {
@@ -762,10 +670,6 @@
 @media (max-width: 450px) {
 	.game__exit {
 		font-size: 1.5rem;
-	}
-
-	.game__character {
-		font-size: 0.8rem;
 	}
 }
 

@@ -70,6 +70,9 @@ export default function NominationRow({ row, busy, onPatch, onToggleDiff, onDele
 						{row.artist} - {row.title}
 					</a>
 					<span className='nomination__creator'>by {row.creator}</span>
+					{row.requestedBy && (
+						<span className='nomination__creator'>requested by {row.requestedBy.username}</span>
+					)}
 				</div>
 
 				<span className={`nomination__badge nomination__badge--${phase}`}>{phase}</span>

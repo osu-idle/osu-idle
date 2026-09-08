@@ -114,10 +114,6 @@ msgstr "{totalCount, plural, one {that's all # difficulty} other {that's all # d
 msgid "1. Abort"
 msgstr "1. Abort"
 
-#: src/components/songselect/CardContextMenu.tsx
-msgid "1. Manage Playlists"
-msgstr "1. Manage Playlists"
-
 #: src/osu/beatmap/grouping.ts
 msgid "10+ min"
 msgstr "10+ min"
@@ -126,14 +122,6 @@ msgstr "10+ min"
 msgid "2. Cancel"
 msgstr "2. Cancel"
 
-#: src/components/songselect/CardContextMenu.tsx
-msgid "2. Click again to delete"
-msgstr "2. Click again to delete"
-
-#: src/components/songselect/CardContextMenu.tsx
-msgid "2. Delete..."
-msgstr "2. Delete..."
-
 #: src/scenes/Gameplay.tsx
 msgid "2. Quit, keep playing"
 msgstr "2. Quit, keep playing"
@@ -141,14 +129,6 @@ msgstr "2. Quit, keep playing"
 #: src/scenes/Gameplay.tsx
 msgid "3. Cancel"
 msgstr "3. Cancel"
-
-#: src/components/songselect/CardContextMenu.tsx
-msgid "3. Clear local scores"
-msgstr "3. Clear local scores"
-
-#: src/components/songselect/CardContextMenu.tsx
-msgid "4. Cancel"
-msgstr "4. Cancel"
 
 #: src/osu/beatmap/grouping.ts
 msgid "5-10 min"
@@ -198,6 +178,10 @@ msgstr "Achieved on {date} ({0})"
 #: src/components/PlaylistOverlay.tsx
 msgid "Add this difficulty"
 msgstr "Add this difficulty"
+
+#: src/components/songselect/CardContextMenu.tsx
+msgid "Add to queue"
+msgstr "Add to queue"
 
 #: src/scenes/Addons.tsx
 #: src/scenes/Options.tsx
@@ -257,10 +241,6 @@ msgstr "Autopilot delay"
 msgid "Autopilot mode"
 msgstr "Autopilot mode"
 
-#: src/scenes/Result.tsx
-msgid "Autopilot: nothing playable"
-msgstr "Autopilot: nothing playable"
-
 #: src/scenes/Options.tsx
 msgid "autopilot|delay|restart"
 msgstr "autopilot|delay|restart"
@@ -276,9 +256,10 @@ msgstr "Available"
 #: src/components/addons/AddonView.tsx
 #: src/components/page/Page.tsx
 #: src/components/skins/SkinView.tsx
-#: src/components/songselect/TopBar.tsx
+#: src/components/songselect/BeatmapInfo.tsx
 #: src/components/Tutorial.tsx
 #: src/components/WebBrowser.tsx
+#: src/scenes/Gameplay.tsx
 #: src/scenes/Gameplay.tsx
 #: src/scenes/MainMenu.tsx
 msgid "Back"
@@ -402,6 +383,7 @@ msgstr "By Title"
 #: src/components/addons/AddonView.tsx
 #: src/components/ConfirmMenu.tsx
 #: src/components/skins/SkinView.tsx
+#: src/components/songselect/CardContextMenu.tsx
 #: src/scenes/Gameplay.tsx
 #: src/scenes/Gameplay.tsx
 #: src/scenes/MainMenu.tsx
@@ -421,13 +403,20 @@ msgid "Changes"
 msgstr "Changes"
 
 #: src/scenes/Character.tsx
-#: src/scenes/SongSelect.tsx
 msgid "Character"
 msgstr "Character"
 
 #: src/components/Onboarding.tsx
 msgid "Character name"
 msgstr "Character name"
+
+#: src/components/dock/DockControls.tsx
+msgid "clear"
+msgstr "clear"
+
+#: src/components/songselect/CardContextMenu.tsx
+msgid "Clear local scores"
+msgstr "Clear local scores"
 
 #: src/scenes/SongSelect.tsx
 msgid "Clearing local scores is not available yet"
@@ -437,6 +426,10 @@ msgstr "Clearing local scores is not available yet"
 msgid "Click again to confirm"
 msgstr "Click again to confirm"
 
+#: src/components/songselect/CardContextMenu.tsx
+msgid "Click again to delete"
+msgstr "Click again to delete"
+
 #: src/components/songselect/UserCard.tsx
 msgid "Click here to login!"
 msgstr "Click here to login!"
@@ -445,9 +438,9 @@ msgstr "Click here to login!"
 msgid "click to play..."
 msgstr "click to play..."
 
-#: src/components/songselect/SpectateBanner.tsx
-msgid "Click to resume spectating"
-msgstr "Click to resume spectating"
+#: src/components/dock/DockControls.tsx
+msgid "close"
+msgstr "close"
 
 #: src/components/PlaylistOverlay.tsx
 msgid "Close"
@@ -480,14 +473,15 @@ msgstr "comma, separated, tags"
 msgid "CONTROLS"
 msgstr "CONTROLS"
 
-#: src/online/spectate.ts
-msgid "Could not start spectating, beatmap is not downloaded"
-msgstr "Could not start spectating, beatmap is not downloaded"
+#: src/online/playManager.ts
+msgid "Could not start the next map - the queue is paused"
+msgstr "Could not start the next map - the queue is paused"
 
 #: src/scenes/SongSelect.tsx
 msgid "Couldn't load beatmaps: {error}"
 msgstr "Couldn't load beatmaps: {error}"
 
+#: src/scenes/Gameplay.tsx
 #: src/scenes/Gameplay.tsx
 msgid "Couldn't start play"
 msgstr "Couldn't start play"
@@ -512,10 +506,6 @@ msgstr "Create new skin"
 msgid "Create your character to finish setting up your account."
 msgstr "Create your character to finish setting up your account."
 
-#: src/scenes/Gameplay.tsx
-msgid "Current Fatigue"
-msgstr "Current Fatigue"
-
 #: src/components/addons/ManageAddonsView.tsx
 #: src/components/addons/MyAddonRow.tsx
 #: src/components/skins/MySkinRow.tsx
@@ -533,6 +523,10 @@ msgstr "Delete all beatmaps"
 #: src/components/PlaylistOverlay.tsx
 msgid "Delete the playlist"
 msgstr "Delete the playlist"
+
+#: src/components/songselect/CardContextMenu.tsx
+msgid "Delete..."
+msgstr "Delete..."
 
 #: src/scenes/Options.tsx
 msgid "delete|beatmap|beatmaps"
@@ -571,6 +565,10 @@ msgstr "Downloaded"
 msgid "Downloading update… {0}%"
 msgstr "Downloading update… {0}%"
 
+#: src/components/dock/DockControls.tsx
+msgid "Drop this play and start the next map"
+msgstr "Drop this play and start the next map"
+
 #: src/components/Tutorial.tsx
 msgid "Each completed play earns your character <0>XP</0> and <1>levels</1> across various skillsets, making it perform better on future plays."
 msgstr "Each completed play earns your character <0>XP</0> and <1>levels</1> across various skillsets, making it perform better on future plays."
@@ -583,6 +581,10 @@ msgstr "Edit"
 #: src/components/options/EffectVolume.tsx
 msgid "Effect"
 msgstr "Effect"
+
+#: src/components/dock/DockControls.tsx
+msgid "Empty the queue - this play still finishes"
+msgstr "Empty the queue - this play still finishes"
 
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/skins/SkinDAORow.tsx
@@ -610,6 +612,10 @@ msgstr "FAILED"
 #: src/components/community/CommunityHeader.tsx
 msgid "Filter:"
 msgstr "Filter:"
+
+#: src/components/dock/DockWatchButton.tsx
+msgid "Find the map playing next"
+msgstr "Find the map playing next"
 
 #: src/components/WebBrowser.tsx
 msgid "Forward"
@@ -682,6 +688,10 @@ msgstr "Guest"
 msgid "Hall of fame"
 msgstr "Hall of fame"
 
+#: src/components/dock/DockControls.tsx
+msgid "hide"
+msgstr "hide"
+
 #: src/components/community/CommunityControls.tsx
 msgid "Hide chat"
 msgstr "Hide chat"
@@ -734,6 +744,10 @@ msgstr "Language"
 msgid "language|locale"
 msgstr "language|locale"
 
+#: src/components/dock/DockPill.tsx
+msgid "Last map of the queue"
+msgstr "Last map of the queue"
+
 #: src/osu/beatmap/grouping.ts
 msgid "Last week"
 msgstr "Last week"
@@ -747,9 +761,13 @@ msgid "Leave - your character keeps playing"
 msgstr "Leave - your character keeps playing"
 
 #. placeholder {0}: version.metadata.objects
-#: src/components/songselect/TopBar.tsx
+#: src/components/songselect/BeatmapInfo.tsx
 msgid "Length: {totalLength} BPM: {bpmText} Objects: {0}"
 msgstr "Length: {totalLength} BPM: {bpmText} Objects: {0}"
+
+#: src/components/dock/DockRunButton.tsx
+msgid "Let this play finish, then wait"
+msgstr "Let this play finish, then wait"
 
 #: src/components/Tutorial.tsx
 msgid "Level up"
@@ -769,7 +787,7 @@ msgstr "Loading…"
 msgid "Location"
 msgstr "Location"
 
-#: src/gameplay/autopilot.ts
+#: src/gameplay/playQueue.ts
 msgid "Loop"
 msgstr "Loop"
 
@@ -799,6 +817,10 @@ msgstr "Manage"
 msgid "Manage add-ons"
 msgstr "Manage add-ons"
 
+#: src/components/songselect/CardContextMenu.tsx
+msgid "Manage Playlists"
+msgstr "Manage Playlists"
+
 #: src/components/options/ManageSkins.tsx
 msgid "Manage skins"
 msgstr "Manage skins"
@@ -812,7 +834,7 @@ msgid "Manage your installed and created skins"
 msgstr "Manage your installed and created skins"
 
 #. placeholder {0}: version.set.metadata.creator
-#: src/components/songselect/TopBar.tsx
+#: src/components/songselect/BeatmapInfo.tsx
 msgid "Mapped by {0}"
 msgstr "Mapped by {0}"
 
@@ -836,6 +858,14 @@ msgstr "Moderator feedback"
 #: src/components/skins/BrowseSkinsView.tsx
 msgid "Most downloaded"
 msgstr "Most downloaded"
+
+#: src/components/dock/DockQueue.tsx
+msgid "Move it down"
+msgstr "Move it down"
+
+#: src/components/dock/DockQueue.tsx
+msgid "Move it up - the top of the queue plays next"
+msgstr "Move it up - the top of the queue plays next"
 
 #: src/scenes/MainMenu.tsx
 msgid "Multi"
@@ -869,26 +899,39 @@ msgstr "New character name"
 msgid "Newest"
 msgstr "Newest"
 
+#: src/components/dock/DockPill.tsx
+#: src/components/dock/DockQueue.tsx
+msgid "next"
+msgstr "next"
+
 #: src/components/community/MusicControls.tsx
 #: src/components/Tutorial.tsx
 msgid "Next"
 msgstr "Next"
 
+#: src/components/dock/DockNowPlaying.tsx
+msgid "Next in {countdown}s:"
+msgstr "Next in {countdown}s:"
+
+#: src/components/dock/DockPill.tsx
+msgid "Next map in {countdown}s"
+msgstr "Next map in {countdown}s"
+
 #: src/components/character/RebirthView.tsx
 msgid "Next rebirth unlocks: {next}"
 msgstr "Next rebirth unlocks: {next}"
 
-#: src/gameplay/autopilot.ts
+#: src/gameplay/playQueue.ts
 msgid "Next song"
 msgstr "Next song"
-
-#: src/scenes/Result.tsx
-msgid "Next up in {countdown}s:"
-msgstr "Next up in {countdown}s:"
 
 #: src/scenes/Gameplay.tsx
 msgid "Next up:"
 msgstr "Next up:"
+
+#: src/components/dock/DockNowPlaying.tsx
+msgid "Next:"
+msgstr "Next:"
 
 #: src/components/addons/BrowseAddonsView.tsx
 msgid "No add-ons found."
@@ -958,6 +1001,10 @@ msgstr "No unlocks yet"
 msgid "No XP gained."
 msgstr "No XP gained."
 
+#: src/components/dock/DockQueue.tsx
+msgid "Nothing queued. Click a map to add it."
+msgstr "Nothing queued. Click a map to add it."
+
 #: src/components/community/MusicControls.tsx
 msgid "Now playing"
 msgstr "Now playing"
@@ -1017,9 +1064,17 @@ msgstr "parallax"
 msgid "Parallax"
 msgstr "Parallax"
 
+#: src/components/dock/DockRunButton.tsx
+msgid "pause"
+msgstr "pause"
+
 #: src/components/community/MusicControls.tsx
 msgid "Pause"
 msgstr "Pause"
+
+#: src/components/dock/DockNowPlaying.tsx
+msgid "Paused, next:"
+msgstr "Paused, next:"
 
 #: src/scenes/Result.tsx
 msgid "Performance"
@@ -1043,6 +1098,10 @@ msgstr "Personal best"
 msgid "Pick a song"
 msgstr "Pick a song"
 
+#: src/components/dock/DockControls.tsx
+msgid "Pick maps to queue"
+msgstr "Pick maps to queue"
+
 #: src/components/character/LineageList.tsx
 #: src/components/community/MusicControls.tsx
 #: src/scenes/MainMenu.tsx
@@ -1056,6 +1115,10 @@ msgstr "Play a beatmap to preview the skin."
 #: src/components/community/PlayerCard.tsx
 msgid "Play Count: {playCount} (Lv{level})"
 msgstr "Play Count: {playCount} (Lv{level})"
+
+#: src/components/songselect/CardContextMenu.tsx
+msgid "Play next"
+msgstr "Play next"
 
 #: src/components/Tutorial.tsx
 msgid "Play online"
@@ -1078,7 +1141,7 @@ msgstr "Played by {playerName} on {playedAt}"
 msgid "Playing"
 msgstr "Playing"
 
-#: src/gameplay/autopilot.ts
+#: src/gameplay/playQueue.ts
 msgid "Playlist"
 msgstr "Playlist"
 
@@ -1113,6 +1176,11 @@ msgstr "Profile picture<0/>Defaults to your osu! avatar"
 #: src/components/addons/AddonView.tsx
 msgid "Published add-on code must be licensed under the AGPLv3 (or a compatible licence), regardless of its source code's license."
 msgstr "Published add-on code must be licensed under the AGPLv3 (or a compatible licence), regardless of its source code's license."
+
+#: src/components/dock/DockControls.tsx
+#: src/components/dock/DockPill.tsx
+msgid "queue"
+msgstr "queue"
 
 #: src/scenes/Gameplay.tsx
 msgid "quit"
@@ -1153,6 +1221,10 @@ msgstr "Recently Played"
 msgid "Reload"
 msgstr "Reload"
 
+#: src/components/dock/DockQueue.tsx
+msgid "remove"
+msgstr "remove"
+
 #. placeholder {0}: a.name
 #: src/components/addons/ManageAddonsView.tsx
 msgid "Remove \"{0}\" ?"
@@ -1191,9 +1263,13 @@ msgstr "Reset a skill for a permanent level bonus"
 msgid "Result"
 msgstr "Result"
 
+#: src/components/dock/DockRunButton.tsx
+msgid "resume"
+msgstr "resume"
+
 #. placeholder {0}: version.metadata.rice
 #. placeholder {1}: version.metadata.ln
-#: src/components/songselect/TopBar.tsx
+#: src/components/songselect/BeatmapInfo.tsx
 msgid "Rice: {0} LN: {1}"
 msgstr "Rice: {0} LN: {1}"
 
@@ -1251,7 +1327,7 @@ msgstr "Show chat"
 msgid "Show FPS counter"
 msgstr "Show FPS counter"
 
-#: src/components/songselect/TopBar.tsx
+#: src/components/songselect/BeatmapInfo.tsx
 msgid "Show scores"
 msgstr "Show scores"
 
@@ -1262,6 +1338,10 @@ msgstr "Show thumbnails"
 #: src/components/community/CommunityControls.tsx
 msgid "Show ticker"
 msgstr "Show ticker"
+
+#: src/gameplay/playQueue.ts
+msgid "Shuffle"
+msgstr "Shuffle"
 
 #: src/components/options/SignIn.tsx
 #: src/components/Tutorial.tsx
@@ -1310,6 +1390,10 @@ msgstr "Skinning"
 msgid "Skins"
 msgstr "Skins"
 
+#: src/components/dock/DockControls.tsx
+msgid "skip"
+msgstr "skip"
+
 #: src/components/Tutorial.tsx
 msgid "Skip"
 msgstr "Skip"
@@ -1327,13 +1411,25 @@ msgid "Sort"
 msgstr "Sort"
 
 #. placeholder {0}: version.metadata.difficulty
-#: src/components/songselect/TopBar.tsx
+#: src/components/songselect/BeatmapInfo.tsx
 msgid "Star Rating: {0}★"
 msgstr "Star Rating: {0}★"
+
+#: src/components/dock/DockRunButton.tsx
+msgid "start"
+msgstr "start"
 
 #: src/scenes/Character.tsx
 msgid "Start over with a new character that unlocks new features"
 msgstr "Start over with a new character that unlocks new features"
+
+#: src/components/dock/DockRunButton.tsx
+msgid "Start playing the queue"
+msgstr "Start playing the queue"
+
+#: src/components/dock/DockRunButton.tsx
+msgid "Start playing the queue again"
+msgstr "Start playing the queue again"
 
 #: src/components/community/MusicControls.tsx
 msgid "Stop"
@@ -1343,7 +1439,7 @@ msgstr "Stop"
 msgid "Stop the play (Esc)"
 msgstr "Stop the play (Esc)"
 
-#: src/scenes/SongSelect.tsx
+#: src/components/songselect/SongSelectDebug.tsx
 msgid "Strain debug"
 msgstr "Strain debug"
 
@@ -1366,6 +1462,10 @@ msgstr "Submitting score…"
 msgid "Tags"
 msgstr "Tags"
 
+#: src/components/dock/DockQueue.tsx
+msgid "Take it out of the queue"
+msgstr "Take it out of the queue"
+
 #: src/scenes/IntroScreen.tsx
 msgid "tap to play..."
 msgstr "tap to play..."
@@ -1385,6 +1485,10 @@ msgstr "This game is an unofficial, fanmade version of osu!stable and is not aff
 #: src/components/Tutorial.tsx
 msgid "This is an <0>automated, idle</0> osu!mania stable client: your character plays the maps on its own and progresses with every play."
 msgstr "This is an <0>automated, idle</0> osu!mania stable client: your character plays the maps on its own and progresses with every play."
+
+#: src/scenes/Gameplay.tsx
+msgid "This play took too long to start."
+msgstr "This play took too long to start."
 
 #: src/scenes/Options.tsx
 msgid "thumb|thumbnail"
@@ -1436,6 +1540,10 @@ msgstr "Unlocked: {0}"
 msgid "Unplayed"
 msgstr "Unplayed"
 
+#: src/components/dock/DockQueue.tsx
+msgid "Up next"
+msgstr "Up next"
+
 #: src/components/addons/InstalledAddonRow.tsx
 #: src/components/addons/ManageAddonsView.tsx
 #: src/components/skins/SkinDAORow.tsx
@@ -1451,6 +1559,11 @@ msgstr "Update failed ({0}). Please restart the game."
 #: src/components/skins/BrowseSkinsView.tsx
 msgid "Updated"
 msgstr "Updated"
+
+#: src/components/dock/DockControls.tsx
+#: src/components/dock/DockPill.tsx
+msgid "upgrades"
+msgstr "upgrades"
 
 #: src/scenes/Character.tsx
 msgid "Upgrades"
@@ -1500,6 +1613,14 @@ msgstr "volume"
 #: src/scenes/Options.tsx
 msgid "Volume"
 msgstr "Volume"
+
+#: src/components/dock/DockWatchButton.tsx
+msgid "watch"
+msgstr "watch"
+
+#: src/components/dock/DockWatchButton.tsx
+msgid "Watch it, from the list so the queue fills"
+msgstr "Watch it, from the list so the queue fills"
 
 #: src/scenes/MainMenu.tsx
 msgid "Website"
@@ -1565,10 +1686,6 @@ msgstr "Your character can play <0>on-repeat</0>, automatically, on playlists yo
 #: src/components/Tutorial.tsx
 msgid "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1> Righ-click</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."
 msgstr "Your character can play <0>on-repeat</0>, automatically, on playlists you crafted.<1> Righ-click</1> a beatmap to add it and <2>group by playlist</2>, then start a beatmap to enter playlist mode."
-
-#: src/components/songselect/SpectateBanner.tsx
-msgid "Your character is playing"
-msgstr "Your character is playing"
 
 #: src/scenes/Gameplay.tsx
 msgid "Your character is still playing another map. Abort that play to start this one?"

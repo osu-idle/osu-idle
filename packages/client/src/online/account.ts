@@ -7,6 +7,7 @@ import Auth from './auth';
 import Entities from '../entity/entities';
 import { isWebOpen } from '../globals';
 import Character from '../db/schema/character';
+import { projectPending } from './projectPending';
 import { desktop } from '@osu-idle/shared/desktop';
 
 /** Give a single validation attempt this long before declaring us offline. */
@@ -16,6 +17,18 @@ const RECONNECT_INTERVAL_MS = 5_000;
 
 /** localStorage key the login popup writes to signal the session changed. */
 const AUTH_PING_KEY = 'osu-idle:auth';
+
+/** Keep the local row in step with the account's character: scores are assigned
+ *  by character id, so the row has to be there. It is a copy - the live
+ *  character is already the server's - so a failure is logged and dropped. */
+const mirrorLocally = async (character: Character): Promise<void> => {
+	try {
+		if (await Character.get(character.id)) await character.update();
+		else await character.add();
+	} catch (e) {
+		console.warn('[account] could not mirror the character locally', e);
+	}
+};
 
 /**
  * The signed-in account's server-side character, created during first-login
@@ -55,12 +68,16 @@ export default class Account {
 			Account.resolved,
 		], async ([dto, resolved]) => {
 			if (dto) {
-				// Make sure the dto exists in the local db for score assignment.
-				const existing = await Character.get(dto.id);
 				const character = Character.fromDTO(dto);
-				if (existing) character.update();
-				else character.add();
+				// what a running play has deferred is already bought - show it that
+				// way, or a reload mid-play offers the same purchase again
+				projectPending(character, dto.pendingActions);
+				// The live character goes up first, and the local mirror follows on
+				// its own. The mirror is only there so scores have a row to hang
+				// off; a database that cannot be read or written is no reason for
+				// the player's levels to stop moving everywhere they are shown.
 				Entities.character.set(character);
+				void mirrorLocally(character);
 				return;
 			}
 			// No account character: fall back to guest only once we KNOW we're
@@ -84,6 +101,15 @@ export default class Account {
 			};
 			void Account.resolved.sync(cb);
 		});
+	}
+
+	/** Re-read the account's character. Used when a play ends: the server has
+	 *  applied by then whatever the play deferred, so this is where a purchase
+	 *  made mid-play stops being the client's optimistic copy and becomes fact. */
+	public static async refresh(): Promise<void> {
+		const res = await rpc.v1.me.character.$get();
+		if (!res.ok) return;
+		await Account.character.set(await res.json());
 	}
 
 	/** Onboard: create the account's character. Always fresh - local Guest

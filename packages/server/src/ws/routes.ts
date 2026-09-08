@@ -12,6 +12,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db/client';
 import {
 	characters,
+	characterToDTO,
 	type CharacterRow,
 } from '../db/schema/character';
 import {
@@ -24,6 +25,7 @@ import {
 	clientIp,
 	geoLookup,
 } from '../geo';
+import type { WSContext } from 'hono/ws';
 import { hub } from './hub';
 import {
 	join,
@@ -108,10 +110,21 @@ export const registerWs = (app: Hono): Pick<NodeWebSocket, 'injectWebSocket'> =>
 		let beat: ReturnType<typeof setInterval> | undefined;
 		let feed: PlayFeed | undefined;
 
+		// The account's character can change under a live socket - a rebirth parked
+		// during a play applies when it ends - and the hub is what knows where the
+		// socket belongs now, so everything addressed by id reads that.
+		const bound = (ws: WSContext) => hub.ownerOf(ws) ?? character.id;
+		// Anything about the character itself - its name - is read when it is
+		// needed. The row captured at connect stops being true the moment the
+		// account rebirths or renames, and holding it against any one of those
+		// signals only covers that one.
+		const currentRow = async () =>
+			(await resolveCharacter(userId))?.character ?? character;
+
 		return {
 			onOpen: async (_e, ws) => {
 				hub.add(character.id, ws);
-				feed = new PlayFeed(character.id, ws);
+				feed = new PlayFeed(() => bound(ws), ws);
 				// join() broadcasts our entry; the snapshot below already includes it.
 				await join({
 					character, user, geo,
@@ -126,11 +139,18 @@ export const registerWs = (app: Hono): Pick<NodeWebSocket, 'injectWebSocket'> =>
 				hub.sendLocal(ws, {
 					type: 'version', version: VERSION,
 				});
+				// the character as the server has it, so a client that was away -
+				// or one whose copy drifted - starts from the row, not from what it
+				// last managed to read
+				hub.sendLocal(ws, {
+					type: 'character',
+					character: characterToDTO(character, user.avatarUrl, user.country),
+				});
 				// what (if anything) the character is playing, for resume/spectate
 				hub.sendLocal(ws, {
 					type: 'play:state', state: await playState(character.id),
 				});
-				beat = setInterval(() => void touch(character.id), TOUCH_MS);
+				beat = setInterval(() => void touch(bound(ws)), TOUCH_MS);
 			},
 			onMessage: async (evt, ws) => {
 				if (typeof evt.data !== 'string') return;
@@ -149,6 +169,8 @@ export const registerWs = (app: Hono): Pick<NodeWebSocket, 'injectWebSocket'> =>
 						character,
 						ws,
 						feed,
+						// the row *is* the simulation's input: levels, upgrades and
+						// overdrive as they are now, not as they were at connect
 						freshCharacter: async () => (await resolveCharacter(userId))?.character,
 					})) return;
 				} catch (e) {
@@ -157,24 +179,28 @@ export const registerWs = (app: Hono): Pick<NodeWebSocket, 'injectWebSocket'> =>
 				}
 
 				if (msg.type === 'chat') {
+					const now = await currentRow();
 					await handleChat({
-						characterId: character.id,
-						name: character.name,
+						characterId: now.id,
+						name: now.name,
 						color: nameColor(user.id),
 					}, user.id, msg.channel, msg.text);
 				} else if (msg.type === 'status') {
 					// The client reports idle/afk from input activity; ignore it while
 					// a play is live so it can't clobber the server-set `playing`.
-					if (!(await isPlaying(character.id))) await update(character.id, { status: msg.status });
+					const id = bound(ws);
+					if (!(await isPlaying(id))) await update(id, { status: msg.status });
 				} else if (msg.type === 'version') {
-					await recordAdoption(character.id, msg.version, msg.platform);
+					await recordAdoption(bound(ws), msg.version, msg.platform);
 				}
 			},
 			onClose: (_e, ws) => {
 				if (beat) clearInterval(beat);
 				feed?.stop();
-				hub.remove(character.id, ws);
-				void leave(character.id);
+				// read before the remove, which is what forgets where it belonged
+				const id = bound(ws);
+				hub.remove(ws);
+				void leave(id);
 			},
 		};
 	}));

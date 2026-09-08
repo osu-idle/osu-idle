@@ -52,6 +52,8 @@ export default class Concentration extends Skill {
 	private driftFocus!: number;
 	/** song time (ms) at which the drift starts ramping in - grows with level (the "endurance") */
 	private driftHoldMs!: number;
+	/** one full wobble cycle in song time (ms) - stretches with level */
+	private wobblePeriodMs!: number;
 
 	constructor(def = 0) {
 		super(SKILL.concentration, def);
@@ -80,6 +82,7 @@ export default class Concentration extends Skill {
 			this.driftFocus = Math.max(0, 1 - driftCurve(Math.min(1, level / 100)));
 			this.driftHoldMs = Concentration.DRIFT_HOLD_BASE_MS
 				+ Concentration.DRIFT_HOLD_SPAN_MS * holdCurve(Math.min(1, level / 100));
+			this.wobblePeriodMs = Math.max(1, level) * Concentration.WOBBLE_MS_PER_LEVEL;
 		});
 	}
 
@@ -89,7 +92,7 @@ export default class Concentration extends Skill {
 		mapStrain: Strain,
 		colStrain: Strain,
 	): SkillStrain {
-		const wobblePhase = note.time / (Math.max(1, this.level.get()) * Concentration.WOBBLE_MS_PER_LEVEL);
+		const wobblePhase = note.time / this.wobblePeriodMs;
 		const driftPhase = (note.time / Concentration.DRIFT_PERIOD_MS) * 2 * Math.PI;
 
 		// endurance gate: 0 while concentration still holds, smoothly ramping to 1

@@ -2,13 +2,10 @@ import {
 	env,
 	OSU_REDIRECT_URI,
 } from '../env';
+import { osuApi } from '../osu/api';
 
 const AUTHORIZE = 'https://osu.ppy.sh/oauth/authorize';
 const TOKEN = 'https://osu.ppy.sh/oauth/token';
-// Via the local osu! API broker: one Cloudflare per-IP budget is shared by
-// every osu! project on this host, so nothing calls osu! directly.
-// See /main/osu/farm/osu_api.
-const ME = 'http://127.0.0.1:7654/api/v2/me';
 
 export interface OsuUser {
 	id: number;
@@ -51,14 +48,5 @@ export async function exchangeCode(code: string): Promise<string> {
 
 /** Fetch the authenticated osu! user (scope: identify). Token is used here only. */
 export async function fetchOsuUser(accessToken: string): Promise<OsuUser> {
-	const res = await fetch(ME, {
-		headers: {
-			Authorization: `Bearer ${accessToken}`, Accept: 'application/json',
-			'X-Osu-Priority': 'interactive',
-			'User-Agent': 'osu-idle/1.0',
-			'X-Scheduler-Token': 'fej1e7FMa6KGPm0XAG7c9sLpJdRMNYCkYlUg7tJ6UY', 
-		}, 
-	});
-	if (!res.ok) throw new Error(`osu! /me failed: ${res.status}`);
-	return await res.json() as OsuUser;
+	return osuApi<OsuUser>('api/v2/me', 'interactive', accessToken);
 }

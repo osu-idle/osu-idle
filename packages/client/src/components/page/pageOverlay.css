@@ -1,3 +1,10 @@
+/* Over gameplay the page stops being opaque: the play keeps running behind it,
+   and hiding it entirely makes the character page feel like it left the game. */
+.page-overlay.is-over-play .page {
+	background: rgba(7, 6, 10, 0.82);
+	backdrop-filter: blur(5px);
+}
+
 /* above all scene chrome (song select peaks at 4000), below the app overlays */
 .page-overlay {
 	position: absolute;

@@ -7,10 +7,7 @@ import {
 	unstableRate,
 	type ReplayOffset,
 } from '@osu-idle/shared/sim/maniaGame';
-import CharacterBot, {
-	fatigueXPFactor,
-	getRecoveryTime,
-} from '@osu-idle/shared/sim/bots/character';
+import CharacterBot from '@osu-idle/shared/sim/bots/character';
 import { makeOrderedSkills } from '@osu-idle/shared/sim/skills/factory';
 import { hasUnlock } from '@osu-idle/shared/rebirth';
 import {
@@ -69,6 +66,8 @@ import {
 } from './env';
 import { redis } from './redis';
 import { getBestPlay } from './db/schema/best';
+import { applyPendingAction } from './character/pending';
+import { pushCharacter } from './character/push';
 import type { Beatmap } from 'osu-classes';
 import type { ScoreState } from '@osu-idle/shared/sim/scoring';
 
@@ -76,7 +75,6 @@ import type { ScoreState } from '@osu-idle/shared/sim/scoring';
 const RESULT_TTL_MS = 10 * 60 * 1000;
 const RESULT_BREATH_TTL_MS = 5 * 1000;
 const ONLINE_TTL = 60 * 60 * 1000;
-const SESSION_TTL = 60 * 60 * 1000;
 
 const decoder = new BeatmapDecoder();
 
@@ -124,18 +122,10 @@ type StoredResult =
 		notify: boolean;
 	};
 
-type PlayTime = {
-	characterId: number,
-	lastEnd: number,
-	currentStrainTime: number,
-	currentMapTime: number,
-};
-
 const PLAYING_KEY = `${redisKeyPrefix}playing`;
 const ONLINE_KEY = `${redisKeyPrefix}online`;
 const playKey = (characterId: number) => `${redisKeyPrefix}play:${characterId}`;
 const resultKey = (characterId: number) => `${redisKeyPrefix}result:${characterId}`;
-const playTimeKey = (characterId: number) => `${redisKeyPrefix}playtime:${characterId}`;
 
 /**
  * Acquire the per-character start lock or refuse. A Lua script so the check and
@@ -250,26 +240,6 @@ export async function getOnline(): Promise<number> {
 	await redis.zremrangebyscore(ONLINE_KEY, '-inf', Date.now() - ONLINE_TTL);
 	const c = await redis.zcard(ONLINE_KEY);
 	return Math.max(await getPlaying(), c);
-}
-
-/** A character's live session strain, or null if it has none / has recovered. */
-export async function getPlayTime(characterId: number): Promise<PlayTime | null> {
-	const v = await redis.get(playTimeKey(characterId));
-	if (!v) return null;
-	const session = JSON.parse(v) as PlayTime;
-	// JSON has no -Infinity: a session that never ended serialises lastEnd as null.
-	if (!Number.isFinite(session.lastEnd)) session.lastEnd = -Infinity;
-	return session;
-}
-
-/**
- * Persist a session with a TTL matching the old in-memory eviction horizon - the
- * point its strain has fully recovered, plus SESSION_TTL slack. Over-retention is
- * harmless: startPlay re-clamps recovered strain to zero on the next play.
- */
-function setPlayTime(session: PlayTime) {
-	const ttl = Math.max(SESSION_TTL, session.currentStrainTime + session.currentMapTime + SESSION_TTL);
-	return redis.set(playTimeKey(session.characterId), JSON.stringify(session), 'PX', Math.round(ttl));
 }
 
 type OffsetChunk = {
@@ -427,12 +397,11 @@ export async function startPlay(
 	return simulateAndStore(character, beatmapId, beatmap, xpMultiplier);
 }
 
-/** The xp a finished play is worth: fatigue, mindblock, and the bonus for a
- *  first X. Exported so the score replay awards xp by the same rules a live
- *  play does, rather than keeping a second copy of them. */
+/** The xp a finished play is worth: mindblock and the bonus for a first X.
+ *  Exported so the score replay awards xp by the same rules a live play does,
+ *  rather than keeping a second copy of them. */
 export const getServerXP = async (
 	character: CharacterRow,
-	session: PlayTime,
 	bot: CharacterBot,
 	beatmap: Awaited<ReturnType<typeof getBeatmap>>,
 	chart: Beatmap,
@@ -440,8 +409,7 @@ export const getServerXP = async (
 ) => {
 	const currentBest = await getBestPlay(character.id, beatmap.id);
 
-	const fatigue = fatigueXPFactor((session?.currentStrainTime ?? 0) / 1000);
-	const skillXp = bot.getSkillsXP(chart.totalLength, score, fatigue);
+	const skillXp = bot.getSkillsXP(chart.totalLength, score);
 
 	// Mindblock: grinding the same map recently dulls its technique XP (stamina /
 	// memory exempt). Read from the persisted history, before this play is stored.
@@ -481,20 +449,6 @@ async function simulateAndStore(
 		samples.push([t, game.score.accuracy, game.score.grade]);
 	}
 	game.update(game.songEndMs + 1000); // past the end so every note is judged
-
-	const session = (await getPlayTime(character.id)) ?? {
-		characterId: character.id,
-		lastEnd: -Infinity,
-		currentStrainTime: 0,
-		currentMapTime: 0,
-	} satisfies PlayTime;
-
-	session.currentStrainTime = Math.max(0,
-		session.currentStrainTime - getRecoveryTime(session.lastEnd, Date.now()),
-	);
-	session.currentMapTime = chart.totalLength;
-
-	await setPlayTime(session);
 
 	const score = game.score;
 
@@ -548,7 +502,6 @@ async function simulateAndStore(
 		samples,
 		skillXp: scaleXp(await getServerXP(
 			character,
-			session,
 			bot,
 			beatmap,
 			chart,
@@ -640,18 +593,6 @@ const parsePlayResult = async (play: Pending, notify: boolean): Promise<StoredRe
 		pp: Math.round((after.pp - before.pp) * 100) / 100,
 	};
 
-	const session = (await getPlayTime(characterId)) ?? {
-		characterId,
-		lastEnd: -Infinity,
-		currentStrainTime: 0,
-		currentMapTime: 0,
-	} satisfies PlayTime;
-
-	session.currentStrainTime += session.currentMapTime;
-	session.currentMapTime = 0;
-	session.lastEnd = Date.now();
-	await setPlayTime(session);
-
 	return {
 		token: play.token,
 		failed: false,
@@ -700,7 +641,21 @@ export async function finalizePlay(
 
 	const result = await parsePlayResult(play, serverSide);
 
+	// The play is over, so anything it deferred runs now - after its xp landed,
+	// and whether or not it landed any (a failed play and an unranked-mid-play
+	// both return above without applying xp). The play record is already
+	// consumed, so a throw here would lose the result and the state push with it.
+	const live = await applyPendingAction(characterId).catch(e => {
+		console.error('[play] pending actions failed for', characterId, e);
+		return characterId;
+	});
+
 	await redis.set(resultKey(characterId), JSON.stringify(result), 'PX', RESULT_TTL_MS);
+
+	// the xp this play paid and whatever it deferred, both landed: hand the
+	// character over before the result, so every screen showing it is current
+	await pushCharacter(live).catch(e =>
+		console.error('[play] character push failed for', live, e));
 
 	// Every device learns the play ended (clears banners, surfaces the result).
 	hub.sendTo(characterId, {
@@ -775,6 +730,15 @@ export async function abortPlay(characterId: number, token: string): Promise<{ o
 	) as string | null;
 	if (raw) {
 		await redis.zrem(PLAYING_KEY, String(characterId));
+		// an abort ends the play without ever finalising it; without this the
+		// action it deferred would stay parked forever - and a throw must not cost
+		// the clients their abort notice
+		const live = await applyPendingAction(characterId).catch(e => {
+			console.error('[play] pending actions failed for', characterId, e);
+			return characterId;
+		});
+		await pushCharacter(live).catch(e =>
+			console.error('[play] character push failed for', live, e));
 		hub.sendTo(characterId, {
 			type: 'play:aborted', token,
 		});
