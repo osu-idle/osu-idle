@@ -1,6 +1,7 @@
 .xp-breakdown {
 	position: fixed;
-	z-index: 2000;
+	/* above the page overlay (5000) the panels can be mounted in */
+	z-index: 5200;
 	min-width: 180px;
 	padding: 0.45rem 0.6rem;
 	border-radius: 8px;

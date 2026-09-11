@@ -2,7 +2,8 @@
 	position: fixed;
 	/* offset from the cursor so it doesn't sit under the pointer */
 	transform: translate(14px, 14px);
-	z-index: 2000;
+	/* above the page overlay (5000) the panels can be mounted in */
+	z-index: 5200;
 	pointer-events: none;
 	padding: 0.4rem 0.6rem;
 	border-radius: 6px;

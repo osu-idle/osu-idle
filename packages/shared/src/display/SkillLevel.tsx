@@ -14,7 +14,8 @@ const card: CSSProperties = {
 	position: 'fixed',
 	display: 'flex',
 	flexDirection: 'column',
-	zIndex: 2000,
+	// above the client's page overlay (5000), which the upgrades panel opens in
+	zIndex: 5200,
 	pointerEvents: 'none',
 	padding: '0.4rem 0.6rem',
 	borderRadius: 6,
